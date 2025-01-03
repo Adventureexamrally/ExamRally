@@ -20,7 +20,7 @@ const Header = () => {
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-1 rounded-lg"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-800 text-white px-4 py-1 rounded-lg"
             >
               Search
             </button>
