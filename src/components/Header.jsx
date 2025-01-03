@@ -1,40 +1,50 @@
-import { Link } from "react-router-dom";
-function Header() {
+import React from 'react';
+import logo from "../assets/logo/logo.webp";
+
+const Header = () => {
   return (
-    <header className="bg-blue-500 text-white p-4">
-      <nav className="flex justify-between">
-        <h1 className="text-2xl font-bold">Examrally</h1>
-        <ul className="flex gap-4">
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/bankexam">Bank Exam</Link></li>
-          <li><Link to="/mocktest">Mock Test</Link></li>
-        </ul>
-      </nav>
+    <header className="bg-white shadow-md">
+      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center space-x-3">
+          <img src={logo} alt="Brand Logo" className="h-10 w-50" />
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md mx-auto">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full py-2 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-1 rounded-lg"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+
+        {/* Login and Register Buttons */}
+        <div className="flex items-center space-x-4">
+          <button
+            type="button"
+            className="px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition"
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            Register
+          </button>
+        </div>
+      </div>
     </header>
   );
-}
+};
+
 export default Header;
-
-import React from "react";
-
-// function Header() {
-//   return (
-//     <header className="bg-purple-600 text-white py-4 shadow-md">
-//       <div className="container mx-auto flex justify-between items-center px-4">
-//         <h1 className="text-2xl font-bold">guidely</h1>
-//         <nav className="hidden md:flex space-x-6">
-//           <a href="#exams" className="hover:underline">Exams</a>
-//           <a href="#pdf-courses" className="hover:underline">PDF Courses</a>
-//           <a href="#mock-tests" className="hover:underline">Mock Tests</a>
-//           <a href="#plans" className="hover:underline">Plans</a>
-//           <a href="#latest-packages" className="hover:underline">Packages</a>
-//         </nav>
-//         <button className="bg-white text-purple-600 px-4 py-2 rounded hover:bg-gray-200">
-//           Get App
-//         </button>
-//       </div>
-//     </header>
-//   );
-// }
-
-// export default Header;

@@ -5,11 +5,13 @@ import MockTestPage from "./pages/MockTestPage";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import NavBar from "./components/NavBar";
 
 function App() {
   return (
     <Router>
       <Header />
+      <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/bankexam" element={<BankExam />} />
