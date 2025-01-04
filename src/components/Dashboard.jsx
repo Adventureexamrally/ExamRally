@@ -1,7 +1,19 @@
 import React from "react";
 import sbi from "../assets/logo/sbi.png";
-import rrb from "../assets/logo/rrb.png";
 import ibps from "../assets/logo/ibps.png";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import QuizIcon from "@mui/icons-material/Quiz";
+import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import TodayIcon from "@mui/icons-material/Today";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import SpeedIcon from "@mui/icons-material/Speed";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import EventIcon from "@mui/icons-material/Event";
+import StarIcon from "@mui/icons-material/Star";
+import DiamondIcon from "@mui/icons-material/Diamond";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
 
 const Dashboard = () => {
   return (
@@ -22,12 +34,30 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Popular Products</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <button className="bg-orange-100 p-2 rounded text-center">PDF Course</button>
-            <button className="bg-purple-100 p-2 rounded text-center">Mock Tests</button>
-            <button className="bg-pink-100 p-2 rounded text-center">GOAT</button>
-            <button className="bg-teal-100 p-2 rounded text-center">Descriptive</button>
-            <button className="bg-green-100 p-2 rounded text-center">Daily Current Affairs</button>
-            <button className="bg-red-100 p-2 rounded text-center">Free PDF</button>
+            <div className="bg-orange-100 p-2 rounded text-center">
+              <PictureAsPdfIcon fontSize="large" className="text-orange-600" />
+              <a href="#" className="block mt-2">PDF Course</a>
+            </div>
+            <div className="bg-purple-100 p-2 rounded text-center">
+              <QuizIcon fontSize="large" className="text-purple-600" />
+              <a href="#" className="block mt-2">Mock Tests</a>
+            </div>
+            <div className="bg-pink-100 p-2 rounded text-center">
+              <LibraryBooksIcon fontSize="large" className="text-pink-600" />
+              <a href="#" className="block mt-2">GOAT</a>
+            </div>
+            <div className="bg-teal-100 p-2 rounded text-center">
+              <EditNoteIcon fontSize="large" className="text-teal-600" />
+              <a href="#" className="block mt-2">Descriptive</a>
+            </div>
+            <div className="bg-green-100 p-2 rounded text-center">
+              <TodayIcon fontSize="large" className="text-green-600" />
+              <a href="#" className="block mt-2">Daily Current Affairs</a>
+            </div>
+            <div className="bg-red-100 p-2 rounded text-center">
+              <FileDownloadIcon fontSize="large" className="text-red-600" />
+              <a href="#" className="block mt-2">Free PDF</a>
+            </div>
           </div>
         </div>
 
@@ -35,20 +65,41 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Free Materials</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <button className="bg-indigo-100 p-2 rounded text-center">Speed Test</button>
-            <button className="bg-gray-100 p-2 rounded text-center">Practice Quiz</button>
-            <button className="bg-yellow-100 p-2 rounded text-center">Daily Current Affairs</button>
+            <div className="bg-indigo-100 p-2 rounded text-center">
+              <SpeedIcon fontSize="large" className="text-indigo-600" />
+              <a href="#" className="block mt-2">Speed Test</a>
+            </div>
+            <div className="bg-gray-100 p-2 rounded text-center">
+              <HelpOutlineIcon fontSize="large" className="text-gray-600" />
+              <a href="#" className="block mt-2">Practice Quiz</a>
+            </div>
+            <div className="bg-yellow-100 p-2 rounded text-center">
+              <EventIcon fontSize="large" className="text-yellow-600" />
+              <a href="#" className="block mt-2">Daily Current Affairs</a>
+            </div>
           </div>
         </div>
 
         {/* Plans */}
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Plans</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button className="bg-blue-100 p-2 rounded text-center">Super Plan</button>
-            <button className="bg-purple-100 p-2 rounded text-center">Platinum Mock</button>
-            <button className="bg-pink-100 p-2 rounded text-center">PDF Course</button>
-            <button className="bg-gray-100 p-2 rounded text-center">All Combo</button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="bg-blue-100 p-2 rounded text-center">
+              <StarIcon fontSize="large" className="text-blue-600" />
+              <a href="#" className="block mt-2">Super Plan</a>
+            </div>
+            <div className="bg-purple-100 p-2 rounded text-center">
+              <DiamondIcon fontSize="large" className="text-purple-600" />
+              <a href="#" className="block mt-2">Platinum Mock</a>
+            </div>
+            <div className="bg-pink-100 p-2 rounded text-center">
+              <PictureAsPdfIcon fontSize="large" className="text-pink-600" />
+              <a href="#" className="block mt-2">PDF Course</a>
+            </div>
+            <div className="bg-gray-100 p-2 rounded text-center">
+              <AllInclusiveIcon fontSize="large" className="text-gray-600" />
+              <a href="#" className="block mt-2">All Combo</a>
+            </div>
           </div>
         </div>
       </div>
@@ -60,36 +111,35 @@ const Dashboard = () => {
           <a href="#" className="text-blue-600 hover:underline">View More</a>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {/* Exam Card */}
           <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
-            <img 
-              src={sbi} 
-              alt="SBI JA Logo" 
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2" 
+            <img
+              src={sbi}
+              alt="SBI JA Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
             <p className="font-medium">SBI JA</p>
           </div>
           <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
-            <img 
-              src={sbi} 
-              alt="SBI PO Logo" 
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2" 
+            <img
+              src={sbi}
+              alt="SBI PO Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
             <p className="font-medium">SBI PO</p>
           </div>
           <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
-            <img 
-              src={ibps} 
-              alt="IBPS Clerk Logo" 
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2" 
+            <img
+              src={ibps}
+              alt="IBPS Clerk Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
             <p className="font-medium">IBPS Clerk</p>
           </div>
           <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
-            <img 
-              src={ibps} 
-              alt="IBPS PO Logo" 
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2" 
+            <img
+              src={ibps}
+              alt="IBPS PO Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
             <p className="font-medium">IBPS PO</p>
           </div>
