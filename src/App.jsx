@@ -6,12 +6,14 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import NavBar from "./components/NavBar";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   return (
     <Router>
       <Header />
       <NavBar />
+      <Dashboard />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/bankexam" element={<BankExam />} />
