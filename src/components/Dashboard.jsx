@@ -14,6 +14,7 @@ import StarIcon from "@mui/icons-material/Star";
 import DiamondIcon from "@mui/icons-material/Diamond";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   return (
@@ -40,7 +41,7 @@ const Dashboard = () => {
             </div>
             <div className="bg-purple-100 p-2 rounded text-center hover:scale-105 transition-all">
               <QuizIcon fontSize="large" className="text-purple-600" />
-              <a href="#" className="block mt-2">Mock Tests</a>
+              <Link to='/mocktest' className="block mt-2">Mock Tests</Link>
             </div>
             <div className="bg-pink-100 p-2 rounded text-center hover:scale-105 transition-all">
               <LibraryBooksIcon fontSize="large" className="text-pink-600" />

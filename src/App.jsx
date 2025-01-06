@@ -7,7 +7,29 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import NavBar from "./components/NavBar";
 import Dashboard from "./components/Dashboard";
-import {SignIn, SignedIn, SignedOut, SignInButton, UserButton,SignUp } from "@clerk/clerk-react";
+import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp } from "@clerk/clerk-react";
+import MockTest from "./components/MockTest";
+import React from "react";
+import Test from "./pages/Test";
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong. Please try again later.</h1>;
+    }
+    return this.props.children;
+  }
+}
+
 
 function App() {
   return (
@@ -17,8 +39,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/bankexam" element={<BankExam />} />
-        <Route path="/mocktest" element={<MockTestPage />} />
-        <Route path="/sigin" element={<SignIn/>} />
+        <Route path="/mocktest" element={<Test />} />
+        <Route path="/sigin" element={<SignIn />} />
         {/* <Route path="/sigup" element={<SignedIn/>} /> */}
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="*" element={<NotFound />} />
