@@ -1,12 +1,21 @@
 import React from 'react';
 import logo from "../assets/logo/logo.webp";
 import { Link } from 'react-router-dom';
-import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp } from "@clerk/clerk-react";
+import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser  } from "@clerk/clerk-react";
+
 
 
 const Header = () => {
+
+  const {isSignedIn, user, isLoaded } = useUser();
+
+  // if (!user) {
+  //   return <div>Loading user info...</div>;
+  // }
+  // console.log(user)
   return (
     <header className="bg-white shadow-md">
+      {/* <p>{user.firstName}</p> */}
       <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-3">
@@ -44,12 +53,14 @@ const Header = () => {
           >
             <Link to='/sign-up'>Register</Link>
           </button> */}
+           <p>{!user ? "":user.firstName}</p>
           <SignedOut>
             <SignInButton />
           </SignedOut>
           <SignedIn>
             <UserButton />
           </SignedIn>
+         
         </div>
       </div>
     </header>

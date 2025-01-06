@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo/logo.webp";
-import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp } from "@clerk/clerk-react";
+import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser } from "@clerk/clerk-react";
 
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
 
 const NavBar = () => {
+  const {isSignedIn, user, isLoaded } = useUser();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState(null);
@@ -242,7 +244,7 @@ const NavBar = () => {
               <SignedIn>
                 <UserButton />
               </SignedIn>
-
+              <p>{!user ? "":user.firstName}</p>
             </div>
           </div>
         )}
