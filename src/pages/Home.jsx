@@ -1,8 +1,11 @@
+import { Dashboard } from "@mui/icons-material";
 import FeatureCard from "../components/FeaturedCard";
 import HeroSection from "../components/HeroSection";
 
 function Home() {
   return (
+    <>
+    <Dashboard />
     <div className="text-center p-4">
       <HeroSection />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
@@ -20,6 +23,7 @@ function Home() {
         />
       </div>
     </div>
+    </>
   );
 }
 export default Home;

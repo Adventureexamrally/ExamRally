@@ -1,5 +1,8 @@
 import React from 'react';
 import logo from "../assets/logo/logo.webp";
+import { Link } from 'react-router-dom';
+import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp } from "@clerk/clerk-react";
+
 
 const Header = () => {
   return (
@@ -28,19 +31,25 @@ const Header = () => {
         </div>
 
         {/* Login and Register Buttons */}
-        <div className="flex items-center space-x-4">
-          <button
+        <div className="hidden md:flex items-center space-x-4">
+          {/* <button
             type="button"
             className="px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition"
           >
-            Login
+            <Link to='/sigin'>Login</Link>
           </button>
           <button
             type="button"
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
           >
-            Register
-          </button>
+            <Link to='/sign-up'>Register</Link>
+          </button> */}
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
         </div>
       </div>
     </header>

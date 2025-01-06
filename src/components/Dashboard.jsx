@@ -34,27 +34,27 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Popular Products</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-orange-100 p-2 rounded text-center">
+            <div className="bg-orange-100 p-2 rounded text-center hover:scale-105 transition-all">
               <PictureAsPdfIcon fontSize="large" className="text-orange-600" />
               <a href="#" className="block mt-2">PDF Course</a>
             </div>
-            <div className="bg-purple-100 p-2 rounded text-center">
+            <div className="bg-purple-100 p-2 rounded text-center hover:scale-105 transition-all">
               <QuizIcon fontSize="large" className="text-purple-600" />
               <a href="#" className="block mt-2">Mock Tests</a>
             </div>
-            <div className="bg-pink-100 p-2 rounded text-center">
+            <div className="bg-pink-100 p-2 rounded text-center hover:scale-105 transition-all">
               <LibraryBooksIcon fontSize="large" className="text-pink-600" />
               <a href="#" className="block mt-2">GOAT</a>
             </div>
-            <div className="bg-teal-100 p-2 rounded text-center">
+            <div className="bg-teal-100 p-2 rounded text-center hover:scale-105 transition-all">
               <EditNoteIcon fontSize="large" className="text-teal-600" />
               <a href="#" className="block mt-2">Descriptive</a>
             </div>
-            <div className="bg-green-100 p-2 rounded text-center">
+            <div className="bg-green-100 p-2 rounded text-center hover:scale-105 transition-all">
               <TodayIcon fontSize="large" className="text-green-600" />
               <a href="#" className="block mt-2">Daily Current Affairs</a>
             </div>
-            <div className="bg-red-100 p-2 rounded text-center">
+            <div className="bg-red-100 p-2 rounded text-center hover:scale-105 transition-all">
               <FileDownloadIcon fontSize="large" className="text-red-600" />
               <a href="#" className="block mt-2">Free PDF</a>
             </div>
@@ -65,15 +65,15 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Free Materials</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-indigo-100 p-2 rounded text-center">
+            <div className="bg-indigo-100 p-2 rounded text-center hover:scale-105 transition-all">
               <SpeedIcon fontSize="large" className="text-indigo-600" />
               <a href="#" className="block mt-2">Speed Test</a>
             </div>
-            <div className="bg-gray-100 p-2 rounded text-center">
+            <div className="bg-gray-100 p-2 rounded text-center hover:scale-105 transition-all">
               <HelpOutlineIcon fontSize="large" className="text-gray-600" />
               <a href="#" className="block mt-2">Practice Quiz</a>
             </div>
-            <div className="bg-yellow-100 p-2 rounded text-center">
+            <div className="bg-yellow-100 p-2 rounded text-center hover:scale-105 transition-all">
               <EventIcon fontSize="large" className="text-yellow-600" />
               <a href="#" className="block mt-2">Daily Current Affairs</a>
             </div>
@@ -84,19 +84,19 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Plans</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-blue-100 p-2 rounded text-center">
+            <div className="bg-blue-100 p-2 rounded text-center hover:scale-105 transition-all">
               <StarIcon fontSize="large" className="text-blue-600" />
               <a href="#" className="block mt-2">Super Plan</a>
             </div>
-            <div className="bg-purple-100 p-2 rounded text-center">
+            <div className="bg-purple-100 p-2 rounded text-center hover:scale-105 transition-all">
               <DiamondIcon fontSize="large" className="text-purple-600" />
               <a href="#" className="block mt-2">Platinum Mock</a>
             </div>
-            <div className="bg-pink-100 p-2 rounded text-center">
+            <div className="bg-pink-100 p-2 rounded text-center hover:scale-105 transition-all">
               <PictureAsPdfIcon fontSize="large" className="text-pink-600" />
               <a href="#" className="block mt-2">PDF Course</a>
             </div>
-            <div className="bg-gray-100 p-2 rounded text-center">
+            <div className="bg-gray-100 p-2 rounded text-center hover:scale-105 transition-all">
               <AllInclusiveIcon fontSize="large" className="text-gray-600" />
               <a href="#" className="block mt-2">All Combo</a>
             </div>
@@ -110,8 +110,8 @@ const Dashboard = () => {
           <h3 className="font-bold text-lg">Upcoming Exams</h3>
           <a href="#" className="text-blue-600 hover:underline">View More</a>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
             <img
               src={sbi}
               alt="SBI JA Logo"
@@ -119,7 +119,7 @@ const Dashboard = () => {
             />
             <p className="font-medium">SBI JA</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
+          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
             <img
               src={sbi}
               alt="SBI PO Logo"
@@ -127,7 +127,7 @@ const Dashboard = () => {
             />
             <p className="font-medium">SBI PO</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
+          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
             <img
               src={ibps}
               alt="IBPS Clerk Logo"
@@ -135,7 +135,7 @@ const Dashboard = () => {
             />
             <p className="font-medium">IBPS Clerk</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center">
+          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
             <img
               src={ibps}
               alt="IBPS PO Logo"
