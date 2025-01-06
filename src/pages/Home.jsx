@@ -1,4 +1,5 @@
-import { Dashboard } from "@mui/icons-material";
+
+import Dashboard from "../components/Dashboard";
 import FeatureCard from "../components/FeaturedCard";
 import HeroSection from "../components/HeroSection";
 

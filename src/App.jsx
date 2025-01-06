@@ -14,15 +14,12 @@ function App() {
     <Router>
       <Header />
       <NavBar />
-     
-    
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/bankexam" element={<BankExam />} />
         <Route path="/mocktest" element={<MockTestPage />} />
         <Route path="/sigin" element={<SignIn/>} />
         {/* <Route path="/sigup" element={<SignedIn/>} /> */}
-
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
