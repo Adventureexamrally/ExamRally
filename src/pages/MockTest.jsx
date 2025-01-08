@@ -38,7 +38,7 @@ const MockTest = () => {
     const [selectedOptions, setSelectedOptions] = useState({});
     const [visitedQuestions, setVisitedQuestions] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(3600); // 5 minutes in seconds
 
     const currentQuestion = questions[currentQuestionIndex] || {};
 
@@ -54,7 +54,7 @@ const MockTest = () => {
             handleSubmit();
         }
         const timer = setInterval(() => {
-            setTimeLeft((prev) => Math.max(prev - 1, 0));
+            setTimeLeft((prev) => Math.max(prev - 1,0));
         }, 1000);
 
         return () => clearInterval(timer);
