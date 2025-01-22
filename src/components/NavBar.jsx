@@ -93,44 +93,44 @@ const NavBar = () => {
               to="/subscriptions"
               className="hover:text-blue-600 transition duration-300"
             >
-              Subscriptions
+              Test Series
             </Link>
             <Link
               to="/combo"
               className="hover:text-blue-600 transition duration-300"
             >
-              Combo
+              Free Mock Test
             </Link>
             <Link
               to="/testseries"
               className="hover:text-blue-600 transition duration-300"
             >
-              Test Series
+              Free PDF
             </Link>
             <Link
               to="/livebatch"
               className="hover:text-blue-600 transition duration-300"
             >
-              Live Batch
+             Blogs
             </Link>
             <Link
               to="/interviews"
               className="hover:text-blue-600 transition duration-300"
             >
-              Interviews
+              Rally Pro
             </Link>
             <Link
               to="/materials"
               className="hover:text-blue-600 transition duration-300"
             >
-              Materials
+             Rally Lifetime
             </Link>
-            <Link
+            {/* <Link
               to="/blogs"
               className="hover:text-blue-600 transition duration-300"
             >
               Blogs
-            </Link>
+            </Link> */}
           </nav>
 
           {/* "Get App" Button */}
@@ -185,44 +185,44 @@ const NavBar = () => {
               to="/subscriptions"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Subscriptions
+              Test Series
             </Link>
             <Link
               to="/combo"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Combo
+              Free Mock Test
             </Link>
             <Link
               to="/testseries"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Test Series
+              Free PDF
             </Link>
             <Link
               to="/livebatch"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Live Batch
+             Blogs
             </Link>
             <Link
               to="/interviews"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Interviews
+              Rally Pro
             </Link>
             <Link
               to="/materials"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Materials
+             Rally Lifetime
             </Link>
-            <Link
+            {/* <Link
               to="/blogs"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
               Blogs
-            </Link>
+            </Link> */}
             <hr />
             {/* Login/Register Buttons in Mobile Menu */}
             <div className="flex flex-col space-y-2 px-4">
@@ -245,6 +245,8 @@ const NavBar = () => {
                 <UserButton />
               </SignedIn>
               <p>{!user ? "":user.firstName}</p>
+              <p className=''> Join Telegram
+           </p>
             </div>
           </div>
         )}

@@ -40,7 +40,7 @@ const Header = () => {
         </div>
 
         {/* Login and Register Buttons */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-4 flex-row">
           {/* <button
             type="button"
             className="px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition"
@@ -53,6 +53,12 @@ const Header = () => {
           >
             <Link to='/sign-up'>Register</Link>
           </button> */}
+        
+
+         
+          
+           <p className=''> Join Telegram
+           </p>
            <p>{!user ? "":user.firstName}</p>
           <SignedOut>
             <SignInButton />
@@ -61,7 +67,11 @@ const Header = () => {
             <UserButton />
           </SignedIn>
          
-        </div>
+          </div>
+
+        
+         
+  
       </div>
     </header>
   );
