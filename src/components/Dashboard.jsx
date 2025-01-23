@@ -15,10 +15,12 @@ import DiamondIcon from "@mui/icons-material/Diamond";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
 import { Link } from "react-router-dom";
+import Banner from "./Banner";
 
 const Dashboard = () => {
   return (
     <div className="bg-gray-100 min-h-screen p-4">
+     
       {/* Trending Links */}
       <div className="mb-4 overflow-hidden">
         <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
@@ -28,7 +30,7 @@ const Dashboard = () => {
           <a href="#" className="hover:underline">Current Affairs</a>
         </div>
       </div>
-
+      <Banner />
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Popular Products */}
