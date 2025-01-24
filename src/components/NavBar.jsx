@@ -54,7 +54,7 @@ const NavBar = () => {
                 )}
               </button>
               {isDropdownOpen && (
-                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56">
+                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
                   {["Banking & Insurance", "SSC", "Regulatory Bodies", "Railway", "UP State Exams", "JAIIB/CAIIB"].map(
                     (item, index) => (
                       <div key={index} className="relative group">
