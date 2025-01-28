@@ -1,86 +1,49 @@
 import React from "react";
 import Slider from "react-slick";
-
-// Import slick-carousel CSS
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+
 import one from "../assets/images/1.jpg";
 import two from "../assets/images/2.jpg";
-
 import three from "../assets/images/3.jpg";
 
 const Banner = () => {
-  // Slick slider settings
   const settings = {
-    dots: true, // Enable dots for navigation
+    dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true, // Auto-slide images
-    autoplaySpeed: 3000, // Delay between slides
+    autoplay: true,
+    autoplaySpeed: 3000,
   };
-  const slide = 'https://via.placeholder.com/1500x600/4f8aff/fff?text=Slide+2'
+
+  const slides = [
+    { image: one, title: "Welcome to Our Platform", description: "Join us for amazing opportunities." },
+    { image: two, title: "Transform Your Career", description: "Explore a variety of courses to boost your career." },
+    { image: three, title: "Get Started Today", description: "Begin your journey with us and unlock endless potential." },
+  ];
+
   return (
-    <div className="bg-slate-200 text-white">
-      <div className="container mx-auto px-4 py-10">
-        <div className="relative">
-          {/* Carousel */}
-          <Slider {...settings}>
-            <div className="relative">
-              <img
-                src={one}
-                alt="Slide 1"
-                className="w-full h-96 object-cover rounded-lg shadow-lg"
-              />
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                <h2 className="text-4xl font-bold">Welcome to Our Platform</h2>
-                <p className="mt-4 text-lg">
-                  Join us for amazing opportunities.
-                </p>
+    <div className="bg-gray-100 flex justify-center items-center py-5">
+      <div className="w-full">
+        <Slider {...settings}>
+          {slides.map((slide, index) => (
+            <div key={index} className="relative">
+              <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-lg shadow-lg">
+                <img
+                  src={slide.image}
+                  alt={`Slide ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 px-4 text-center text-white">
+                <h2 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold">{slide.title}</h2>
+                <p className="text-xs sm:text-sm md:text-base">{slide.description}</p>
               </div>
             </div>
-            <div className="relative">
-              <img
-                src={two}
-                alt="Slide 2"
-                className="w-full h-96 object-cover rounded-lg shadow-lg"
-              />
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                <h2 className="text-4xl font-bold">Transform Your Career</h2>
-                <p className="mt-4 text-lg">
-                  Explore a variety of courses to boost your career.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <img
-                src={three}
-                alt="Slide 3"
-                className="w-full h-96 object-cover rounded-lg shadow-lg"
-              />
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                <h2 className="text-4xl font-bold">Get Started Today</h2>
-                <p className="mt-4 text-lg">
-                  Begin your journey with us and unlock endless potential.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <img
-                src={three}
-                alt="Slide 3"
-                className="w-full h-96 object-cover rounded-lg shadow-lg"
-              />
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                <h2 className="text-4xl font-bold">Get Started Today</h2>
-                <p className="mt-4 text-lg">
-                  Begin your journey with us and unlock endless potential.
-                </p>
-              </div>
-            </div>
-          </Slider>
-        </div>
+          ))}
+        </Slider>
       </div>
     </div>
   );

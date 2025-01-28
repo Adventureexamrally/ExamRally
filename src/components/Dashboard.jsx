@@ -35,10 +35,16 @@ const Dashboard = () => {
           <a href="#" className="hover:underline">Current Affairs</a>
         </div>
       </div>
-      <Banner />
+{/* 
+      <div className="h-[30vh] w-full overflow-hidden rounded mb-4">
+        <Banner />
+      </div> */}
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="col-span-full" >
+      <Banner  />
+      </div>
         {/* Topic Test */}
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold text-lg mb-3">Topic Test</h3>
