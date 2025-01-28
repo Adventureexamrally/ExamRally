@@ -46,46 +46,46 @@ const Dashboard = () => {
       <Banner  />
       </div>
         {/* Topic Test */}
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Topic Test</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-orange-100 p-2 rounded text-center hover:scale-105 transition-all">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="bg-orange-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <CalculateIcon fontSize="large" className="text-orange-600" />
-              <a href="#" className="block mt-2">Quantitative Aptitude</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Quantitative Aptitude</a>
             </div>
-            <div className="bg-purple-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-purple-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <PsychologyIcon fontSize="large" className="text-purple-600" />
-              <Link to="/mocktest" className="block mt-2">Reasoning Ability</Link>
+              <Link to="/mocktest" className="text-sm font-medium text-gray-700">Reasoning Ability</Link>
             </div>
-            <div className="bg-pink-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-pink-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <MenuBookIcon fontSize="large" className="text-pink-600" />
-              <a href="#" className="block mt-2">English Language</a>
+              <a href="#" className="text-sm font-medium text-gray-700">English Language</a>
             </div>
-            <div className="bg-teal-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-teal-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <PublicIcon fontSize="large" className="text-teal-600" />
-              <a href="#" className="block mt-2">Current Affairs</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Current Affairs</a>
             </div>
-            <div className="bg-green-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-green-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <ComputerIcon fontSize="large" className="text-green-600" />
-              <a href="#" className="block mt-2">Computer Awareness</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Computer Awareness</a>
             </div>
-            <div className="bg-red-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-red-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <AccountBalanceIcon fontSize="large" className="text-red-600" />
-              <a href="#" className="block mt-2">Banking Awareness</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Banking Awareness</a>
             </div>
-            <div className="bg-gray-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-gray-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <LibraryBooksIcon fontSize="large" className="text-gray-600" />
-              <a href="#" className="block mt-2">Static GK</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Static GK</a>
             </div>
-            <div className="bg-yellow-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-yellow-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
               <QuizIcon fontSize="large" className="text-yellow-600" />
-              <a href="#" className="block mt-2">Insurance Awareness</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Insurance Awareness</a>
             </div>
           </div>
         </div>
 
         {/* Special Mock Test */}
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Special Mock Test</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-indigo-100 p-2 rounded text-center hover:scale-105 transition-all">
@@ -112,7 +112,7 @@ const Dashboard = () => {
         </div>
 
         {/* Others */}
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Others</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-blue-100 p-2 rounded text-center hover:scale-105 transition-all">
@@ -144,7 +144,7 @@ const Dashboard = () => {
       </div>
 
       {/* Upcoming Exams */}
-      <div className="bg-white p-4 rounded shadow mt-4">
+      <div className="bg-white p-4 rounded-2xl shadow-lgmt-4">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
           <a href="#" className="text-blue-600 hover:underline">View More</a>

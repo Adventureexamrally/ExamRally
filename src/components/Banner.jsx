@@ -25,19 +25,19 @@ const Banner = () => {
   ];
 
   return (
-    <div className="bg-gray-100 flex justify-center items-center py-5">
-      <div className="w-full">
+    <div className="bg-gray-100 flex justify-center items-center rounded-3xl py-1">
+      <div className="w-full rounded-3xl">
         <Slider {...settings}>
           {slides.map((slide, index) => (
             <div key={index} className="relative">
-              <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-lg shadow-lg">
+              <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-3xl shadow-lg">
                 <img
                   src={slide.image}
                   alt={`Slide ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 px-4 text-center text-white">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 px-4 text-center text-white rounded-3xl">
                 <h2 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold">{slide.title}</h2>
                 <p className="text-xs sm:text-sm md:text-base">{slide.description}</p>
               </div>
