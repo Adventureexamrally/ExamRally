@@ -49,35 +49,35 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Topic Test</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div className="bg-orange-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-orange-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <CalculateIcon fontSize="large" className="text-orange-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Quantitative Aptitude</a>
             </div>
-            <div className="bg-purple-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-purple-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <PsychologyIcon fontSize="large" className="text-purple-600" />
               <Link to="/mocktest" className="text-sm font-medium text-gray-700">Reasoning Ability</Link>
             </div>
-            <div className="bg-pink-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-pink-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <MenuBookIcon fontSize="large" className="text-pink-600" />
               <a href="#" className="text-sm font-medium text-gray-700">English Language</a>
             </div>
-            <div className="bg-teal-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-teal-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <PublicIcon fontSize="large" className="text-teal-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Current Affairs</a>
             </div>
-            <div className="bg-green-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-green-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <ComputerIcon fontSize="large" className="text-green-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Computer Awareness</a>
             </div>
-            <div className="bg-red-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-red-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <AccountBalanceIcon fontSize="large" className="text-red-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Banking Awareness</a>
             </div>
-            <div className="bg-gray-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <LibraryBooksIcon fontSize="large" className="text-gray-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Static GK</a>
             </div>
-            <div className="bg-yellow-100 p-3 rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+            <div className="bg-yellow-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <QuizIcon fontSize="large" className="text-yellow-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Insurance Awareness</a>
             </div>
@@ -87,26 +87,30 @@ const Dashboard = () => {
         {/* Special Mock Test */}
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Special Mock Test</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-indigo-100 p-2 rounded text-center hover:scale-105 transition-all">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="bg-indigo-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <SpeedIcon fontSize="large" className="text-indigo-600" />
-              <a href="#" className="block mt-2">Previous Year Papers</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Previous Year Papers</a>
             </div>
-            <div className="bg-gray-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <HelpOutlineIcon fontSize="large" className="text-gray-600" />
-              <a href="#" className="block mt-2">Tough Reasoning Sets</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Hard Level Reasoning</a>
             </div>
-            <div className="bg-yellow-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
+              <HelpOutlineIcon fontSize="large" className="text-gray-600" />
+              <a href="#" className="text-sm font-medium text-gray-700">Hard Level Quants</a>
+            </div>
+            <div className="bg-yellow-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <EventNoteIcon fontSize="large" className="text-yellow-600" />
-              <a href="#" className="block mt-2">Tough English Sets</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Hard Level English</a>
             </div>
-            <div className="bg-red-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-red-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <PictureAsPdfIcon fontSize="large" className="text-red-600" />
-              <a href="#" className="block mt-2">Descriptive Test</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Descriptive</a>
             </div>
-            <div className="bg-blue-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <LibraryBooksIcon fontSize="large" className="text-blue-600" />
-              <a href="#" className="block mt-2">Critical Reasoning</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Critical Reasoning</a>
             </div>
           </div>
         </div>
@@ -114,30 +118,30 @@ const Dashboard = () => {
         {/* Others */}
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Others</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-blue-100 p-2 rounded text-center hover:scale-105 transition-all">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <StarIcon fontSize="large" className="text-blue-600" />
-              <a href="#" className="block mt-2">Hindu Editorial</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Hindu Editorial</a>
             </div>
-            <div className="bg-purple-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-purple-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <DiamondIcon fontSize="large" className="text-purple-600" />
-              <a href="#" className="block mt-2">Interview Prep</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Interview Prep</a>
             </div>
-            <div className="bg-pink-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-pink-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <CelebrationIcon fontSize="large" className="text-pink-600" />
-              <a href="#" className="block mt-2">Success Stories</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Success Stories</a>
             </div>
-            <div className="bg-pink-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-pink-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <EmojiEventsIcon fontSize="large" className="text-pink-600" />
-              <a href="#" className="block mt-2">Special Mocks</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Special Mocks</a>
             </div>
-            <div className="bg-gray-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <ForumIcon fontSize="large" className="text-gray-600" />
-              <a href="#" className="block mt-2">GD</a>
+              <a href="#" className="text-sm font-medium text-gray-700">GD</a>
             </div>
-            <div className="bg-gray-100 p-2 rounded text-center hover:scale-105 transition-all">
+            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <MailOutlineIcon fontSize="large" className="text-gray-600" />
-              <a href="#" className="block mt-2">Email & Precis Writing</a>
+              <a href="#" className="text-sm font-medium text-gray-700">Email & Precis Writing</a>
             </div>
           </div>
         </div>
@@ -149,44 +153,60 @@ const Dashboard = () => {
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
           <a href="#" className="text-blue-600 hover:underline">View More</a>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
+        <div className="grid grid-cols-3 lg:grid-cols-6 sm:grid-cols-3 gap-5">
+          <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
               src={sbi}
               alt="SBI Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
-            <p className="font-medium">RRB PO</p>
+            <p className="text-sm font-medium text-gray-700">RRB PO</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
+          <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
               src={ibps}
               alt="IBPS Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
-            <p className="font-medium">IBPS Clerk</p>
+            <p className="text-sm font-medium text-gray-700">RRB Clerk</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
+          <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
+            <img
+              src={ibps}
+              alt="IBPS Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
+            />
+            <p className="text-sm font-medium text-gray-700">IBPS Clerk</p>
+          </div>
+          <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
+            <img
+              src={ibps}
+              alt="IBPS Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
+            />
+            <p className="text-sm font-medium text-gray-700">IBPS PO</p>
+          </div>
+          <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
               src={sbi}
               alt="SBI Clerk"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
-            <p className="font-medium">SBI Clerk</p>
+            <p className="text-sm font-medium text-gray-700">SBI Clerk</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded flex flex-col items-center hover:scale-105 transition-all">
+          <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
               src={ibps}
               alt="IBPS PO"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
-            <p className="font-medium">SBI PO</p>
+            <p className="text-sm font-medium text-gray-700">SBI PO</p>
           </div>
         </div>
       </div>
 
       {/* Promotional Banner */}
-      <div className="mt-4">
+      {/* <div className="mt-4">
         <div className="bg-gradient-to-r from-purple-700 via-purple-500 to-purple-700 text-white p-6 rounded shadow text-center">
           <h2 className="text-3xl font-bold mb-3">
             <CelebrationIcon className="mr-2" fontSize="large" /> New Year Special Offer
@@ -200,7 +220,7 @@ const Dashboard = () => {
             Buy Now
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
