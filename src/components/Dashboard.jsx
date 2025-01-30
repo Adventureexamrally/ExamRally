@@ -25,9 +25,9 @@ import Banner from "./Banner";
 
 const Dashboard = () => {
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
+    <div className="bg-gray-100 min-h-screen p-2">
       {/* Trending Links */}
-      <div className="mb-4 overflow-hidden">
+      <div className="mb-1 overflow-hidden">
         <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
           <a href="#" className="hover:underline">Clerk Notification</a>
           <a href="#" className="hover:underline">SBI JA Previous Year Cut-off</a>
@@ -164,7 +164,7 @@ const Dashboard = () => {
           </div>
           <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
-              src={ibps}
+              src={sbi}
               alt="IBPS Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
@@ -196,7 +196,7 @@ const Dashboard = () => {
           </div>
           <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
-              src={ibps}
+              src={sbi}
               alt="IBPS PO"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
