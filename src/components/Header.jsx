@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from "../assets/logo/logo.webp";
+import logo from "../assets/logo/logo.png";
 import { Link } from 'react-router-dom';
 import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser  } from "@clerk/clerk-react";
 

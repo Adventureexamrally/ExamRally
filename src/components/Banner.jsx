@@ -6,6 +6,8 @@ import "slick-carousel/slick/slick-theme.css";
 import one from "../assets/images/1.jpg";
 import two from "../assets/images/2.jpg";
 import three from "../assets/images/3.jpg";
+import banner from "../assets/images/banner.png";
+
 
 const Banner = () => {
   const settings = {
@@ -19,9 +21,9 @@ const Banner = () => {
   };
 
   const slides = [
-    { image: one, title: "Welcome to Our Platform", description: "Join us for amazing opportunities." },
-    { image: two, title: "Transform Your Career", description: "Explore a variety of courses to boost your career." },
-    { image: three, title: "Get Started Today", description: "Begin your journey with us and unlock endless potential." },
+    { image: banner, title: "Welcome to Our Platform", description: "Join us for amazing opportunities." },
+    { image: banner, title: "Transform Your Career", description: "Explore a variety of courses to boost your career." },
+    { image: banner, title: "Get Started Today", description: "Begin your journey with us and unlock endless potential." },
   ];
 
   return (
@@ -34,13 +36,13 @@ const Banner = () => {
                 <img
                   src={slide.image}
                   alt={`Slide ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-fill z-20"
                 />
               </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 px-4 text-center text-white rounded-md">
+              {/* <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 px-4 text-center text-white rounded-md">
                 <h2 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold">{slide.title}</h2>
                 <p className="text-xs sm:text-sm md:text-base">{slide.description}</p>
-              </div>
+              </div> */}
             </div>
           ))}
         </Slider>

@@ -1,6 +1,7 @@
 import React from "react";
 import sbi from "../assets/logo/sbi.png";
 import ibps from "../assets/logo/ibps.png";
+import rrb from "../assets/logo/rrb.png"
 import CalculateIcon from "@mui/icons-material/Calculate";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
@@ -22,6 +23,7 @@ import ForumIcon from "@mui/icons-material/Forum";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import { Link } from "react-router-dom";
 import Banner from "./Banner";
+import { RiRobotFill } from "react-icons/ri";
 
 const Dashboard = () => {
   return (
@@ -156,7 +158,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-3 lg:grid-cols-6 sm:grid-cols-3 gap-5">
           <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
-              src={sbi}
+              src={rrb}
               alt="SBI Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
@@ -164,7 +166,7 @@ const Dashboard = () => {
           </div>
           <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
-              src={sbi}
+              src={rrb}
               alt="IBPS Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
