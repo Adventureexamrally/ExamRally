@@ -50,7 +50,7 @@ const Dashboard = () => {
         {/* Topic Test */}
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Topic Test</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             <div className="bg-orange-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <CalculateIcon fontSize="large" className="text-orange-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Quantitative Aptitude</a>
@@ -89,7 +89,7 @@ const Dashboard = () => {
         {/* Special Mock Test */}
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Special Mock Test</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             <div className="bg-indigo-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <SpeedIcon fontSize="large" className="text-indigo-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Previous Year Papers</a>
@@ -120,7 +120,7 @@ const Dashboard = () => {
         {/* Others */}
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Others</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <StarIcon fontSize="large" className="text-blue-600" />
               <a href="#" className="text-sm font-medium text-gray-700">Hindu Editorial</a>
@@ -158,7 +158,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-3 lg:grid-cols-6 sm:grid-cols-3 gap-5">
           <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
-              src={rrb}
+              src={ibps}
               alt="SBI Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
@@ -166,7 +166,7 @@ const Dashboard = () => {
           </div>
           <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
             <img
-              src={rrb}
+              src={ibps}
               alt="IBPS Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
             />
