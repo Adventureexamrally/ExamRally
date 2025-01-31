@@ -11,6 +11,7 @@ import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp } from "@
 import MockTest from "./components/MockTest";
 import React from "react";
 import Test from "./pages/Test";
+import Mock from "./components/Mock";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -46,6 +47,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
+
     </Router>
   );
 }
