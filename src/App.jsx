@@ -6,6 +6,7 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import NavBar from "./components/NavBar";
+import TestSeries from "./components/TestSeries";
 import Dashboard from "./components/Dashboard";
 import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp } from "@clerk/clerk-react";
 import MockTest from "./components/MockTest";
@@ -47,6 +48,7 @@ function App() {
         <Route path="/sigin" element={<SignIn />} />
         {/* <Route path="/sigup" element={<SignedIn/>} /> */}
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path='/subscriptions' element={<TestSeries/>}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
 
