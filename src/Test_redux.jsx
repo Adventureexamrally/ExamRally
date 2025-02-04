@@ -7,11 +7,14 @@ import {
     markVisited,
     submitTest,
     updateTime,
-} from "../slice/testSlice";
-import questions from "../data/questions"; // Assuming questions are stored locally
+} from "./slice/testSlice";
+import questions from "./data/questions"; // Assuming questions are stored locally
+import { fetchQuestions } from "./slice/questionSlice";
 
-const Test = () => {
+const Test_redux = () => {
     const dispatch = useDispatch();
+    const { questions, loading, error } = useSelector((state) => state.questions);
+
     const { currentQuestionIndex, selectedOptions, visitedQuestions, isSubmitted, timeLeft } = useSelector((state) => state.test);
 
     const currentQuestion = questions[currentQuestionIndex] || {};
@@ -23,7 +26,9 @@ const Test = () => {
     }
 }, [currentQuestionIndex, visitedQuestions, dispatch]);
 
-
+useEffect(() => {
+        dispatch(fetchQuestions());
+    }, [dispatch]);
     // Timer Logic
     useEffect(() => {
         if (timeLeft === 0) {
@@ -40,7 +45,8 @@ const Test = () => {
         const seconds = time % 60;
         return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     };
-
+    if (loading) return <h3>Loading questions...</h3>;
+    if (error) return <h3 style={{ color: "red" }}>Error: {error}</h3>;
     return (
         <div className="bg-gray-100 min-h-screen flex flex-row-reverse">
             {/* Sidebar */}
@@ -148,4 +154,4 @@ const Test = () => {
     );
 };
 
-export default Test;
+export default Test_redux;

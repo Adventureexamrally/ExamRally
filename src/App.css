@@ -1,9 +1,3 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
 .logo {
   height: 6em;
@@ -39,4 +33,27 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.answerImg{
+  background-position: 12px 50px;
+  line-height: 20px;
+  padding-top: 3px;
+}
+.notVisitImg {
+  background-position: 157px 4px;
+  color: #474747;
+  height: 43px;
+  line-height: 43px;
+}
+.iconQues {
+  background: url("./assets/images/questions-sprite.png") no-repeat;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 400;
+  height: 43px;
+  line-height: 42px;
+  text-align: center;
+  width: 50px;
+  display: inline-block;
 }

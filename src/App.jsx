@@ -12,6 +12,9 @@ import MockTest from "./components/MockTest";
 import React from "react";
 import Test from "./pages/Test";
 import Mock from "./components/Mock";
+import Exam from './pages/DemoExam'
+import "./App.css"
+import Test_redux from "./Test_redux";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -46,8 +49,10 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Footer />
 
+      {/* <Exam /> */}
+      <Footer />
+      {/* <Test_redux /> */}
     </Router>
   );
 }
