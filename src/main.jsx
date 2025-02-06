@@ -5,7 +5,6 @@ import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { store } from './store/store.js'
 import { Provider } from 'react-redux'
-
 // Import your Publishable Key
 const clerkFrontendApi = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // const clerkFrontendApi = "pk_test_Y29oZXJlbnQtam9leS03My5jbGVyay5hY2NvdW50cy5kZXYk";

@@ -16,6 +16,12 @@ import Mock from "./components/Mock";
 import Exam from './pages/DemoExam'
 import "./App.css"
 import Test_redux from "./Test_redux";
+import "bootstrap/dist/css/bootstrap.min.css";
+import QuantiativeApti from "./components/QuantitativeApti";
+import ReasoningAbility from "./components/ReasoningAbility";
+import Englishlang from "./components/Englishlang";
+import ComputerAwarness from "./components/ComputerAwarness";
+import Staticgk from "./components/Staticgk";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -45,10 +51,15 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/bankexam" element={<BankExam />} />
         <Route path="/mocktest" element={<Test />} />
+        <Route path="/reasoningability" element={<ReasoningAbility/>}/>
+        <Route path="/englishlang" element={<Englishlang/>}/>
         <Route path="/sigin" element={<SignIn />} />
         {/* <Route path="/sigup" element={<SignedIn/>} /> */}
         <Route path="/sign-up" element={<SignUp />} />
         <Route path='/subscriptions' element={<TestSeries/>}/>
+        <Route path="/quantitativeapti" element={<QuantiativeApti/>}/>
+        <Route path="/computerawarness" element={<ComputerAwarness/>}/>
+        <Route path='/staticgk' element={<Staticgk/>}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
 

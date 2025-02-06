@@ -21,9 +21,9 @@ function TestSeries() {
     return (
       <div className="mx-auto">
         <div className=" from-indigo-300 to-teal-400">
-        <marquee className="text-3xl font-semibold mb-2 text-white  bg-green-400 py-2 px-4 mt-2">
+        {/* <marquee className="text-3xl font-semibold mb-2 text-white  bg-green-400 py-2 px-4 mt-2">
   {data.name}
-</marquee>
+</marquee> */}
 
           {/* <h2 className="text-xl text-black mb-10">{data.topic}</h2> */}
   

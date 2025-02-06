@@ -19,7 +19,7 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-3">
-          <img src={logo} alt="Brand Logo" className="h-10 w-50" />
+          <img src={logo} alt="Brand Logo" className="h-10" />
         </div>
 
         {/* Search Bar */}

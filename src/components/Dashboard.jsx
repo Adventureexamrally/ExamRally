@@ -53,15 +53,15 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             <div className="bg-orange-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <CalculateIcon fontSize="large" className="text-orange-600" />
-              <a href="#" className="text-sm font-medium text-gray-700">Quantitative Aptitude</a>
+              <Link to="/quantitativeapti" className="text-sm font-medium text-gray-700">Quantitative Aptitude</Link>
             </div>
             <div className="bg-purple-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <PsychologyIcon fontSize="large" className="text-purple-600" />
-              <Link to="/mocktest" className="text-sm font-medium text-gray-700">Reasoning Ability</Link>
+              <Link to="/reasoningability" className="text-sm font-medium text-gray-700">Reasoning Ability</Link>
             </div>
             <div className="bg-pink-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <MenuBookIcon fontSize="large" className="text-pink-600" />
-              <a href="#" className="text-sm font-medium text-gray-700">English Language</a>
+              <Link to="/englishlang" className="text-sm font-medium text-gray-700">English Language</Link>
             </div>
             <div className="bg-teal-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <PublicIcon fontSize="large" className="text-teal-600" />
@@ -69,7 +69,7 @@ const Dashboard = () => {
             </div>
             <div className="bg-green-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <ComputerIcon fontSize="large" className="text-green-600" />
-              <a href="#" className="text-sm font-medium text-gray-700">Computer Awareness</a>
+              <a href="/computerawarness" className="text-sm font-medium text-gray-700">Computer Awareness</a>
             </div>
             <div className="bg-red-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <AccountBalanceIcon fontSize="large" className="text-red-600" />
@@ -77,7 +77,7 @@ const Dashboard = () => {
             </div>
             <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <LibraryBooksIcon fontSize="large" className="text-gray-600" />
-              <a href="#" className="text-sm font-medium text-gray-700">Static GK</a>
+              <a href="/staticgk" className="text-sm font-medium text-gray-700">Static GK</a>
             </div>
             <div className="bg-yellow-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
               <QuizIcon fontSize="large" className="text-yellow-600" />

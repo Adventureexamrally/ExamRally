@@ -35,17 +35,111 @@
   color: #888;
 }
 
-.answerImg{
-  background-position: 12px 50px;
-  line-height: 20px;
-  padding-top: 3px;
-}
-.notVisitImg {
-  background-position: 157px 4px;
-  color: #474747;
+/* .answerImg{
+  background-image: url("./assets/images/ans.png");
+  background-repeat: no-repeat;
+  color: black;
   height: 43px;
-  line-height: 43px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 7px;
+
+} */
+
+
+/* .notansImg{
+  background-image: url("./assets/images/notans.png");
+  background-repeat: no-repeat;
+  color: black;
+  height: 43px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 8px;
+
+} */
+
+/* .notVisitImg {
+  background-image: url("./assets/images/notvisit.png");
+  background-repeat: no-repeat;
+  color: black;
+  height: 43px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 10px;
+} */
+
+
+.headerdiv{
+  background-color: #327ecf;
 }
+
+.answerImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-5px -3px!important;
+  height: 43px;
+  width: 50px;
+}
+
+.notansImg{
+  background: url("./assets/images/ques-sprite.png");
+  background-position:-57px -3px!important;
+  height: 43px;
+  width: 50px;
+} 
+
+.notVisitImg {
+  background: url("./assets/images/ques-sprite.png");
+  background-position:-157px -4px;
+  height: 43px;
+  width: 50px;
+} 
+
+.smanswerImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-6px -54px !important;
+  height: 30px;
+  width: 30px;
+}
+
+.smnotansImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-41px -54px!important;
+  height: 30px;
+  width: 30px;
+}
+
+.smnotVisitImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-105px -54px!important;
+  height: 30px;
+  width: 30px;
+}
+
+.smmarkedImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-74px -54px!important;
+  height: 30px;
+  width: 30px;
+}
+
+.smansmarkedImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-171px -54px!important;
+  height: 30px;
+  width: 30px;
+}
+
+.font{
+  font-family: "Noto Serif", serif;
+}
+
+
 .iconQues {
   background: url("./assets/images/questions-sprite.png") no-repeat;
   color: #fff;
@@ -56,4 +150,11 @@
   text-align: center;
   width: 50px;
   display: inline-block;
+}
+.text-green {
+  color: green;
+}
+
+.font-weight-bold {
+  font-weight: bold;
 }
