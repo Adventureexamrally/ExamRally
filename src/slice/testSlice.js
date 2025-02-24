@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import questions from "../data/questions"; // Assuming questions are in a local file
-import { fetchQuestions } from "../slice/questionSlice";
+
 const initialState = {
     currentQuestionIndex: 0,
     selectedOptions: {},
     visitedQuestions: [],
+    reviewedQuestions: [], // Added missing state for reviewed questions
     isSubmitted: false,
     timeLeft: 3600, // 1 hour in seconds
+    markedForReview: [], // Defined markedForReview here
 };
 
 const testSlice = createSlice({
@@ -28,9 +30,17 @@ const testSlice = createSlice({
             state.selectedOptions[questionIndex] = optionIndex;
         },
         markVisited: (state, action) => {
-            if (!state.visitedQuestions.includes(action.payload)) {
-                state.visitedQuestions.push(action.payload);
-                state.currentQuestionIndex=action.payload
+            const questionIndex = action.payload;
+            if (!state.visitedQuestions.includes(questionIndex)) {
+                state.visitedQuestions.push(questionIndex);
+            }
+        },
+        markForReview: (state, action) => {
+            const questionIndex = action.payload;
+            if (!state.markedForReview.includes(questionIndex)) {
+                state.markedForReview.push(questionIndex);
+            } else {
+                state.markedForReview = state.markedForReview.filter((index) => index !== questionIndex);
             }
         },
         submitTest: (state) => {
@@ -44,11 +54,13 @@ const testSlice = createSlice({
     },
 });
 
+// Exporting the actions
 export const {
     nextQuestion,
     prevQuestion,
     selectOption,
     markVisited,
+    markForReview, // Ensure this is exported
     submitTest,
     updateTime,
 } = testSlice.actions;

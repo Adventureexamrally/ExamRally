@@ -1,91 +1,276 @@
-import engimg from '../assets/images/eng.png';
+import { useState,useEffect } from 'react';
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import PsychologyIcon from "@mui/icons-material/Psychology"; // Add this import for PsychologyIcon
 
 const Englishlang = () => {
-  // Define the testTypes array correctly within the component
-  const testTypes = [
-    { name: "Reading Comprehension", icon: "bi-book" },
-    { name: "Cloze Test", icon: "bi-file-earmark-text" },
-    { name: "Single Filler", icon: "bi-pencil" },
-    { name: "Double Filler", icon: "bi-arrow-right-circle" },
-    { name: "Para Jumble", icon: "bi-gear" },
-    { name: "Error Spotting", icon: "bi-pencil-square" },
-    { name: "Match the Column", icon: "bi-file-lock" },
-    { name: "Misspelt word", icon: "bi-spellcheck" },
-    { name: "Word Usage", icon: "bi-map" },
-    { name: "Starters", icon: "bi-tag" },
-    { name: "Word Replacement", icon: "bi-check-circle" },
-    { name: "Phrase replacement", icon: "bi-search" }
-  ];
+  const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
+  const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
+  const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
+  const [timer, setTimer] = useState(600); // Timer (10 min)
+  const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
+  const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
+
+  // Question Data (Prelims & Mains)
+  const prelimsQuestions = {
+    "Reading Comprehension": [
+      "A is sitting two places left of B. Who is sitting next to A?",
+      "Five people are sitting in a circular arrangement. Who is facing whom?",
+      "What is the position of X in the row of ten people?"
+    ],
+    "Cloze Test": [
+      "All cats are dogs. Some dogs are birds. What follows?",
+      "No apple is a banana. Some bananas are mangoes. Conclusion?",
+      "Some boys are students. All students are girls. Conclusion?"
+    ],
+    "Error Spotting": [
+      "If A > B, B = C, and C < D, what is the relation between A and D?",
+      "Which of the following inequalities is always true?",
+      "Solve: P ≥ Q > R = S < T"
+    ],
+  };
+
+  const mainsQuestions = {
+    "Reading Comprehension(New pattern)": [
+      "If all pens are books and some books are tables, what conclusion follows?",
+      "Statement: A is taller than B but shorter than C. Who is the tallest?",
+      "If 'Apple' is coded as 'XZRMP', how is 'Mango' coded?"
+    ],
+    "Cloze Test (New pattern)": [
+      "Step 1: XYZ → ABC. Step 2: ABC → DEF. What is the final output?",
+      "What pattern follows in the given number arrangement?",
+      "Find the missing step in the output series."
+    ],
+    "Error Spotting (New pattern)": [
+      "Is X greater than Y? (i) X = 5Y (ii) Y = 3",
+      "Can we determine the total age of three brothers? Given (i) & (ii).",
+      "Does A earn more than B? (i) A = 2B (ii) B = C + 3"
+    ],
+  };
+
+  // Handle topic selection & set modal questions
+  const handleTopicSelect = (topic, type) => {
+    setSelectedTopic(topic);
+    setModalType(type);
+    setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
+    setIsTimerRunning(true);
+    setTimer(600); // Reset Timer
+  };
+
+  // Sidebar button handlers
+  const handlePrelimsClick = () => setActiveSection("prelims");
+  const handleMainsClick = () => setActiveSection("mains");
+  const handleUpdatesClick = () => setActiveSection("updates");
+
+  // Timer Effect
+  useEffect(() => {
+    if (!isTimerRunning || timer === 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer, isTimerRunning]);
+
+  // Format timer (MM:SS)
+  const formatTimer = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+
+
 
   return (
-    <div className="container py-5">
-    <h1 className="p-2 text-green-500 text-center fw-bold">
-        {" "}
-        <MenuBookIcon fontSize="large" className="text-green-500" />{" "}
-       English Language
+    <div className="container py-1">
+      <h1 className="p-2 text-green-500 text-center fw-bold">
+        <MenuBookIcon fontSize="large" className="text-green-500" />
+        English Language
       </h1>
+      <div className="row">
+  <div className="col-md-9 staticheader h6 leading-10">
+    <div>
+   <h1 className='leading-8'>
+   Our English Language Topic-Wise Tests are designed to help you master every
+concept with exam-level practice. From Reading Comprehension and Cloze Tests to
+Error Spotting, Para Jumbles, and Vocabulary-Based Questions, we cover
+everything you need. The questions are based on the latest exam pattern and
+exactly match all levels of   <span className="text-green-500 font-bold">IBPS PO, IBPS Clerk, SBI PO, SBI Clerk, RRB PO, and
+RRB Clerk</span>. Each test is crafted to help you build a strong foundation, improve
+accuracy, and enhance speed, ensuring you’re fully prepared to tackle this high-
+scoring section with confidence. Each test follows the latest exam trends, with
+detailed explanations and time-bound practice to improve your accuracy and speed.
+Our Tests Simulate real exam conditions with Clear explanations for every question
+to strengthen conceptual understanding and Analyze your progress and focus on
+areas needing improvement.
+   </h1>
+    </div>
+  </div>
+  
+  <div className="col-md-3 ">
+    <div
+      className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
+      style={{
+        backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
+                          radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+                          radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+                          radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
+                          radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
+                          radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`
+      }}
+    >
+      <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
+      <div className="text-white flex justify-between">
+        <span className="text-xl font-semibold mb-3 font">Features</span>
+      </div>
+      <hr className="border-t border-gray-600" />
+      <ul className="space-y-2">
+        {[
+          "Covers All Topics",
+          "Detailed Explanations",
+          "New pattern questions","Three different level of questions: Easy, Moderate and Difficult",
+          "Previous Year Questions for better understanding of exact exam level",
+          "Expected New type questions",
+        ].map((item, index) => (
+          <li key={index} className="flex items-center gap-2 font">
+            <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="w-3 h-3 text-white"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </span>
+            <span className="text-white text-sm">{item}</span>
+          </li>
+        ))}
+      </ul>
 
-      <h2 className="mt-1">
-        The <span className="text-green font-weight-bold"> English Language section </span>in <span className="text-green font-weight-bold"> IBPS, SBI, RBI, and other bank exams</span>
-        tests your <span className="text-green font-weight-bold">comprehension skills, grammar accuracy, and vocabulary
-        strength</span>. To help you master this section, <span className="text-green font-weight-bold">Examrally</span> presents <span className="text-green font-weight-bold">Topic-Wise
-        Mock Tests</span>, designed as per the <span className="text-green font-weight-bold">latest exam trends</span>. These tests cover
-        all question types,<span className="text-green font-weight-bold"> from Reading Comprehension to Error Spotting, Cloze
-        Tests, Para Jumbles, Sentence Improvement, and Vocabulary-Based
-        Questions, ensuring complete exam-level practice</span>.
-      </h2>
+      <div className="text-center">
+        <p>
+          <del className="text-red-400 font">Package Price:</del>
+        </p>
+        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.149</del>
+        <p className="text-white font-bold h5 font">Discounted Price:</p>
+        <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+          Rs.69
+        </button>
+        <p className="text-white font-bold">You Save Money: 80</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-      <div className="row mt-4">
-        {/* Left Side: Image */}
-        <div className="col-md-6 justify-content-center d-flex align-items-center" >
-          <img src={engimg} alt="English Language" style={{height:'300px'}} className="img-fluid rounded shadow"  />
+      {/* Sidebar Buttons */}
+      <div className="row p-3 bg-light">
+        <div className="col-md-4">
+          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
+            Prelims
+          </button>
         </div>
-
-        {/* Right Side: Content */}
-        <div className="col-md-6">
-          <h3>
-          <span className="text-green font-weight-bold">  With structured topic-wise and sub-topic-wise tests, you get to practice
-         </span>   questions across <span className="text-green font-weight-bold">different difficulty levels</span>—Easy, Moderate, and
-            Difficult—helping you <span className="text-green font-weight-bold">gradually improve accuracy and time management</span>.<br />
-            Each test follows a <span className="text-green font-weight-bold">real exam-like interface</span>, giving you hands-on
-            experience before the actual exam.
-          </h3>
-
-          <h4 className="mt-3">
-          <span className="text-green font-weight-bold">Step-by-step solutions </span>provide detailed explanations, ensuring you learn
-            the <span className="text-green font-weight-bold">right strategies and grammar rules</span> to tackle even the trickiest
-            questions.
-          </h4>
-          <p className="mt-4">
-            A key highlight of <span className="text-green font-weight-bold">Examrally’s English Language Mock Tests</span> is the
-            <span className="text-green font-weight-bold">   detailed performance tracking </span>
-            after each test. This helps you <span className="text-green font-weight-bold">analyze
-            weak areas, identify frequent mistakes, and refine your approach</span> to
-            improve your score. Whether you struggle with <span className="text-green font-weight-bold">RC speed, tricky sentence
-            formations, or vocabulary-based questions</span>, our topic-wise tests ensure
-            you <span className="text-green font-weight-bold">gain confidence and command over every concept</span> before facing the
-            actual exam.
-          </p>
+        <div className="col-md-4">
+          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleMainsClick}>
+            Mains
+          </button>
+        </div>
+        <div className="col-md-4">
+          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleUpdatesClick}>
+            Previous Year Questions
+          </button>
         </div>
       </div>
 
-      <div className="mt-2">
-        <div className="row">
-          {testTypes.map((test, index) => (
-            <div key={index} className="col-md-4 mb-4">
-              <div className="card shadow">
-                <div className="card-body text-center">
-                  <div className="mb-3">
-                    <i className={`bi ${test.icon} display-4`} style={{ fontSize: '40px' }}></i>
+      {/* Prelims Topics - Bootstrap Cards */}
+      {activeSection === "prelims" && (
+        <div className="mt-3">
+          <h3></h3>
+          <div className="row">
+            {Object.keys(prelimsQuestions).map((topic, index) => (
+              <div key={index} className="col-md-4 mb-3">
+                <div className="card shadow-lg border-0 rounded-3">
+                  <div className="card-body text-center">
+                    <h5 className="card-title">{topic}</h5>
+                    <button
+                      className="btn bg-green-500 text-white mt-2 hover:bg-green-600"
+                      onClick={() => handleTopicSelect(topic, "prelims")}
+                      data-bs-toggle="modal"
+                      data-bs-target="#questionsModal"
+                    >
+                      View Questions
+                    </button>
                   </div>
-                  <h5 className="card-title text-green-500 font fw-bold">{test.name}</h5>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mains Topics - Bootstrap Cards */}
+      {activeSection === "mains" && (
+        <div className="mt-3">
+          <h3></h3>
+          <div className="row">
+            {Object.keys(mainsQuestions).map((topic, index) => (
+              <div key={index} className="col-md-4 mb-3">
+                <div className="card shadow-lg border-0 rounded-3">
+                  <div className="card-body text-center">
+                    <h5 className="card-title">{topic}</h5>
+                    <button
+                      className="btn bg-green-500 text-white mt-2 hover:bg-green-600"
+                      onClick={() => handleTopicSelect(topic, "mains")}
+                      data-bs-toggle="modal"
+                      data-bs-target="#questionsModal"
+                    >
+                      View Questions
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Questions Modal */}
+      <div className="modal fade" id="questionsModal" tabIndex="-1" aria-labelledby="questionsModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">{selectedTopic} - {modalType === "prelims" ? "Prelims" : "Mains"}</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
             </div>
-          ))}
+            <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {/* <h6>Time Remaining: <strong>{formatTimer(timer)}</strong></h6> */}
+              <div className="row">
+                {modalQuestions.map((question, index) => (
+                  <div key={index} className="col-md-4 mb-3">
+                    <div className="card shadow-lg border-0 rounded-3">
+                      <div className="card-body">
+                        <h6 className="card-title">{question}</h6>
+                        <button className="btn bg-green-500 btn-sm mt-2 text-white hover:bg-green-600">Take Test</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+      
     </div>
   );
 };

@@ -57,8 +57,8 @@ const Header = () => {
 
          
           
-           <p className=''> Join Telegram
-           </p>
+           <Link to='https://t.me/examrally'> Join Telegram
+           </Link>
            <p>{!user ? "":user.firstName}</p>
           <SignedOut>
             <SignInButton />

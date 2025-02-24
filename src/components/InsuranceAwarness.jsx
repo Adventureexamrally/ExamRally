@@ -1,139 +1,116 @@
-import  { useState,useEffect } from "react";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import React, { useState,useEffect } from "react";
+// import compuimg from "../assets/images/computerawareness.png";
+import ComputerIcon from "@mui/icons-material/Computer";
 import CalculateIcon from "@mui/icons-material/Calculate";
 
 
-const Staticgk = () => {
-
+const InsuranceAwareness = () => {
  const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
-        const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
-        const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
-        const [timer, setTimer] = useState(600); // Timer (10 min)
-        const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
-        const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
-      
-        // Question Data (Prelims & Mains)
-        const prelimsQuestions = {
-          "Nobel Prize Winners": [
-            "A is sitting two places left of B. Who is sitting next to A?",
-            "Five people are sitting in a circular arrangement. Who is facing whom?",
-            "What is the position of X in the row of ten people?"
-          ],
-          "Banks & Their Taglines": [
-            "All cats are dogs. Some dogs are birds. What follows?",
-            "No apple is a banana. Some bananas are mangoes. Conclusion?",
-            "Some boys are students. All students are girls. Conclusion?"
-          ],
-          "Important Days & Themes": [
-            "If A > B, B = C, and C < D, what is the relation between A and D?",
-            "Which of the following inequalities is always true?",
-            "Solve: P ≥ Q > R = S < T"
-          ],
-        };
-      
-        const mainsQuestions = {
-          "Banking Awareness Questions asked in 2024 Mains Exams": [
-            "If all pens are books and some books are tables, what conclusion follows?",
-            "Statement: A is taller than B but shorter than C. Who is the tallest?",
-            "If 'Apple' is coded as 'XZRMP', how is 'Mango' coded?"
-          ],
-          "Banking Awareness Questions asked in 2023 Mains Exams": [
-            "Step 1: XYZ → ABC. Step 2: ABC → DEF. What is the final output?",
-            "What pattern follows in the given number arrangement?",
-            "Find the missing step in the output series."
-          ],
-          "Banking Awareness Questions asked in 2022 Mains Exams": [
-            "Is X greater than Y? (i) X = 5Y (ii) Y = 3",
-            "Can we determine the total age of three brothers? Given (i) & (ii).",
-            "Does A earn more than B? (i) A = 2B (ii) B = C + 3"
-          ],
-        };
-      
-        // Handle topic selection & set modal questions
-        const handleTopicSelect = (topic, type) => {
-          setSelectedTopic(topic);
-          setModalType(type);
-          setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
-          setIsTimerRunning(true);
-          setTimer(600); // Reset Timer
-        };
-      
-        // Sidebar button handlers
-        const handlePrelimsClick = () => setActiveSection("prelims");
-        const handleMainsClick = () => setActiveSection("mains");
-        const handleUpdatesClick = () => setActiveSection("updates");
-      
-        // Timer Effect
-        useEffect(() => {
-          if (!isTimerRunning || timer === 0) return;
-      
-          const interval = setInterval(() => {
-            setTimer((prev) => prev - 1);
-          }, 1000);
-      
-          return () => clearInterval(interval);
-        }, [timer, isTimerRunning]);
-      
-        // Format timer (MM:SS)
-        const formatTimer = (time) => {
-          const minutes = Math.floor(time / 60);
-          const seconds = time % 60;
-          return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-        };
-      
-
+  const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
+          const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
+          const [timer, setTimer] = useState(600); // Timer (10 min)
+          const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
+          const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
+        
+          // Question Data (Prelims & Mains)
+          const prelimsQuestions = {
+            "Basics &amp; Principles of Insurance": [
+              "A is sitting two places left of B. Who is sitting next to A?",
+              "Five people are sitting in a circular arrangement. Who is facing whom?",
+              "What is the position of X in the row of ten people?"
+            ],
+            "Types of Insurance (Life, General, Health, Motor, Crop, etc.)": [
+              "All cats are dogs. Some dogs are birds. What follows?",
+              "No apple is a banana. Some bananas are mangoes. Conclusion?",
+              "Some boys are students. All students are girls. Conclusion?"
+            ],
+            "IRDAI &amp; Its Role": [
+              "If A > B, B = C, and C < D, what is the relation between A and D?",
+              "Which of the following inequalities is always true?",
+              "Solve: P ≥ Q > R = S < T"
+            ],
+          };
+        
+          const mainsQuestions = {
+            "Banking Awareness Questions asked in 2024 Mains Exams": [
+              "If all pens are books and some books are tables, what conclusion follows?",
+              "Statement: A is taller than B but shorter than C. Who is the tallest?",
+              "If 'Apple' is coded as 'XZRMP', how is 'Mango' coded?"
+            ],
+            "Banking Awareness Questions asked in 2023 Mains Exams": [
+              "Step 1: XYZ → ABC. Step 2: ABC → DEF. What is the final output?",
+              "What pattern follows in the given number arrangement?",
+              "Find the missing step in the output series."
+            ],
+            "Banking Awareness Questions asked in 2022 Mains Exams": [
+              "Is X greater than Y? (i) X = 5Y (ii) Y = 3",
+              "Can we determine the total age of three brothers? Given (i) & (ii).",
+              "Does A earn more than B? (i) A = 2B (ii) B = C + 3"
+            ],
+          };
+        
+          // Handle topic selection & set modal questions
+          const handleTopicSelect = (topic, type) => {
+            setSelectedTopic(topic);
+            setModalType(type);
+            setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
+            setIsTimerRunning(true);
+            setTimer(600); // Reset Timer
+          };
+        
+          // Sidebar button handlers
+          const handlePrelimsClick = () => setActiveSection("prelims");
+          const handleMainsClick = () => setActiveSection("mains");
+          const handleUpdatesClick = () => setActiveSection("updates");
+        
+          // Timer Effect
+          useEffect(() => {
+            if (!isTimerRunning || timer === 0) return;
+        
+            const interval = setInterval(() => {
+              setTimer((prev) => prev - 1);
+            }, 1000);
+        
+            return () => clearInterval(interval);
+          }, [timer, isTimerRunning]);
+        
+          // Format timer (MM:SS)
+          const formatTimer = (time) => {
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+          };
+        
+  
 
   return (
     <div className="container py-5">
-      <h1 className="text-center text-green-500 fw-bold">
-        <LibraryBooksIcon fontSize="large" className="text-green-600" />
-        Static GK
+      <h1 className=" text-green-500 text-center fw-bold">
+        <ComputerIcon fontSize="large" className="text-green-500" /> Insurance Awareness
       </h1>
       <div className="row">
-  <div className="col-md-9 staticheader h6 leading-10">
-    <div>
-      <h1 className="leading-8">
-        Our
-        <span className="text-green-500 font-bold">Static GK Package</span>,
-        designed to cover all essential topics required for
-        <span className="text-green-500 font-bold">
-          IBPS PO, IBPS Clerk, RRB PO, RRB Clerk, SBI PO, SBI Clerk, RBI Grade
-          B, NABARD, LIC
-        </span>
-        , and other competitive exams.
-        <br />
-        This package includes detailed coverage of important topics such as
-        <span className="text-green-500 font-bold">
-          Indian Geography, History, Polity, Economy, International
-          Organizations, Important Days, National Parks, Banking Awareness
-        </span>
-        , and more.
-        <br />
-        With <span className="text-green-500 font-bold">exam-level MCQs</span>,
-        <span className="text-green-500 font-bold">
-          previous years’ questions
-        </span>
-        , and
-        <span className="text-green-500 font-bold">regular updates</span>,
-        this package ensures you have the latest and most relevant information
-        at your fingertips.
-        <br />
-        We provide
-        <span className="text-green-500 font-bold">
-          well-structured content
-        </span>
-        to help you retain facts effectively.
-        <span className="text-green-500 font-bold">
-          Strengthen your Static GK knowledge
-        </span>
-        and <span className="text-green-500 font-bold">boost your score</span>
-        with this must-have resource for banking and government exam
-        aspirants!
-      </h1>
-    </div>
-  </div>
-  
-  <div className="col-md-3 ">
+      
+
+        {/* Right Side: Content */}
+        <div className="col-md-9 mt-4 font fw-bold leading-10">
+          <h2 className="h4 font leading-8">
+            Our
+            <span className="text-green font-weight-bold"> Insurance Awareness Topic-wise Tests</span> 
+            are designed to help you master
+every important aspect of insurance for competitive exams. These tests cover   <span className="text-green font-weight-bold">
+fundamental concepts, IRDAI regulations, life and general insurance,
+government schemes, claim processes, bancassurance, digital
+insurance, reinsurance, and more.</span>more. Each test follows the latest exam pattern,
+ensuring that you get the best possible practice. By taking these topic-wise
+tests, you can strengthen your understanding, improve speed and accuracy,
+and stay updated with recent developments in the insurance sector. Whether
+you’re preparing for  <span className="text-green font-weight-bold">LIC, GIC, NIACL, UIIC, IRDAI, or other insurance
+exams,</span> these tests will help you build confidence and boost your performance.</h2>
+
+         
+        </div>
+          {/* Left Side: Image */}
+          <div className="col-md-3 ">
     <div
       className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
       style={{
@@ -155,6 +132,9 @@ const Staticgk = () => {
           "Covers All Topics",
           "Detailed Explanations",
           "Unlimited Reattempts",
+          "Exam-Level Questions Based on the Latest Pattern",
+          "Previous Years’ Questions",
+          "Timely Updates on Insurance Changes",
         ].map((item, index) => (
           <li key={index} className="flex items-center gap-2 font">
             <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
@@ -189,9 +169,11 @@ const Staticgk = () => {
       </div>
     </div>
   </div>
-</div>
+      </div>
 
+      
 
+     
       <div className="row p-3 bg-light">
         <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
@@ -298,4 +280,4 @@ const Staticgk = () => {
   );
 };
 
-export default Staticgk;
+export default InsuranceAwareness;

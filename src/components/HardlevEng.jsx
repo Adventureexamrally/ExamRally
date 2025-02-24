@@ -1,135 +1,100 @@
-import  { useState,useEffect } from "react";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import CalculateIcon from "@mui/icons-material/Calculate";
+import { useState,useEffect } from "react";
 
 
-const Staticgk = () => {
-
- const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
-        const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
-        const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
-        const [timer, setTimer] = useState(600); // Timer (10 min)
-        const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
-        const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
-      
-        // Question Data (Prelims & Mains)
-        const prelimsQuestions = {
-          "Nobel Prize Winners": [
-            "A is sitting two places left of B. Who is sitting next to A?",
-            "Five people are sitting in a circular arrangement. Who is facing whom?",
-            "What is the position of X in the row of ten people?"
-          ],
-          "Banks & Their Taglines": [
-            "All cats are dogs. Some dogs are birds. What follows?",
-            "No apple is a banana. Some bananas are mangoes. Conclusion?",
-            "Some boys are students. All students are girls. Conclusion?"
-          ],
-          "Important Days & Themes": [
-            "If A > B, B = C, and C < D, what is the relation between A and D?",
-            "Which of the following inequalities is always true?",
-            "Solve: P ≥ Q > R = S < T"
-          ],
-        };
-      
-        const mainsQuestions = {
-          "Banking Awareness Questions asked in 2024 Mains Exams": [
-            "If all pens are books and some books are tables, what conclusion follows?",
-            "Statement: A is taller than B but shorter than C. Who is the tallest?",
-            "If 'Apple' is coded as 'XZRMP', how is 'Mango' coded?"
-          ],
-          "Banking Awareness Questions asked in 2023 Mains Exams": [
-            "Step 1: XYZ → ABC. Step 2: ABC → DEF. What is the final output?",
-            "What pattern follows in the given number arrangement?",
-            "Find the missing step in the output series."
-          ],
-          "Banking Awareness Questions asked in 2022 Mains Exams": [
-            "Is X greater than Y? (i) X = 5Y (ii) Y = 3",
-            "Can we determine the total age of three brothers? Given (i) & (ii).",
-            "Does A earn more than B? (i) A = 2B (ii) B = C + 3"
-          ],
-        };
-      
-        // Handle topic selection & set modal questions
-        const handleTopicSelect = (topic, type) => {
-          setSelectedTopic(topic);
-          setModalType(type);
-          setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
-          setIsTimerRunning(true);
-          setTimer(600); // Reset Timer
-        };
-      
-        // Sidebar button handlers
-        const handlePrelimsClick = () => setActiveSection("prelims");
-        const handleMainsClick = () => setActiveSection("mains");
-        const handleUpdatesClick = () => setActiveSection("updates");
-      
-        // Timer Effect
-        useEffect(() => {
-          if (!isTimerRunning || timer === 0) return;
-      
-          const interval = setInterval(() => {
-            setTimer((prev) => prev - 1);
-          }, 1000);
-      
-          return () => clearInterval(interval);
-        }, [timer, isTimerRunning]);
-      
-        // Format timer (MM:SS)
-        const formatTimer = (time) => {
-          const minutes = Math.floor(time / 60);
-          const seconds = time % 60;
-          return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-        };
-      
-
-
+const HardlevEng = () => {
+   const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
+          const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
+          const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
+          const [timer, setTimer] = useState(600); // Timer (10 min)
+          const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
+          const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
+        
+          // Question Data (Prelims & Mains)
+          const prelimsQuestions = {
+            "Reading Comprehension (New pattern)": [
+              "A is sitting two places left of B. Who is sitting next to A?",
+              "Five people are sitting in a circular arrangement. Who is facing whom?",
+              "What is the position of X in the row of ten people?"
+            ],
+            "Cloze Test (New pattern)": [
+              "All cats are dogs. Some dogs are birds. What follows?",
+              "No apple is a banana. Some bananas are mangoes. Conclusion?",
+              "Some boys are students. All students are girls. Conclusion?"
+            ],
+            "Error Spotting (New pattern)": [
+              "If A > B, B = C, and C < D, what is the relation between A and D?",
+              "Which of the following inequalities is always true?",
+              "Solve: P ≥ Q > R = S < T"
+            ],
+          };
+        
+          const mainsQuestions = {
+            "Banking Awareness Questions asked in 2024 Mains Exams": [
+              "If all pens are books and some books are tables, what conclusion follows?",
+              "Statement: A is taller than B but shorter than C. Who is the tallest?",
+              "If 'Apple' is coded as 'XZRMP', how is 'Mango' coded?"
+            ],
+            "Banking Awareness Questions asked in 2023 Mains Exams": [
+              "Step 1: XYZ → ABC. Step 2: ABC → DEF. What is the final output?",
+              "What pattern follows in the given number arrangement?",
+              "Find the missing step in the output series."
+            ],
+            "Banking Awareness Questions asked in 2022 Mains Exams": [
+              "Is X greater than Y? (i) X = 5Y (ii) Y = 3",
+              "Can we determine the total age of three brothers? Given (i) & (ii).",
+              "Does A earn more than B? (i) A = 2B (ii) B = C + 3"
+            ],
+          };
+        
+          // Handle topic selection & set modal questions
+          const handleTopicSelect = (topic, type) => {
+            setSelectedTopic(topic);
+            setModalType(type);
+            setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
+            setIsTimerRunning(true);
+            setTimer(600); // Reset Timer
+          };
+        
+          // Sidebar button handlers
+          const handlePrelimsClick = () => setActiveSection("prelims");
+          const handleMainsClick = () => setActiveSection("mains");
+          const handleUpdatesClick = () => setActiveSection("updates");
+        
+          // Timer Effect
+          useEffect(() => {
+            if (!isTimerRunning || timer === 0) return;
+        
+            const interval = setInterval(() => {
+              setTimer((prev) => prev - 1);
+            }, 1000);
+        
+            return () => clearInterval(interval);
+          }, [timer, isTimerRunning]);
+        
+          // Format timer (MM:SS)
+          const formatTimer = (time) => {
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+          };
+        
   return (
-    <div className="container py-5">
-      <h1 className="text-center text-green-500 fw-bold">
-        <LibraryBooksIcon fontSize="large" className="text-green-600" />
-        Static GK
-      </h1>
+    <div className="container">
+      <h1 className="font h2 text-center mt-2 text-green-500">Hard Level English</h1>
       <div className="row">
   <div className="col-md-9 staticheader h6 leading-10">
     <div>
-      <h1 className="leading-8">
-        Our
-        <span className="text-green-500 font-bold">Static GK Package</span>,
-        designed to cover all essential topics required for
-        <span className="text-green-500 font-bold">
-          IBPS PO, IBPS Clerk, RRB PO, RRB Clerk, SBI PO, SBI Clerk, RBI Grade
-          B, NABARD, LIC
-        </span>
-        , and other competitive exams.
-        <br />
-        This package includes detailed coverage of important topics such as
-        <span className="text-green-500 font-bold">
-          Indian Geography, History, Polity, Economy, International
-          Organizations, Important Days, National Parks, Banking Awareness
-        </span>
-        , and more.
-        <br />
-        With <span className="text-green-500 font-bold">exam-level MCQs</span>,
-        <span className="text-green-500 font-bold">
-          previous years’ questions
-        </span>
-        , and
-        <span className="text-green-500 font-bold">regular updates</span>,
-        this package ensures you have the latest and most relevant information
-        at your fingertips.
-        <br />
-        We provide
-        <span className="text-green-500 font-bold">
-          well-structured content
-        </span>
-        to help you retain facts effectively.
-        <span className="text-green-500 font-bold">
-          Strengthen your Static GK knowledge
-        </span>
-        and <span className="text-green-500 font-bold">boost your score</span>
-        with this must-have resource for banking and government exam
-        aspirants!
-      </h1>
+    <h1 className='leading-8 font h5'>
+  Our <span className="text-green-600">hard-level</span> English Language practice Questions is designed to help you tackle
+  the most <span className="text-green-600">challenging</span> questions with confidence. Based on previous years’ <span className="text-green-600">mains exams</span>, these questions reflect the actual exam <span className="text-green-600">difficulty</span> and also added expected <span className="text-green-600">advanced-level</span> questions. Each question comes with a <span className="text-green-600">detailed explanation</span>, ensuring you understand <span className="text-green-600">grammar rules</span>, <span className="text-green-600">comprehension techniques</span>, and <span className="text-green-600">vocabulary nuances</span>. 
+
+  This set covers all important topics, including <span className="text-green-600">Reading Comprehension</span>, <span className="text-green-600">Cloze Test</span>, <span className="text-green-600">Para Jumbles</span>, <span className="text-green-600">Error Spotting</span>, <span className="text-green-600">Sentence Improvement</span>, <span className="text-green-600">Word Swapping</span>, and many more. 
+
+  Whether you’re aiming for <span className="text-green-600">IBPS</span>, <span className="text-green-600">SBI</span>, <span className="text-green-600">RBI</span> or other <span className="text-green-600">banking</span> and <span className="text-green-600">insurance exams</span>, practicing these <span className="text-green-600">high-level</span> English questions will enhance your <span className="text-green-600">accuracy</span>, <span className="text-green-600">reading speed</span>, and <span className="text-green-600">analytical skills</span>. 
+
+  Stay ahead of the competition by mastering <span className="text-green-600">exam-relevant</span> English questions with our <span className="text-green-600">expert-curated</span> practice material!
+</h1>
+
     </div>
   </div>
   
@@ -152,9 +117,11 @@ const Staticgk = () => {
       <hr className="border-t border-gray-600" />
       <ul className="space-y-2">
         {[
-          "Covers All Topics",
+          "Questions based on Previous Years Mains Exams",
           "Detailed Explanations",
-          "Unlimited Reattempts",
+          "Exam Level and Expected Advance Level Questions",
+          "Cover All types of Questions",
+          "New Pattern Questions",
         ].map((item, index) => (
           <li key={index} className="flex items-center gap-2 font">
             <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
@@ -180,19 +147,18 @@ const Staticgk = () => {
         <p>
           <del className="text-red-400 font">Package Price:</del>
         </p>
-        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.99</del>
+        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.199</del>
         <p className="text-white font-bold h5 font">Discounted Price:</p>
         <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-          Rs.49
+          Rs.79
         </button>
-        <p className="text-white font-bold">You Save Money: 50</p>
+        <p className="text-white font-bold">You Save Money: 80</p>
       </div>
     </div>
   </div>
 </div>
 
-
-      <div className="row p-3 bg-light">
+<div className="row p-3 bg-light">
         <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
        Topics
@@ -293,9 +259,8 @@ const Staticgk = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
 
-export default Staticgk;
+export default HardlevEng;
