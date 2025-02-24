@@ -1,9 +1,7 @@
-import  { useState,useEffect } from "react";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import CalculateIcon from "@mui/icons-material/Calculate";
+import { useState,useEffect } from "react";
 
 
-const Staticgk = () => {
+const Despcriptive = () => {
 
  const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
         const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
@@ -14,17 +12,17 @@ const Staticgk = () => {
       
         // Question Data (Prelims & Mains)
         const prelimsQuestions = {
-          "Nobel Prize Winners": [
+          "IBPS PO Mains 2025 Descriptive Test 1": [
             "A is sitting two places left of B. Who is sitting next to A?",
             "Five people are sitting in a circular arrangement. Who is facing whom?",
             "What is the position of X in the row of ten people?"
           ],
-          "Banks & Their Taglines": [
+          "IBPS PO Mains 2025 Descriptive Test 2": [
             "All cats are dogs. Some dogs are birds. What follows?",
             "No apple is a banana. Some bananas are mangoes. Conclusion?",
             "Some boys are students. All students are girls. Conclusion?"
           ],
-          "Important Days & Themes": [
+          "IBPS PO Mains 2025 Descriptive Test 3": [
             "If A > B, B = C, and C < D, what is the relation between A and D?",
             "Which of the following inequalities is always true?",
             "Solve: P ≥ Q > R = S < T"
@@ -84,52 +82,22 @@ const Staticgk = () => {
 
 
   return (
-    <div className="container py-5">
-      <h1 className="text-center text-green-500 fw-bold">
-        <LibraryBooksIcon fontSize="large" className="text-green-600" />
-        Static GK
-      </h1>
+    <div className="container">
+      <h1 className="font h2 text-center mt-2 text-green-500">Descriptive Test</h1>
       <div className="row">
   <div className="col-md-9 staticheader h6 leading-10">
     <div>
-      <h1 className="leading-8">
-        Our
-        <span className="text-green-500 font-bold">Static GK Package</span>,
-        designed to cover all essential topics required for
-        <span className="text-green-500 font-bold">
-          IBPS PO, IBPS Clerk, RRB PO, RRB Clerk, SBI PO, SBI Clerk, RBI Grade
-          B, NABARD, LIC
-        </span>
-        , and other competitive exams.
-        <br />
-        This package includes detailed coverage of important topics such as
-        <span className="text-green-500 font-bold">
-          Indian Geography, History, Polity, Economy, International
-          Organizations, Important Days, National Parks, Banking Awareness
-        </span>
-        , and more.
-        <br />
-        With <span className="text-green-500 font-bold">exam-level MCQs</span>,
-        <span className="text-green-500 font-bold">
-          previous years’ questions
-        </span>
-        , and
-        <span className="text-green-500 font-bold">regular updates</span>,
-        this package ensures you have the latest and most relevant information
-        at your fingertips.
-        <br />
-        We provide
-        <span className="text-green-500 font-bold">
-          well-structured content
-        </span>
-        to help you retain facts effectively.
-        <span className="text-green-500 font-bold">
-          Strengthen your Static GK knowledge
-        </span>
-        and <span className="text-green-500 font-bold">boost your score</span>
-        with this must-have resource for banking and government exam
-        aspirants!
-      </h1>
+    <h1 className='leading-8 font h5'>
+    The <span className="text-green-600">Descriptive Test</span> in Bank Mains exams like <span className="text-green-600">IBPS PO</span>, <span className="text-green-600">SBI PO</span>, and other bank exams  
+    assesses your <span className="text-green-600">writing skills</span>, <span className="text-green-600">grammar</span>, and <span className="text-green-600">clarity of expression</span> through <span className="text-green-600">Essay Writing</span> and  
+    <span className="text-green-600">Letter Writing</span>. Essays require a well-structured approach with a clear <span className="text-green-600">introduction</span>,  
+    <span className="text-green-600">main points</span>, and <span className="text-green-600">conclusion</span>. Letter writing includes <span className="text-green-600">formal</span> and <span className="text-green-600">informal letters</span>, such as  
+    writing to a <span className="text-green-600">bank manager</span>, <span className="text-green-600">editor</span>, or for <span className="text-green-600">complaints</span>, where proper structure and <span className="text-green-600">professional tone</span> are crucial.  
+    To score well, focus on <span className="text-green-600">clarity</span>, <span className="text-green-600">coherence</span>, and <span className="text-green-600">relevant content</span>, while improving your <span className="text-green-600">grammar</span> and <span className="text-green-600">vocabulary</span>.  
+    Regular <span className="text-green-600">practice</span> and reading <span className="text-green-600">editorials</span> will help you perform effectively in this section and secure crucial marks in Bank Mains exams.  
+</h1>
+
+
     </div>
   </div>
   
@@ -152,9 +120,9 @@ const Staticgk = () => {
       <hr className="border-t border-gray-600" />
       <ul className="space-y-2">
         {[
-          "Covers All Topics",
-          "Detailed Explanations",
-          "Unlimited Reattempts",
+          "Questions Based on Previous Year Exams",
+          "Exam Level Interface",
+          "Sample Answer PDF",
         ].map((item, index) => (
           <li key={index} className="flex items-center gap-2 font">
             <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
@@ -180,22 +148,21 @@ const Staticgk = () => {
         <p>
           <del className="text-red-400 font">Package Price:</del>
         </p>
-        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.99</del>
+        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.149</del>
         <p className="text-white font-bold h5 font">Discounted Price:</p>
         <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-          Rs.49
+          Rs.149
         </button>
-        <p className="text-white font-bold">You Save Money: 50</p>
+        {/* <p className="text-white font-bold">You Save Money: 80</p> */}
       </div>
     </div>
   </div>
 </div>
-
-
-      <div className="row p-3 bg-light">
+    
+<div className="row p-3 bg-light">
         <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
-       Topics
+          IBPS PO
           </button>
         </div>
         {/* <div className="col-md-4">
@@ -298,4 +265,4 @@ const Staticgk = () => {
   );
 };
 
-export default Staticgk;
+export default Despcriptive;

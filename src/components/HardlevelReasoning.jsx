@@ -1,135 +1,110 @@
-import  { useState,useEffect } from "react";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import CalculateIcon from "@mui/icons-material/Calculate";
+import { useEffect } from 'react';
+import { useState } from 'react';
 
-
-const Staticgk = () => {
-
- const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
-        const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
-        const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
-        const [timer, setTimer] = useState(600); // Timer (10 min)
-        const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
-        const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
+const HardlevelReasoning = () => {
+    const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
+      const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
+      const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
+      const [timer, setTimer] = useState(600); // Timer (10 min)
+      const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
+      const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
+    
+      // Question Data (Prelims & Mains)
+      const prelimsQuestions = {
+        "Circular Arrangement": [
+          "Circular Arrangement with blood relation",
+          "Circumference based Circular Arrangement",
+          "Unknown Circular Arrangement with single variable"
+        ],
+        "Linear Arrangement": [
+          "Linear arrangement with Two variable",
+          "Linear arrangement with Vacant",
+          "Linear arrangement with Coded &amp; income"
+        ],
+        "Parallel Row Arrangement": [
+          "Parallel Row Arrangement with Two variable",
+          "Parallel Row Arrangement with bidirectional",
+          "Parallel Row Arrangement with Blood relation"
+        ],
+      };
+    
+      const mainsQuestions = {
+        "Circular Arrangement": [
+            "Circular arrangement-movement based",
+            "Circular linear arrangement",
+            "Multiple factor based Circular Arrangement"
+        ],
+        "Linear Arrangement": [
+            "Linear arrangement with Movement",
+            "Linear arrangement with Multiple & factor based",
+            "Linear arrangement with Distance based"
+        ],
+        "Parallel Row Arrangement": [
+            "Three parallel row Arrangement",
+            "Parallel Row Arrangement with Distance based",
+            "Four Parallel Row Arrangement",
+        ],
+      };
+    
+      // Handle topic selection & set modal questions
+      const handleTopicSelect = (topic, type) => {
+        setSelectedTopic(topic);
+        setModalType(type);
+        setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
+        setIsTimerRunning(true);
+        setTimer(600); // Reset Timer
+      };
       
-        // Question Data (Prelims & Mains)
-        const prelimsQuestions = {
-          "Nobel Prize Winners": [
-            "A is sitting two places left of B. Who is sitting next to A?",
-            "Five people are sitting in a circular arrangement. Who is facing whom?",
-            "What is the position of X in the row of ten people?"
-          ],
-          "Banks & Their Taglines": [
-            "All cats are dogs. Some dogs are birds. What follows?",
-            "No apple is a banana. Some bananas are mangoes. Conclusion?",
-            "Some boys are students. All students are girls. Conclusion?"
-          ],
-          "Important Days & Themes": [
-            "If A > B, B = C, and C < D, what is the relation between A and D?",
-            "Which of the following inequalities is always true?",
-            "Solve: P ≥ Q > R = S < T"
-          ],
-        };
-      
-        const mainsQuestions = {
-          "Banking Awareness Questions asked in 2024 Mains Exams": [
-            "If all pens are books and some books are tables, what conclusion follows?",
-            "Statement: A is taller than B but shorter than C. Who is the tallest?",
-            "If 'Apple' is coded as 'XZRMP', how is 'Mango' coded?"
-          ],
-          "Banking Awareness Questions asked in 2023 Mains Exams": [
-            "Step 1: XYZ → ABC. Step 2: ABC → DEF. What is the final output?",
-            "What pattern follows in the given number arrangement?",
-            "Find the missing step in the output series."
-          ],
-          "Banking Awareness Questions asked in 2022 Mains Exams": [
-            "Is X greater than Y? (i) X = 5Y (ii) Y = 3",
-            "Can we determine the total age of three brothers? Given (i) & (ii).",
-            "Does A earn more than B? (i) A = 2B (ii) B = C + 3"
-          ],
-        };
-      
-        // Handle topic selection & set modal questions
-        const handleTopicSelect = (topic, type) => {
-          setSelectedTopic(topic);
-          setModalType(type);
-          setModalQuestions(type === "prelims" ? prelimsQuestions[topic] : mainsQuestions[topic]);
-          setIsTimerRunning(true);
-          setTimer(600); // Reset Timer
-        };
-      
-        // Sidebar button handlers
-        const handlePrelimsClick = () => setActiveSection("prelims");
-        const handleMainsClick = () => setActiveSection("mains");
-        const handleUpdatesClick = () => setActiveSection("updates");
-      
-        // Timer Effect
-        useEffect(() => {
-          if (!isTimerRunning || timer === 0) return;
-      
-          const interval = setInterval(() => {
-            setTimer((prev) => prev - 1);
-          }, 1000);
-      
-          return () => clearInterval(interval);
-        }, [timer, isTimerRunning]);
-      
-        // Format timer (MM:SS)
-        const formatTimer = (time) => {
-          const minutes = Math.floor(time / 60);
-          const seconds = time % 60;
-          return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-        };
-      
-
-
+    
+      // Sidebar button handlers
+      const handlePrelimsClick = () => setActiveSection("prelims");
+      const handleMainsClick = () => setActiveSection("mains");
+      const handleUpdatesClick = () => setActiveSection("updates");
+    
+      // Timer Effect
+      useEffect(() => {
+        if (!isTimerRunning || timer === 0) return;
+    
+        const interval = setInterval(() => {
+          setTimer((prev) => prev - 1);
+        }, 1000);
+    
+        return () => clearInterval(interval);
+      }, [timer, isTimerRunning]);
+    
+      // Format timer (MM:SS)
+      const formatTimer = (time) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+      };
+    
   return (
-    <div className="container py-5">
-      <h1 className="text-center text-green-500 fw-bold">
-        <LibraryBooksIcon fontSize="large" className="text-green-600" />
-        Static GK
+    <div>
+
+      <div className="container py-1">
+      <h1 className="p-2 text-green-500 text-center fw-bold">
+     
+      <h1>Hard Level Reasoning</h1>
       </h1>
       <div className="row">
   <div className="col-md-9 staticheader h6 leading-10">
     <div>
-      <h1 className="leading-8">
-        Our
-        <span className="text-green-500 font-bold">Static GK Package</span>,
-        designed to cover all essential topics required for
-        <span className="text-green-500 font-bold">
-          IBPS PO, IBPS Clerk, RRB PO, RRB Clerk, SBI PO, SBI Clerk, RBI Grade
-          B, NABARD, LIC
-        </span>
-        , and other competitive exams.
-        <br />
-        This package includes detailed coverage of important topics such as
-        <span className="text-green-500 font-bold">
-          Indian Geography, History, Polity, Economy, International
-          Organizations, Important Days, National Parks, Banking Awareness
-        </span>
-        , and more.
-        <br />
-        With <span className="text-green-500 font-bold">exam-level MCQs</span>,
-        <span className="text-green-500 font-bold">
-          previous years’ questions
-        </span>
-        , and
-        <span className="text-green-500 font-bold">regular updates</span>,
-        this package ensures you have the latest and most relevant information
-        at your fingertips.
-        <br />
-        We provide
-        <span className="text-green-500 font-bold">
-          well-structured content
-        </span>
-        to help you retain facts effectively.
-        <span className="text-green-500 font-bold">
-          Strengthen your Static GK knowledge
-        </span>
-        and <span className="text-green-500 font-bold">boost your score</span>
-        with this must-have resource for banking and government exam
-        aspirants!
-      </h1>
+   <h1 className='leading-8'>
+   High-level reasoning questions are a game-changer in bank mains exams. They test
+your ability to think critically, make quick decisions, and solve problems under
+pressure. Since reasoning plays a huge role in overall exam performance, practicing
+tough questions is a must. That’s why we at Examrally have put together a
+dedicated package of  <span className="text-green-500 font-bold">hard-level reasoning questions for bank mains exams.</span>.
+These aren’t just random tough questions—we’ve carefully selected and designed
+them based on <span className="text-green-500 font-bold"> previous year bank exams,</span>
+covering every type of model that
+appears in<span className="text-green-500 font-bold">IBPS PO, SBI PO, RBI Grade B, and other bank mains exams.</span> 
+<span className="text-green-500 font-bold">expected high-difficulty reasoning
+questions,</span>helping you sharpen your skills and boost your confidence for the real
+exam. If you’re looking for<span className="text-green-500 font-bold">the best reasoning practice for bank mains,</span>
+our
+package is tailored to give you an edge in the competition. </h1>
     </div>
   </div>
   
@@ -154,7 +129,9 @@ const Staticgk = () => {
         {[
           "Covers All Topics",
           "Detailed Explanations",
-          "Unlimited Reattempts",
+          "New pattern questions","Three different level of questions: Easy, Moderate and Difficult",
+          "Previous Year Questions for better understanding of exact exam level",
+          "Expected New type questions",
         ].map((item, index) => (
           <li key={index} className="flex items-center gap-2 font">
             <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
@@ -180,32 +157,32 @@ const Staticgk = () => {
         <p>
           <del className="text-red-400 font">Package Price:</del>
         </p>
-        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.99</del>
+        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.199</del>
         <p className="text-white font-bold h5 font">Discounted Price:</p>
         <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-          Rs.49
+          Rs.79
         </button>
-        <p className="text-white font-bold">You Save Money: 50</p>
+        <p className="text-white font-bold">You Save Money:120</p>
       </div>
     </div>
   </div>
 </div>
 
-
+      {/* Sidebar Buttons */}
       <div className="row p-3 bg-light">
         <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
-       Topics
+          High Level
+          </button>
+        </div>
+        <div className="col-md-4">
+          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleMainsClick}>
+          Extreme High Level
           </button>
         </div>
         {/* <div className="col-md-4">
-          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleMainsClick}>
-          Memory Based Question
-          </button>
-        </div> */}
-        {/* <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleUpdatesClick}>
-            2025 Updates on Banking
+            Previous Year Questions
           </button>
         </div> */}
       </div>
@@ -213,7 +190,7 @@ const Staticgk = () => {
       {/* Prelims Topics - Bootstrap Cards */}
       {activeSection === "prelims" && (
         <div className="mt-3">
-          <h3>Topics:</h3>
+          <h3>High Level Topics:</h3>
           <div className="row">
             {Object.keys(prelimsQuestions).map((topic, index) => (
               <div key={index} className="col-md-4 mb-3">
@@ -239,7 +216,7 @@ const Staticgk = () => {
       {/* Mains Topics - Bootstrap Cards */}
       {activeSection === "mains" && (
         <div className="mt-3">
-          <h3>Memory Based Question:</h3>
+          <h3>Extreme High-Level Topics:</h3>
           <div className="row">
             {Object.keys(mainsQuestions).map((topic, index) => (
               <div key={index} className="col-md-4 mb-3">
@@ -293,9 +270,10 @@ const Staticgk = () => {
           </div>
         </div>
       </div>
-
+      
     </div>
-  );
-};
+    </div>
+  )
+}
 
-export default Staticgk;
+export default HardlevelReasoning

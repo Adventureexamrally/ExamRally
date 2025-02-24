@@ -34,7 +34,7 @@ const NavBar = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="hover:text-blue-600 transition duration-300">
+            <Link to="/" className="hover:text-blue-600 transition duration-300 ">
               Home
             </Link>
             <div
@@ -44,7 +44,7 @@ const NavBar = () => {
             >
               <button
                 onClick={toggleDropdown}
-                className="flex items-center hover:text-blue-600 transition duration-300"
+                className="flex items-center hover:text-blue-600 transition duration-300 text-white"
               >
                 Exams
                 {isDropdownOpen ? (
@@ -114,16 +114,16 @@ const NavBar = () => {
              Blogs
             </Link>
             <Link
-              to="/interviews"
+              to="/rally-pro"
               className="hover:text-blue-600 transition duration-300"
             >
               Rally Pro
             </Link>
             <Link
-              to="/materials"
+              to="/rally-super-pro"
               className="hover:text-blue-600 transition duration-300"
             >
-             Rally Lifetime
+             Rally Super Pro
             </Link>
             {/* <Link
               to="/blogs"

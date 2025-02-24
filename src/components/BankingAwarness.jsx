@@ -1,11 +1,7 @@
-import  { useState,useEffect } from "react";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import CalculateIcon from "@mui/icons-material/Calculate";
+      import React, { useState, useEffect } from "react";
 
-
-const Staticgk = () => {
-
- const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
+      const BankingAwareness = () => {
+        const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
         const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
         const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
         const [timer, setTimer] = useState(600); // Timer (10 min)
@@ -14,17 +10,17 @@ const Staticgk = () => {
       
         // Question Data (Prelims & Mains)
         const prelimsQuestions = {
-          "Nobel Prize Winners": [
+          "History of Banking": [
             "A is sitting two places left of B. Who is sitting next to A?",
             "Five people are sitting in a circular arrangement. Who is facing whom?",
             "What is the position of X in the row of ten people?"
           ],
-          "Banks & Their Taglines": [
+          "Functions of RBI": [
             "All cats are dogs. Some dogs are birds. What follows?",
             "No apple is a banana. Some bananas are mangoes. Conclusion?",
             "Some boys are students. All students are girls. Conclusion?"
           ],
-          "Important Days & Themes": [
+          "Monetary Policy": [
             "If A > B, B = C, and C < D, what is the relation between A and D?",
             "Which of the following inequalities is always true?",
             "Solve: P ≥ Q > R = S < T"
@@ -82,132 +78,97 @@ const Staticgk = () => {
         };
       
 
+        return (
+          <>
+            <div className="container">
+            <div>
+                <div className="row mt-3">
+                  <div className="col-md-9 staticheader">
+                    <p className="font mt-2 h4 leading-8">
+                      <h1 className="text-green-500 font font-bold ">Banking Awareness</h1>
+                      <br />
+                      Master Banking Awareness with our expertly designed package covering key topics like RBI functions, monetary policy, digital banking, financial inclusion, government schemes, and more. This package is carefully structured to keep you updated with the latest banking trends, making it ideal for exams like 
+                      <span className="text-green-500 fw-bold">
+                        IBPS PO, IBPS Clerk, RRB PO, RRB Clerk, SBI PO, SBI Clerk, RBI Grade B, and other banking & insurance exams
+                      </span>.
+                      With well-structured quizzes, mock tests, and clear explanations, you can strengthen your concepts and boost your exam performance.
+                      Build a solid foundation in banking knowledge and gain a competitive edge in your exam preparation.
+                    </p>
+                  </div>
 
-  return (
-    <div className="container py-5">
-      <h1 className="text-center text-green-500 fw-bold">
-        <LibraryBooksIcon fontSize="large" className="text-green-600" />
-        Static GK
-      </h1>
-      <div className="row">
-  <div className="col-md-9 staticheader h6 leading-10">
-    <div>
-      <h1 className="leading-8">
-        Our
-        <span className="text-green-500 font-bold">Static GK Package</span>,
-        designed to cover all essential topics required for
-        <span className="text-green-500 font-bold">
-          IBPS PO, IBPS Clerk, RRB PO, RRB Clerk, SBI PO, SBI Clerk, RBI Grade
-          B, NABARD, LIC
-        </span>
-        , and other competitive exams.
-        <br />
-        This package includes detailed coverage of important topics such as
-        <span className="text-green-500 font-bold">
-          Indian Geography, History, Polity, Economy, International
-          Organizations, Important Days, National Parks, Banking Awareness
-        </span>
-        , and more.
-        <br />
-        With <span className="text-green-500 font-bold">exam-level MCQs</span>,
-        <span className="text-green-500 font-bold">
-          previous years’ questions
-        </span>
-        , and
-        <span className="text-green-500 font-bold">regular updates</span>,
-        this package ensures you have the latest and most relevant information
-        at your fingertips.
-        <br />
-        We provide
-        <span className="text-green-500 font-bold">
-          well-structured content
-        </span>
-        to help you retain facts effectively.
-        <span className="text-green-500 font-bold">
-          Strengthen your Static GK knowledge
-        </span>
-        and <span className="text-green-500 font-bold">boost your score</span>
-        with this must-have resource for banking and government exam
-        aspirants!
-      </h1>
-    </div>
-  </div>
-  
-  <div className="col-md-3 ">
-    <div
-      className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
-      style={{
-        backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
+                  <div className="col-md-3">
+                    <div
+                      className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
+                      style={{
+                        backgroundImage: `
+                          radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
                           radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
                           radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
                           radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
                           radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
-                          radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`
-      }}
-    >
-      <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
-      <div className="text-white flex justify-between">
-        <span className="text-xl font-semibold mb-3 font">Features</span>
-      </div>
-      <hr className="border-t border-gray-600" />
-      <ul className="space-y-2">
-        {[
-          "Covers All Topics",
-          "Detailed Explanations",
-          "Unlimited Reattempts",
-        ].map((item, index) => (
-          <li key={index} className="flex items-center gap-2 font">
-            <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                className="w-3 h-3 text-white"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </span>
-            <span className="text-white text-sm">{item}</span>
-          </li>
-        ))}
-      </ul>
+                          radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)
+                        `,
+                      }}
+                    >
+                      <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
+                      <div className="text-white flex justify-between">
+                        <span className="text-xl font-semibold font mb-3">Features</span>
+                      </div>
+                      <hr className="border-t border-gray-600" />
+                      <ul className="space-y-2">
+                        {[
+                          'Covers All Topics',
+                          'Exam-Level Questions Based on the Latest Pattern',
+                          'Detailed Explanations',
+                          'Previous Years’ Questions',
+                          'Timely Updates on Banking Changes',
+                        ].map((item, index) => (
+                          <li key={index} className="flex items-center gap-2 font">
+                            <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 text-white">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                                  clipRule="evenodd"
+                                ></path>
+                              </svg>
+                            </span>
+                            <span className="text-white text-sm">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
 
-      <div className="text-center">
-        <p>
-          <del className="text-red-400 font">Package Price:</del>
-        </p>
-        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.99</del>
-        <p className="text-white font-bold h5 font">Discounted Price:</p>
-        <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-          Rs.49
-        </button>
-        <p className="text-white font-bold">You Save Money: 50</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-      <div className="row p-3 bg-light">
+                      <div className="text-center">
+                        <p>
+                          <del className="text-red-400 font">Package Price:</del>
+                        </p>
+                        <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.149</del>
+                        <p className="text-white font h5">Discounted Price:</p>
+                        <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+                          Rs.69
+                        </button>
+                        <p className="text-white font-bold">You Save Money: 80</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <div className="row p-3 bg-light">
         <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
        Topics
           </button>
         </div>
-        {/* <div className="col-md-4">
+        <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleMainsClick}>
           Memory Based Question
           </button>
-        </div> */}
-        {/* <div className="col-md-4">
+        </div>
+        <div className="col-md-4">
           <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleUpdatesClick}>
             2025 Updates on Banking
           </button>
-        </div> */}
+        </div>
       </div>
 
       {/* Prelims Topics - Bootstrap Cards */}
@@ -293,9 +254,9 @@ const Staticgk = () => {
           </div>
         </div>
       </div>
+            </div>
+          </>
+        );
+      };
 
-    </div>
-  );
-};
-
-export default Staticgk;
+      export default BankingAwareness;
