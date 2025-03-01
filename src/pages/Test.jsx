@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -107,6 +108,12 @@ const Test = () => {
     }
   };
 
+  // Calculate the starting index for the current section
+  const startingIndex = examData?.section
+    ?.slice(0, currentSectionIndex) // Get all previous sections
+    .reduce((acc, section) => acc + section.questions.length, 0); // Sum up the number of questions in previous sections
+
+  const currentGlobalQuestionIndex = startingIndex + currentQuestionIndex; // Add the current index within the section to the starting index
   const quantsSection = examData?.section?.[currentSectionIndex];
 
   return (
@@ -151,7 +158,7 @@ const Test = () => {
                   <p>
                     <strong>Test Type: </strong> {examData.test_type}
                   </p>
-                  <h3>Question No : {currentQuestionIndex + 1}</h3>
+                  <h3>Question No : {currentGlobalQuestionIndex + 1}</h3>
                   {quantsSection ? (
                     <div className="row">
                       <div
@@ -268,7 +275,7 @@ const Test = () => {
 
         {/* Sidebar: Question Status */}
         <div
-          className={`bg-light p-4 shadow-sm vh-100 end-0 overflow-auto transition ${
+          className={`bg-light p-4 shadow-sm vh-100 end-0 overflow-auto transition $(
             isSidebarOpen
               ? "d-block col-md-4 col-lg-3"
               : "d-none d-lg-block col-lg-3"
