@@ -44,7 +44,7 @@ const Banner = () => {
                 <p className="text-xs sm:text-sm md:text-base">{slide.description}</p>
               </div> */}
             </div>
-          ))}
+                    ))}
         </Slider>
       </div>
     </div>

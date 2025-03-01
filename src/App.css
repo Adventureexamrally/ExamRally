@@ -124,9 +124,9 @@
 
 .smmarkedImg{
   background: url('./assets/images/ques-sprite.png');
-  background-position:-74px -54px!important;
-  height: 30px;
-  width: 30px;
+  background-position:-108px -1px !important;
+  height: 48px;
+  width: 50px;
 }
 
 .smansmarkedImg{
@@ -163,6 +163,13 @@
 .staticheader{
   display: flex;
   align-items: center;
+}
+
+/* mocktest font */
+
+.mock-font{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
 }
 
 /* From Uiverse.io by Tiagoadag */ 

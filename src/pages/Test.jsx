@@ -1,316 +1,236 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    nextQuestion,
-    prevQuestion,
-    selectOption,
-    markVisited,
-    markForReview,
-    submitTest,
-    updateTime,
+  nextQuestion,
+  prevQuestion,
+  selectOption,
+  markVisited,
+  markForReview,
+  submitTest,
+  updateTime,
 } from "../slice/testSlice";
-
-import questions from "../data/questions";  // Assuming questions are stored locally
-
+import axios from "axios";
+import Api from "../service/Api";
 const Test = () => {
+  const dispatch = useDispatch();
+  const { loading, error, currentQuestionIndex, selectedOptions, visitedQuestions, isSubmitted, timeLeft, markedForReview } = useSelector((state) => state.test);
 
-    
-    useEffect(() => {
-        // Disable Right Click
-        document.addEventListener("contextmenu", (event) => event.preventDefault());
-     
-        // Disable DevTools Shortcuts
-        document.addEventListener("keydown", (event) => {
-          if (event.ctrlKey && ["u", "s", "i", "j"].includes(event.key)) {
-            event.preventDefault();
-          }
-          if (event.key === "F12") {
-            event.preventDefault();
-          }
-        });
-    
-        return () => {
-          document.removeEventListener("contextmenu", (event) => event.preventDefault());
-          document.removeEventListener("keydown", (event) => event.preventDefault());
-        };
-      }, []);
-    const dispatch = useDispatch();
-    const { loading, error } = useSelector((state) => state.test);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [examData, setExamData] = useState(null);
+  const [timerActive, setTimerActive] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState("00:00:00");
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0); // Track current section index
 
-    const { currentQuestionIndex, selectedOptions, visitedQuestions, isSubmitted, timeLeft } = useSelector((state) => state.test);
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+  };
 
-    const currentQuestion = questions[currentQuestionIndex] || {};
-    const commonData = currentQuestion.common_data;
-    const questionData = currentQuestion.data || {};
+  const startCountdown = (initialTime) => {
+    let timeLeft = initialTime * 60;
+    setTimerActive(true);
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [section2ClickCount, setSection2ClickCount] = useState(0);
-    const [section3ClickCount, setSection3ClickCount] = useState(0);
+    const timerInterval = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        setTimerActive(false);
+        setTimeRemaining("00:00:00");
+        dispatch(submitTest());
+      } else {
+        timeLeft -= 1;
+        const formattedTime = formatTime(timeLeft);
+        setTimeRemaining(formattedTime);
+        dispatch(updateTime());
+      }
+    }, 1000);
 
-    // Mark question as visited
-    useEffect(() => {
-        if (!visitedQuestions.includes(currentQuestionIndex)) {
-            dispatch(markVisited(currentQuestionIndex));
+    return () => clearInterval(timerInterval);
+  };
+
+  useEffect(() => {
+    Api
+      .get("exams/getExam/67ac50d70a6d138318229387")
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data);
+          console.log(res.data);
+          const timeInMinutes = res.data.section[0]?.t_time || 0;
+          startCountdown(timeInMinutes);
         }
-    }, [currentQuestionIndex, visitedQuestions, dispatch]);
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }, []);
 
-    // Timer Logic (Unifying time management logic)
-    useEffect(() => {
-        if (timeLeft === 0) {
-            dispatch(submitTest());
-        } else {
-            const timer = setInterval(() => {
-                dispatch(updateTime());
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [timeLeft, dispatch]);
+  useEffect(() => {
+    if (examData && currentQuestionIndex !== null) {
+      dispatch(markVisited(currentQuestionIndex)); // Mark the current question as visited
+    }
+  }, [currentQuestionIndex, examData, dispatch]);
 
-    // Handle Timer for Local UI
-    const formatTime = (time) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = time % 60;
-        return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-    };
+  const handleQuestionClick = (index) => {
+    dispatch(nextQuestion(index)); // Set the current question when clicked
+  };
 
-    const toggleTimer = () => {
-        if (timeLeft > 0) {
-            dispatch(updateTime());
-        }
-    };
+  const handleNextClick = () => {
+    dispatch(nextQuestion()); // Proceed to next question
+  };
 
-    const handleNextClick = () => {
-        // Increment the counters for both Section 2 and Section 3 separately
-        setSection2ClickCount(prev => prev + 1); // Increment Section 2 click count
+  const handleClearResponse = () => {
+    dispatch(selectOption({ questionIndex: currentQuestionIndex }));
+  };
 
-        if (section2ClickCount >= 2) {  // After 3rd click on Next
-            setIsSidebarOpen(true);  // Show the sidebar (Section 2)
-        }
+  const handleMarkForReview = () => {
+    dispatch(markForReview(currentQuestionIndex));
+    dispatch(nextQuestion());
+  };
 
-        // Increment Section 3 click count for popup visibility
-        if (section2ClickCount >= 2) {
-            setSection3ClickCount(prev => prev + 1);
-        }
+  const handleSubmitTest = () => {
+    dispatch(submitTest());
+  };
 
-        if (section3ClickCount >= 2) { // After 3 clicks for Section 3 popup
-            // Implement your popup behavior here for Section 3 (e.g. showing another component)
-            // alert("Section 3 Popup"); // For now, it shows an alert as an example
-        }
+  const handleNextSection = () => {
+    if (currentSectionIndex < examData.section.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
+    }
+  };
 
-        dispatch(nextQuestion());  // Proceed to next question
-    };
+  const quantsSection = examData?.section?.[currentSectionIndex];
 
-    return (
-        <>
-            {/* Header */}
-       
-          
-
-            {/* Main Content */}
-            <div className="container-fluid">
-                <div className="row">
-                    {/* Section 1: Question Content */}
-                    <div className={`p-4 ${isSidebarOpen ? "col-lg-9 col-md-8" : "col-lg-9 col-md-12"}`}>
-                        {!isSubmitted ? (
-                            <>
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <span className="h4">Reading Ability! English Language!!</span>
-                                    <div className="badge bg-warning fs-6 p-2">
-                                        Time Left: {formatTime(timeLeft)}
-                                    </div>
-                                </div>
-
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p className="mb-1 fw-bold">Question {currentQuestionIndex + 1}/{questions.length}</p>
-                                    </div>
-                                    <div className="flex">
-                                        <p className="badge text-bg-secondary">QN: TIME {formatTime(timeLeft)}</p>&nbsp;
-                                        <p className="text-success">+01.00 <span className="text-danger">-00.25</span></p>
-                                    </div>
-                                </div>
-
-                                {/* Question & Common Data */}
-                                <div className="row">
-                                    {/* Section 1.1: Common Data */}
-                                    {commonData && Object.keys(commonData).length > 0 && (
-                                        <div className="col-md-6">
-                                            <div className="mb-3">
-                                                <div className="card-body" style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                                    <h5 className="card-title">Common Data</h5>
-                                                    <p className="card-text">{commonData.ques || "No common data available"}</p>
-                                                    <div className="mt-3">
-                                                        {commonData.option?.map((option, index) => (
-                                                            <p key={index} className="mt-2">{option}</p>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Section 1.2: Question Data */}
-                                    <div className={commonData && Object.keys(commonData).length > 0 ? "col-md-6" : "col-md-12"}>
-                                        <div className="mb-3">
-                                            <div className="card-body" style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                                <h5 className="card-title">Question</h5>
-                                                <p className="card-text">{questionData.ques || "No data available"}</p>
-                                                <div className="mt-3">
-                                                    {questionData.option?.map((option, index) => (
-                                                        <label key={index} className="w-100 d-block mb-2 p-2 bg-transparent">
-                                                            <input
-                                                                type="radio"
-                                                                name={`question-${currentQuestionIndex}`}
-                                                                value={index}
-                                                                checked={selectedOptions[currentQuestionIndex] === index}
-                                                                onChange={() => dispatch(selectOption({ questionIndex: currentQuestionIndex, optionIndex: index }))}
-                                                                className="me-2"
-                                                            />
-                                                            {option}
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Section 3: Navigation Buttons */}
-                                <div className="d-flex justify-content-between mt-4">
-                                        {/* <button
-                                            onClick={() => dispatch(prevQuestion())}
-                                            disabled={currentQuestionIndex === 0}
-                                            className="btn btn-secondary"
-                                        >
-                                            Previous
-                                        </button> */}
-                                    {/* <button
-    onClick={() => {
-        // Mark the question as reviewed and for next question
-        dispatch(markVisited(currentQuestionIndex));  // Mark question as visited
-        dispatch(markForReview({ questionIndex: currentQuestionIndex }));  // Mark for review
-        dispatch(nextQuestion());  // Move to next question
-    }}
-    disabled={currentQuestionIndex === questions.length - 1}
-    className="btn btn-secondary"
->
-    Mark for Review & Next
-</button> */}
-
-
-                    <button
-                        onClick={() => dispatch(selectOption({ questionIndex: currentQuestionIndex, optionIndex: null }))} 
-                        disabled={selectedOptions[currentQuestionIndex] === undefined}
-                        className="btn btn-secondary"
-                    >
-                        Clear Response
-                    </button>
-
-                   
-
-
-                                    {currentQuestionIndex < questions.length - 1 ? (
-                                        <button
-                                            onClick={handleNextClick}
-                                            className="btn btn-primary"
-                                        >
-                                            Next 
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => dispatch(submitTest())}
-                                            className="btn btn-success"
-                                        >
-                                            Submit 
-                                        </button>
-                                    )}
-                                </div>
-                            </>
-                        ) : (
-                            <div className="text-center">
-                                <h1 className="display-6 text-success">Test Completed!</h1>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Section 2: Sidebar with Question Status */}
-                    <div
-                        className={`bg-light p-4 shadow-sm vh-100 end-0 overflow-auto transition ${isSidebarOpen ? "d-block col-md-4 col-lg-3" : "d-none d-lg-block col-lg-3"}`}
-                    >
-                        <h1 className="mb-3"> Time-Left: <span className="badge text-bg-secondary">{formatTime(timeLeft)}</span></h1>
-                        {/* Question Status Section */}
-                        <div className="container mt-3">
-                            <div className="row align-items-center">
-                                <div className="col-md-6">
-                                    <div className="smanswerImg"></div>
-                                    <p>Answered</p>
-                                </div>
-                                <div className="col-md-6">
-                                    <div className="smnotansImg"></div>
-                                    <p>Not Answered</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="container mt-3">
-                            <div className="row align-items-center">
-                                <div className="col-md-6">
-                                    <div className="smnotVisitImg"></div>
-                                    <p>Not Visited</p>
-                                </div>
-                                <div className="col-md-6">
-                                    <div className="smmarkedImg"></div>
-                                    <p>Marked for Review</p>
-                                </div>
-                            </div>
-                            <div className="col flex text-center mt-1">
-                                <div className="smansmarkedImg"></div>
-                                <p>Answered & Marked for Review</p>
-                            </div>
-                        </div>
-
-                        {/* Question Status Indicators */}
-                        <div>
-                            <p className="my-2 text-center bg-gray-200">English Language</p>
-                        </div>
-
-                        {/* Question Number Navigation */}
-                        <div className="mt-3">
-                            <div className="d-flex flex-wrap gap-2 px-3 py-2" style={{ maxHeight: "200px", overflowY: "auto", backgroundColor: "rgb(166 220 247)" }}>
-                                {questions.map((_, index) => (
-                                    <span
-                                        key={index}
-                                        onClick={() => dispatch(markVisited(index))}
-                                        className={`fw-bold text-center ${selectedOptions[index] !== undefined ? "answerImg" : visitedQuestions.includes(index) ? "notansImg" : "notVisitImg"}`}
-                                    >
-                                        {index + 1}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Close Button (Only for Small & Medium Screens) */}
-                        <button
-                            className="btn btn-danger w-100 mt-3 d-lg-none "
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            Close Status 
-                        </button>
-                    </div>
-
-                    {/* Toggle Button for Small & Medium Devices */}
-                    {!isSidebarOpen && (
-                        <button
-                            className="btn btn-primary position-fixed bottom-0 end-0 m-3 d-lg-none"
-                            onClick={() => setIsSidebarOpen(true)}
-                        > 
-                           Show Status
-                        </button>
-                    )}
+  return (
+    <div className="container-fluid mock-font">
+      <div className="row">
+        <div className="col-lg-9 col-md-8 p-4">
+          {!isSubmitted ? (
+            <>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="h4">Reading Ability! English Language!!</span>
+                <div className="badge bg-warning fs-6 p-2">
+                  Time-Left: <span className="badge text-bg-secondary">{timeRemaining}</span>
                 </div>
+              </div>
+
+              {examData ? (
+                <div>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h2>{examData.exam_name} - {examData.test_name}</h2>
+                    <p>
+                      Marks <span className="text-white bg-green-400 rounded p-1">+ {examData.section[0].plus_mark}</span>
+                      &nbsp;<span className="text-white bg-red-500 rounded p-1">- {examData.section[0].minus_mark}</span>
+                    </p>
+                  </div>
+                  <p><strong>Duration:</strong> {examData.duration} min</p>
+                  <p><strong>Difficulty Level:</strong> {examData.q_level}</p>
+                  <p><strong>Test Type: </strong> {examData.test_type}</p>
+                  <h3>Question No : {currentQuestionIndex + 1}</h3>
+                  {quantsSection ? (
+                    <div className="row">
+                      <div className="col-lg-6 col-md-6" style={{ maxHeight: "350px", overflowY: "auto" }}>
+                        <div className="fw-bold text-wrap" style={{ whiteSpace: "normal", wordWrap: "break-word" }} dangerouslySetInnerHTML={{ __html: quantsSection.questions[currentQuestionIndex]?.common_data || "No common data available" }} />
+                      </div>
+
+                      <div className="col-lg-6 col-md-6" style={{ maxHeight: "350px", overflowY: "auto" }}>
+                        {quantsSection?.questions?.[currentQuestionIndex] ? (
+                          <div className="p-3 mb-3">
+                            <p><strong>Question:</strong></p>
+                            <div className="fw-bold text-wrap" style={{ whiteSpace: "normal", wordWrap: "break-word" }} dangerouslySetInnerHTML={{ __html: quantsSection.questions[currentQuestionIndex]?.question || "No question available" }} />
+                            <p><strong>Options:</strong></p>
+                            <ul>
+                              {quantsSection.questions[currentQuestionIndex]?.options?.map((option, optIndex) => (
+                                <li key={optIndex} style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+                                  <label className="fw-bold flex">
+                                    <input type="radio" name="option" checked={selectedOptions[currentQuestionIndex] === optIndex} onChange={() => dispatch(selectOption({ questionIndex: currentQuestionIndex, optionIndex: optIndex }))} />
+                                    &nbsp;
+                                    <span style={{ whiteSpace: "normal", wordWrap: "break-word" }} dangerouslySetInnerHTML={{ __html: option }} />
+                                  </label>
+                                </li>
+                              )) || <li>No options available</li>}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p>Loading question...</p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p>No quants section available</p>
+                  )}
+                </div>
+              ) : (
+                <p>Loading...</p>
+              )}
+            </>
+          ) : (
+            <div className="text-center">
+              <h1 className="display-6 text-success">Test Completed!</h1>
+              <button onClick={handleSubmitTest} className="btn btn-success mt-4">
+                Submit Test
+              </button>
             </div>
-        </>
-    );
+          )}
+        </div>
+
+        {/* Sidebar: Question Status */}
+        <div className={`bg-light p-4 shadow-sm vh-100 end-0 overflow-auto transition ${isSidebarOpen ? "d-block col-md-4 col-lg-3" : "d-none d-lg-block col-lg-3"}`}>
+          <div className="badge bg-blue-300 fs-6 p-2">
+            Time-Left: <span className="badge bg-blue-500">{timeRemaining}</span>
+          </div>
+
+          <div className="container mt-3">
+            <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center" style={{ maxHeight: "400px", overflowY: "auto", backgroundColor: "rgb(166 220 247)" }}>
+              {examData?.section?.[currentSectionIndex]?.questions.map((_, index) => (
+                <span
+                  key={index}
+                  onClick={() => {
+                    handleQuestionClick(index); // This will set the currentQuestionIndex to the clicked index
+                    dispatch(markVisited(index)); // Mark the question as visited
+                  }}
+                  className={`fw-bold flex align-items-center justify-content-center
+                    ${selectedOptions[index] !== undefined ? "answerImg" : visitedQuestions.includes(index) ? "notansImg" : "notVisitImg"}
+                    ${markedForReview.includes(index) ? "reviewed smmarkedImg" : ""}`}
+                >
+                  {index + 1}
+                </span>
+              ))}
+            </div>
+          </div>
+          <button className="btn btn-danger w-100 mt-3 d-lg-none" onClick={() => setIsSidebarOpen(false)}>
+            Close Status
+          </button>
+        </div>
+
+        {/* Toggle Button for Small Screens */}
+        {!isSidebarOpen && (
+          <button className="btn btn-primary position-fixed bottom-0 end-0 m-3 d-lg-none" onClick={() => setIsSidebarOpen(true)}>
+            Show Status
+          </button>
+        )}
+      </div>
+
+      <div className="fixed-bottom bg-white p-3">
+        <div className="d-flex justify-content-between align-items-center mt-2 flex-column flex-sm-row">
+          <button onClick={handleClearResponse} className="btn bg-blue-300 hover:bg-blue-500 fw-bold mb-2 mb-sm-0 w-sm-auto">
+            Clear Response
+          </button>
+
+          <button onClick={handleMarkForReview} className="btn bg-blue-300 fw-bold hover:bg-blue-500 mb-2 mb-sm-0 w-sm-auto">
+            Mark for Review
+          </button>
+
+          <button onClick={handleNextClick} className="btn bg-blue-500 text-white hover:bg-blue-400 fw-bold mb-2 mb-sm-0 w-50 w-sm-auto">
+            Save & Next
+          </button>
+
+          <div className="pl-2 w-sm-auto col">
+            <button className="btn bg-blue-500 hover:bg-blue-400 text-white w-50 font fw-bold ml-16" onClick={handleNextSection}>
+              Next Section
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Test;

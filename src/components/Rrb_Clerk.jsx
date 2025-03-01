@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // Import Link for routing
+import Rally_sub from './Rally_sub';
 
 const Rrb_Clerk = () => {
   const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains)
@@ -71,6 +72,7 @@ const Rrb_Clerk = () => {
   };
 
   return (
+    <>
     <div className="p-6">
       <h1 className="text-2xl font-bold">Welcome Page</h1>
       <div className="row">
@@ -296,6 +298,8 @@ const Rrb_Clerk = () => {
         </div>
       )}
     </div>
+    <Rally_sub/>
+    </>
   );
 };
 

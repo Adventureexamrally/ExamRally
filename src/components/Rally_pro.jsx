@@ -23,38 +23,41 @@ const Rally_bro = () => {
     "Full Access to Banking Awareness",
     "Full Access to Static GK",
   ];
+  
   const packagePrice = 599; // Your package price
   const discountPrice = 99; // Your discounted price
+
   return (
-    <div className="container">
-      <div className="text-center mt-2">
-        <h1 className="font text-3xl bg-green-500 my-3 text-white">
-          Rally Pro
-        </h1>
-      </div>
-
-      <div className="row">
-        <div className="col-md-9">
-          <div className="row">
-            {array.map((item, index) => (
-              <div key={index} className="col-sm-12 col-md-3 col-lg-2">
-                <div className=" rounded px-4 py-5">
-                  {/* Optional Image */}
-                  <div className="card-body">
-                    <h5 className="card-title text-center font">
-                      <i className="bi bi-caret-right-fill text-green-500"></i>
-                      {item}
-                    </h5>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="container border border-black mt-2 rounded-lg">
+      <div className="mt-3">
+        <div className="text-center mt-2">
+          <h1 className="font text-3xl  my-3 text-black fw-bold">
+            Rally Pro
+          </h1>
+          <hr className="text-black-500 "/>
         </div>
+        <div className="row bg-gradient-to-b from-green-500  to-green-900">
+          <div className="col-lg-12 my-3">
+            <span className="text-black bg-white px-5 py-2 ml-2 rounded font fw-bold">
+              Exams Covered
+            </span>
+          </div>
 
-        <div className="col-md-3">
-        <Test_seriesFeature package={packagePrice} discountprize={discountPrice} />
+          <div className="col-lg-12 my-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {array.map((item, index) => (
+                <div key={index} className="rounded">
+                  {/* Optional Image or Icon */}
+                  <h5 className="text-center font">
+                    <p className="text-white">✔ &nbsp; {item}</p>
+                  </h5>
+                </div>
+              ))}
+            </div>
+            
+          </div>
 
+          <Test_seriesFeature package={packagePrice} discountprize={discountPrice} />
         </div>
       </div>
     </div>

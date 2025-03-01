@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import exam from "../assets/images/Exams-bro.svg";
+import { useState } from 'react';
 import {
   AcademicCapIcon,
   ClipboardDocumentCheckIcon,
@@ -55,12 +54,23 @@ const youtubeVideos = [
   { link: "https://www.youtube.com/watch?v=Co5bY9JQc1o" },
   { link: "https://www.youtube.com/watch?v=cqmRUzETcoU" },
   { link: "https://www.youtube.com/watch?v=rmkBnnL3Lpw" },
-  { link: "https://www.youtube.com/watch?v=OSN5VRD84EE" },
-
+  { link: "https://www.youtube.com/watch?v=OSN5VRD84EE" },                                                            
 
 ];
 
 export default function Features() {
+  // Video Carousel State
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Move to the previous video
+  const prevVideo = () => {
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0)); // Ensures you can't go below 0
+  };
+
+  // Move to the next video
+  const nextVideo = () => {
+    setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, youtubeVideos.length - 1)); // Prevents going past the last video
+  };
   return (
     <>
       <div className="p-6 mx-auto bg-gray-50 shadow-lg rounded-lg border text-center border-gray-300 bg-gradient-to-tr from-green-100 to-white">
@@ -100,18 +110,51 @@ export default function Features() {
           </a>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          {youtubeVideos.map((video, index) => (
-            <iframe
-              key={index}
-              className="w-full rounded-lg shadow-lg"
-              height="200"
-              src={video.link.replace("watch?v=", "embed/")}
-              title={`YouTube Video ${index + 1}`}
-              allowFullScreen
-            />
-          ))}
+        <div className="relative flex justify-center items-center" style={{ width: "100%" }}>
+  <div className="flex overflow-hidden relative w-full" style={{ height: "100%" }}>
+    <div
+      className="flex transition-transform duration-500"
+      style={{
+        transform: `translateX(-${(currentIndex - 1) * 100}%)`,
+        width: `${youtubeVideos.length * 100}%`,
+      }}
+    >
+      {youtubeVideos.map((video, index) => (
+        <div
+          key={index}
+          className="flex-shrink-0"
+          style={{
+            width: "100%",  // Each video takes 100% width
+            margin: "0",  // Removed the margin to avoid extra space
+          }}
+        >
+          <iframe
+            className="w-full rounded-lg shadow-lg"
+            height="200"
+            src={video.link.replace("watch?v=", "embed/")}
+            title={`YouTube Video ${index + 1}`}
+            allowFullScreen
+          />
         </div>
+      ))}
+    </div>
+  </div>
+  {/* Left Button */}
+  <button
+    className="absolute left-0 top-1/2 transform -translate-y-1/2 text-white bg-black opacity-50 hover:opacity-100 p-2"
+    onClick={prevVideo}
+  >
+    &#8592;
+  </button>
+  {/* Right Button */}
+  <button
+    className="absolute right-0 top-1/2 transform -translate-y-1/2 text-white bg-black opacity-50 hover:opacity-100 p-2"
+    onClick={nextVideo}
+  >
+    &#8594;
+  </button>
+</div>
+
       </div>
     </>
   );
