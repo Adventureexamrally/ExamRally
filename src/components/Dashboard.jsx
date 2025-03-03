@@ -27,6 +27,7 @@ import Banner from "./Banner";
 import Api from "../service/Api";
 import { useState } from "react";
 import { useEffect } from "react";
+import Packagename from "./Packagename";
 
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
@@ -312,12 +313,14 @@ const Dashboard = () => {
               {packages.map((exam, index) => (
                 <div key={index} className="flex-shrink-0">
                   <Link
-                    to={exam.link}
+                    to={`/top-trending-exams/${exam.link_name}`} // Ensure the link URL is correctly used here
                     className="text-sm font-medium text-gray-700"
                   >
                     <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
+                      {/* Render the Packagename component here */}
+
                       <img
-                        src={`${IMG_URL}${exam.photo}`}
+                        src={`${IMG_URL}${exam.photo}`} // Ensure the image URL is correct
                         alt={exam.name}
                         className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
                       />

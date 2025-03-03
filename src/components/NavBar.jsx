@@ -99,7 +99,7 @@ const NavBar = () => {
               to="/combo"
               className="hover:text-blue-600 transition duration-300"
             >
-              Free Mock Test
+              Packages
             </Link>
             <Link
               to="/testseries"
@@ -245,7 +245,7 @@ const NavBar = () => {
                 <UserButton />
               </SignedIn>
               <p>{!user ? "":user.firstName}</p>
-              <p className=''> Join Telegram
+              <p className=''>  Join Telegram
            </p>
             </div>
           </div>

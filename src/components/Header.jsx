@@ -57,7 +57,7 @@ const Header = () => {
 
          
           
-           <Link to='https://t.me/examrally'> Join Telegram
+           <Link to='https://t.me/examrally'> <i className="bi bi-telegram text-2xl" style={{color:"	#24A1DE"}}> </i>Join Telegram
            </Link>
            <p>{!user ? "":user.firstName}</p>
           <SignedOut>

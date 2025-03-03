@@ -5,11 +5,13 @@ import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { store } from './store/store.js'
 import { Provider } from 'react-redux'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 // Import your Publishable Key
 const clerkFrontendApi = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // const clerkFrontendApi = "pk_test_Y29oZXJlbnQtam9leS03My5jbGVyay5hY2NvdW50cy5kZXYk";
 // import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 if (!clerkFrontendApi) {
   throw new Error("Missing Clerk Publishable Key in environment variables.");
 }

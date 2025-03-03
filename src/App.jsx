@@ -38,6 +38,7 @@ import Rallysuper_Pro from "./components/Rallysuper_Pro";
 import Sbi_po from "./components/Sbi_po";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Packagename from "./components/Packagename";
 
 function App() {
   return (
@@ -85,12 +86,13 @@ function MainApp() {
         <Route path="/descriptive" element={<Despcriptive />} />
         <Route path="/criticalreason" element={<CriticalReason />} />
         <Route path="/hinduedutorial" element={<HinduEdu />} />
-        <Route path="/rrb-po" element={<Rrb_Po />} />
-        <Route path="/rrb-clerk" element={<Rrb_Clerk />} />
-        <Route path="/ibps-clerk" element={<Ibps_Clerk />} />
-        <Route path="/ibps-po" element={<Ibps_Po />} />
-        <Route path="/sbi-clerk" element={<Sbi_clerk />} />
-        <Route path="/sbi-po" element={<Sbi_po />} />
+        {/* <Route path="/rrb-po" element={<Rrb_Po />} /> */}
+        {/* <Route path="/rrb-clerk" element={<Rrb_Clerk />} /> */}
+        {/* <Route path="/ibps-clerk" element={<Ibps_Clerk />} /> */}
+        <Route path="/top-trending-exams/:id" element={<Packagename />} />
+        {/* <Route path="/ibps-po" element={<Ibps_Po />} /> */}
+        {/* <Route path="/sbi-clerk" element={<Sbi_clerk />} /> */}
+        {/* <Route path="/sbi-po" element={<Sbi_po />} /> */}
         <Route path="/instruction" element={<Instruction />} />
         <Route path="/otherinstruct" element={<Otherinstruction />} />
         <Route path="/hardlevelreasoning" element={<HardlevelReasoning />} />
