@@ -39,6 +39,8 @@ import Sbi_po from "./components/Sbi_po";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Packagename from "./components/Packagename";
+import Free_pdf from "./components/Free_pdf";
+import ResultPage from "./components/ResultPage";
 
 function App() {
   return (
@@ -71,6 +73,7 @@ function MainApp() {
         <Route path="/englishlang" element={<Englishlang />} />
         <Route path="/sigin" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/free-pdf" element={<Free_pdf/>} />
         <Route path="/subscriptions" element={<TestSeries />} />
         <Route path="/rally-pro" element={<Rally_pro />} />
         <Route path="/rally-super-pro" element={<Rallysuper_Pro />} />
@@ -101,7 +104,7 @@ function MainApp() {
         
         {/* Only render Test component without Header and Footer */}
         <Route path="/mocktest" element={<Test />} />
-        
+        <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -102,7 +102,7 @@ const NavBar = () => {
               Packages
             </Link>
             <Link
-              to="/testseries"
+              to="/free-pdf"
               className="hover:text-blue-600 transition duration-300"
             >
               Free PDF
@@ -194,7 +194,7 @@ const NavBar = () => {
               Free Mock Test
             </Link>
             <Link
-              to="/testseries"
+              to="/free-pdf"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
               Free PDF

@@ -15,7 +15,7 @@ const Rally_bro = () => {
     "Hard Level Reasoning",
     "Hard Level English Tests",
     "Previous Year Papers",
-    "Critical Reasoning Questions",
+    // "Critical Reasoning Questions",
     "Sectional Wise Test",
     "Full Access to Rally Speed Test",
     "Full Access to Descriptive Test",

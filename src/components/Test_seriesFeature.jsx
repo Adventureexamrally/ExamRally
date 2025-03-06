@@ -41,6 +41,7 @@ const Test_seriesFeature = ({ package: packagePrice, discountprize, text_1, text
       "All India Ranking",
       "Performance Analysis",
       "Real Exam Interface",
+      "Real Exam Interface"
     ].map((item, index) => (
       <li key={index} className="flex items-center gap-2">
         <span className="text-white text-lg font fw-bold">✔ {item}</span>
