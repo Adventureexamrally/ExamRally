@@ -3,15 +3,20 @@ import { useNavigate } from "react-router-dom";
 
 const OtherInstruction = () => {
   const [isChecked, setIsChecked] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("English"); // Default language
   const navigate = useNavigate();
 
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
 
+  const handleLanguageChange = (event) => {
+    setSelectedLanguage(event.target.value);
+  };
+
   const handleNextClick = () => {
     if (isChecked) {
-      navigate("/mocktest"); // Change to your actual route
+      navigate("/mocktest", { state: { language: selectedLanguage } }); // Pass language as state
     } else {
       alert("Please accept the declaration to proceed.");
     }
@@ -29,9 +34,14 @@ const OtherInstruction = () => {
       <div className="bg-blue-300 p-3 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Other Important Instructions</h2>
         <label>
-          <select className="p-2 border rounded">
+          <select
+            className="p-2 border rounded"
+            value={selectedLanguage}
+            onChange={handleLanguageChange}
+          >
             <option value="English">English</option>
             <option value="Hindi">Hindi</option>
+            <option value="Tamil">Tamil</option>
           </select>
         </label>
       </div>
@@ -49,8 +59,13 @@ const OtherInstruction = () => {
       <div className="mt-4">
         <p className="bg-blue-200 p-2 rounded">
           Choose your default language:{" "}
-          <select className="p-1 border rounded">
+          <select
+            className="p-1 border rounded"
+            value={selectedLanguage}
+            onChange={handleLanguageChange}
+          >
             <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
             <option value="Tamil">Tamil</option>
           </select>
         </p>
@@ -85,13 +100,13 @@ const OtherInstruction = () => {
             onClick={handlePreviousClick}
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Previous Button Click Me!!!!
+            Previous
           </button>
           <button
             onClick={handleNextClick}
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Next 
+            Next
           </button>
         </div>
       </div>

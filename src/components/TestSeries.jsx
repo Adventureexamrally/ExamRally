@@ -46,16 +46,21 @@ function TestSeries() {
   };
   
   return (
-    <div className="mx-auto">
+    <div className="container">
       <div className="text-center text-2xl font-bold mt-2 font bg-green-500 text-white">
       Most Accurate & Best Online Test Series for Bank Exams – Full-Length &amp;
       Topic-Wise Mock Tests
       </div>
-      
+      <div className="row">
+      <div className="col-md-6">
           <Rally_bro/>
+        
+   </div>
+   <div className="col-md-6">
+    
           <Rallysuper_Pro/>
-   
-
+   </div>
+   </div>
       {/* <div className="from-indigo-300 to-teal-400">
         <div className="bg-gray-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-4 rounded-lg shadow-lg">
           {data.questions.map((question) => (

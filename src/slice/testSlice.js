@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import questions from "../data/questions"; // Assuming questions are in a local file
 
 const initialState = {
     currentQuestionIndex: 0,
@@ -16,7 +15,7 @@ const testSlice = createSlice({
     initialState,
     reducers: {
         nextQuestion: (state) => {
-            if (state.currentQuestionIndex < questions.length - 1) {
+            if (state.currentQuestionIndex < 100 - 1) {
                 state.currentQuestionIndex += 1;
             }
         },
