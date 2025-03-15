@@ -209,7 +209,7 @@ export default function Features() {
   duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
   onClick={prevVideo}
 >
-  <i className="bi bi-caret-left-fill text-white"></i>
+<i className="bi bi-chevron-left"></i>
 </button>
 
 {/* Right Navigation Button */}
@@ -219,7 +219,7 @@ export default function Features() {
   duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
   onClick={nextVideo}
 >
-  <i className="bi bi-caret-right-fill"></i>
+<i className="bi bi-chevron-right"></i>
 </button>
 
     </div>

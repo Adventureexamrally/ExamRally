@@ -428,7 +428,7 @@ const Packagename = () => {
     <h3 className="fw-bold font">{subTitle.title}</h3>
   </li>
   <li>
-    <div dangerouslySetInnerHTML={{ __html: subTitle.description }} className="text-green-500 font ml-3"></div>
+    <div dangerouslySetInnerHTML={{ __html: subTitle.description }} className="font ml-3"></div>
   </li>
 </ul>
 

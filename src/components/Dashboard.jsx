@@ -45,7 +45,7 @@ const Dashboard = () => {
 
   const fetchPakages = async () => {
     try {
-      const response = await Api.get("/packages/get");
+      const response = await Api.get("/packages/get/active");
       setPackages(response.data);
     } catch (error) {
       console.error(error);

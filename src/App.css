@@ -122,7 +122,17 @@
   width: 30px;
 }
 
+
 .smmarkedImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-74px -54px!important;
+  height: 30px;
+  width: 30px;
+}
+
+
+
+.mdmarkedImg{
   background: url('./assets/images/ques-sprite.png');
   background-position:-108px -1px !important;
   height: 48px;
@@ -136,6 +146,12 @@
   width: 30px;
 }
 
+.mdansmarkedImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-201px -48px!important;
+  height: 48px;
+  width: 50px;
+}
 .font{
   font-family: "Noto Serif", serif;
 }

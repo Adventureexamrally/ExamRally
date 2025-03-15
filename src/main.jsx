@@ -3,8 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
-import { store } from './store/store.js'
-import { Provider } from 'react-redux'
+import { store } from './store/store.js';
+import { Provider } from 'react-redux';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -20,13 +20,13 @@ if (!clerkFrontendApi) {
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Provider store={store}>
     <ClerkProvider publishableKey={clerkFrontendApi}>
       <App />
     </ClerkProvider>
     </Provider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 

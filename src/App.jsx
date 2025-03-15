@@ -41,7 +41,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Packagename from "./components/Packagename";
 import Free_pdf from "./components/Free_pdf";
 import ResultPage from "./components/ResultPage";
-
+import jaiib from '../src/assets/logo/offer.jpg'
+import { useState,useEffect } from "react";
+import Resultanalysis from "./components/Resultanalysis";
 function App() {
   return (
     <Router>
@@ -52,7 +54,16 @@ function App() {
 
 function MainApp() {
   const location = useLocation(); // Now using useLocation inside a Router context
+ const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    // Show modal when navigating to "/mocktest"
+    if (location.pathname === "/") {
+      setShowModal(true);
+    } else {
+      setShowModal(false);
+    }
+  }, [location.pathname]);
   // Check if the current route is "/mock-test"
   const isMockTestRoute = location.pathname === "/mocktest";
 
@@ -65,6 +76,35 @@ function MainApp() {
           <NavBar />
         </>
       )}
+     {/* Modal */}
+      {showModal && (
+  <div
+    className="modal fade show d-flex align-items-center justify-content-center"
+    tabIndex="-1"
+    role="dialog"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }} // Full-screen overlay
+  >
+    <div
+      className="modal-dialog modal-dialog-centered"
+      role="document"
+    >
+      <div className="modal-content">
+        <div className="modal-header">
+    
+          <button
+            type="button"
+            className="btn-close text-sm"
+            onClick={() => setShowModal(false)}
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="modal-body">
+          <img src={jaiib} alt="Mock Test" className="img-fluid" />
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -106,6 +146,7 @@ function MainApp() {
         <Route path="/mocktest" element={<Test />} />
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
+        <Route path="/resultanalysis" element={<Resultanalysis />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
