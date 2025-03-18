@@ -66,7 +66,19 @@ function MainApp() {
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
   const isMockTestRoute = location.pathname === "/mocktest";
+  useEffect(() => {
+    // Check if the modal has been shown before by looking into localStorage
+    const hasModalBeenShown = localStorage.getItem("abcmodal123");
 
+    // If not shown before and the current route is "/"
+    if (!hasModalBeenShown && location.pathname === "/") {
+      setShowModal(true);
+      // Set the flag in localStorage so the modal won't show again
+      localStorage.setItem("abcmodal123", "pair");
+    } else {
+      setShowModal(false);
+    }
+  }, [location.pathname]);
   return (
     <>
       {/* Conditionally render Header and NavBar for routes other than "/mock-test" */}
@@ -133,11 +145,12 @@ function MainApp() {
         {/* <Route path="/rrb-clerk" element={<Rrb_Clerk />} /> */}
         {/* <Route path="/ibps-clerk" element={<Ibps_Clerk />} /> */}
         <Route path="/top-trending-exams/:id" element={<Packagename />} />
+        <Route path="/mocktest/:id" element={<Test />} />
         {/* <Route path="/ibps-po" element={<Ibps_Po />} /> */}
         {/* <Route path="/sbi-clerk" element={<Sbi_clerk />} /> */}
         {/* <Route path="/sbi-po" element={<Sbi_po />} /> */}
-        <Route path="/instruction" element={<Instruction />} />
-        <Route path="/otherinstruct" element={<Otherinstruction />} />
+        <Route path="/instruction/:id" element={<Instruction />} />
+        <Route path="/otherinstruct/:id" element={<Otherinstruction />} />
         <Route path="/hardlevelreasoning" element={<HardlevelReasoning />} />
         <Route path="/privacy-policy" element={<Privacy_Policy />} />
         <Route path="/terms-condition" element={<Terms_Condition />} />

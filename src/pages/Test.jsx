@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 const Test = () => {
   const [examData, setExamData] = useState(null);
@@ -16,8 +16,11 @@ const Test = () => {
   const location = useLocation();
   const selectedLanguage = location.state?.language || "English";
   // Fetch exam data
+
+  const {id}=useParams();
+console.log(id)
   useEffect(() => {
-    Api.get("exams/getExam/67c5900a09a3bf8c7f605d71")
+    Api.get(`exams/getExam/${id}`)
       .then((res) => {
         if (res.data) {
           setExamData(res.data);
@@ -104,84 +107,7 @@ useEffect(() => {
   }
 }, [currentSectionIndex]); // Runs when the user changes questions
 
-// useEffect(() => {
-//   if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
-//     console.error('Exam data or section not available');
-//     return;
-//   }
 
-//   const currentSection = examData.section[currentSectionIndex];
-
-//   // Calculate total time taken
-//   const endTime = new Date();
-//   const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
-//   const formattedTotalTime = formatTime(timeTakenInSeconds);
-//   setTotalTime(formattedTotalTime);
-
-//   Api.post('results/', {
-//     userId: "yourUserId",
-//     ExamId: "yourExamId",
-//     answers: selectedOptions.map((selectedOption, index) => {
-//       const question = currentSection?.questions[index];
-//       const singleQuestionTime = formatTime(questionTimes[index] || 0); // Get time spent on this question
-      
-//       return {
-//         question: question?.question,
-//         options: question?.options,
-//         plusmark: question?.plus_mark,
-//         minusmark: question?.minus_mark,
-//         correctOption: question?.answer,
-//         selectedOption: question?.options[selectedOption],
-//         isVisited: visitedQuestions?.includes(index),
-//         markforreview: markedForReview?.includes(index),
-//         singlequestime: singleQuestionTime, // Correctly formatted single question time
-//       };
-//     }),
-//     score: selectedOptions.reduce((total, option, index) => {
-//       const currentQuestion = currentSection?.questions[index];
-//       const plusmark = currentQuestion?.plus_mark || 1;
-//       const minusmark = currentQuestion?.minus_mark || 0;
-//       return total + (currentQuestion?.answer === option ? plusmark : minusmark);
-//     }, 0),
-//     timeTaken: formattedTotalTime,  // Send formatted total time
-//     takenAt: examStartTime,
-//     submittedAt: endTime,
-//   })
-//   .then((res) => {
-//     // Check the response structure and log it
-//     console.log('Marks submitted successfully');
-//     console.log('Response Data:', res.data);
-//     console.log('Formatted Response:', {
-//       userId: "yourUserId",
-//       ExamId: "yourExamId",
-//       answers: selectedOptions.map((selectedOption, index) => {
-//         const question = currentSection?.questions[index];
-//         return {
-//           question: question?.question,
-//           selectedOption: question?.options[selectedOption],
-//           correctOption: question?.answer,
-//         };
-//       }),
-//       score: selectedOptions.reduce((total, option, index) => {
-//         const currentQuestion = currentSection?.questions[index];
-//         return total + (currentQuestion?.answer === option ? currentQuestion?.plus_mark : currentQuestion?.minus_mark);
-//       }, 0),
-//       totalTime: formattedTotalTime,
-//       timeTakenInSeconds: timeTakenInSeconds,
-//       takenAt: examStartTime,
-//       submittedAt: endTime,
-//     });
-//   })
-//   .catch((err) => {
-//     console.error('Error submitting marks:', err);
-//   });
-
-// }, [isSubmitted]); // Runs when the exam is submitted
-
-
-
-
-  
   const handleSubmitTest = () => {
     setIsSubmitted(true); // Trigger the post call for total marks
   };
@@ -262,7 +188,7 @@ useEffect(() => {
       setClickedQuestionIndex(newStartingIndex);
     } else {
       // If it's the last section, finish the test (call your handleSubmitTest function)
-      handleSubmitTest();
+      submitExam();
     }
   };
 
@@ -284,6 +210,7 @@ useEffect(() => {
     setExamStartTime(new Date());
   }
 }, []);
+
   const [questionTime, setQuestionTime] = useState(0);
   const [questionTimerActive, setQuestionTimerActive] = useState(false);
 
@@ -334,76 +261,130 @@ useEffect(() => {
 
 // Second useEffect: Exam Submission when time is up or when manually triggered
 const submitExam = () => {
+  console.log("Submit Exam function called");
+
+  // Check if exam data and section exist
   if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
-    console.error('Exam data or section not available');
+    console.error("Exam data or section not available");
     return;
   }
 
+  console.log("Exam data and section found");
+
   const currentSection = examData.section[currentSectionIndex];
+  console.log("Current Section:", currentSection);
+
   const endTime = new Date();
+  console.log("End time:", endTime);
+
   const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
+  console.log("Time taken in seconds:", timeTakenInSeconds);
+
   const formattedTotalTime = formatTime(timeTakenInSeconds);
+  console.log("Formatted total time:", formattedTotalTime);
+
+  // Update total time
   setTotalTime(formattedTotalTime);
 
-  Api.post('results/', {
-    userId: "yourUserId",
-    ExamId: "yourExamId",
-    answers: selectedOptions.map((selectedOption, index) => {
-      const question = currentSection?.questions[index];
-      const singleQuestionTime = formatTime(questionTimes[index] || 0);
+  // Prepare answers data
+// Prepare answers data with all question options
+const answersData = selectedOptions.map((selectedOption, index) => {
+  const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
 
-      return {
-        question: question?.question,
-        options: question?.options,
-        plusmark: question?.plus_mark,
-        minusmark: question?.minus_mark,
-        correctOption: question?.answer,
-        selectedOption: question?.options[selectedOption],
-        isVisited: visitedQuestions?.includes(index),
-        markforreview: markedForReview?.includes(index),
-        singlequestime: singleQuestionTime,
-      };
-    }),
-    score: selectedOptions.reduce((total, option, index) => {
-      const currentQuestion = currentSection?.questions[index];
-      console.log("mk",currentSection?.questions[index])
-      const plusmark = currentQuestion?.plus_mark || 1;
-      console.log("mk",currentQuestion?.plus_mark)
-      const minusmark = currentQuestion?.minus_mark || 0.25;
-      return total + (currentQuestion?.answer === option ? plusmark : minusmark);
-    }, 0),
-    timeTaken: formattedTotalTime,
+  console.log(`Processing question ${index + 1}:`, question);
+
+  const singleQuestionTime = formatTime(questionTimes[index] || 0);
+  console.log(`Time taken for question ${index + 1}:`, singleQuestionTime);
+
+  // Ensure that each option is fully captured
+  const optionsData = question?.options?.map((option, optionIndex) => ({
+    option: option,  // Include the option text/label
+    index: optionIndex,  // Include the option index
+    isSelected: optionIndex === selectedOption,  // Flag to mark if it's selected
+    isCorrect: optionIndex === question?.answer,  // Flag if the option is the correct one
+  }));
+
+  return {
+    question: question?.question,
+    options: optionsData,  // Store all options data
+    plusmark: question?.plus_mark,
+    minusmark: question?.minus_mark,
+    answer: question?.answer,
+    selectedOption: question?.options[selectedOption]?.index,  // Still store the selected option index
+    correct: question?.answer === selectedOption ? 1 : 0,  // Check if answer is correct
+    explanation: question?.explanation,
+    isVisited: visitedQuestions?.includes(index) ? 1 : 0,  // Fixed visited logic
+    q_on_time: singleQuestionTime,
+  };
+});
+
+console.log("Processed answers data:", answersData);
+
+
+  console.log("Processed answers data:", answersData);
+
+  // Calculate total score
+  const totalScore = selectedOptions.reduce((total, option, index) => {
+    const currentQuestion = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+    console.log(`Calculating score for question ${index + 1}:`, currentQuestion);
+
+    const plusmark = currentQuestion?.plus_mark || 1;
+    console.log(`Plus mark for question ${index + 1}:`, plusmark);
+
+    const minusmark = currentQuestion?.minus_mark || 0.25;
+    console.log(`Minus mark for question ${index + 1}:`, minusmark);
+
+    const scoreForThisQuestion = currentQuestion?.answer === option ? plusmark : -minusmark;
+    console.log(`Score for question ${index + 1}:`, scoreForThisQuestion);
+
+    return total + scoreForThisQuestion;
+  }, 0);
+
+  console.log("Total calculated score:", totalScore);
+
+  // Submit the data using API call
+  Api.post("results/", {
+    userId: "67c5900a09a3bf8c7f605d71",  // Replace with actual userId
+    ExamId: "67c5900a09a3bf8c7f605d71",  // Replace with actual examId
+    answers: answersData,
+    score: totalScore,
+    timeTaken: formattedTotalTime,  // Ensure this is updated correctly
+    attempted: selectedOptions.length,
     takenAt: examStartTime,
     submittedAt: endTime,
   })
-  .then((res) => {
-    console.log('Marks submitted successfully');
-    console.log('Response Data:', res.data);
-    console.log('Formatted Response:', {
-      userId: "yourUserId",
-      ExamId: "yourExamId",
-      answers: selectedOptions.map((selectedOption, index) => {
-        const question = currentSection?.questions[index];
-        return {
-          question: question?.question,
-          selectedOption: question?.options[selectedOption],
-          correctOption: question?.answer,
-        };
-      }),
-      score: selectedOptions.reduce((total, option, index) => {
-        const currentQuestion = currentSection?.questions[index];
-        return total + (currentQuestion?.answer === option ? currentQuestion?.plus_mark : currentQuestion?.minus_mark);
-      }, 0),
-      totalTime: formattedTotalTime,
-      timeTakenInSeconds: timeTakenInSeconds,
-      takenAt: examStartTime,
-      submittedAt: endTime,
+    .then((res) => {
+      console.log("Marks submitted successfully");
+      console.log("Response Data:", res.data);
+
+      // Format the response
+      const formattedResponse = {
+        userId: "yourUserId",  // Replace with actual userId
+        ExamId: "yourExamId",  // Replace with actual examId
+        answers: selectedOptions.map((selectedOption, index) => {
+          const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+          return {
+            question: question?.question,
+            selectedOption: question?.options[selectedOption],
+            correctOption: question?.answer,
+          };
+        }),
+        score: totalScore,
+        totalTime: formattedTotalTime,
+        timeTakenInSeconds: timeTakenInSeconds,
+        takenAt: examStartTime,
+        submittedAt: endTime,
+      };
+
+      console.log("Formatted Response:", formattedResponse);
+    })
+    .catch((err) => {
+      console.error("Error submitting marks:", err);
     });
-  })
-  .catch((err) => {
-    console.error('Error submitting marks:', err);
-  });
 };
+
+
+// Using useEffect to trigger submitExam when needed
 
 
 const [timeminus, settimeminus] = useState(0);
@@ -451,77 +432,16 @@ setShowModal(false)
 
 // Calculate starting index for the current section
 const quantsSection = examData?.section?.[currentSectionIndex];
-const isLastQuestion =
+const isLastQuestion = 
   clickedQuestionIndex === quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
-console.log(isLastQuestion)
-console.log(quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length);
-const a=quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length
+// console.log(isLastQuestion)
+// console.log(quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length); 
   return (
     <div className="container-fluid mock-font ">
         <div>
         <p className="text-lg">Selected Language: {selectedLanguage}</p>
 
 
-      {/* Modal Structure */}
-      {/* <div
-  className="modal fade "
-  id="staticBackdrop"
-  data-bs-backdrop="static"
-  data-bs-keyboard="false"
-  tabIndex="-1"
-  aria-labelledby="staticBackdropLabel"
-  aria-hidden="true"
->
-  <div className="modal-dialog modal-xl">
-    <div className="modal-content">
-      <div className="modal-header">
-        <h1 className="modal-title fs-5" id="staticBackdropLabel">
-          Section Submit
-        </h1>
-        <button
-          type="button"
-          className="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div className="modal-body">
-        
-        {sectionSummary && (
-          <div className="table-responsive">
-            <table className="table table-bordered">
-              <thead className="table-dark">
-                <tr>
-                  <th>Section Name</th>
-                  <th>Total Ques</th>
-                  <th>Answered</th>
-                  <th>Not Answered</th>
-                  <th>Visited Questions</th>
-                  <th>Not Visited Questions</th>
-                  <th>Marked for Review</th>
-                </tr>
-              </thead>
-              <tbody>
-       
-          
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      <div className="text-center mb-3">
-        <button
-          type="button"
-          className="btn btn-success"
-          data-bs-dismiss="modal"
-          onClick={showToast} // Show toast when clicking "Submit"
-        >
-          Submit
-        </button>
-      </div>
-    </div>
-  </div>
-</div> */}
   <div>
  
 
@@ -733,35 +653,9 @@ const a=quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length
         <div className="container mt-3">
       <h1 className=" bg-blue-400 text-center text-white p-2 ">Time Left:{formatTime(timeminus)}</h1>
       
-      <div className="container mt-3">
-            <div className="row align-items-center">
-              <div className="col-md-6">
-                <div className="smanswerImg"></div>
-                <p>Answered</p>
-              </div>
-              <div className="col-md-6">
-                <div className="smnotansImg"></div>
-                <p>Not Answered</p>
-              </div>
-            </div>
-          </div>
+    
 
-          <div className="container mt-3">
-            <div className="row align-items-center">
-              <div className="col-md-6">
-                <div className="smnotVisitImg"></div>
-                <p>Not Visited</p>
-              </div>
-              <div className="col-md-6">
-                <div className="smmarkedImg"></div>
-                <p>Marked for Review</p>
-              </div>
-            </div>
-            <div className="col flex text-center mt-1">
-              <div className="smansmarkedImg"></div>
-              <p>Answered & Marked for Review</p>
-            </div>
-          </div>
+          
 
       <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
 

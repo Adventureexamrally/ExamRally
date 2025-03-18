@@ -3,6 +3,7 @@ import ans from "../assets/images/ans.png";
 import notvisit from "../assets/images/notvisit.png";
 import notans from "../assets/images/notans.png";
 import notandmaeked from "../assets/images/notansMarked.png";
+import { Link, useParams } from "react-router-dom";
 
 const images = [
   { img: notvisit, para: "1. You have not visited the question yet." },
@@ -19,6 +20,8 @@ const images = [
 ];
 
 const Instruction = () => {
+  const {id}=useParams()
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
@@ -170,11 +173,11 @@ const Instruction = () => {
           </li>
         </ul>
         <div className="float-right">
-        <a href="/otherinstruct">
-          <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
-            Next
-          </button>
-          </a>
+        <Link to={`/otherinstruct/${id}`}>
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
+    Next
+  </button>
+</Link>
         </div>
       </div>
     </div>

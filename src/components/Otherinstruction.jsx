@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const OtherInstruction = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -13,10 +13,10 @@ const OtherInstruction = () => {
   const handleLanguageChange = (event) => {
     setSelectedLanguage(event.target.value);
   };
-
+const {id} = useParams()
   const handleNextClick = () => {
     if (isChecked) {
-      navigate("/mocktest", { state: { language: selectedLanguage } }); // Pass language as state
+      navigate(`/mocktest/${id}`, { state: { language: selectedLanguage } }); // Pass language as state
     } else {
       alert("Please accept the declaration to proceed.");
     }

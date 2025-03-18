@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Api from '../service/Api';
 
 const Packagename = () => {
@@ -13,10 +13,12 @@ const Packagename = () => {
       setData(res.data); // Setting the response data to state
     });
   }, [id]);
-
+  const navigate = useNavigate();
   // Extracting the package content and exams information
   const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
-  const exams = data?.exams?.[0] || {}; // Assuming there is only one exam object
+  const exams = data?.exams?.[0] || {}; 
+  console.log("VAR",exams?.exams?._id)
+  // Assuming there is only one exam object
   const subTitles = packageContent?.sub_titles || []; // Accessing sub_titles or default to an empty array
   
   console.log(subTitles); 
@@ -258,16 +260,23 @@ const Packagename = () => {
                           </div>
                         </div>
 
-                        <button
-                          className={`mt-2 py-2 px-4 rounded ${
-                            test.status === "true"
-                              ? "bg-green-500 text-white hover:bg-green-600"
-                              : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                          }`}
-                          onClick={() => handleTopicSelect(test.section[0], "prelims")}
-                        >
-                          {test.status === "true" ? "Take Test" : "Lock"}
-                        </button>
+                                    <button
+              className={`mt-2 py-2 px-4 rounded ${
+                test.status === "true"
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+              }`}
+              onClick={() => {
+                if (test.status === "true") {
+                  navigate(`/instruction/${test._id}`); // Redirects to instruction page
+                } else {
+                  handleTopicSelect(test.section[0], "prelims"); // Keeps the original function for locked state
+                }
+              }}
+            >
+              {test.status === "true" ? "Take Test" : "Lock"}
+            </button>
+    
                       </div>
                     </div>
                   </div>

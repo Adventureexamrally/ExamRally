@@ -7,7 +7,8 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
-
+import Api from "../service/Api";
+import axios from "axios";
 
 const features = [
   {
@@ -48,23 +49,26 @@ const features = [
   },
 ];
 
-const youtubeVideos = [
-  { link: "https://www.youtube.com/watch?v=oCNw9WTGAfA" },
-  { link: "https://www.youtube.com/watch?v=04oQstVfAIg" },
-  { link: "https://www.youtube.com/watch?v=IjQH2BXKubc" },
-  { link: "https://www.youtube.com/watch?v=Co5bY9JQc1o" },
-  { link: "https://www.youtube.com/watch?v=cqmRUzETcoU" },
-  { link: "https://www.youtube.com/watch?v=rmkBnnL3Lpw" },
-  { link: "https://www.youtube.com/watch?v=OSN5VRD84EE" },
-];
-
 export default function Features() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [boxSize, setBoxSize] = useState(400); // Default size for medium screens
 
-  // Custom size state
   const [customWidth, setCustomWidth] = useState(450); // Default custom width
   const [customHeight, setCustomHeight] = useState(250); // Default custom height
+
+  const [youtubeVideos, setYoutubeVideos] = useState([]); // To store the fetched videos
+
+  // Fetch YouTube videos on component mount
+  useEffect(() => {
+   Api.get("uploads/videos")
+      .then((response) => {
+        setYoutubeVideos(response.data);
+        console.log("Videos fetched:", response.data) // Assuming the API returns an array of video objects
+      })
+      .catch((error) => {
+        console.error("Error fetching videos:", error);
+      });
+  }, []);
 
   // Responsive box size handler
   useEffect(() => {
@@ -83,146 +87,161 @@ export default function Features() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Function to go to the previous video
-  const prevVideo = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? youtubeVideos.length - 1 : prevIndex - 1
-    );
-  };
-
-  // Function to go to the next video
-  const nextVideo = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === youtubeVideos.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
   // Get the indexes of previous and next videos
-  const prevIndex =
-    currentIndex === 0 ? youtubeVideos.length - 1 : currentIndex - 1;
-  const nextIndex =
-    currentIndex === youtubeVideos.length - 1 ? 0 : currentIndex + 1;
+  const prevIndex = currentIndex === 0 ? youtubeVideos.length - 1 : currentIndex - 1;
+  const nextIndex = currentIndex === youtubeVideos.length - 1 ? 0 : currentIndex + 1;
+
+  // Functions to navigate between videos
+  const prevVideo = () => {
+    setCurrentIndex(prevIndex);
+  };
+
+  const nextVideo = () => {
+    setCurrentIndex(nextIndex);
+  };
+
+  // Helper function to safely get the video URL for embedding
+  const getEmbedUrl = (video) => {
+    if (video?.youtubeUrl && typeof video.youtubeUrl === 'string') {
+      // If the URL is in the shortened form (youtu.be)
+      if (video.youtubeUrl.includes('youtu.be')) {
+        const videoId = video.youtubeUrl.split('/').pop().split('?')[0]; // Extract video ID
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+      // If the URL is the regular watch?v= form
+      return video.youtubeUrl.replace("watch?v=", "embed/");
+    }
+    return ''; // Return an empty string if the link is not available or invalid
+  };
+  
 
   return (
     <>
-    <div className="p-6 mx-auto bg-gray-50 shadow-lg rounded-lg border text-center border-gray-300 bg-gradient-to-tr from-green-100 to-white">
-    <h2 className="text-3xl font-bold text-blue-600">
-      Why Choose Examrally?
-    </h2>
+      <div className="p-6 mx-auto bg-gray-50 shadow-lg rounded-lg border text-center border-gray-300 bg-gradient-to-tr from-green-100 to-white">
+        <h2 className="text-3xl font-bold text-blue-600">
+          Why Choose Examrally?
+        </h2>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-      {features.map((feature, index) => (
-        <Feature
-          key={index}
-          title={feature.title}
-          description={feature.description}
-          Src={feature.Src}
-        />
-      ))}
-    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {features.map((feature, index) => (
+            <Feature
+              key={index}
+              title={feature.title}
+              description={feature.description}
+              Src={feature.Src}
+            />
+          ))}
+        </div>
 
-    <div className="text-center mt-6">
-      <p className="text-lg font-semibold text-gray-700">
-        🚀 Practice Smarter. Score Higher. Succeed Faster. 🚀
-      </p>
-    </div>
-  </div>
-    <div className="relative flex justify-center items-center w-full  py-4 rounded-lg">
-      {/* Video Container */}
+        <div className="text-center mt-6">
+          <p className="text-lg font-semibold text-gray-700">
+            🚀 Practice Smarter. Score Higher. Succeed Faster. 🚀
+          </p>
+        </div>
+      </div>
+
+      <div className="relative flex justify-center items-center w-full  py-4 rounded-lg mb-36">
       <div className="relative flex items-center w-[90%] justify-center">
         {/* Show full screen video on mobile */}
-        {boxSize === 250 ? (
-          <div
-            className="relative z-10 transition-transform duration-300 mx-2"
-            style={{
-              width: `${customWidth}px`,
-              height: `${customHeight}px`,
-            }}
-          >
-            <iframe
-              className="w-full h-full rounded-lg shadow-xl"
-              src={youtubeVideos[currentIndex].link.replace("watch?v=", "embed/")}
-              title="Current Video"
-              allowFullScreen
-            />
-          </div>
+        {youtubeVideos.length === 0 ? (
+          <div className="text-center text-gray-500">Loading videos...</div>
         ) : (
           <>
-            {/* Previous Video (Left) */}
-            <div
-              className="relative opacity-70 scale-90 transition-transform duration-300 mx-2"
-              style={{
-                width: `${customWidth * 0.8}px`,
-                height: `${customHeight * 0.8}px`,
-              }}
-            >
-              <iframe
-                className="w-full h-full rounded-lg shadow-lg"
-                src={youtubeVideos[prevIndex].link.replace("watch?v=", "embed/")}
-                title="Previous Video"
-                allowFullScreen
-              />
-            </div>
+            {boxSize === 250 ? (
+              <div
+                className="relative z-10 transition-transform duration-300 mx-2"
+                style={{
+                  width: `${customWidth}px`,
+                  height: `${customHeight}px`,
+                }}
+              >
+                <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1>
+                <iframe
+                  className="w-full h-full rounded-lg shadow-xl"
+                  src={getEmbedUrl(youtubeVideos[currentIndex])}
+                  title="Current Video"
+                  allowFullScreen
+                /> <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+              </div>
+            ) : (
+              <>
+                {/* Previous Video (Left) */}
+                <div
+                  className="relative opacity-70 scale-90 transition-transform duration-300 mx-2"
+                  style={{
+                    width: `${customWidth * 0.8}px`,
+                    height: `${customHeight * 0.8}px`,
+                  }}
+                >
+                  <h1 className="h5 font">{youtubeVideos[prevIndex]?.title}</h1>
+                  <iframe
+                    className="w-full h-full rounded-lg shadow-lg"
+                    src={getEmbedUrl(youtubeVideos[prevIndex])}
+                    title="Previous Video"
+                    allowFullScreen
+                  />
+                 <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                </div>
 
-            {/* Current Video (Center) */}
-            <div
-              className="relative z-10 transition-transform duration-300 mx-2"
-              style={{
-                width: `${customWidth}px`,
-                height: `${customHeight}px`,
-              }}
-            >
-              <iframe
-                className="w-full h-full rounded-lg shadow-xl"
-                src={youtubeVideos[currentIndex].link.replace(
-                  "watch?v=",
-                  "embed/"
-                )}
-                title="Current Video"
-                allowFullScreen
-              />
-            </div>
+                {/* Current Video (Center) */}
+                <div
+                  className="relative z-10 transition-transform duration-300 mx-2"
+                  style={{
+                    width: `${customWidth}px`,
+                    height: `${customHeight}px`,
+                  }}
+                >
+                  <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1>
+                  <iframe
+                    className="w-full h-full rounded-lg shadow-xl"
+                    src={getEmbedUrl(youtubeVideos[currentIndex])}
+                    title="Current Video"
+                    allowFullScreen
+                  />
+                  <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                </div>
 
-            {/* Next Video (Right) */}
-            <div
-              className="relative opacity-70 scale-90 transition-transform duration-300 mx-2"
-              style={{
-                width: `${customWidth * 0.8}px`,
-                height: `${customHeight * 0.8}px`,
-              }}
-            >
-              <iframe
-                className="w-full h-full rounded-lg shadow-lg"
-                src={youtubeVideos[nextIndex].link.replace("watch?v=", "embed/")}
-                title="Next Video"
-                allowFullScreen
-              />
-            </div>
+                {/* Next Video (Right) */}
+                <div
+                  className="relative opacity-70 scale-90 transition-transform duration-300 mx-2"
+                  style={{
+                    width: `${customWidth * 0.8}px`,
+                    height: `${customHeight * 0.8}px`,
+                  }}
+                >
+                  <h1 className="h5 font">{youtubeVideos[nextIndex]?.title}</h1>
+                  <iframe
+                    className="w-full h-full rounded-lg shadow-lg"
+                    src={getEmbedUrl(youtubeVideos[nextIndex])}
+                    title="Next Video"
+                    allowFullScreen
+                  />
+                 <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
 
       {/* Left Navigation Button */}
       <button
-  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white 
-  bg-black opacity-50 hover:opacity-100 p-3 rounded-full transition 
-  duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
-  onClick={prevVideo}
->
-<i className="bi bi-chevron-left"></i>
-</button>
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-black opacity-50 hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
+        onClick={prevVideo}
+      >
+        <i className="bi bi-chevron-left"></i>
+      </button>
 
-{/* Right Navigation Button */}
-<button
-  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white 
-  bg-black opacity-50 hover:opacity-100 p-3 rounded-full transition 
-  duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
-  onClick={nextVideo}
->
-<i className="bi bi-chevron-right"></i>
-</button>
-
+      {/* Right Navigation Button */}
+      <button
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-black opacity-50 hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
+        onClick={nextVideo}
+      >
+        <i className="bi bi-chevron-right"></i>
+      </button>
     </div>
+ 
+
     </>
   );
 }
