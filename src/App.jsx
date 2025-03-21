@@ -44,6 +44,8 @@ import ResultPage from "./components/ResultPage";
 import jaiib from '../src/assets/logo/offer.jpg'
 import { useState,useEffect } from "react";
 import Resultanalysis from "./components/Resultanalysis";
+import Blog from "./components/Blog";
+import Subblog from "./components/Subblog";
 function App() {
   return (
     <Router>
@@ -160,6 +162,9 @@ function MainApp() {
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
+        <Route path="/livebatch" element={<Blog/>}/>
+        <Route path="/blogdetails/:id" element={<Subblog/>}/>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
 
