@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
-const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
+import Api from "../service/Api";
 
 const Rallysuper_Pro = () => {
   const [sub, setSub] = useState(null); // Set initial state to null to avoid undefined errors
@@ -10,9 +9,11 @@ const Rallysuper_Pro = () => {
     run();
   }, []);
 
+  
+
   async function run() {
     try {
-      const response = await axios.get(`${VITE_APP_API_BASE_URL}subscription/getall/sub`);
+      const response = await Api.get(`subscription/getall/sub`);
       console.log(response.data);
 
       // Filter data based on subscriptionType

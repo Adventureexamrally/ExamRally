@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import Api from "../service/Api";
 
 const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
@@ -10,9 +11,10 @@ const Rally_bro = () => {
     run();
   }, []);
 
+
   async function run() {
     try {
-      const response = await axios.get(`${VITE_APP_API_BASE_URL}subscription/getall/sub`);
+      const response = await  Api.get(`subscription/getall/sub`);
       console.log(response.data);
 
       // Filter data based on subscriptionType
