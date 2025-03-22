@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
+const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 const Subblog = () => {
     const { id } = useParams();
     const [blogDetails, setBlogDetails] = useState({})
@@ -12,7 +13,7 @@ const Subblog = () => {
 
     async function run() {
         try {
-            const response = await axios.get(`http://localhost:3000/api/blogs/get/${id}`);
+            const response = await axios.get(`${VITE_APP_API_BASE_URL}blogs/get/${id}`);
             console.log(response.data);
             setBlogDetails(response.data);
         } catch (error) {
