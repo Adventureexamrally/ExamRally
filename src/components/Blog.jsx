@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import Api from '../service/Api';
 
-const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
+// const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Blog = () => {
     const [trendingblog, setTrendingBlog] = useState(null)
@@ -16,11 +17,11 @@ const Blog = () => {
     const navigate = useNavigate()
     async function run() {
         try {
-            const response = await axios.get(`${VITE_APP_API_BASE_URL}blogs/all?trending=true`);
+            const response = await Api.get(`blogs/all?trending=true`);
             console.log(response.data);
             setTrendingBlog(response.data);
 
-            const response2 = await axios.get(`${VITE_APP_API_BASE_URL}blogs/all`);
+            const response2 = await axios.get(`blogs/all`);
             setBlogData(response2.data);
         } catch (error) {
             console.error("Error fetching data:", error);
