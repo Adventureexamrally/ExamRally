@@ -4,24 +4,21 @@ import Api from '../service/Api';
 
 const Packagename = () => {
   const [data, setData] = useState({});
+  const [faqs, setFaqs] = useState([]);
   const { id } = useParams();
 
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`).then((res) => {
-      console.log(res.data);
-      setData(res.data); // Setting the response data to state
-    });
-  }, [id]);
+
+
   const navigate = useNavigate();
   // Extracting the package content and exams information
-  const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
+  // const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
   const exams = data?.exams?.[0] || {}; 
   console.log("VAR",exams?.exams?._id)
   // Assuming there is only one exam object
-  const subTitles = packageContent?.sub_titles || []; // Accessing sub_titles or default to an empty array
+  const subTitles = data?.sub_titles || []; 
+
   
-  console.log(subTitles); 
+  // console.log(subTitles); 
   
 
   const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains/Previous Year Questions)
@@ -31,6 +28,7 @@ const Packagename = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
   const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
   const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
+  
 
   // Handle topic selection & set modal questions
   const handleTopicSelect = (section, testType) => {
@@ -40,7 +38,16 @@ const Packagename = () => {
     setIsTimerRunning(true);
     setTimer(600); // Reset Timer on topic change
   };
-
+  useEffect(() => {
+    // Fetching data based on the id from the URL params
+    Api.get(`packages/package-content/${id}`).then((res) => {
+      console.log(res.data);
+      setData(res.data.data[0]); 
+      setFaqs(res.data.data[0].faqs);
+      console.log(res.data)
+    });
+  }, [id]);
+  console.log(faqs)
   // Sidebar button handlers
   const handlePrelimsClick = () => {
     setActiveSection("prelims");
@@ -83,22 +90,22 @@ const Packagename = () => {
     window.open(url, "_blank", `noopener,noreferrer,width=${width},height=${height}`);
   };
  
-  const [faqs, setFaqs] = useState([]);  // Store FAQ data
+  // Store FAQ data
   const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
 
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`)
-      .then((res) => {
-        console.log(res.data);
-        // Setting the FAQ data from the response
-        setFaqs(res.data?.package_content?.[0]?.faqs || []);
-        console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
-  }, [id]);  // Effect will run whenever 'id' changes
+  // useEffect(() => {
+  //   // Fetching data based on the id from the URL params
+  //   Api.get(`packages/package-content/${id}`)
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       // Setting the FAQ data from the response
+  //       setFaqs(res.data?.package_content?.[0]?.faqs || []);
+  //       console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching data:', error);
+  //     });
+  // }, [id]);  // Effect will run whenever 'id' changes
 
   const handleAccordionToggle = (index) => {
     // Toggle the active index (open/close the panel)
@@ -116,70 +123,12 @@ const Packagename = () => {
        <div className="row">
         <div className="col-md-9 staticheader h6 leading-10">
           <div>
-          <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: exams.description }} />            
+          <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: data.description }} />            
           </div>
         </div>
 
         <div className="col-md-3">
-          <div
-            className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
-            style={{
-              backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
-                                radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
-                                radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
-                                radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
-                                radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
-                                radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`,
-            }}
-          >
-            <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
-            <div className="text-white flex justify-between">
-              <span className="text-xl font-semibold mb-3 font">Features</span>
-            </div>
-            <hr className="border-t border-gray-600" />
-            <ul className="space-y-2">
-              {[
-                "Exact Exam level Questions",
-                "Step by Step Explanation",
-                "Detailed Analysis",
-                "30+ Mock Test",
-                "All India Rank",
-                "New pattern and Updated Questions",
-                "Easy, Moderate and Hard Level Questions",
-              ].map((item, index) => (
-                <li key={index} className="flex items-center gap-2 font">
-                  <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                      className="w-3 h-3 text-white"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
-                        clipRule="evenodd"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span className="text-white text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="text-center">
-              <p>
-                <del className="text-red-400 font">Package Price:</del>
-              </p>
-              <del className="bg-red-500 text-white rounded p-1 mb-2">
-                Rs.{exams?.amount || 0} 
-              </del>
-              <p className="text-white font-bold h5 font">Discounted Price:</p>
-              <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-                Rs.{exams?.discountedAmount || 0} 
-              </button>
-            </div>
-          </div>
+        <img src={data.featurePhoto} alt="image" className="img-fluid"/>
         </div>
       </div> 
 
@@ -459,7 +408,7 @@ const Packagename = () => {
     onClick={() => handleAccordionToggle(index)}
   >
    <div className="flex" style={{ justifyContent: 'space-between', width: '100%' }}>
-  <span>{faq.question}</span>
+  <span   dangerouslySetInnerHTML={{ __html: faq.question }}/>
   <span>
     {activeIndex === index ? (
       <i className="bi bi-arrow-up h4"></i>
@@ -475,7 +424,7 @@ const Packagename = () => {
               className={`overflow-hidden transition-all duration-500 ease-in-out
                 ${activeIndex === index ? 'max-h-40' : 'max-h-0'}`}
             >
-              <p className="px-5 py-2 text-gray-700 ml-3">{faq.answer}</p>
+              <p className="px-5 py-2 text-gray-700 ml-3" dangerouslySetInnerHTML={{ __html: faq.answer}}/>
             </div>
           </div>
         ))
