@@ -45,6 +45,9 @@ import jaiib from '../src/assets/logo/offer.jpg'
 import { useState,useEffect } from "react";
 import Resultanalysis from "./components/Resultanalysis";
 import Mocksolution from "./components/Mocksolution";
+import Blog from "./components/Blog";
+import Subblog from "./components/Subblog";
+
 function App() {
   return (
     <Router>
@@ -54,7 +57,7 @@ function App() {
 }
 
 function MainApp() {
-  const location = useLocation(); // Now using useLocation inside a Router context
+  const location = useLocation(); 
  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -161,7 +164,12 @@ function MainApp() {
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
+
         <Route path='/mocksolution' element={<Mocksolution/>} />
+
+        <Route path="/livebatch" element={<Blog/>}/>
+        <Route path="/blogdetails/:id" element={<Subblog/>}/>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
 

@@ -37,7 +37,9 @@ const Banner = () => {
                 <img
                   src={slide.photo}
                   alt={`Slide ${index + 1}`}
+
                   className="w-full h-full "  // Adjusted object-fit property
+
                 />
               </div>
             </div>

@@ -119,16 +119,83 @@ const Packagename = () => {
 
 
   return (
-    <div className='container mt-1'>
+    <div className="container mt-1">
+
        <div className="row">
-        <div className="col-md-9 staticheader h6 leading-10">
+        <div className="col-md-9">
           <div>
+<<<<<<< HEAD
           <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: data.description }} />            
+=======
+          <h1  dangerouslySetInnerHTML={{ __html: exams.description }}  style={{ fontFamily: 'helvetica, Arial, sans-serif' }} />            
+>>>>>>> 29e5c8801193b8f2d2bc27d9acc81c67238692d1
           </div>
         </div>
 
         <div className="col-md-3">
+<<<<<<< HEAD
         <img src={data.featurePhoto} alt="image" className="img-fluid"/>
+=======
+          <div
+            className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
+            style={{
+              backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
+                                radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+                                radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+                                radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
+                                radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
+                                radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`,
+            }}
+          >
+            <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
+            <div className="text-white flex justify-between">
+              <span className="text-xl font-semibold mb-3 " style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Features</span>
+            </div>
+            <hr className="border-t border-gray-600" />
+            <ul className="space-y-2">
+              {[
+                "Exact Exam level Questions",
+                "Step by Step Explanation",
+                "Detailed Analysis",
+                "30+ Mock Test",
+                "All India Rank",
+                "New pattern and Updated Questions",
+                "Easy, Moderate and Hard Level Questions",
+              ].map((item, index) => (
+                <li key={index} className="flex items-center gap-2 " style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>
+                  <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                      className="w-3 h-3 text-white"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                        clipRule="evenodd"
+                      ></path>
+                    </svg>
+                  </span>
+                  <span className="text-white text-sm">{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="text-center">
+              <p>
+                <del className="text-red-400"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Package Price:</del>
+              </p>
+              <del className="bg-red-500 text-white rounded p-1 mb-2"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>
+                Rs.{exams?.amount || 0} 
+              </del>
+              <p className="text-white font-bold h5 "  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Discounted Price:</p>
+              <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+                Rs.{exams?.discountedAmount || 0} 
+              </button>
+            </div>
+          </div>
+>>>>>>> 29e5c8801193b8f2d2bc27d9acc81c67238692d1
         </div>
       </div> 
 
@@ -137,6 +204,7 @@ const Packagename = () => {
           <button
             className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
             onClick={handlePrelimsClick}
+            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
           >
             Prelims
           </button>
@@ -145,6 +213,7 @@ const Packagename = () => {
           <button
             className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
             onClick={handleMainsClick}
+            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
           >
             Mains
           </button>
@@ -153,6 +222,7 @@ const Packagename = () => {
           <button
             className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
             onClick={handleUpdatesClick}
+            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
           >
             Previous Year Question Paper
           </button>
@@ -169,7 +239,7 @@ const Packagename = () => {
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1">
                       <div className="card-body text-center">
-                        <h5 className="card-title font fw-bold">{test.exam_name}</h5>
+                        <h5 className="card-title fw-bold"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>{test.exam_name}</h5>
                         <div className="text-center">
                           {/* Show Level Button */}
                           {!showDifficulty[test._id] && (
@@ -177,6 +247,7 @@ const Packagename = () => {
                               onClick={() => handleShowLevelClick(test._id)} // Show difficulty for the specific test
                               className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
                               style={{ backgroundColor: "#131656" }}
+                              
                             >
                               Show Level
                             </button>
@@ -246,7 +317,7 @@ const Packagename = () => {
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
                       <div className="card-body text-center">
-                        <h5 className="card-title font fw-bold">{test.exam_name}</h5>
+                        <h5 className="card-title  fw-bold"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>{test.exam_name}</h5>
                         <div className="text-center">
                           {/* Show Level Button */}
                           {!showDifficulty[test._id] && (
