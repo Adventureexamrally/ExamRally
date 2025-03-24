@@ -124,18 +124,15 @@ const Packagename = () => {
        <div className="row">
         <div className="col-md-9">
           <div>
-<<<<<<< HEAD
+
           <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: data.description }} />            
-=======
-          <h1  dangerouslySetInnerHTML={{ __html: exams.description }}  style={{ fontFamily: 'helvetica, Arial, sans-serif' }} />            
->>>>>>> 29e5c8801193b8f2d2bc27d9acc81c67238692d1
+
+                    
+
           </div>
         </div>
 
         <div className="col-md-3">
-<<<<<<< HEAD
-        <img src={data.featurePhoto} alt="image" className="img-fluid"/>
-=======
           <div
             className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
             style={{
@@ -195,7 +192,6 @@ const Packagename = () => {
               </button>
             </div>
           </div>
->>>>>>> 29e5c8801193b8f2d2bc27d9acc81c67238692d1
         </div>
       </div> 
 
