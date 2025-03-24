@@ -21,7 +21,7 @@ const Blog = () => {
             console.log(response.data);
             setTrendingBlog(response.data);
 
-            const response2 = await axios.get(`blogs/all`);
+            const response2 = await Api.get(`blogs/all`);
             setBlogData(response2.data);
         } catch (error) {
             console.error("Error fetching data:", error);
