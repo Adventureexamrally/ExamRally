@@ -44,6 +44,7 @@ import ResultPage from "./components/ResultPage";
 import jaiib from '../src/assets/logo/offer.jpg'
 import { useState,useEffect } from "react";
 import Resultanalysis from "./components/Resultanalysis";
+import Mocksolution from "./components/Mocksolution";
 function App() {
   return (
     <Router>
@@ -160,6 +161,7 @@ function MainApp() {
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
+        <Route path='/mocksolution' element={<Mocksolution/>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
