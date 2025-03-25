@@ -1,63 +1,67 @@
-import React from "react";
-import Test_seriesFeature from "./Test_seriesFeature";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import Api from "../service/Api";
+
+const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Rally_bro = () => {
-  const array = [
-    "RRB PO",
-    "RRB CLERK",
-    "IBPS PO",
-    "IBPS Clerk",
-    "SBI PO",
-    "SBI Clerk",
-    "Topic wise Test",
-    "Sectional Wise Test",
-    "Hard Level Quants",
-    "Hard Level Reasoning",
-    "Hard Level English Tests",
-    "Previous Year Papers",
-    // "Critical Reasoning Questions",
-    "Sectional Wise Test",
-    "Full Access to Rally Speed Test",
-    "Full Access to Descriptive Test",
-    "Full Access to Computer Awareness",
-    "Full Access to Banking Awareness",
-    "Full Access to Static GK",
-  ];
-  
-  const packagePrice = 599; // Your package price
-  const discountPrice = 99; // Your discounted price
+  const [sub, setSub] = useState(null); // Set initial state to null to avoid undefined errors
+
+  useEffect(() => {
+    run();
+  }, []);
+
+
+  async function run() {
+    try {
+      const response = await  Api.get(`subscription/getall/sub`);
+      console.log(response.data);
+
+      // Filter data based on subscriptionType
+      const filtered = response.data.filter(sub => sub.subscriptionType.toLowerCase() === "rally pro".toLowerCase());
+      console.log(filtered);
+
+      setSub(filtered.length > 0 ? filtered[0] : null); // If there are results, use the first one
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
 
   return (
     <div className="container border border-black mt-2 rounded-lg">
       <div className="mt-3">
         <div className="text-center mt-2">
-          <h1 className="font text-3xl  my-3 text-black fw-bold">
+          <h1 className="font text-3xl my-3 text-black fw-bold">
             Rally Pro
           </h1>
-          <hr className="text-black-500 "/>
+          <hr className="text-black-500" />
         </div>
-        <div className="row bg-gradient-to-b from-green-500  to-green-900">
-          <div className="col-lg-12 my-3">
-            <span className="text-black bg-white px-5 py-2 ml-2 rounded font fw-bold">
-              Exams Covered
-            </span>
-          </div>
-
-          <div className="col-lg-12 my-3">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {array.map((item, index) => (
-                <div key={index} className="rounded">
-                  {/* Optional Image or Icon */}
-                  <h5 className="text-center font">
-                    <p className="text-white">✔ &nbsp; {item}</p>
-                  </h5>
-                </div>
-              ))}
+        <div className="row bg-gradient-to-b from-green-500 to-green-900">
+          {sub ? ( // Check if sub is not null
+            <>
+              <img
+                src={sub.photo}
+                alt="Rally pro"
+                className="w-full h-full object-cover mt-2"
+              />
+              <div className="text-center mb-3">
+                <p>
+                  <del className="text-red-400 font">Package Price:</del>
+                </p>
+                <del className="bg-red-500 text-white rounded p-1 mb-2">
+                  ₹{sub.amount}
+                </del>
+                <p className="text-white font-bold h5 font">Discounted Price:</p>
+                <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+                  ₹{sub.discountedAmount}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center text-white">
+              No subscription found for Rally Pro.
             </div>
-            
-          </div>
-
-          <Test_seriesFeature package={packagePrice} discountprize={discountPrice} />
+          )}
         </div>
       </div>
     </div>

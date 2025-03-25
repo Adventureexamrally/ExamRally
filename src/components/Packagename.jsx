@@ -4,24 +4,21 @@ import Api from '../service/Api';
 
 const Packagename = () => {
   const [data, setData] = useState({});
+  const [faqs, setFaqs] = useState([]);
   const { id } = useParams();
 
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`).then((res) => {
-      console.log(res.data);
-      setData(res.data); // Setting the response data to state
-    });
-  }, [id]);
+
+
   const navigate = useNavigate();
   // Extracting the package content and exams information
-  const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
+  // const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
   const exams = data?.exams?.[0] || {}; 
   console.log("VAR",exams?.exams?._id)
   // Assuming there is only one exam object
-  const subTitles = packageContent?.sub_titles || []; // Accessing sub_titles or default to an empty array
+  const subTitles = data?.sub_titles || []; 
+
   
-  console.log(subTitles); 
+  // console.log(subTitles); 
   
 
   const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains/Previous Year Questions)
@@ -31,6 +28,7 @@ const Packagename = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
   const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
   const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
+  
 
   // Handle topic selection & set modal questions
   const handleTopicSelect = (section, testType) => {
@@ -40,7 +38,16 @@ const Packagename = () => {
     setIsTimerRunning(true);
     setTimer(600); // Reset Timer on topic change
   };
-
+  useEffect(() => {
+    // Fetching data based on the id from the URL params
+    Api.get(`packages/package-content/${id}`).then((res) => {
+      console.log(res.data);
+      setData(res.data.data[0]); 
+      setFaqs(res.data.data[0].faqs);
+      console.log(res.data)
+    });
+  }, [id]);
+  console.log(faqs)
   // Sidebar button handlers
   const handlePrelimsClick = () => {
     setActiveSection("prelims");
@@ -83,22 +90,22 @@ const Packagename = () => {
     window.open(url, "_blank", `noopener,noreferrer,width=${width},height=${height}`);
   };
  
-  const [faqs, setFaqs] = useState([]);  // Store FAQ data
+  // Store FAQ data
   const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
 
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`)
-      .then((res) => {
-        console.log(res.data);
-        // Setting the FAQ data from the response
-        setFaqs(res.data?.package_content?.[0]?.faqs || []);
-        console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
-  }, [id]);  // Effect will run whenever 'id' changes
+  // useEffect(() => {
+  //   // Fetching data based on the id from the URL params
+  //   Api.get(`packages/package-content/${id}`)
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       // Setting the FAQ data from the response
+  //       setFaqs(res.data?.package_content?.[0]?.faqs || []);
+  //       console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching data:', error);
+  //     });
+  // }, [id]);  // Effect will run whenever 'id' changes
 
   const handleAccordionToggle = (index) => {
     // Toggle the active index (open/close the panel)
@@ -112,11 +119,16 @@ const Packagename = () => {
 
 
   return (
-    <div className='container mt-1'>
+    <div className="container mt-1">
+
        <div className="row">
-        <div className="col-md-9 staticheader h6 leading-10">
+        <div className="col-md-9">
           <div>
-          <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: exams.description }} />            
+
+          <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: data.description }} />            
+
+                    
+
           </div>
         </div>
 
@@ -134,7 +146,7 @@ const Packagename = () => {
           >
             <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
             <div className="text-white flex justify-between">
-              <span className="text-xl font-semibold mb-3 font">Features</span>
+              <span className="text-xl font-semibold mb-3 " style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Features</span>
             </div>
             <hr className="border-t border-gray-600" />
             <ul className="space-y-2">
@@ -147,7 +159,7 @@ const Packagename = () => {
                 "New pattern and Updated Questions",
                 "Easy, Moderate and Hard Level Questions",
               ].map((item, index) => (
-                <li key={index} className="flex items-center gap-2 font">
+                <li key={index} className="flex items-center gap-2 " style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>
                   <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -169,12 +181,12 @@ const Packagename = () => {
 
             <div className="text-center">
               <p>
-                <del className="text-red-400 font">Package Price:</del>
+                <del className="text-red-400"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Package Price:</del>
               </p>
-              <del className="bg-red-500 text-white rounded p-1 mb-2">
+              <del className="bg-red-500 text-white rounded p-1 mb-2"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>
                 Rs.{exams?.amount || 0} 
               </del>
-              <p className="text-white font-bold h5 font">Discounted Price:</p>
+              <p className="text-white font-bold h5 "  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Discounted Price:</p>
               <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
                 Rs.{exams?.discountedAmount || 0} 
               </button>
@@ -188,6 +200,7 @@ const Packagename = () => {
           <button
             className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
             onClick={handlePrelimsClick}
+            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
           >
             Prelims
           </button>
@@ -196,6 +209,7 @@ const Packagename = () => {
           <button
             className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
             onClick={handleMainsClick}
+            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
           >
             Mains
           </button>
@@ -204,6 +218,7 @@ const Packagename = () => {
           <button
             className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
             onClick={handleUpdatesClick}
+            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
           >
             Previous Year Question Paper
           </button>
@@ -220,7 +235,7 @@ const Packagename = () => {
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1">
                       <div className="card-body text-center">
-                        <h5 className="card-title font fw-bold">{test.exam_name}</h5>
+                        <h5 className="card-title fw-bold"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>{test.exam_name}</h5>
                         <div className="text-center">
                           {/* Show Level Button */}
                           {!showDifficulty[test._id] && (
@@ -228,6 +243,7 @@ const Packagename = () => {
                               onClick={() => handleShowLevelClick(test._id)} // Show difficulty for the specific test
                               className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
                               style={{ backgroundColor: "#131656" }}
+                              
                             >
                               Show Level
                             </button>
@@ -297,7 +313,7 @@ const Packagename = () => {
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
                       <div className="card-body text-center">
-                        <h5 className="card-title font fw-bold">{test.exam_name}</h5>
+                        <h5 className="card-title  fw-bold"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>{test.exam_name}</h5>
                         <div className="text-center">
                           {/* Show Level Button */}
                           {!showDifficulty[test._id] && (
@@ -459,7 +475,7 @@ const Packagename = () => {
     onClick={() => handleAccordionToggle(index)}
   >
    <div className="flex" style={{ justifyContent: 'space-between', width: '100%' }}>
-  <span>{faq.question}</span>
+  <span   dangerouslySetInnerHTML={{ __html: faq.question }}/>
   <span>
     {activeIndex === index ? (
       <i className="bi bi-arrow-up h4"></i>
@@ -475,7 +491,7 @@ const Packagename = () => {
               className={`overflow-hidden transition-all duration-500 ease-in-out
                 ${activeIndex === index ? 'max-h-40' : 'max-h-0'}`}
             >
-              <p className="px-5 py-2 text-gray-700 ml-3">{faq.answer}</p>
+              <p className="px-5 py-2 text-gray-700 ml-3" dangerouslySetInnerHTML={{ __html: faq.answer}}/>
             </div>
           </div>
         ))
