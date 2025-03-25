@@ -113,7 +113,7 @@ const Test = () => {
   useEffect(() => {
     Api.get(`exams/getExam/${id}`) // Fetch the exam data from your API
       .then((res) => {
-        // Transform the data to match your schema
+         console.log(res)
         const transformedData = {
      // Example ExamId, set accordingly
           section: res.data.section.map((section) => ({
@@ -179,9 +179,10 @@ const Test = () => {
 
         // Set the transformed data to state
         setExamData(transformedData);
+        console.log(transformedData)
 
         // Now post the transformed data to your '/results' endpoint
-        Api.post("/results/67c5900a09a3bf8c7f605d71/67c5900a09a3bf8c7f605d71", transformedData)
+        Api.post(`/results/65a12345b6c78d901e23f456/${id}`, transformedData)
           .then((response) => {
             console.log("Data posted successfully:", response);
 
@@ -346,7 +347,7 @@ const Test = () => {
   useEffect(() => {
     if (timeLeft <= 0) {
       // Automatically submit the exam when time is up
-      // submitExam();
+      submitExam();
       return; // Stop further actions if time is up
     }
 
@@ -356,116 +357,146 @@ const Test = () => {
 
     return () => clearInterval(timer); // Cleanup on unmount
   }, [timeLeft]);
+  const [examDataSubmission, setExamDataSubmission] = useState(null);  // Define examDataSubmission state
 
-
-    const submitExam = () => {
-        if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
-            console.error("Exam data or section not available");
-            return;
-        }
-
-        const currentSection = examData.section[currentSectionIndex];
-        const endTime = new Date();
-        const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
-        const formattedTotalTime = formatTime(timeTakenInSeconds);
-
-        setTotalTime(formattedTotalTime);
-
-        const answersData = selectedOptions.map((selectedOption, index) => {
-            const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
-            const singleQuestionTime = formatTime(questionTimes[index] || 0);
-
-            const optionsData = question?.options?.map((option, optionIndex) => ({
-                option: option,
-                index: optionIndex,
-                isSelected: optionIndex === selectedOption,
-                isCorrect: optionIndex === question?.answer,
-            }));
-
-            return {
-                question: question?.question,
-                options: optionsData,
-                correct: question?.answer === selectedOption ? 1 : 0,
-                explanation: question?.explanation,
-                answer: question?.answer,
-                selectedOption,
-                isVisited: visitedQuestions?.includes(index) ? 1 : 0,
-                q_on_time: singleQuestionTime,
-            };
-        });
-
-        const totalScore = selectedOptions.reduce((total, option, index) => {
-            const currentQuestion = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
-            const plusmark = currentQuestion?.plus_mark || 1;
-            const minusmark = currentQuestion?.minus_mark || 0.25;
-            const scoreForThisQuestion = currentQuestion?.answer === option ? plusmark : -minusmark;
-            return total + scoreForThisQuestion;
-        }, 0);
-
-        const formattedSections = examData.section.map((section) => ({
-          
-            name: section.name,
-            t_question: section.t_question,
-            t_time: section.t_time,
-            t_mark: section.t_mark,
-            plus_mark: section.plus_mark,
-            minus_mark: section.minus_mark,
-            cutoff_mark: section.cutoff_mark,
-            s_blueprint: section.s_blueprint.map((blueprint) => ({
-                subject: blueprint.subject,
-                topic: blueprint.topic,
-                tak_time: blueprint.tak_time,
-            })),
-            questions: {
-                english: section.questions.english.map((question, index) => ({
-                    question: question?.question,
-                    options: answersData[index]?.options || [],
-                    correct: answersData[index]?.correct || 0,
-                    explanation: question?.explanation || "",
-                    selectedOption: answersData[index]?.selectedOption || null,
-                    q_on_time: answersData[index]?.q_on_time || "0",
-                    isVisited: answersData[index]?.isVisited || 0,
-                })),
-                hindi: section.questions.hindi.map((question, index) => ({
-                    question: question?.question,
-                    options: answersData[index]?.options || [],
-                    correct: answersData[index]?.correct || 0,
-                    explanation: question?.explanation || "",
-                    selectedOption: answersData[index]?.selectedOption || null,
-                    q_on_time: answersData[index]?.q_on_time || "0",
-                    isVisited: answersData[index]?.isVisited || 0,
-                })),
-                tamil: section.questions.tamil.map((question, index) => ({
-                    question: question?.question,
-                    options: answersData[index]?.options || [],
-                    correct: answersData[index]?.correct || 0,
-                    explanation: question?.explanation || "",
-                    selectedOption: answersData[index]?.selectedOption || null,
-                    q_on_time: answersData[index]?.q_on_time || "0",
-                    isVisited: answersData[index]?.isVisited || 0,
-                })),
-            },
-            s_order: section.s_order || 0,
-        }));
-        console.log("Formatted Sections:", formattedSections);
-
-        Api.put("results/67df97a5a39b42167ed8116f", {
-            userId: "67df97a5a39b42167ed8116f",
-            ExamId: "67c5900a09a3bf8c7f605d71",
-            section: formattedSections,
-            score: totalScore,
-            totalTime: formattedTotalTime,
-            timeTakenInSeconds: timeTakenInSeconds,
-            takenAt: examStartTime,
-            submittedAt: endTime,
-        })
-        .then((res) => {
-            console.log("Response Data-sample:", res.data);
-        })
-        .catch((err) => {
-            console.error("Error submitting marks:", err);
-        });
-    };
+  const submitExam = () => {
+    console.log("submitExam");
+  
+    if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
+      console.error("Exam data or section not available");
+      return;
+    }
+  
+    const currentSection = examData.section[currentSectionIndex];
+    const endTime = new Date();
+    const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
+    const formattedTotalTime = formatTime(timeTakenInSeconds);
+  
+    setTotalTime(formattedTotalTime);
+  
+    // Processing selected answers
+    const answersData = selectedOptions.map((selectedOption, index) => {
+      const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+      const singleQuestionTime = formatTime(questionTimes[index] || 0);
+  
+      const optionsData = question?.options?.map((option, optionIndex) => ({
+        option: option,
+        index: optionIndex,
+        isSelected: optionIndex === selectedOption,
+        isCorrect: optionIndex === question?.answer,
+      }));
+  
+      return {
+        question: question?.question,
+        options: optionsData,
+        correct: question?.answer === selectedOption ? 1 : 0,
+        explanation: question?.explanation,
+        answer: question?.answer,
+        selectedOption: selectedOption !== null ? selectedOption : null,
+        isVisited: visitedQuestions?.includes(index) ? 1 : 0,
+        q_on_time: singleQuestionTime,
+      };
+    });
+  
+    // Reset selected options properly after processing answers
+    setSelectedOptions((prev) => prev.map(() => undefined));
+  
+    // Calculating total score
+    const totalScore = selectedOptions.reduce((total, option, index) => {
+      const currentQuestion = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+      const plusmark = currentQuestion?.plus_mark || 1;
+      const minusmark = currentQuestion?.minus_mark || 0.25;
+      const scoreForThisQuestion = currentQuestion?.answer === option ? plusmark : -minusmark;
+      return total + scoreForThisQuestion;
+    }, 0);
+  
+    // Formatting sections data for API submission
+    const formattedSections = examData.section.map((section) => ({
+      name: section.name,
+      t_question: section.t_question,
+      t_time: section.t_time,
+      t_mark: section.t_mark,
+      plus_mark: section.plus_mark,
+      minus_mark: section.minus_mark,
+      cutoff_mark: section.cutoff_mark,
+      s_blueprint: section.s_blueprint.map((blueprint) => ({
+        subject: blueprint.subject,
+        topic: blueprint.topic,
+        tak_time: blueprint.tak_time,
+      })),
+      questions: {
+        english: section.questions.english.map((question, index) => ({
+          question: question?.question,
+          options: question.options || [],
+          correct: answersData[index]?.correct || 0,
+          explanation: question?.explanation || "",
+          selectedOption: answersData[index]?.selectedOption,
+          q_on_time: answersData[index]?.q_on_time || "0",
+          isVisited: answersData[index]?.isVisited || 0,
+        })),
+        hindi: section.questions.hindi.map((question, index) => ({
+          question: question?.question,
+          options: question.options || [],
+          correct: answersData[index]?.correct || 0,
+          explanation: question?.explanation || "",
+          selectedOption: answersData[index]?.selectedOption,
+          q_on_time: answersData[index]?.q_on_time || "0",
+          isVisited: answersData[index]?.isVisited || 0,
+        })),
+        tamil: section.questions.tamil.map((question, index) => ({
+          question: question?.question,
+          options: question.options || [],
+          correct: answersData[index]?.correct || 0,
+          explanation: question?.explanation || "",
+          selectedOption: answersData[index]?.selectedOption,
+          q_on_time: answersData[index]?.q_on_time || "0",
+          isVisited: answersData[index]?.isVisited || 0,
+        })),
+      },
+      s_order: section.s_order || 0,
+    }));
+  
+    console.log("Formatted Sections:", formattedSections);
+  
+    // Update the state that triggers the API call
+    setExamDataSubmission({
+      formattedSections,           // Ensure formattedSections is part of examDataSubmission
+      totalScore,                  // Ensure totalScore is part of examDataSubmission
+      timeTakenInSeconds,
+      endTime,
+    });
+  };
+  
+  
+  useEffect(() => {
+    if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
+  
+    const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
+  
+    // API call with the necessary data
+    Api.post(`results/65a12345b6c78d901e23f456/${id}`, {
+      ExamId: `${id}`,
+      section: formattedSections,  // Now this will work since formattedSections is part of examDataSubmission
+      score: totalScore,           // totalScore is also included
+      totalTime: formattedTotalTime,
+      timeTakenInSeconds: timeTakenInSeconds,
+      takenAt: examStartTime,
+      submittedAt: endTime,
+    })
+      .then((res) => {
+        console.log("Response Data-sample:", res.data);
+      })
+      .catch((err) => {
+        console.error("Error submitting marks:", err);
+      });
+  }, [
+    examDataSubmission,  // Trigger whenever data to submit changes
+    selectedOptions,     // Trigger when selected options change
+ // Trigger when formattedSections changes
+      // Trigger when formattedTotalTime changes
+    id,                  // Trigger when ID changes (if needed)
+  ]);
+  
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
@@ -492,7 +523,7 @@ const Test = () => {
   // Trigger submission on timeLeft = 0 or when exam is submitted
   useEffect(() => {
     if (timeLeft <= 0) {
-      // submitExam();
+      submitExam();
     }
   }, [timeLeft]);
 
@@ -508,6 +539,10 @@ const Test = () => {
   const isLastQuestion =
     clickedQuestionIndex ===
     quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
+
+  
+
+
   return (
     <div className="container-fluid mock-font ">
       <div>

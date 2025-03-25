@@ -4,24 +4,21 @@ import Api from '../service/Api';
 
 const Packagename = () => {
   const [data, setData] = useState({});
+  const [faqs, setFaqs] = useState([]);
   const { id } = useParams();
 
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`).then((res) => {
-      console.log(res.data);
-      setData(res.data); // Setting the response data to state
-    });
-  }, [id]);
+
+
   const navigate = useNavigate();
   // Extracting the package content and exams information
-  const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
+  // const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
   const exams = data?.exams?.[0] || {}; 
   console.log("VAR",exams?.exams?._id)
   // Assuming there is only one exam object
-  const subTitles = packageContent?.sub_titles || []; // Accessing sub_titles or default to an empty array
+  const subTitles = data?.sub_titles || []; 
+
   
-  console.log(subTitles); 
+  // console.log(subTitles); 
   
 
   const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains/Previous Year Questions)
@@ -31,6 +28,7 @@ const Packagename = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
   const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
   const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
+  
 
   // Handle topic selection & set modal questions
   const handleTopicSelect = (section, testType) => {
@@ -40,7 +38,16 @@ const Packagename = () => {
     setIsTimerRunning(true);
     setTimer(600); // Reset Timer on topic change
   };
-
+  useEffect(() => {
+    // Fetching data based on the id from the URL params
+    Api.get(`packages/package-content/${id}`).then((res) => {
+      console.log(res.data);
+      setData(res.data.data[0]); 
+      setFaqs(res.data.data[0].faqs);
+      console.log(res.data)
+    });
+  }, [id]);
+  console.log(faqs)
   // Sidebar button handlers
   const handlePrelimsClick = () => {
     setActiveSection("prelims");
@@ -83,22 +90,22 @@ const Packagename = () => {
     window.open(url, "_blank", `noopener,noreferrer,width=${width},height=${height}`);
   };
  
-  const [faqs, setFaqs] = useState([]);  // Store FAQ data
+  // Store FAQ data
   const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
 
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`)
-      .then((res) => {
-        console.log(res.data);
-        // Setting the FAQ data from the response
-        setFaqs(res.data?.package_content?.[0]?.faqs || []);
-        console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
-  }, [id]);  // Effect will run whenever 'id' changes
+  // useEffect(() => {
+  //   // Fetching data based on the id from the URL params
+  //   Api.get(`packages/package-content/${id}`)
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       // Setting the FAQ data from the response
+  //       setFaqs(res.data?.package_content?.[0]?.faqs || []);
+  //       console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching data:', error);
+  //     });
+  // }, [id]);  // Effect will run whenever 'id' changes
 
   const handleAccordionToggle = (index) => {
     // Toggle the active index (open/close the panel)
@@ -117,7 +124,11 @@ const Packagename = () => {
        <div className="row">
         <div className="col-md-9">
           <div>
-          <h1  dangerouslySetInnerHTML={{ __html: exams.description }}  style={{ fontFamily: 'helvetica, Arial, sans-serif' }} />            
+
+          <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: data.description }} />            
+
+                    
+
           </div>
         </div>
 
@@ -464,7 +475,7 @@ const Packagename = () => {
     onClick={() => handleAccordionToggle(index)}
   >
    <div className="flex" style={{ justifyContent: 'space-between', width: '100%' }}>
-  <span>{faq.question}</span>
+  <span   dangerouslySetInnerHTML={{ __html: faq.question }}/>
   <span>
     {activeIndex === index ? (
       <i className="bi bi-arrow-up h4"></i>
@@ -480,7 +491,7 @@ const Packagename = () => {
               className={`overflow-hidden transition-all duration-500 ease-in-out
                 ${activeIndex === index ? 'max-h-40' : 'max-h-0'}`}
             >
-              <p className="px-5 py-2 text-gray-700 ml-3">{faq.answer}</p>
+              <p className="px-5 py-2 text-gray-700 ml-3" dangerouslySetInnerHTML={{ __html: faq.answer}}/>
             </div>
           </div>
         ))
