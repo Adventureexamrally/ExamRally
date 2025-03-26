@@ -18,6 +18,27 @@ const Test = () => {
   // Fetch exam data
 
   const { id } = useParams();
+// Prevent page refresh on F5 and refresh button click
+// Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
+// window.addEventListener('beforeunload', function (e) {
+//   // Customize the confirmation message
+//   var confirmationMessage = 'Are you sure you want to leave?';
+
+//   // Standard for most browsers
+//   e.returnValue = confirmationMessage;
+
+//   // For some browsers
+//   return confirmationMessage;
+// });
+
+// // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
+// window.addEventListener('keydown', function (e) {
+//   // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
+//   if ((e.key === 'F5') || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.shiftKey && e.key === 'R')) {
+//       e.preventDefault();  // Prevent F5, Ctrl+R, or Ctrl+Shift+R
+//   }
+// });
+
 
   useEffect(() => {
     Api.get(`exams/getExam/${id}`)
@@ -109,6 +130,8 @@ const Test = () => {
       setQuestionStartTime(new Date()); // Reset time for next question
     }
   }, [currentSectionIndex]); // Runs when the user changes questions
+
+// API get method
 
   useEffect(() => {
     Api.get(`exams/getExam/${id}`) // Fetch the exam data from your API
@@ -219,74 +242,77 @@ const Test = () => {
   const [showModal, setShowModal] = useState(false);
   const [sectionSummaryData, setSectionSummaryData] = useState([]);
 
-  const handleSubmitSection = () => {
-    const currentSection = examData?.section[currentSectionIndex];
-    if (!currentSection) return;
+  // const handleSubmitSection = () => {
+  //   const currentSection = examData?.section[currentSectionIndex];
+  //   if (!currentSection) return;
 
-    // Get the questions for the current section and selected language
-    const questions =
-      currentSection.questions?.[selectedLanguage?.toLowerCase()];
-    if (!questions) return; // If no questions for the selected language, return early.
+  //   // Get the questions for the current section and selected language
+  //   const questions =
+  //     currentSection.questions?.[selectedLanguage?.toLowerCase()];
+  //   if (!questions) return; // If no questions for the selected language, return early.
 
-    // Total questions in the current section
-    const totalQuestions = questions.length;
+  //   // Total questions in the current section
+  //   const totalQuestions = questions.length;
 
-    // Calculate answered and unanswered questions
-    const answeredQuestions = selectedOptions
-      .slice(startingIndex, startingIndex + totalQuestions)
-      .filter((option) => option !== undefined).length;
+  //   // Calculate answered and unanswered questions
+  //   const answeredQuestions = selectedOptions
+  //     .slice(startingIndex, startingIndex + totalQuestions)
+  //     .filter((option) => option !== undefined).length;
 
-    const notAnsweredQuestions = totalQuestions - answeredQuestions;
+  //   const notAnsweredQuestions = totalQuestions - answeredQuestions;
 
-    // Calculate visited and not visited questions
-    const visitedQuestionsCount = visitedQuestions.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
+  //   // Calculate visited and not visited questions
+  //   const visitedQuestionsCount = visitedQuestions.filter(
+  //     (index) =>
+  //       index >= startingIndex && index < startingIndex + totalQuestions
+  //   ).length;
 
-    const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
+  //   const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
 
-    // Calculate marked for review questions
-    const reviewedQuestions = markedForReview.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
+  //   // Calculate marked for review questions
+  //   const reviewedQuestions = markedForReview.filter(
+  //     (index) =>
+  //       index >= startingIndex && index < startingIndex + totalQuestions
+  //   ).length;
 
-    // Set the section summary
-    const sectionSummary = {
-      sectionName: currentSection.name, // Add the section name
-      answeredQuestions,
-      notAnsweredQuestions,
-      visitedQuestionsCount,
-      notVisitedQuestions,
-      reviewedQuestions,
-      totalQuestions,
-    };
+  //   // Set the section summary
+  //   const sectionSummary = {
+  //     sectionName: currentSection.name, // Add the section name
+  //     answeredQuestions,
+  //     notAnsweredQuestions,
+  //     visitedQuestionsCount,
+  //     notVisitedQuestions,
+  //     reviewedQuestions,
+  //     totalQuestions,
+  //   };
 
-    // Store section summary
-    setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
+  //   // Store section summary
+  //   setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
 
-    // Display modal
-    setShowModal(true);
+  //   // Display modal
+  //   setShowModal(true);
 
-    if (currentSectionIndex < examData.section.length - 1) {
-      setCurrentSectionIndex((prev) => prev + 1);
+  //   if (currentSectionIndex < examData.section.length - 1) {
+  //     setCurrentSectionIndex((prev) => prev + 1);
 
-      // Move to the first question of the next section
-      const newStartingIndex = examData?.section
-        ?.slice(0, currentSectionIndex + 1)
-        .reduce(
-          (acc, section) =>
-            acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
-          0
-        );
+  //     // Move to the first question of the next section
+  //     const newStartingIndex = examData?.section
+  //       ?.slice(0, currentSectionIndex + 1)
+  //       .reduce(
+  //         (acc, section) =>
+  //           acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+  //         0
+  //       );
 
-      setClickedQuestionIndex(newStartingIndex);
-    } else {
-      // If it's the last section, finish the test (call your handleSubmitTest function)
-      submitExam();
-    }
-  };
+  //     setClickedQuestionIndex(newStartingIndex);
+  //   } else {
+  //   console.log("submitting exam else condition");
+
+  //     submitExam();
+
+
+  //   }
+  // };
 
   const handleNextClick = () => {
     if (
@@ -347,7 +373,8 @@ const Test = () => {
   useEffect(() => {
     if (timeLeft <= 0) {
       // Automatically submit the exam when time is up
-      submitExam();
+      // console.log('time left')
+      // submitExam();
       return; // Stop further actions if time is up
     }
 
@@ -359,8 +386,117 @@ const Test = () => {
   }, [timeLeft]);
   const [examDataSubmission, setExamDataSubmission] = useState(null);  // Define examDataSubmission state
 
+  useEffect(() => {
+    const storedSelectedOptions = localStorage.getItem('selectedOptions');
+    if (storedSelectedOptions) {
+      // Parse and set the selected options if they exist in localStorage
+      const parsedOptions = JSON.parse(storedSelectedOptions);
+      setSelectedOptions(parsedOptions.filter(option => option !== null && option !== '')); // Filter out null or empty values
+    }
+  }, []);  // This effect runs once when the component mounts
+  
+  // Save selected options to localStorage whenever they are updated
+  useEffect(() => {
+    if (selectedOptions.length > 0) {
+      // Filter out null or empty values before saving to localStorage
+      const validOptions = selectedOptions.filter(option => option !== null && option !== '');
+      localStorage.setItem('selectedOptions', JSON.stringify(validOptions));
+    } else {
+      // Optionally clear the stored data when there are no selected options
+      localStorage.removeItem('selectedOptions');
+    }
+  }, [selectedOptions]); // This effect runs every time selectedOptions change
+  
+  // Function to update selected options
+  const updateSelectedOption = (newSelectedOption, index) => {
+    const updatedSelectedOptions = [...selectedOptions];
+
+    // Only update the option if it's not null or empty
+    if (newSelectedOption !== null && newSelectedOption !== '') {
+      updatedSelectedOptions[index] = newSelectedOption; // Set the new selected option at the given index
+    } else {
+      updatedSelectedOptions[index] = null; // Optionally set it to null if invalid value
+    }
+
+    // Update the state and local storage with the new selected options
+    setSelectedOptions(updatedSelectedOptions);
+  };
+
+
+  // Your submitExam function with the necessary modifications
+  const handleSubmitSection = () => {
+    const currentSection = examData?.section[currentSectionIndex];
+    if (!currentSection) return;
+  
+    // Get the questions for the current section and selected language
+    const questions =
+      currentSection.questions?.[selectedLanguage?.toLowerCase()];
+    if (!questions) return; // If no questions for the selected language, return early.
+  
+    // Total questions in the current section
+    const totalQuestions = questions.length;
+  
+    // Calculate answered and unanswered questions
+    const answeredQuestions = selectedOptions
+      .slice(startingIndex, startingIndex + totalQuestions)
+      .filter((option) => option !== undefined).length;
+  
+    const notAnsweredQuestions = totalQuestions - answeredQuestions;
+  
+    // Calculate visited and not visited questions
+    const visitedQuestionsCount = visitedQuestions.filter(
+      (index) =>
+        index >= startingIndex && index < startingIndex + totalQuestions
+    ).length;
+
+    const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
+ 
+    // Calculate marked for review questions
+    const reviewedQuestions = markedForReview.filter(
+      (index) =>
+        index >= startingIndex && index < startingIndex + totalQuestions
+    ).length;
+  
+    // Set the section summary
+    const sectionSummary = {
+      sectionName: currentSection.name, // Add the section name
+      answeredQuestions,
+      notAnsweredQuestions,
+      visitedQuestionsCount,
+      notVisitedQuestions,
+      reviewedQuestions,
+      totalQuestions,
+    };
+  
+    // Store section summary
+    setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
+  
+    // Display modal
+    setShowModal(true);
+  
+    if (currentSectionIndex < examData.section.length - 1) {
+      setCurrentSectionIndex((prev) => prev + 1);
+  
+      // Move to the first question of the next section
+      const newStartingIndex = examData?.section
+        ?.slice(0, currentSectionIndex + 1)
+        .reduce(
+          (acc, section) =>
+            acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+          0
+        );
+  
+      setClickedQuestionIndex(newStartingIndex);
+    } else {
+      console.log("submitting exam else condition");
+  
+      submitExam();
+    }
+  };
+
+  
   const submitExam = () => {
-    console.log("submitExam");
+    console.log("submitExam called");
   
     if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
       console.error("Exam data or section not available");
@@ -373,6 +509,39 @@ const Test = () => {
     const formattedTotalTime = formatTime(timeTakenInSeconds);
   
     setTotalTime(formattedTotalTime);
+    if (!currentSection) return;
+  
+    // Get the questions for the current section and selected language
+    const questions =
+      currentSection.questions?.[selectedLanguage?.toLowerCase()];
+    if (!questions) return; // If no questions for the selected language, return early.
+  
+    // Total questions in the current section
+    const totalQuestions = questions.length;
+  
+    // Calculate answered and unanswered questions
+    const answeredQuestions = selectedOptions
+      .slice(startingIndex, startingIndex + totalQuestions)
+      .filter((option) => option !== undefined).length;
+  
+    const notAnsweredQuestions = totalQuestions - answeredQuestions;
+  
+    // Calculate visited and not visited questions for the current section
+    const visitedQuestionsCount = visitedQuestions.filter(
+      (index) =>
+        index >= startingIndex && index < startingIndex + totalQuestions
+    ).length;
+  
+    console.log("visit", visitedQuestionsCount);
+  
+    const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
+    console.log("notvisit", notVisitedQuestions);
+  
+    // Calculate marked for review questions
+    const reviewedQuestions = markedForReview.filter(
+      (index) =>
+        index >= startingIndex && index < startingIndex + totalQuestions
+    ).length;
   
     // Processing selected answers
     const answersData = selectedOptions.map((selectedOption, index) => {
@@ -386,20 +555,22 @@ const Test = () => {
         isCorrect: optionIndex === question?.answer,
       }));
   
+      // Fixing the visited and not visited logic
+      const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
+      const notVisited = isVisited === 1 ? 0 : 1; // 'notVisited' is the inverse of 'isVisited'
+  
       return {
         question: question?.question,
         options: optionsData,
         correct: question?.answer === selectedOption ? 1 : 0,
         explanation: question?.explanation,
         answer: question?.answer,
-        selectedOption: selectedOption !== null ? selectedOption : null,
-        isVisited: visitedQuestions?.includes(index) ? 1 : 0,
+        selectedOption: question?.selectedOption || selectedOption,
+        isVisited: isVisited,
+        NotVisited: notVisited,
         q_on_time: singleQuestionTime,
       };
     });
-  
-    // Reset selected options properly after processing answers
-    setSelectedOptions((prev) => prev.map(() => undefined));
   
     // Calculating total score
     const totalScore = selectedOptions.reduce((total, option, index) => {
@@ -419,6 +590,10 @@ const Test = () => {
       plus_mark: section.plus_mark,
       minus_mark: section.minus_mark,
       cutoff_mark: section.cutoff_mark,
+      isVisited: visitedQuestionsCount,
+      NotVisited: notVisitedQuestions,
+      Answer:answeredQuestions,
+      NotAnswer:notAnsweredQuestions,
       s_blueprint: section.s_blueprint.map((blueprint) => ({
         subject: blueprint.subject,
         topic: blueprint.topic,
@@ -432,7 +607,8 @@ const Test = () => {
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
           q_on_time: answersData[index]?.q_on_time || "0",
-          isVisited: answersData[index]?.isVisited || 0,
+          isVisited: answersData[index]?.isVisited,
+          NotVisited: answersData[index]?.NotVisited,
         })),
         hindi: section.questions.hindi.map((question, index) => ({
           question: question?.question,
@@ -441,7 +617,8 @@ const Test = () => {
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
           q_on_time: answersData[index]?.q_on_time || "0",
-          isVisited: answersData[index]?.isVisited || 0,
+          isVisited: answersData[index]?.isVisited,
+          NotVisited: answersData[index]?.NotVisited,
         })),
         tamil: section.questions.tamil.map((question, index) => ({
           question: question?.question,
@@ -450,19 +627,25 @@ const Test = () => {
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
           q_on_time: answersData[index]?.q_on_time || "0",
-          isVisited: answersData[index]?.isVisited || 0,
+          isVisited: answersData[index]?.isVisited,
+          NotVisited: answersData[index]?.NotVisited,
         })),
       },
       s_order: section.s_order || 0,
     }));
   
-    console.log("Formatted Sections:", formattedSections);
+    // Include visited and not visited totals in totalcheck
+    const totalcheck = {
+      visitedQuestionsCount,
+      notVisitedQuestions,
+    };
   
     // Update the state that triggers the API call
     setExamDataSubmission({
-      formattedSections,           // Ensure formattedSections is part of examDataSubmission
-      totalScore,                  // Ensure totalScore is part of examDataSubmission
+      formattedSections, // Ensure formattedSections is part of examDataSubmission
+      totalScore, // Ensure totalScore is part of examDataSubmission
       timeTakenInSeconds,
+      totalcheck, // Include visited and not visited totals
       endTime,
     });
   };
@@ -476,7 +659,8 @@ const Test = () => {
     // API call with the necessary data
     Api.post(`results/65a12345b6c78d901e23f456/${id}`, {
       ExamId: `${id}`,
-      section: formattedSections,  // Now this will work since formattedSections is part of examDataSubmission
+      section: formattedSections, 
+       // Now this will work since formattedSections is part of examDataSubmission
       score: totalScore,           // totalScore is also included
       totalTime: formattedTotalTime,
       timeTakenInSeconds: timeTakenInSeconds,
@@ -492,8 +676,6 @@ const Test = () => {
   }, [
     examDataSubmission,  // Trigger whenever data to submit changes
     selectedOptions,     // Trigger when selected options change
- // Trigger when formattedSections changes
-      // Trigger when formattedTotalTime changes
     id,                  // Trigger when ID changes (if needed)
   ]);
   
@@ -523,7 +705,8 @@ const Test = () => {
   // Trigger submission on timeLeft = 0 or when exam is submitted
   useEffect(() => {
     if (timeLeft <= 0) {
-      submitExam();
+      // console.log("2 time called in time")
+      // submitExam();
     }
   }, [timeLeft]);
 
@@ -606,6 +789,7 @@ const Test = () => {
                             </tr>
                           ))}
                         </tbody>
+          
                       </table>
                     </div>
                   </div>
