@@ -217,8 +217,11 @@ const Packagename = () => {
       <div className="row p-3 bg-light">
         <div className="col-md-4">
           <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
+            className={`btn w-100 mb-2 text-white ${
+              activeSection === "prelims" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+            }`}
             onClick={handlePrelimsClick}
+            // disabled={activeSection && activeSection !== "prelims"}
             style={{ fontFamily: "helvetica, Arial, sans-serif" }}
           >
             Prelims
@@ -226,8 +229,11 @@ const Packagename = () => {
         </div>
         <div className="col-md-4">
           <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
+            className={`btn w-100 mb-2 text-white ${
+              activeSection === "mains" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+            }`}
             onClick={handleMainsClick}
+            // disabled={activeSection && activeSection !== "mains"}
             style={{ fontFamily: "helvetica, Arial, sans-serif" }}
           >
             Mains
@@ -235,17 +241,20 @@ const Packagename = () => {
         </div>
         <div className="col-md-4">
           <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
+            className={`btn w-100 mb-2 text-white ${
+              activeSection === "PYQ" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+            }`}
             onClick={handleUpdatesClick}
+            // disabled={activeSection && activeSection !== "PYQ"}
             style={{ fontFamily: "helvetica, Arial, sans-serif" }}
           >
             Previous Year Question Paper
           </button>
         </div>
       </div>
-
+      
       {/* Prelims Topics - Bootstrap Cards */}
-      {activeSection === "prelims" && (
+      {/* {activeSection === "prelims" && (
         <div className="mt-3">
           <div className="row">
             {data?.exams?.map(
@@ -263,7 +272,7 @@ const Packagename = () => {
                           {test.exam_name}
                         </h5>
                         <div className="text-center">
-                          {/* Show Level Button */}
+                          Show Level Button
                           {!showDifficulty[test._id] && (
                             <button
                               onClick={() => handleShowLevelClick(test._id)} // Show difficulty for the specific test
@@ -274,7 +283,7 @@ const Packagename = () => {
                             </button>
                           )}
 
-                          {/* Display difficulty level */}
+                          Display difficulty level
                           {showDifficulty[test._id] && (
                             <div
                               className="mt-4 text-sm px-2 py-2 text-center text-white"
@@ -324,7 +333,81 @@ const Packagename = () => {
             )}
           </div>
         </div>
+      )} */}
+
+{activeSection === "prelims" && (
+  <div className="mt-3">
+    <div className="row">
+      {data?.exams?.map(
+        (test, idx) =>
+          test.test_type === "Prelims" && (
+            <div key={idx} className="col-md-3 mb-3">
+              <div
+                className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1 flex flex-col justify-between h-full min-h-[320px]"
+              >
+                <div className="card-body text-center flex flex-col justify-between h-full">
+                  <h5 className="card-title font-bold text-lg">
+                    {test.exam_name}
+                  </h5>
+
+                  {/* Show Level Button */}
+                  {!showDifficulty[test._id] ? (
+                    <button
+                      onClick={() => handleShowLevelClick(test._id)}
+                      className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                    >
+                      Show Level
+                    </button>
+                  ) : (
+                    <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                      <p>
+                        <strong>{test.q_level}</strong>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Test Info Section */}
+                  <div className="flex justify-center items-center gap-4 mt-2">
+                    <div className="flex flex-col items-center">
+                      <p className="font-medium">Questions</p>
+                      <p>{test.section[0].t_question}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <p className="font-medium">Marks</p>
+                      <p>{test.section[0].t_mark}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <p className="font-medium">Time</p>
+                      <p>{test.section[0].t_time}</p>
+                    </div>
+                  </div>
+
+                  {/* Take Test / Lock Button */}
+                  <button
+                    className={`mt-3 py-2 px-4 rounded w-full transition ${
+                      test.status === "true"
+                        ? "bg-green-500 text-white hover:bg-green-600"
+                        : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                    }`}
+                    onClick={() => {
+                      if (test.status === "true") {
+                        navigate(`/instruction/${test._id}`);
+                      } else {
+                        handleTopicSelect(test.section[0], "prelims");
+                      }
+                    }}
+                  >
+                    {test.status === "true" ? "Take Test" : "Lock"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
       )}
+    </div>
+  </div>
+)}
+
 
       {/* Mains Topics - Bootstrap Cards */}
       {activeSection === "mains" && (

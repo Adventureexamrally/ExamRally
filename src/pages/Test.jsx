@@ -3,7 +3,7 @@ import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useParams } from "react-router-dom";
-
+import Swal from 'sweetalert2'
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -343,20 +343,24 @@ const Test = () => {
 
   const [questionTime, setQuestionTime] = useState(0);
   const [questionTimerActive, setQuestionTimerActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const questionTimerRef = useState(null)
 
-  let questionTimerInterval;
+  // let questionTimerInterval;
 
   useEffect(() => {
-    // Reset time when switching questions
-    setQuestionTime(0);
+    // setQuestionTime(0);
     setQuestionTimerActive(true);
+    // Reset time when switching questions
+    if (questionTimerActive && !isPaused) {
 
-    questionTimerInterval = setInterval(() => {
-      setQuestionTime((prevTime) => prevTime + 1);
-    }, 1000);
-
-    return () => clearInterval(questionTimerInterval);
-  }, [clickedQuestionIndex]);
+      questionTimerRef.current = setInterval(() => {
+        setQuestionTime((prev) => prev + 1);
+      }, 1000);
+    }
+  
+    return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
+  }, [questionTimerActive, isPaused]);
 
   const datatime = examData?.duration ?? 0;
   const [timeLeft, setTimeLeft] = useState(datatime * 60);
@@ -692,13 +696,16 @@ const Test = () => {
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
+  // const [isPaused, setIsPaused] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
+
   useEffect(() => {
   const sectionTimeInSeconds = examData?.section[currentSectionIndex]?.t_time * 60; // Convert minutes to seconds
     settimeminus(sectionTimeInSeconds); // Reset time when the section changes
   }, [examData, currentSectionIndex]);
 
   useEffect(() => {
-    if (timeminus > 0) {
+    if (timeminus > 0  && !isPaused) {
       const timerInterval = setInterval(() => {
         settimeminus((prevTime) => {
           const newTime = prevTime - 1;
@@ -706,19 +713,26 @@ const Test = () => {
         });
       }, 1000); // Update every second
       return () => clearInterval(timerInterval);
+    } 
+  }, [timeminus, isPaused]); // Runs whenever timeminus changes
+  const handlePauseResume = () => {
+    if (pauseCount < 1) {
+      clearInterval(questionTimerRef.current);
+      setIsPaused(true); // Pause the timer
+      setPauseCount(pauseCount + 1);
+      Swal.fire("SweetAlert2 is working!");
     } else {
-      // Automatically call handleSubmitSection when time reaches 0
-      handleSubmitSection();
+      setIsPaused(false); // Resume the timer
+      setPauseCount(0);
     }
-  }, [timeminus]); // Runs whenever timeminus changes
-
+  };
   // Trigger submission on timeLeft = 0 or when exam is submitted
-  useEffect(() => {
-    if (timeLeft <= 0) {
+  // useEffect(() => {
+  //   if (timeLeft <= 0) {
       // console.log("2 time called in time")
       // submitExam();
-    }
-  }, [timeLeft]);
+  //   }
+  // }, [timeLeft]);
 
   const [sectionSummary, setSectionSummary] = useState(null);
 
@@ -826,9 +840,7 @@ const Test = () => {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <span className="h4">Reading Ability! English Language!!</span>
         <div className="badge bg-warning fs-6 p-2">
-          <div className="badge bg-warning fs-6 p-2">
-            <h1>Time-Left: {formatTime(timeLeft)}</h1>
-          </div>
+        
         </div>
       </div>
       <div className="row">
@@ -978,6 +990,14 @@ const Test = () => {
             <h1 className=" bg-blue-400 text-center text-white p-2 ">
               Time Left:{formatTime(timeminus)}
             </h1>
+            <button
+  onClick={handlePauseResume}
+  className={`px-4 py-2 rounded-lg font-semibold transition duration-300 ml-24 mt-2 ${
+    isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+  }`}
+>Pause
+  {isPaused}
+</button>
 
             <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
               {examData?.section[currentSectionIndex]?.questions?.[
