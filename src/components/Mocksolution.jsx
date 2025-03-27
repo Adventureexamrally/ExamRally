@@ -18,21 +18,17 @@ const Mocksolution = () => {
     // Fetch exam data
     const [isToggled, setIsToggled] = useState(false);
 
+    const [check,setCheck]=useState(null)
 
-    const { id } = useParams();
 
     // exams/getExam/67c5900a09a3bf8c7f605d71
     useEffect(() => {
-        Api.get(`results/result/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
-            // Api.get(`exams/getExam/67c5900a09a3bf8c7f605d71`)
-
+        Api.get(`results/65a12345b6c78d901e23f456/67c5900a09a3bf8c7f605d71`)
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);
                     console.log(res.data);
                 }
-
-
             })
             .catch((err) => console.error("Error fetching data:", err));
     }, []);
@@ -59,89 +55,85 @@ const Mocksolution = () => {
 
     // Function to handle toggle change
     const handleToggleChange = () => {
+        console.error("Hello");
+    
+        // Toggle the state
         setIsToggled(!isToggled);
+    
+        // Reset to the first question (starting from the first section and question)
+        if (examData && examData.section && examData.section.length > 0) {
+            // Set the current section to the first section
+            setCurrentSectionIndex(0);
+            
+            // Calculate the starting question index (first question of the first section)
+            const startingIndex = 0; // First question of the first section
+            setClickedQuestionIndex(startingIndex);
+    
+            // Optionally, reset other states if needed
+            setCheck(null);    // Reset any selected question
+            setIsClicked(false); // Reset clicked status for the question
+        }
+    
+        // You can add any additional logic here (e.g., start the timer, etc.)
     };
+    
 
-    const handleOptionChange = (index) => {
-        // setSelectedOptions((prev) => {
-        //     const updatedOptions = [...prev];
-        //     updatedOptions[clickedQuestionIndex] = index; // Store the selected option for the clicked question
-        //     return updatedOptions;
-        // });
-
-        // // Get the correct answer for the clicked question
-        // const currentQuestion =
-        //     examData?.section[currentSectionIndex]?.questions[
-        //     clickedQuestionIndex - startingIndex
-        //     ];
-        // const correctAnswerIndex = currentQuestion?.answer;
-
-        // let mark = 0;
-
-        // // Check if the selected option matches the correct answer
-        // if (correctAnswerIndex === index) {
-        //     mark = 1.0; // Correct answer gets 1 mark
-        //     console.log("Correct Answer", correctAnswerIndex === index);
-        // } else {
-        //     mark = -0.25; // Incorrect answer gets -0.25 mark
-        // }
-
-        // // Send the selected option along with the question data to the API
-        // const currentQuestionData = {
-        //     question: currentQuestion?.question,
-        //     options: currentQuestion?.options,
-        //     correctOption: currentQuestion?.answer,
-        //     selectedOption: currentQuestion?.options[index], // Store the selected option
-        //     isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
-        //     markforreview: markedForReview.includes(clickedQuestionIndex),
-        //     ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
-        // };
-        selectedOptions==index
-        setIsToggled(!isToggled)
-    };
 
 
 
     const [questionStartTime, setQuestionStartTime] = useState(new Date());
     const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
+    const [isClicked, setIsClicked] = useState(false); // State to track if the radio button was clicked
 
-    useEffect(() => {
-        if (!examStartTime) {
-            setExamStartTime(new Date()); // Store when the exam starts
-        }
-    }, []);
+
 
     // Update question time when user switches questions
-    useEffect(() => {
-        if (questionStartTime) {
-            const now = new Date();
-            const timeSpent = Math.floor((now - questionStartTime) / 1000); // Time spent in seconds
-
-            setQuestionTimes((prev) => ({
-                ...prev,
-                [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-            }));
-
-            setQuestionStartTime(new Date()); // Reset time for next question
-        }
-    }, [currentSectionIndex]); // Runs when the user changes questions
-
 
 
     const handleNextClick = () => {
-        if (
-            examData &&
-            examData.section[currentSectionIndex] &&
-            clickedQuestionIndex <
-            startingIndex +
-            examData.section[currentSectionIndex].questions?.[
-                selectedLanguage?.toLowerCase()
-            ]?.length -
-            1
-        ) {
-            setClickedQuestionIndex(clickedQuestionIndex + 1);
+        // Get the current section's total question count based on selected language
+        const currentSection = examData?.section[currentSectionIndex];
+        const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
+    
+        // Check if there's a next question in the current section
+        if (!examData || !currentSection || questions.length === 0) {
+            console.log("No questions available in the current section.");
+            return;
         }
+    
+        // Check if we've completed all questions in the current section
+        if (clickedQuestionIndex < startingIndex + questions.length - 1) {
+            // Move to the next question in the current section
+            setClickedQuestionIndex(clickedQuestionIndex + 1);
+        } else {
+            // If we've completed the last question in the current section, move to the next section
+            if (currentSectionIndex < examData.section.length - 1) {
+                setCurrentSectionIndex(currentSectionIndex + 1); // Move to the next section
+                setClickedQuestionIndex(0); 
+                  // Calculate the starting question index for the next section
+            const newStartingIndex = examData?.section
+            ?.slice(0, currentSectionIndex + 1) // All previous sections
+            .reduce(
+              (acc, section) =>
+                acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length, // Sum of questions per section
+              0
+            );
+  
+          // Set the clicked question index to the first question of the next section
+          setClickedQuestionIndex(newStartingIndex);// Reset the question index for the new section
+            } else {
+                console.log("Exam is complete!"); // Handle case if this is the last section
+            }
+        }
+    
+        // Reset the state for question selection and clicked status
+        setCheck(null);
+        setIsClicked(false);
     };
+    
+    
+    
+
     const [examStartTime, setExamStartTime] = useState(null);
     const [totalTime, setTotalTime] = useState("");
 
@@ -185,10 +177,7 @@ const Mocksolution = () => {
 
     const [sectionSummary, setSectionSummary] = useState(null);
 
-    const showToast = () => {
-        toast.success("Test Submitted");
-        setShowModal(false);
-    };
+   
 
     // Calculate starting index for the current section
     const quantsSection = examData?.section?.[currentSectionIndex];
@@ -202,6 +191,7 @@ const Mocksolution = () => {
         }
     };
 
+    
 
     console.log(examData);
 
@@ -229,10 +219,11 @@ const Mocksolution = () => {
                     {!isSubmitted ? (
                         <>
                             <div className="d-flex  justify-between">
-                                <h3>
-                                    Question No: {clickedQuestionIndex + 1}/
-                                    {examData?.t_questions}
-                                </h3>
+                           <h3>
+                  Question No: {clickedQuestionIndex + 1}/
+                  {examData?.t_questions}
+                </h3>
+
                                 <h1>
                                     <span className="border p-1">
                                         &nbsp;Marks&nbsp;
@@ -340,75 +331,138 @@ const Mocksolution = () => {
 
                                             <h5>Options:</h5>
 
-                                            {examData.section[currentSectionIndex]?.questions?.[
-                                                selectedLanguage?.toLowerCase()
-                                            ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
-                                                // Get the previously selected option from the API or state
-                                                const selectedOption =
-                                                    examData.section[currentSectionIndex]?.questions?.[
-                                                        selectedLanguage?.toLowerCase()
-                                                    ]?.[clickedQuestionIndex - startingIndex]?.selectedOption;
+                                            {
+    examData.section[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+    ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
+        // Get the previously selected option from the API or state
+        const selectedOption =
+            examData.section[currentSectionIndex]?.questions?.[
+                selectedLanguage?.toLowerCase()
+            ]?.[clickedQuestionIndex - startingIndex]?.selectedOption;
 
-                                                const answer =
-                                                    examData.section[currentSectionIndex]?.questions?.[
-                                                        selectedLanguage?.toLowerCase()
-                                                    ]?.[clickedQuestionIndex - startingIndex]?.answer;
+        const answer =
+            examData.section[currentSectionIndex]?.questions?.[
+                selectedLanguage?.toLowerCase()
+            ]?.[clickedQuestionIndex - startingIndex]?.answer;
 
-                                                const isSelected = selectedOption === index; // Check if this option is selected
-                                                const isCorrect = answer === index; // Check if this option is correct
+        const isSelected = selectedOption === index; // Check if this option is selected
+        const isCorrect = answer === index; // Check if this option is correct
 
-                                                // Conditional styles for selected and correct/incorrect answers
-                                                let optionStyle = {};
+        // Default option style
+        let optionStyle = {};
 
-                                                // If the selected option is incorrect, highlight it in red
-                                                if (isSelected && !isCorrect) {
-                                                    optionStyle = {
-                                                        backgroundColor: "red", // Incorrect answer
-                                                        color: "white", // Optional, for better contrast
-                                                    };
-                                                }
-                                                // If the selected option is correct, highlight it in green
-                                                if (isSelected && isCorrect) {
-                                                    optionStyle = {
-                                                        backgroundColor: "green", // Correct answer
-                                                        color: "white", // Optional, for better contrast
-                                                    };
-                                                }
-                                                // Always show the correct option in green if the user selected the wrong one
-                                                if (!isSelected && isCorrect) {
-                                                    optionStyle = {
-                                                        backgroundColor: "green", // Correct answer
-                                                        color: "white", // Optional, for better contrast
-                                                    };
-                                                }
+   
 
-                                                return (
-                                                    <div
-                                                        key={index}
-                                                        style={isToggled ? {} : optionStyle}
-                                                        className="rounded-lg m-2 p-1"
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            id={`option-${index}`}
-                                                            name="exam-option"
-                                                            value={index}
-                                                            checked={selectedOption === index} // Mark the selected option as checked
-                                                            onChange={() => {
-                                                                console.log("Selected Option Index:", index);
-                                                                handleOptionChange(index,selectedOptions); // Handle option selection
-                                                            }}
-                                                            disabled={!isToggled} // Disabling if toggle state is false
-                                                        />
-                                                        <label
-                                                            htmlFor={`option-${index}`}
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: option || "No option available",
-                                                            }}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
+        // If the selected option is incorrect, highlight it in red
+        if (isSelected && !isCorrect) {
+            optionStyle = {
+                backgroundColor: "red", // Incorrect answer
+                color: "white", // Optional, for better contrast
+            };
+            console.log('Incorrect Option Style:', optionStyle);
+        }
+
+        // If the selected option is correct, highlight it in green
+        if (isSelected && isCorrect) {
+            optionStyle = {
+                backgroundColor: "green", // Correct answer
+                color: "white", // Optional, for better contrast
+            };
+            console.log('Correct Option Style:', optionStyle);
+        }
+
+        // Always show the correct option in green if the user selected the wrong one
+        if (!isSelected && isCorrect) {
+            optionStyle = {
+                backgroundColor: "green", // Correct answer
+                color: "white", // Optional, for better contrast
+            };
+            console.log('Correct Option (User Incorrect) Style:', optionStyle);
+        }
+
+
+        // const iscorret = check === index;
+        let changestyle = {}; // Default empty style
+
+        if (check) {
+            
+          // If check has a value, check if it's an incorrect answer
+          if (check === index && !isCorrect) {
+            changestyle = {
+              backgroundColor: 'red', // Incorrect answer
+              color: 'white', // White text for contrast
+            };
+            console.log('Incorrect Option Style:', changestyle); // Log the incorrect style
+            console.error("check",check,!isCorrect)
+          }
+         if (check && isCorrect) {
+            changestyle = {
+                backgroundColor: "green", // Correct answer
+                color: "white", // Optional, for better contrast
+            };
+            console.log('Correct Option Style:', optionStyle);console.error("check",check,isCorrect)
+        }
+        
+        } else {
+          console.log('No value selected.'); // Log when no option is selected
+        }
+        
+        console.error(check)
+        // const isDisabled = !isToggled || (isSelected && !isToggled); 
+        
+
+        return (
+            <div
+  key={index}
+  style={isToggled ? changestyle : optionStyle} // Apply styles based on toggle state
+  className="rounded-lg m-2 p-1"
+>
+  <input
+    type="radio"
+    id={`option-${index}`}
+    name="exam-option"
+    value={index}
+    checked={check === index}
+    onChange={(e) => {
+      setCheck(Number(e.target.value)); // Set the selected value
+      setIsClicked(true); // Mark that the user clicked the option
+      console.error("value", e.target.value); // Log the selected value
+    }}
+    disabled={!isToggled || isClicked} // Disable if toggle is off or if it's clicked already
+  />
+  
+  <label
+    htmlFor={`option-${index}`}
+    dangerouslySetInnerHTML={{
+      __html: option || "No option available",
+    }}
+  />
+</div>
+
+        );
+    })
+}
+{check != null && examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
+    <>
+        <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
+        <div
+            className="fw-bold text-wrap"
+            style={{
+                whiteSpace: "normal",
+                wordWrap: "break-word",
+            }}
+            dangerouslySetInnerHTML={{
+                __html:
+                    examData.section[currentSectionIndex]?.questions[
+                        selectedLanguage?.toLowerCase()
+                    ]?.[clickedQuestionIndex - startingIndex]?.explanation,
+            }}
+        />
+    </>
+) : check != null ? (
+    <p>No explanation available</p>
+) : null}
 
                                             {/* Explanation Section Below Options */}
                                             <div>
@@ -482,55 +536,7 @@ const Mocksolution = () => {
                         <div className="d-flex justify-content-between p-1">
                             <h1>You</h1>
                             <h1>67</h1>
-                        </div>
-
-                        {/* <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
-                            {examData?.section[currentSectionIndex]?.questions?.[
-                                selectedLanguage?.toLowerCase()
-                            ]?.map((_, index) => {
-                                const fullIndex = startingIndex + index; // Correct question index
-
-                                // Access the current section from the examData
-                                const currentSection = examData.section[currentSectionIndex];
-                                // const timeFormatted = formatTime(timeLeft); // Format the remaining time for the current section
-
-                                // Set className based on question status
-                                let className = "";
-                                if (selectedOptions[fullIndex] !== undefined) {
-                                    className = "answerImg";
-                                    if (markedForReview.includes(fullIndex)) {
-                                        className += " mdansmarkedImg";
-                                    }
-                                } else if (visitedQuestions.includes(fullIndex)) {
-                                    className = "notansImg"; // Visited but not answered
-                                } else {
-                                    className = "notVisitImg"; // Not visited
-                                }
-
-                                // Mark for review
-                                if (markedForReview.includes(fullIndex)) {
-                                    className += " reviewed mdmarkedImg";
-                                }
-
-                                return (
-                                    <div key={fullIndex}>
-                                        {/* Show countdown timer 
-
-
-                                        {/* Question number with click functionality 
-                                        <span
-                                            onClick={() => {
-                                                console.log("Clicked question index:", fullIndex);
-                                                setClickedQuestionIndex(fullIndex);
-                                            }}
-                                            className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                                        >
-                                            {fullIndex + 1}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div> */}
+                        </div>                                   
 
                         <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
                             {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((_, index) => {
