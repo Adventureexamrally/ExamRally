@@ -28,6 +28,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import Packagename from "./Packagename";
 import { useRef } from "react";
+import LiveTest from "./LiveTest";
 
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
@@ -123,11 +124,14 @@ const Dashboard = () => {
       </div> */}
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+      <LiveTest/>
+
+      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="col-span-full">
           <Banner />
         </div>
-        {/* Topic Test */}
+        {/* Topic Test 
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Topic Test</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
@@ -206,7 +210,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Special Mock Test */}
+        {/* Special Mock Test 
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Special Mock Test</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
@@ -267,7 +271,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Others */}
+        {/* Others 
         <div className="bg-white p-4 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Others</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
@@ -312,7 +316,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Upcoming Exams */}
       <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white">

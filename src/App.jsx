@@ -47,6 +47,7 @@ import Resultanalysis from "./components/Resultanalysis";
 import Mocksolution from "./components/Mocksolution";
 import Blog from "./components/Blog";
 import Subblog from "./components/Subblog";
+import DetailedCategorie from "./components/DetailedCategorie";
 
 function App() {
   return (
@@ -169,6 +170,9 @@ function MainApp() {
 
         <Route path="/livebatch" element={<Blog/>}/>
         <Route path="/blogdetails/:id" element={<Subblog/>}/>
+
+        <Route path="/livetest/:link" element={<DetailedCategorie/>}/>
+
 
         <Route path="*" element={<NotFound />} />
       </Routes>
