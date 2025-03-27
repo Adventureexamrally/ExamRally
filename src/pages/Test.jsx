@@ -159,6 +159,7 @@ const Test = () => {
                 correct: question.correct,
                 Incorrect:0,
                 answer: question.answer,
+                common_data:question.common_data,
                 explanation: question.explanation,
                 selectedOption: question.selectedOption,
                 isVisited: 0,
@@ -171,6 +172,7 @@ const Test = () => {
                 correct: question.correct,
                 Incorrect:0,
                 answer: question.answer,
+                common_data:question.common_data,
                 explanation: question.explanation,
                 selectedOption: question.selectedOption,
                 isVisited: 0,
@@ -183,6 +185,7 @@ const Test = () => {
                 correct: question.correct,
                 Incorrect:0,
                 answer: question.answer,
+                common_data:question.common_data,
                 explanation: question.explanation,
                 selectedOption: question.selectedOption,
                 isVisited:0,
@@ -565,6 +568,7 @@ const Test = () => {
         correct: question?.answer === selectedOption ? 1 : 0,
         explanation: question?.explanation,
         answer: question?.answer,
+        common_data:question?.common_data,
         selectedOption: question?.selectedOption || selectedOption,
         isVisited: isVisited,
         NotVisited: notVisited,
@@ -603,6 +607,8 @@ const Test = () => {
         english: section.questions.english.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
+          answer:question?.answer,
+          common_data:question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
@@ -613,6 +619,8 @@ const Test = () => {
         hindi: section.questions.hindi.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
+          answer:question?.answer,
+          common_data:question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
@@ -623,6 +631,8 @@ const Test = () => {
         tamil: section.questions.tamil.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
+          answer:question?.answer,
+          common_data:question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
@@ -1021,49 +1031,60 @@ const Test = () => {
 
       {/* Footer Buttons */}
       <div className="fixed-bottom bg-white p-3">
-        <div className="d-flex justify-content-between">
-          <button
-            onClick={handleClearResponse}
-            className="btn bg-blue-300 fw-bold"
-          >
-            Clear Response
-          </button>
-          <button
-            onClick={handleMarkForReview}
-            className="btn bg-blue-300 fw-bold"
-          >
-            Mark for Review
-          </button>
+      <div className="d-flex justify-content-between border border-8">
+  {/* Left side - Mark for Review and Clear Response */}
+  <div className="d-flex">
+    <button
+      onClick={handleMarkForReview}
+      className="btn bg-blue-300 fw-bold hover:bg-blue-200"
+    >
+      Mark for Review
+    </button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button
+      onClick={handleClearResponse}
+      className="btn bg-blue-300 fw-bold hover:bg-blue-200"
+    >
+      Clear Response
+    </button>
+  </div>
 
-          {examData?.section?.[currentSectionIndex]?.questions?.[
-            selectedLanguage?.toLowerCase()
-          ]?.length > 0 &&
-            clickedQuestionIndex !==
-              startingIndex +
-                (examData?.section?.[currentSectionIndex]?.questions?.[
-                  selectedLanguage?.toLowerCase()
-                ]?.length || 0) -
-                1 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white fw-bold"
-              >
-                Save & Next
-              </button>
-            )}
-
-          <button
-            className="btn bg-blue-500 text-white fw-bold"
-            onClick={handleSubmitSection}
-            data-bs-toggle="modal"
-            data-bs-target="#staticBackdrop"
-          >
-            {currentSectionIndex === examData?.section?.length - 1
-              ? "Submit Test"
-              : "Submit Section"}
-          </button>
-        </div>
-      </div>
+  {/* Right side - Save & Next and Submit Section */}
+  <div className="d-flex justify-content-end">
+    {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 &&
+      clickedQuestionIndex !==
+        startingIndex +
+          (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0) - 1 && (
+        <button
+          onClick={handleNextClick}
+          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+        >
+          Save & Next
+        </button>
+      )}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button
+      className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+      onClick={handleSubmitSection}
+      data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop"
+    >
+      {currentSectionIndex === examData?.section?.length - 1
+        ? "Submit Test"
+        : "Submit Section"}
+    </button>
+  </div>
+</div>
+</div>
     </div>
   );
 };

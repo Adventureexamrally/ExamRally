@@ -15,8 +15,9 @@ const ResultPage = () => {
   const [resultData, setResultData] = useState(null);
 
   useEffect(() => {
-    Api.get("/results/67c5900a09a3bf8c7f605d71/67c5900a09a3bf8c7f605d71")
+    Api.get("/results/67e3ef252736bfbb799937d7/67e3ef252736bfbb799937d7")
       .then(res => setResultData(res.data))
+     
       .catch(error => console.error("Error fetching data:", error));
   }, []);
 
