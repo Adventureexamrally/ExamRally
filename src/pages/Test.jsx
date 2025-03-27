@@ -3,7 +3,7 @@ import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useParams } from "react-router-dom";
-import Swal from 'sweetalert2'
+
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -759,7 +759,7 @@ useEffect(() => {
 
     // const [timeLeft, setTimeLeft] = useState(60); // Example starting time
   const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+
 
   useEffect(() => {
     let interval;
