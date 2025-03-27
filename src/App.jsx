@@ -71,6 +71,7 @@ function MainApp() {
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
   const isMockTestRoute = location.pathname === "/mocktest";
+  
   useEffect(() => {
     // Check if the modal has been shown before by looking into localStorage
     const hasModalBeenShown = localStorage.getItem("abcmodal123");

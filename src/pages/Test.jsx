@@ -3,7 +3,7 @@ import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useParams } from "react-router-dom";
-
+import logo from '../assets/logo/bg-logo.png'; 
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -40,16 +40,26 @@ const Test = () => {
 // });
 
 
-  useEffect(() => {
+const [isDataFetched, setIsDataFetched] = useState(false);
+const [show_name,setShow_name] = useState("")
+const [t_questions,sett_questions]=useState("")
+useEffect(() => {
+  // Check if data has already been fetched
+  if (!isDataFetched) {
     Api.get(`exams/getExam/${id}`)
       .then((res) => {
         if (res.data) {
           setExamData(res.data);
-          console.log(res.data);
+          setIsDataFetched(true); 
+          setShow_name(res.data.show_name)
+          sett_questions(res.data.t_questions) // Mark that data is fetched
+          console.log("kl",res.data.show_name);
         }
       })
       .catch((err) => console.error("Error fetching data:", err));
-  }, []);
+  }
+}, [id]);  // Only trigger when `id` changes
+
 
   const startingIndex =
     examData?.section
@@ -361,13 +371,13 @@ const Test = () => {
   const datatime = examData?.duration ?? 0;
   const [timeLeft, setTimeLeft] = useState(datatime * 60);
 
-  const formatTime = (durationInSeconds) => {
-    const hours = Math.floor(durationInSeconds / 3600);
-    const minutes = Math.floor((durationInSeconds % 3600) / 60);
-    const seconds = durationInSeconds % 60;
+  // const formatTime = (durationInSeconds) => {
+  //   const hours = Math.floor(durationInSeconds / 3600);
+  //   const minutes = Math.floor((durationInSeconds % 3600) / 60);
+  //   const seconds = durationInSeconds % 60;
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2, "0")}`;
-  };
+  //   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2, "0")}`;
+  // };
 
   useEffect(() => {
     setTimeLeft(datatime * 60); // Reset when duration changes
@@ -733,13 +743,46 @@ const Test = () => {
     clickedQuestionIndex ===
     quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
 
+    // const [timeLeft, setTimeLeft] = useState(60); // Example starting time
+  const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    if (isRunning && !isPaused) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (!isRunning) {
+      clearInterval(interval);
+    }
+
+    return () => clearInterval(interval);
+  }, [isRunning, isPaused]);
+
+  const toggleTimer = () => {
+    if (isRunning && !isPaused) {
+      setIsPaused(true);  // Pause the timer
+    } else {
+      setIsRunning((prev) => !prev);  // Toggle play/pause
+      setIsPaused(false);  // Ensure it's not paused when restarting
+    }
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+  };
   
-
-
   return (
-    <div className="container-fluid mock-font ">
+    <div className="mock-font p-1">
       <div>
-        <p className="text-lg">Selected Language: {selectedLanguage}</p>
+      <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+  <h1 className="h3 font-bold mt-3">{show_name}</h1>
+  <img src={logo} alt="logo" className="h-10 w-auto" />
+</div>
+        {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
         <div>
           {/* Modal for showing section summary */}
@@ -823,12 +866,27 @@ const Test = () => {
         {/* Toast Container */}
         <ToastContainer />
       </div>
+     
+
+
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <span className="h4">Reading Ability! English Language!!</span>
-        <div className="badge bg-warning fs-6 p-2">
-          <div className="badge bg-warning fs-6 p-2">
-            <h1>Time-Left: {formatTime(timeLeft)}</h1>
+
+        <span className="p bg-blue-400 text-white fw-bold p-1">{ examData?.section[currentSectionIndex]?.name}</span>
+
+        <div className="badge bg-warning fs-6 p-1">
+          <div className="badge bg-warning fs-6 p-1">
           </div>
+          <h1>{isPaused ? "Timer is paused" : `Time Left: ${formatTime(timeminus)}`}</h1>
+<button
+  onClick={toggleTimer}
+  className="bg-white text-primary px-4 py-1 rounded"
+>
+  {isRunning 
+    ? (isPaused ? "Resume" : "Pause") 
+    : "Play"
+  }
+</button>
+
         </div>
       </div>
       <div className="row">
@@ -839,7 +897,7 @@ const Test = () => {
               <div className="d-flex  justify-between">
                 <h3>
                   Question No: {clickedQuestionIndex + 1}/
-                  {examData?.t_questions}
+                  {t_questions}
                 </h3>
 
                 <h1>
