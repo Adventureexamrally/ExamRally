@@ -1,25 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Api from '../service/Api';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Api from "../service/Api";
 
 const Packagename = () => {
   const [data, setData] = useState({});
   const [faqs, setFaqs] = useState([]);
   const { id } = useParams();
 
-
-
   const navigate = useNavigate();
   // Extracting the package content and exams information
   // const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
-  const exams = data?.exams?.[0] || {}; 
-  console.log("VAR",exams?.exams?._id)
+  const exams = data?.exams || {};
+  console.log("VAR", exams);
   // Assuming there is only one exam object
-  const subTitles = data?.sub_titles || []; 
+  const subTitles = data?.sub_titles || [];
 
-  
-  // console.log(subTitles); 
-  
+  // console.log(subTitles);
 
   const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains/Previous Year Questions)
   const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
@@ -28,7 +24,6 @@ const Packagename = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
   const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
   const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
-  
 
   // Handle topic selection & set modal questions
   const handleTopicSelect = (section, testType) => {
@@ -42,12 +37,12 @@ const Packagename = () => {
     // Fetching data based on the id from the URL params
     Api.get(`packages/package-content/${id}`).then((res) => {
       console.log(res.data);
-      setData(res.data.data[0]); 
+      setData(res.data.data[0]);
       setFaqs(res.data.data[0].faqs);
-      console.log(res.data)
+      console.log(res.data);
     });
   }, [id]);
-  console.log(faqs)
+  console.log(faqs);
   // Sidebar button handlers
   const handlePrelimsClick = () => {
     setActiveSection("prelims");
@@ -76,6 +71,8 @@ const Packagename = () => {
     return () => clearInterval(interval);
   }, [timer, isTimerRunning]);
 
+  console.log(data);
+
   // Show difficulty level for the specific test
   const handleShowLevelClick = (testId) => {
     setShowDifficulty((prevState) => ({
@@ -87,9 +84,13 @@ const Packagename = () => {
   const openNewWindow = (url) => {
     const width = screen.width;
     const height = screen.height;
-    window.open(url, "_blank", `noopener,noreferrer,width=${width},height=${height}`);
+    window.open(
+      url,
+      "_blank",
+      `noopener,noreferrer,width=${width},height=${height}`
+    );
   };
- 
+
   // Store FAQ data
   const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
 
@@ -116,19 +117,15 @@ const Packagename = () => {
     }
   };
 
-
-
   return (
     <div className="container mt-1">
-
-       <div className="row">
+      <div className="row">
         <div className="col-md-9">
           <div>
-
-          <h1 className="leading-8 font h5" dangerouslySetInnerHTML={{ __html: data.description }} />            
-
-                    
-
+            <h1
+              className="leading-8 font h5"
+              dangerouslySetInnerHTML={{ __html: data.description }}
+            />
           </div>
         </div>
 
@@ -146,7 +143,12 @@ const Packagename = () => {
           >
             <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
             <div className="text-white flex justify-between">
-              <span className="text-xl font-semibold mb-3 " style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Features</span>
+              <span
+                className="text-xl font-semibold mb-3 "
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                Features
+              </span>
             </div>
             <hr className="border-t border-gray-600" />
             <ul className="space-y-2">
@@ -159,7 +161,11 @@ const Packagename = () => {
                 "New pattern and Updated Questions",
                 "Easy, Moderate and Hard Level Questions",
               ].map((item, index) => (
-                <li key={index} className="flex items-center gap-2 " style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>
+                <li
+                  key={index}
+                  className="flex items-center gap-2 "
+                  style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+                >
                   <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -181,75 +187,103 @@ const Packagename = () => {
 
             <div className="text-center">
               <p>
-                <del className="text-red-400"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Package Price:</del>
+                <del
+                  className="text-red-400"
+                  style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+                >
+                  Package Price:
+                </del>
               </p>
-              <del className="bg-red-500 text-white rounded p-1 mb-2"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>
-                Rs.{exams?.amount || 0} 
+              <del
+                className="bg-red-500 text-white rounded p-1 mb-2"
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                Rs.{exams?.amount || 0}
               </del>
-              <p className="text-white font-bold h5 "  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>Discounted Price:</p>
+              <p
+                className="text-white font-bold h5 "
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                Discounted Price:
+              </p>
               <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-                Rs.{exams?.discountedAmount || 0} 
+                Rs.{exams?.discountedAmount || 0}
               </button>
             </div>
           </div>
         </div>
-      </div> 
+      </div>
 
       <div className="row p-3 bg-light">
         <div className="col-md-4">
           <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
+            className={`btn w-100 mb-2 text-white ${
+              activeSection === "prelims" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+            }`}
             onClick={handlePrelimsClick}
-            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
+            // disabled={activeSection && activeSection !== "prelims"}
+            style={{ fontFamily: "helvetica, Arial, sans-serif" }}
           >
             Prelims
           </button>
         </div>
         <div className="col-md-4">
           <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
+            className={`btn w-100 mb-2 text-white ${
+              activeSection === "mains" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+            }`}
             onClick={handleMainsClick}
-            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
+            // disabled={activeSection && activeSection !== "mains"}
+            style={{ fontFamily: "helvetica, Arial, sans-serif" }}
           >
             Mains
           </button>
         </div>
         <div className="col-md-4">
           <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
+            className={`btn w-100 mb-2 text-white ${
+              activeSection === "PYQ" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+            }`}
             onClick={handleUpdatesClick}
-            style={{ fontFamily: 'helvetica, Arial, sans-serif' }}
+            // disabled={activeSection && activeSection !== "PYQ"}
+            style={{ fontFamily: "helvetica, Arial, sans-serif" }}
           >
             Previous Year Question Paper
           </button>
         </div>
       </div>
-
+      
       {/* Prelims Topics - Bootstrap Cards */}
-      {activeSection === "prelims" && (
+      {/* {activeSection === "prelims" && (
         <div className="mt-3">
           <div className="row">
-            {data?.exams?.map((exam, index) =>
-              exam.exams.map((test, idx) => (
+            {data?.exams?.map(
+              (test, idx) =>
                 test.test_type === "Prelims" && (
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1">
                       <div className="card-body text-center">
-                        <h5 className="card-title fw-bold"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>{test.exam_name}</h5>
+                        <h5
+                          className="card-title fw-bold"
+                          style={{
+                            fontFamily: "helvetica, Arial, sans-serif",
+                          }}
+                        >
+                          {test.exam_name}
+                        </h5>
                         <div className="text-center">
-                          {/* Show Level Button */}
+                          Show Level Button
                           {!showDifficulty[test._id] && (
                             <button
                               onClick={() => handleShowLevelClick(test._id)} // Show difficulty for the specific test
                               className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
                               style={{ backgroundColor: "#131656" }}
-                              
                             >
                               Show Level
                             </button>
                           )}
 
-                          {/* Display difficulty level */}
+                          Display difficulty level
                           {showDifficulty[test._id] && (
                             <div
                               className="mt-4 text-sm px-2 py-2 text-center text-white"
@@ -276,44 +310,123 @@ const Packagename = () => {
                           </div>
                         </div>
 
-                                    <button
-              className={`mt-2 py-2 px-4 rounded ${
-                test.status === "true"
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-              }`}
-              onClick={() => {
-                if (test.status === "true") {
-                  navigate(`/instruction/${test._id}`); // Redirects to instruction page
-                } else {
-                  handleTopicSelect(test.section[0], "prelims"); // Keeps the original function for locked state
-                }
-              }}
-            >
-              {test.status === "true" ? "Take Test" : "Lock"}
-            </button>
-    
+                        <button
+                          className={`mt-2 py-2 px-4 rounded ${
+                            test.status === "true"
+                              ? "bg-green-500 text-white hover:bg-green-600"
+                              : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                          }`}
+                          onClick={() => {
+                            if (test.status === "true") {
+                              navigate(`/instruction/${test._id}`); // Redirects to instruction page
+                            } else {
+                              handleTopicSelect(test.section[0], "prelims"); // Keeps the original function for locked state
+                            }
+                          }}
+                        >
+                          {test.status === "true" ? "Take Test" : "Lock"}
+                        </button>
                       </div>
                     </div>
                   </div>
                 )
-              ))
             )}
           </div>
         </div>
+      )} */}
+
+{activeSection === "prelims" && (
+  <div className="mt-3">
+    <div className="row">
+      {data?.exams?.map(
+        (test, idx) =>
+          test.test_type === "Prelims" && (
+            <div key={idx} className="col-md-3 mb-3">
+              <div
+                className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1 flex flex-col justify-between h-full min-h-[320px]"
+              >
+                <div className="card-body text-center flex flex-col justify-between h-full">
+                  <h5 className="card-title font-bold text-lg">
+                    {test.exam_name}
+                  </h5>
+
+                  {/* Show Level Button */}
+                  {!showDifficulty[test._id] ? (
+                    <button
+                      onClick={() => handleShowLevelClick(test._id)}
+                      className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                    >
+                      Show Level
+                    </button>
+                  ) : (
+                    <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                      <p>
+                        <strong>{test.q_level}</strong>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Test Info Section */}
+                  <div className="flex justify-center items-center gap-4 mt-2">
+                    <div className="flex flex-col items-center">
+                      <p className="font-medium">Questions</p>
+                      <p>{test.section[0].t_question}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <p className="font-medium">Marks</p>
+                      <p>{test.section[0].t_mark}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <p className="font-medium">Time</p>
+                      <p>{test.section[0].t_time}</p>
+                    </div>
+                  </div>
+
+                  {/* Take Test / Lock Button */}
+                  <button
+                    className={`mt-3 py-2 px-4 rounded w-full transition ${
+                      test.status === "true"
+                        ? "bg-green-500 text-white hover:bg-green-600"
+                        : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                    }`}
+                    onClick={() => {
+                      if (test.status === "true") {
+                        navigate(`/instruction/${test._id}`);
+                      } else {
+                        handleTopicSelect(test.section[0], "prelims");
+                      }
+                    }}
+                  >
+                    {test.status === "true" ? "Take Test" : "Lock"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
       )}
+    </div>
+  </div>
+)}
+
 
       {/* Mains Topics - Bootstrap Cards */}
       {activeSection === "mains" && (
         <div className="mt-3">
           <div className="row">
-            {data?.exams?.map((exam, index) =>
-              exam.exams.map((test, idx) => (
+            {data?.exams?.map(
+              (test, idx) =>
                 test.test_type === "Mains" && (
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
                       <div className="card-body text-center">
-                        <h5 className="card-title  fw-bold"  style={{ fontFamily: 'helvetica, Arial, sans-serif' }}>{test.exam_name}</h5>
+                        <h5
+                          className="card-title  fw-bold"
+                          style={{
+                            fontFamily: "helvetica, Arial, sans-serif",
+                          }}
+                        >
+                          {test.exam_name}
+                        </h5>
                         <div className="text-center">
                           {/* Show Level Button */}
                           {!showDifficulty[test._id] && (
@@ -359,7 +472,9 @@ const Packagename = () => {
                               ? "bg-green-500 text-white hover:bg-green-600"
                               : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                           }`}
-                          onClick={() => handleTopicSelect(test.section[0], "mains")}
+                          onClick={() =>
+                            handleTopicSelect(test.section[0], "mains")
+                          }
                         >
                           {test.status === "true" ? "Take Test" : "Lock"}
                         </button>
@@ -367,7 +482,6 @@ const Packagename = () => {
                     </div>
                   </div>
                 )
-              ))
             )}
           </div>
         </div>
@@ -377,13 +491,15 @@ const Packagename = () => {
       {activeSection === "PYQ" && (
         <div className="mt-3">
           <div className="row">
-            {data?.exams?.map((exam, index) =>
-              exam.exams.map((test, idx) => (
+            {data?.exams?.map(
+              (test, idx) =>
                 test.test_type === "PYQ" && (
                   <div key={idx} className="col-md-3 mb-3">
                     <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
                       <div className="card-body text-center">
-                        <h5 className="card-title font fw-bold">{test.exam_name}</h5>
+                        <h5 className="card-title font fw-bold">
+                          {test.exam_name}
+                        </h5>
                         <div className="text-center">
                           {/* Show Level Button */}
                           {!showDifficulty[test.id] && (
@@ -408,7 +524,7 @@ const Packagename = () => {
                             </div>
                           )}
                         </div>
-                    
+
                         <div className="flex justify-center items-center gap-4">
                           <div className="flex flex-col items-center">
                             <p>Ques</p>
@@ -430,79 +546,87 @@ const Packagename = () => {
                               ? "bg-green-500 text-white hover:bg-green-600"
                               : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                           }`}
-                          onClick={() => handleTopicSelect(test.section[0], "mains")}
+                          onClick={() =>
+                            handleTopicSelect(test.section[0], "mains")
+                          }
                         >
-                          {test.result_type=== " " ? "Take Test" : "Lock"}
+                          {test.result_type === " " ? "Take Test" : "Lock"}
                         </button>
                       </div>
                     </div>
                   </div>
                 )
-              ))
             )}
           </div>
         </div>
       )}
 
-      
-    <div className='my-2'>
-    {subTitles.map((subTitle) => (
-      <div key={subTitle._id}>
-      <ul className="list-none">
-  <li>
-    <h3 className="fw-bold font">{subTitle.title}</h3>
-  </li>
-  <li>
-    <div dangerouslySetInnerHTML={{ __html: subTitle.description }} className="font ml-3"></div>
-  </li>
-</ul>
-
-      </div>
-    ))}
-  </div>
-
-<h1 className='text-center fw-bold text-green-500 h4 font my-2'>Frequently Asked Question</h1>
-
- <div className="space-y-4">
-      {faqs.length > 0 ? (
-        faqs.map((faq, index) => (
-          <div key={faq.id} className="border-b border-gray-200">
-         <div key={faq.id} className="border-b border-gray-200">
-  <div
-    className={`flex justify-between text-green-500 rounded my-2 w-full text-left py-2 px-5 font-medium text-lg transition-all ease-in-out duration-300 ${
-      activeIndex === index ? 'bg-green-500 text-white' : 'bg-gray-100 hover:bg-green-100'
-    }`}
-    onClick={() => handleAccordionToggle(index)}
-  >
-   <div className="flex" style={{ justifyContent: 'space-between', width: '100%' }}>
-  <span   dangerouslySetInnerHTML={{ __html: faq.question }}/>
-  <span>
-    {activeIndex === index ? (
-      <i className="bi bi-arrow-up h4"></i>
-    ) : (
-      <i className="bi bi-arrow-down h4"></i>
-    )}
-  </span>
-</div>
-  </div>
-</div>
-
-            <div
-              className={`overflow-hidden transition-all duration-500 ease-in-out
-                ${activeIndex === index ? 'max-h-40' : 'max-h-0'}`}
-            >
-              <p className="px-5 py-2 text-gray-700 ml-3" dangerouslySetInnerHTML={{ __html: faq.answer}}/>
-            </div>
+      <div className="my-2">
+        {subTitles.map((subTitle) => (
+          <div key={subTitle._id}>
+            <ul className="list-none">
+              <li>
+                <h3 className="fw-bold font">{subTitle.title}</h3>
+              </li>
+              <li>
+                <div
+                  dangerouslySetInnerHTML={{ __html: subTitle.description }}
+                  className="font ml-3"
+                ></div>
+              </li>
+            </ul>
           </div>
-        ))
-      ) : (
-        <p className="text-center text-gray-500">Loading FAQs...</p> // Show a loading message if no FAQs are available
-      )}
-    </div>
+        ))}
+      </div>
 
+      <h1 className="text-center fw-bold text-green-500 h4 font my-2">
+        Frequently Asked Question
+      </h1>
 
+      <div className="space-y-4">
+        {faqs.length > 0 ? (
+          faqs.map((faq, index) => (
+            <div key={faq.id} className="border-b border-gray-200">
+              <div key={faq.id} className="border-b border-gray-200">
+                <div
+                  className={`flex justify-between text-green-500 rounded my-2 w-full text-left py-2 px-5 font-medium text-lg transition-all ease-in-out duration-300 ${
+                    activeIndex === index
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-100 hover:bg-green-100"
+                  }`}
+                  onClick={() => handleAccordionToggle(index)}
+                >
+                  <div
+                    className="flex"
+                    style={{ justifyContent: "space-between", width: "100%" }}
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: faq.question }} />
+                    <span>
+                      {activeIndex === index ? (
+                        <i className="bi bi-arrow-up h4"></i>
+                      ) : (
+                        <i className="bi bi-arrow-down h4"></i>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out
+                ${activeIndex === index ? "max-h-40" : "max-h-0"}`}
+              >
+                <p
+                  className="px-5 py-2 text-gray-700 ml-3"
+                  dangerouslySetInnerHTML={{ __html: faq.answer }}
+                />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500">Loading FAQs...</p> // Show a loading message if no FAQs are available
+        )}
+      </div>
     </div>
   );
 };

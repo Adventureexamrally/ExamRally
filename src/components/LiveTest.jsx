@@ -54,7 +54,7 @@ const LiveTest = () => {
                           colors[index % colors.length]
                         } min-h-32 p-3 gap-2 flex flex-col justify-center items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap`}
                       >
-                        <img src={cat.photo} alt="not found" />
+                        <img src={cat.photo} alt="not found" className="w-12 h-12" />
                         <h1 className="text-sm font-medium text-gray-700"> {cat.categorys}</h1>
                       </div>
                     </Link>

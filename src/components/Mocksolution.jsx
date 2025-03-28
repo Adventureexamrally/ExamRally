@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Api from "../service/Api";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useParams } from "react-router-dom";
+import logo from '../assets/logo/bg-logo.png'; 
 
 const Mocksolution = () => {
     const [examData, setExamData] = useState(null);
@@ -17,9 +17,12 @@ const Mocksolution = () => {
     const selectedLanguage = location.state?.language || "English";
     // Fetch exam data
     const [isToggled, setIsToggled] = useState(false);
+    const [isDataFetched, setIsDataFetched] = useState(false);
 
     const [check,setCheck]=useState(null)
-
+    const [show_name,setShow_name] = useState("")
+    const [t_questions,sett_questions]=useState("")
+    const { id } = useParams();
 
     // exams/getExam/67c5900a09a3bf8c7f605d71
     useEffect(() => {
@@ -32,6 +35,23 @@ const Mocksolution = () => {
             })
             .catch((err) => console.error("Error fetching data:", err));
     }, []);
+
+useEffect(() => {
+  // Check if data has already been fetched
+  if (!isDataFetched) {
+    Api.get(`exams/getExam/${id}`)
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data);
+          setIsDataFetched(true); 
+          setShow_name(res.data.show_name) // Mark that data is fetched
+          sett_questions(res.data.t_questions)
+          console.error("kl",res.data.t_question);
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }
+}, [id]); 
 
     const startingIndex =
         examData?.section
@@ -196,16 +216,53 @@ const Mocksolution = () => {
     console.log(examData);
 
     return (
-        <div className="container-fluid mock-font ">
+        <div className="p-1 mock-font ">
             <div>
-                <p className="text-lg">Selected Language: {selectedLanguage}</p>
-
-
-                {/* Toast Container */}
-                <ToastContainer />
+               
+                <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+  <h1 className="h3 font-bold mt-3">{show_name}</h1>
+  <img src={logo} alt="logo" className="h-10 w-auto" />
+</div>
+             
             </div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <span className="h4">Reading Ability! English Language!!</span>
+            
+            <div className="mb-3 mt-1">
+        <span className="p bg-blue-400 text-white fw-bold p-1">{ examData?.section[currentSectionIndex]?.name}</span>
+      &nbsp;
+      &nbsp;
+        <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="text-decoration-underline">
+  Comment 📩
+</a>
+
+
+
+
+<div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h1 className="modal-title fs-5" id="exampleModalLabel">Comment Section</h1>
+        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div className="modal-body">
+        <form>
+          <div className="mb-3">
+            <label for="userInput" className="form-label">Please descripe it below!!</label>
+            <input type="text" className="form-control" id="userInput" placeholder="Enter Comments!!"/>
+          </div>
+        </form>
+      </div>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" className="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+                
+                
+                
                 <div className="text-center fs-6 p-2">
                     <h1>
                         Exam Name Show &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
@@ -221,7 +278,7 @@ const Mocksolution = () => {
                             <div className="d-flex  justify-between">
                            <h3>
                   Question No: {clickedQuestionIndex + 1}/
-                  {examData?.t_questions}
+                  {t_questions}
                 </h3>
 
                                 <h1>
