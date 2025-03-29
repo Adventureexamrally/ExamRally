@@ -56,8 +56,9 @@ const CAmonth = () => {
                                             <div className='flex'>
                                                 {model.pdfLink || model.pdf ? (
                                                     model.uploadType=="link" ? (
-                                                        <button onClick={() => navigate(`/${model.pdfLink}`)} className="btn bg-green-500 w-100 m-2 p-2 w-auto text-white hover:bg-green-600">View Pdf</button>
-                                                    ) : (<a href={model.pdfLink} target='blank' download={model.pdf} className="btn bg-green-500 w-100 m-2 p-2 w-auto text-white hover:bg-green-600">Download PDF</a>
+                                                        <a href={model.pdfLink} target='blank' className="btn bg-green-500 w-100 m-2 p-2 w-auto text-white hover:bg-green-600">View PDF</a>
+                                                    ) : (
+                                                    <a href={model.pdfLink} target='blank' className="btn bg-green-500 w-100 m-2 p-2 w-auto text-white hover:bg-green-600">Download PDF</a>
                                                     )
                                                 ) : (<button 
                                                     style={{
