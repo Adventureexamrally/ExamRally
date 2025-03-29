@@ -1097,7 +1097,7 @@ useEffect(() => {
 
       {/* Footer Buttons */}
       <div className="fixed-bottom bg-white p-3">
-      <div className="d-flex justify-content-between border border-8">
+      <div className="d-flex justify-content-between border-8">
   {/* Left side - Mark for Review and Clear Response */}
   <div className="d-flex">
     <button
