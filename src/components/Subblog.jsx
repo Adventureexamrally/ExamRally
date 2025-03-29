@@ -1,6 +1,9 @@
-import axios from 'axios';
+
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import Api from '../service/Api';
+
+// const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Subblog = () => {
     const { id } = useParams();
@@ -12,7 +15,7 @@ const Subblog = () => {
 
     async function run() {
         try {
-            const response = await axios.get(`http://localhost:3000/api/blogs/get/${id}`);
+            const response = await Api.get(`blogs/get/${id}`);
             console.log(response.data);
             setBlogDetails(response.data);
         } catch (error) {
@@ -20,30 +23,34 @@ const Subblog = () => {
         };
     }
     return (
-        <div className='container '>
-            <div>
+        <div className='container w-3/4'>
+            <div className='mt-4'>
                 <h2
-                    className="text-3xl font-extrabold  text-green-700  m-1"
+                    className="text-3xl font-semibold text-green-700  m-1"
                     dangerouslySetInnerHTML={{ __html: blogDetails.title }}
                 />
-                <p
-                    className="text-sm font-semibold text-gray-800 m-1"
-                    dangerouslySetInnerHTML={{ __html: blogDetails.description }}
-                />
+
                 <div className="flex items-center space-x-2 m-2">
                     <span className="text-gray-500 text-sm"> <i className="bi bi-bell-fill"></i> {new Date(blogDetails.createdAt).toLocaleDateString()}</span>
                 </div>
             </div>
-            <div className='mt-10'>
-            {blogDetails.subtitles && blogDetails.subtitles.length > 0 ? (
+            {blogDetails.photo && <img src={blogDetails.photo} alt="no photo found" className='max-h-60' />}
+
+            <p
+                className="text-md font-semibold text-gray-800 m-2"
+                dangerouslySetInnerHTML={{ __html: blogDetails.description }}
+            />
+            <div className='m-3'>
+
+                {blogDetails.subtitles && blogDetails.subtitles.length > 0 ? (
                     blogDetails.subtitles.map((item, index) => (
                         <div key={item._id || index}>
                             <h2
-                                className="text-xl font-extrabold text-gray-800 m-1"
+                                className=""
                                 dangerouslySetInnerHTML={{ __html: item.subtitle }}
                             />
                             <p
-                                className="text-sm font-semibold text-gray-800 m-1"
+                                className=""
                                 dangerouslySetInnerHTML={{ __html: item.content }}
                             />
                         </div>

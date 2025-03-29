@@ -130,6 +130,12 @@
   width: 30px;
 }
 
+.smskipimg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-135px -54px!important;
+  height: 30px;
+  width: 30px;
+}
 
 
 .mdmarkedImg{

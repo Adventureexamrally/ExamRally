@@ -44,8 +44,11 @@ import ResultPage from "./components/ResultPage";
 import jaiib from '../src/assets/logo/offer.jpg'
 import { useState,useEffect } from "react";
 import Resultanalysis from "./components/Resultanalysis";
+import Mocksolution from "./components/Mocksolution";
 import Blog from "./components/Blog";
 import Subblog from "./components/Subblog";
+import DetailedCategorie from "./components/DetailedCategorie";
+
 function App() {
   return (
     <Router>
@@ -55,7 +58,7 @@ function App() {
 }
 
 function MainApp() {
-  const location = useLocation(); // Now using useLocation inside a Router context
+  const location = useLocation(); 
  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -68,6 +71,7 @@ function MainApp() {
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
   const isMockTestRoute = location.pathname === "/mocktest";
+  
   useEffect(() => {
     // Check if the modal has been shown before by looking into localStorage
     const hasModalBeenShown = localStorage.getItem("abcmodal123");
@@ -162,8 +166,14 @@ function MainApp() {
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
+
+        <Route path='/mocksolution' element={<Mocksolution/>} />
+
         <Route path="/livebatch" element={<Blog/>}/>
         <Route path="/blogdetails/:id" element={<Subblog/>}/>
+
+        <Route path="/livetest/:link" element={<DetailedCategorie/>}/>
+
 
         <Route path="*" element={<NotFound />} />
       </Routes>
