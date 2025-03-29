@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Helper function to get the weeks of a month
 const getWeeksOfMonth = (year, month) => {
@@ -85,134 +85,242 @@ const CurrentAffairs = () => {
       setActiveWeek(index); // Open the selected week
     }
   };
+const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data fetching
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  }, []);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="row">
-        <div className="col-md-9 staticheader h6 leading-10">
-          <div>
-            <h1 className="h2 font text-green-500">Current Affairs</h1>
-            <br />
-            <h1 className="leading-8">
-              Stay updated with all the important events and news with our Current Affairs Free Test, designed specifically for banking exams like <span className="text-green-500 font-bold">IBPS PO, IBPS Clerk, RRB PO, SBI PO, and more.</span> This package covers key topics like Banking And Economy News, Government Schemes, National, International, Appointments, Awards, Sports, Defence, Science &amp; Technology, and more. With regular updates, exam-focused quizzes, and easy-to-understand explanations, you can strengthen your General Awareness and boost your exam score. Stay informed and stay ahead in your preparation!
-            </h1>
-          </div>
-        </div>
 
-        <div className="col-md-3">
-          <div
-            className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
-            style={{
-              backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
-                                radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
-                                radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
-                                radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
-                                radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
-                                radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`
-            }}
-          >
-            <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
-            <div className="text-white flex justify-between">
-              <span className="text-xl font-semibold mb-3 font">Features</span>
-            </div>
-            <hr className="border-t border-gray-600" />
-            <ul className="space-y-2">
-              {[
-                "Covers All Topics",
-                "Detailed Explanations",
-                "Exam-Level Questions Based on the Latest Pattern",
-                "Previous Year Questions",
-                "Unlimited Reattempts",
-              ].map((item, index) => (
-                <li key={index} className="flex items-center gap-2 font">
-                  <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                      className="w-3 h-3 text-white"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
-                        clipRule="evenodd"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span className="text-white text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="text-center mt-2">
-              <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-                Free
-              </button>
-            </div>
-          </div>
-        </div>
+    <>
+    {loading ? (
+  <div className="container mx-auto p-4">
+  <div className="row">
+    <span className="placeholder col-4 mx-auto rounded-md p-2"></span>
+      <div className="col-md-9">
+        <p className="placeholder-glow">
+          {/* <span className="placeholder col-12 mb-2 p-5 rounded-md"></span> */}
+          <span className="placeholder col-12 mt-20 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+        </p>
       </div>
-
-      {/* Month Selector */}
-      <div className="my-4">
-        <select
-          value={month}
-          onChange={(e) => setMonth(Number(e.target.value))}
-          className="p-2 border rounded w-full shadow-lg"
-        >
-          {monthNames.map((monthName, index) => (
-            <option key={index} value={index}>
-              {monthName}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Accordion for Weeks */}
-      <div className="row">
-        <div className="col-md-6">
-          {weeks.map((week, index) => (
-            <div key={index} className="mb-2 border-b">
-              <button
-                onClick={() => toggleWeek(index)}
-                className="w-full px-4 py-2 text-left bg-gray-200 font-semibold rounded-md flex justify-between items-center"
-              >
-                <span>
-                  Week {index + 1}: {week.start} - {week.end}
-                </span>
-                <span className="text-xl">
-                  {activeWeek === index ? (
-                    <i className="bi bi-dash-circle"></i> // Minus icon (collapse)
-                  ) : (
-                    <i className="bi bi-plus-circle"></i> // Plus icon (expand)
-                  )}
-                </span>
-              </button>
-
-              {activeWeek === index && (
-                <div className="px-4 py-2 border-t bg-gray-100">
-                  <p>1. How can you tell if a cake is fully baked without cutting into it?</p>
-                  <p>2. What does it mean to fold ingredients, and why is this technique important in certain recipes?</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Card Design for Questions */}
-        <div className="col-md-6">
-          <h1>Questions for {monthNames[month]}</h1>
-          {monthWiseQuestions[month]?.map((question) => (
-            <div key={question.id} className="card mb-3">
-              <div className="card-body">
-                <p className="card-text">{question.text}</p>
-                <button className='bg-green-500 text-white hover:bg-green-400 px-3'>Take Test</button>
-              </div>
-            </div>
-          ))}
+      <div className="col-md-3">
+        <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
+          <p className="placeholder-glow">
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-6 mx-auto rounded-md"></span>
+          </p>
         </div>
       </div>
     </div>
+
+    {/* Month Selector */}
+    <div className="my-4">
+      <div className="bg-gray-200 p-2 rounded w-full">
+        <span className="placeholder-glow">
+          <span className="placeholder col-6"></span>
+        </span>
+      </div>
+    </div>
+
+    {/* Accordion for Weeks */}
+    <div className="row">
+      <div className="col-md-6">
+        {[1, 2, 3].map((index) => (
+          <div key={index} className="mb-2 border-b">
+            <div className="w-full px-4 py-2 text-left bg-gray-200 font-semibold rounded-md flex justify-between items-center">
+              <span className="placeholder-glow">
+                <span className="placeholder col-8"></span>
+              </span>
+            </div>
+            <div className="px-4 py-2 border-t bg-gray-100">
+              <p>
+                <span className="placeholder-glow">
+                  <span className="placeholder col-10"></span>
+                </span>
+              </p>
+              <p>
+                <span className="placeholder-glow">
+                  <span className="placeholder col-10"></span>
+                </span>
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Card Design for Questions */}
+      <div className="col-md-6">
+        <h1>
+          <span className="placeholder-glow">
+            <span className="placeholder col-6"></span>
+          </span>
+        </h1>
+        {[1, 2, 3].map((question) => (
+          <div key={question} className="card mb-3">
+            <div className="card-body">
+              <p className="card-text">
+                <span className="placeholder-glow">
+                  <span className="placeholder col-10"></span>
+                </span>
+              </p>
+              <div className="bg-gray-300 text-white px-3 py-1 rounded w-24">
+                <span className="placeholder-glow">
+                  <span className="placeholder col-12"></span>
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="container mx-auto p-4">
+    <div className="row">
+      <div className="col-md-9 staticheader h6 leading-10">
+        <div>
+          <h1 className="h2 font text-green-500">Current Affairs</h1>
+          <br />
+          <h1 className="leading-8">
+            Stay updated with all the important events and news with our Current Affairs Free Test, designed specifically for banking exams like <span className="text-green-500 font-bold">IBPS PO, IBPS Clerk, RRB PO, SBI PO, and more.</span> This package covers key topics like Banking And Economy News, Government Schemes, National, International, Appointments, Awards, Sports, Defence, Science &amp; Technology, and more. With regular updates, exam-focused quizzes, and easy-to-understand explanations, you can strengthen your General Awareness and boost your exam score. Stay informed and stay ahead in your preparation!
+          </h1>
+        </div>
+      </div>
+
+      <div className="col-md-3">
+        <div
+          className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
+          style={{
+            backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
+                                    radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+                                    radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+                                    radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
+                                    radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
+                                    radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`
+          }}
+        >
+          <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
+          <div className="text-white flex justify-between">
+            <span className="text-xl font-semibold mb-3 font">Features</span>
+          </div>
+          <hr className="border-t border-gray-600" />
+          <ul className="space-y-2">
+            {[
+              "Covers All Topics",
+              "Detailed Explanations",
+              "Exam-Level Questions Based on the Latest Pattern",
+              "Previous Year Questions",
+              "Unlimited Reattempts",
+            ].map((item, index) => (
+              <li key={index} className="flex items-center gap-2 font">
+                <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    className="w-3 h-3 text-white"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                      clipRule="evenodd"
+                    ></path>
+                  </svg>
+                </span>
+                <span className="text-white text-sm">{item}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="text-center mt-2">
+            <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+              Free
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Month Selector */}
+    <div className="my-4">
+      <select
+        value={month}
+        onChange={(e) => setMonth(Number(e.target.value))}
+        className="p-2 border rounded w-full shadow-lg"
+      >
+        {monthNames.map((monthName, index) => (
+          <option key={index} value={index}>
+            {monthName}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Accordion for Weeks */}
+    <div className="row">
+      <div className="col-md-6">
+        {weeks.map((week, index) => (
+          <div key={index} className="mb-2 border-b">
+            <button
+              onClick={() => toggleWeek(index)}
+              className="w-full px-4 py-2 text-left bg-gray-200 font-semibold rounded-md flex justify-between items-center"
+            >
+              <span>
+                Week {index + 1}: {week.start} - {week.end}
+              </span>
+              <span className="text-xl">
+                {activeWeek === index ? (
+                  <i className="bi bi-dash-circle"></i>
+                ) : (
+                  <i className="bi bi-plus-circle"></i>
+                )}
+              </span>
+            </button>
+
+            {activeWeek === index && (
+              <div className="px-4 py-2 border-t bg-gray-100">
+                <p>1. How can you tell if a cake is fully baked without cutting into it?</p>
+                <p>2. What does it mean to fold ingredients, and why is this technique important in certain recipes?</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Card Design for Questions */}
+      <div className="col-md-6">
+        <h1>Questions for {monthNames[month]}</h1>
+        {monthWiseQuestions[month]?.map((question) => (
+          <div key={question.id} className="card mb-3">
+            <div className="card-body">
+              <p className="card-text">{question.text}</p>
+              <button className='bg-green-500 text-white hover:bg-green-400 px-3'>Take Test</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)};
+    </>
   );
 };
 

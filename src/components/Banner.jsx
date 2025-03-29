@@ -26,10 +26,27 @@ const Banner = () => {
       })
       .catch((error) => console.error("Error fetching slides:", error));
   }, []);
+const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data fetching
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  
 
   return (
-    <div className="bg-gray-100 flex justify-center items-center rounded-md py-1">
-      <div className="w-full rounded-md">
+    <div className=" flex justify-center items-center rounded-md py-1">
+    <div className="w-full rounded-md">
+      {loading ? (
+        // Loading placeholder
+        <div className="w-full">
+          <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] bg-gray-200 rounded-md shadow-lg animate-pulse"></div>
+        </div>
+      ) : (
+        // Actual Slider content
         <Slider {...settings}>
           {slides.map((slide, index) => (
             <div key={index} className="relative">
@@ -37,16 +54,15 @@ const Banner = () => {
                 <img
                   src={slide.photo}
                   alt={`Slide ${index + 1}`}
-
-                  className="w-full h-full "  // Adjusted object-fit property
-
+                  className="w-full h-full"
                 />
               </div>
             </div>
           ))}
         </Slider>
-      </div>
+      )}
     </div>
+  </div>
   );
 };
 

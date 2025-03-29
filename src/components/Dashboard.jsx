@@ -100,6 +100,16 @@ const Dashboard = () => {
       setScrollPosition(newPosition);
     }
   };
+
+   const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      // Simulate data fetching
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    }, []);
+
   return (
     <div className="bg-gray-100 min-h-screen p-2">
       {/* Trending Links */}
@@ -124,9 +134,47 @@ const Dashboard = () => {
         <Banner />
       </div> */}
 
-      {/* Main Content */}
+       {/* Main Content */}
+       <LiveTest/>
+  {loading ? (
+    <>
+      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-bold text-lg">
+            <p className="placeholder-glow">
+              <span className="placeholder col-6 mx-auto bg-gray-200 rounded-md"></span>
+            </p>
+          </h3>
+          <Link to="#" className="text-blue-600 hover:underline">
+            <p className="placeholder-glow">
+              <span className="placeholder col-4 bg-gray-200 rounded-md"></span>
+            </p>
+          </Link>
+        </div>
+
+        <div className="relative py-3 overflow-hidden">
+          <div className="flex space-x-5 sm:space-x-3 md:space-x-5 lg:space-x-8 transition-transform duration-300 ease-in-out">
+            {[1, 2, 3, 4, 5, 6].map((index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/5 lg:w-1/6"
+              >
+                <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center">
+                  <p className="placeholder-glow">
+                    <span className="placeholder col-12 rounded-full w-16 h-16 mb-2"></span>
+                    <span className="placeholder col-8 bg-gray-200 rounded-md"></span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  ) : (
+        <>
         
-      <LiveTest/>
+      
 
       {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="col-span-full">
@@ -372,6 +420,9 @@ const Dashboard = () => {
       )}
     </div>
     </div>
+    </>
+  )}
+
     </div>
   );
 };

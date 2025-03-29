@@ -59,157 +59,79 @@ function TestSeries() {
   return (
 <>
 <div className="container mt-4">
+<div className="row">
+        <div className="col-md-6">
+          <Rally_bro />
+        </div>
+        <div className="col-md-6">
+          <Rallysuper_Pro />
+        </div>
+      </div>
   {loading ? (
-  <div className="container">
-  <p className="placeholder-glow bg-gray-200">
-    <span className="placeholder col-12 text-center text-2xl font-bold mt-2 font text-white"></span>
-  </p>
-  <div className="row">
-    <div className="col-md-6">
-      <div className="p-4 border rounded shadow bg-gray-200">
-        <p className="placeholder-glow">
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-6 mx-auto"></span>
-        </p>
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="p-4 border rounded shadow bg-gray-200">
-        <p className="placeholder-glow">
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-6 mx-auto"></span>
-        </p>
-      </div>
-    </div>
-  </div>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-4 rounded-lg shadow-lg">
-    {[1, 2, 3, 4].map((index) => (
-      <div
-        key={index}
-        className="bg-gray-200 border-1 shadow-xl rounded-lg p-4 flex flex-col justify-between relative mt-4 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105"
-      >
-        <p className="placeholder-glow">
-          <span className="placeholder col-8 mb-2 mx-auto"></span>
-          <span className="placeholder col-6 mb-2 mx-auto"></span>
-          <span className="placeholder col-6 mb-2 mx-auto"></span>
-          <span className="placeholder col-12 mb-2"></span>
-          <span className="placeholder col-12"></span>
-        </p>
-      </div>
-    ))}
-  </div>
-  <div className="p-4 border rounded shadow mt-4 bg-gray-200">
-    <p className="placeholder-glow">
-      <span className="placeholder col-12 mb-2"></span>
-      <span className="placeholder col-12 mb-2"></span>
-      <span className="placeholder col-12 mb-2"></span>
-      <span className="placeholder col-12 mb-2"></span>
-      <span className="placeholder col-6 mx-auto"></span>
-    </p>
-  </div>
-</div>
-  ) : (
     <div className="container">
-    <div className="text-center text-2xl font-bold mt-2 font bg-green-500 text-white">
-    Most Accurate & Best Online Test Series for Bank Exams – Full-Length &amp;
-    Topic-Wise Mock Tests
-    </div>
-    <div className="row">
-    <div className="col-md-6">
-        <Rally_bro/>
-      
- </div>
- <div className="col-md-6">
-  
-        <Rallysuper_Pro/>
- </div>
- </div>
-    {/* <div className="from-indigo-300 to-teal-400">
-      <div className="bg-gray-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-4 rounded-lg shadow-lg">
-        {data.questions.map((question) => (
+      <p className="placeholder-glow bg-gray-200">
+        <span className="placeholder col-12 text-center text-2xl font-bold mt-2 font text-white"></span>
+      </p>
+      <div className="row">
+        <div className="col-md-6">
+          <div className="p-4 border rounded shadow bg-gray-200">
+            <p className="placeholder-glow">
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-6 mx-auto"></span>
+            </p>
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="p-4 border rounded shadow bg-gray-200">
+            <p className="placeholder-glow">
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-6 mx-auto"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-4 rounded-lg shadow-lg">
+        {[1, 2, 3, 4].map((index) => (
           <div
-            key={question.id}
-            className={`bg-white border-1 shadow-xl rounded-lg p-4 flex flex-col justify-between relative mt-4 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105`}
+            key={index}
+            className="bg-gray-200 border-1 shadow-xl rounded-lg p-4 flex flex-col justify-between relative mt-4 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105"
           >
-            <p className="mt-1 text-center text-gray-700">{data.topic}</p>
-
-            <h3 className="text-2xl font-bold text-center text-gray-900 mt-1">
-              Question {question.id}
-            </h3>
-
-            <div className="text-center">
-{!showDifficulty[question.id] && (
-  <button
-    onClick={() => toggleDifficulty(question.id)}
-    className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
-    style={{backgroundColor:"#131656"}}
-  >
-    Show Level
-  </button>
-)}
-
-{showDifficulty[question.id] && (
-  <div
-    className='mt-4 text-sm px-2 py-2 text-center text-white'
-    style={{backgroundColor:"#131656"}}
-
-  >
-    <p>
-      <strong>{question.difficulty}</strong>
-    </p>
-  </div>
-)}
-</div>
-            <div className="flex justify-center items-center gap-4">
-              <div className="flex flex-col items-center">
-                <p>Quez</p>
-                <p>{question.ques}</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <p>Marks</p>
-                <p>{question.marks}</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <p>Time</p>
-                <p>{question.time}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-center">
-{question.id === 1 ? (
-  <Link>
-    <button
-      className="py-2 px-4 rounded bg-red-500 hover:bg-red-600 text-white"
-      onClick={() => openNewWindow("/instruction")}
-    >
-      Start Now
-    </button>
-  </Link>
-) : (
-  <button
-    className="py-2 px-4 rounded bg-blue-500 hover:bg-blue-600 text-white"
-   
-  >
-   <i className="bi bi-lock-fill"></i> Buy Now
-  </button>
-)}
-</div>
-
-
+            <p className="placeholder-glow">
+              <span className="placeholder col-8 mb-2 mx-auto"></span>
+              <span className="placeholder col-6 mb-2 mx-auto"></span>
+              <span className="placeholder col-6 mb-2 mx-auto"></span>
+              <span className="placeholder col-12 mb-2"></span>
+              <span className="placeholder col-12"></span>
+            </p>
           </div>
         ))}
       </div>
-    </div> */}
+      <div className="p-4 border rounded shadow mt-4 bg-gray-200">
+        <p className="placeholder-glow">
+          <span className="placeholder col-12 mb-2"></span>
+          <span className="placeholder col-12 mb-2"></span>
+          <span className="placeholder col-12 mb-2"></span>
+          <span className="placeholder col-12 mb-2"></span>
+          <span className="placeholder col-6 mx-auto"></span>
+        </p>
+      </div>
+    </div>
+  ) : ( 
+    <div className="container">
+      <div className="text-center text-2xl font-bold mt-2 font bg-green-500 text-white">
+        Most Accurate & Best Online Test Series for Bank Exams – Full-Length &amp;
+        Topic-Wise Mock Tests
+      </div>
     
-    <Examimglist/>
-  </div>
-  )}
+      <Examimglist />
+    </div>
+  )} 
 </div>
     </>
   );

@@ -32,7 +32,7 @@ const Rallysuper_Pro = () => {
     // Simulate data fetching
     setTimeout(() => {
       setLoading(false);
-    }, 500);
+    },500);
   }, []);
 
   return (

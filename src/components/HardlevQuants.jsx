@@ -78,8 +78,107 @@ const HardlevQuants = () => {
            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
          };
        
- 
+         const [loading, setLoading] = useState(true);
+  
+         useEffect(() => {
+           // Simulate data fetching
+           setTimeout(() => {
+             setLoading(false);
+           }, 500);
+         }, []);
+     
   return (
+
+    <>
+    {loading ? (
+    <div className="container mt-1 bg-gray-100 p-3 rounded-lg">
+    <div className="row">
+    <span className="placeholder col-4 mx-auto rounded-md p-2"></span>
+      <div className="col-md-9">
+        <p className="placeholder-glow">
+          {/* <span className="placeholder col-12 mb-2 p-5 rounded-md"></span> */}
+          <span className="placeholder col-12 mt-20 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+        </p>
+      </div>
+      <div className="col-md-3">
+        <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
+          <p className="placeholder-glow">
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-6 mx-auto rounded-md"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div className="row p-3 bg-gray-100 rounded-lg mt-2">
+      <div className="col-md-4">
+        <div className="placeholder-glow">
+          <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+        </div>
+      </div>
+      <div className="col-md-4">
+        <div className="placeholder-glow">
+          <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+        </div>
+      </div>
+      <div className="col-md-4">
+        <div className="placeholder-glow">
+          <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+        </div>
+      </div>
+    </div>
+    <div className="mt-3">
+      <div className="row">
+        {[1, 2, 3].map((index) => (
+          <div key={index} className="col-md-4 mb-4">
+            <div className="card shadow-md border-0 rounded-3 bg-gray-100">
+              <div className="card-body text-center">
+                <p className="placeholder-glow">
+                  <span className="placeholder col-12 rounded-md"></span>
+                </p>
+                <div className="placeholder-glow mt-3">
+                  <span className="placeholder col-6 mx-auto rounded-md p-2"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="my-2">
+      {[1, 2, 3].map((index) => (
+        <div key={index}>
+          <ul className="list-none">
+            <li>
+              <p className="placeholder-glow">
+                <span className="placeholder col-6 bg-gray-200 rounded-md"></span>
+              </p>
+            </li>
+            <li>
+              <p className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-200 rounded-md"></span>
+              </p>
+            </li>
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+      ) : (
     <div className="container">
         
       <div className="row mt-3">
@@ -158,17 +257,29 @@ accuracy and speed in solving reasoning questions. </p>
           </div>
           <div className="row p-3 bg-light">
         <div className="col-md-4">
-          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handlePrelimsClick}>
+          <button 
+           className={`btn w-100 mb-2 text-white ${
+            activeSection === "prelims" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+          }`}
+          onClick={handlePrelimsClick}>
     RRB PO 
           </button>
         </div>
         <div className="col-md-4">
-          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleMainsClick}>
+          <button 
+        className={`btn w-100 mb-2 text-white ${
+          activeSection === "mains" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+        }`} 
+          onClick={handleMainsClick}>
           SBI Clerk & IBPS Clerk
           </button>
         </div>
         <div className="col-md-4">
-          <button className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600" onClick={handleUpdatesClick}>
+          <button 
+           className={`btn w-100 mb-2 text-white ${
+            activeSection === "updates" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
+          }`}
+          onClick={handleUpdatesClick}>
           IBPS PO & SBI PO
           </button>
         </div>
@@ -258,6 +369,8 @@ accuracy and speed in solving reasoning questions. </p>
         </div>
       </div>
     </div>
+      )};
+    </>
   )
 }
 

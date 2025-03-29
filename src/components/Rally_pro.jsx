@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Api from "../service/Api";
 
+
 const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Rally_bro = () => {
@@ -39,33 +40,33 @@ const Rally_bro = () => {
     <>
     <div className="container border border-black mt-2 rounded-lg">
   {loading ? (
-    <div className="mt-3 bg-gray-100 p-4 rounded-lg"> {/* Added light gray background and padding */}
-    <div className="text-center mt-2">
-      <h1 className="font text-3xl my-3 text-gray-400 fw-bold placeholder-glow">
-        <span className="placeholder col-6 mx-auto bg-gray-200"></span> {/* Added light gray to placeholder */}
-      </h1>
-      <hr className="text-gray-300" />
-    </div>
-    <div className="row bg-gradient-to-b from-gray-200 to-gray-300 rounded-lg p-2"> {/* Modified gradient and added padding and rounded corners */}
-      <div className="w-full h-64 bg-gray-200 mt-2 placeholder-glow">
-        <span className="placeholder col-12"></span>
-      </div>
-      <div className="text-center mb-3">
-        <p className="placeholder-glow">
-          <span className="placeholder col-8 mx-auto bg-gray-200"></span> {/* Added light gray to placeholder */}
-        </p>
-        <div className="bg-gray-300 text-white rounded p-1 mb-2 placeholder-glow"> {/* Changed to lighter gray */}
-          <span className="placeholder col-4 mx-auto"></span>
-        </div>
-        <p className="text-gray-400 font-bold h5 font placeholder-glow"> {/* Changed text color to lighter gray */}
-          <span className="placeholder col-6 mx-auto bg-gray-200"></span> {/* Added light gray to placeholder */}
-        </p>
-        <div className="bg-gray-300 text-white px-3 py-1 font-bold rounded-full placeholder-glow"> {/* Changed to lighter gray */}
-          <span className="placeholder col-4 mx-auto"></span>
-        </div>
-      </div>
-    </div>
-  </div>
+   <div className="mt-3 bg-gray-100 p-4 rounded-lg">
+   <div className="text-center mt-2">
+     <h1 className="font text-3xl my-3 text-gray-400 fw-bold placeholder-glow">
+       <span className="placeholder col-6 mx-auto bg-lightgray"></span> 
+     </h1>
+     <hr className="text-gray-300" />
+   </div>
+   <div className="row bg-gradient-to-b from-lightgray to-gray-300 rounded-lg p-2">
+     <div className="w-full h-64 bg-lightgray mt-2 placeholder-glow">
+       <span className="placeholder col-12"></span>
+     </div>
+     <div className="text-center mb-3">
+       <p className="placeholder-glow">
+         <span className="placeholder col-8 mx-auto bg-lightgray"></span> 
+       </p>
+       <div className="bg-gray-300 text-white rounded p-1 mb-2 placeholder-glow">
+         <span className="placeholder col-4 mx-auto"></span>
+       </div>
+       <p className="text-gray-400 font-bold h5 font placeholder-glow">
+         <span className="placeholder col-6 mx-auto bg-lightgray"></span> 
+       </p>
+       <div className="bg-gray-300 text-white px-3 py-1 font-bold rounded-full placeholder-glow">
+         <span className="placeholder col-4  mx-auto"></span>
+       </div>
+     </div>
+   </div>
+ </div>
   ) : (
     <div className="mt-3">
       <div className="text-center mt-2">
@@ -101,7 +102,8 @@ const Rally_bro = () => {
       </div>
     </div>
   )}
-</div></>
+</div>
+</>
     // <div className="container border border-black mt-2 rounded-lg">
     //   <div className="mt-3">
     //     <div className="text-center mt-2">

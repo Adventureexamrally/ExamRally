@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Api from "../service/Api";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -125,103 +127,139 @@ const Packagename = () => {
       setLoading(false);
     }, 500);
   }, []);
+
+   useEffect(() => {
+      AOS.init({
+        duration: 2000});
+      AOS.refresh();
+    }, []);
 console.log(data)
   return (
     <>
      {loading ? (
-       <div className="container mt-1 bg-gray-100 p-3 rounded-lg"> {/* Added light gray background and padding */}
-       <div className="row">
-         <div className="col-md-9">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-         <div className="col-md-3">
-           <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
-             <p className="placeholder-glow">
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-6 mx-auto rounded-md"></span>
-             </p>
-           </div>
-         </div>
-       </div>
-       <div className="row p-3 bg-gray-100 rounded-lg mt-2"> {/* Added light gray background and rounded corners */}
-         <div className="col-md-4">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-         <div className="col-md-4">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-         <div className="col-md-4">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-       </div>
-       <div className="mt-3">
-         <div className="row">
-           {[1, 2, 3, 4].map((index) => (
-             <div key={index} className="col-md-3 mb-3">
-               <div className="card shadow-md border-0 rounded-3 bg-gray-100"> {/* Added light gray background */}
-                 <div className="card-body text-center">
-                   <p className="placeholder-glow">
-                     <span className="placeholder col-8 mb-2 rounded-md"></span>
-                     <span className="placeholder col-6 mb-2 rounded-md"></span>
-                     <span className="placeholder col-6 mb-2 rounded-md"></span>
-                     <span className="placeholder col-6 mb-2 rounded-md"></span>
-                     <span className="placeholder col-12 rounded-md"></span>
-                   </p>
-                 </div>
-               </div>
-             </div>
-           ))}
-         </div>
-       </div>
-       <div className="my-2">
-         {[1, 2, 3].map((index) => (
-           <div key={index}>
-             <ul className="list-none">
-               <li>
-                 <p className="placeholder-glow">
-                   <span className="placeholder col-6 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-                 </p>
-               </li>
-               <li>
-                 <p className="placeholder-glow">
-                   <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-                 </p>
-               </li>
-             </ul>
-           </div>
-         ))}
-       </div>
-       <h1 className="text-center fw-bold text-gray-500 h4 font my-2"> {/* Mild gray text */}
-         <p className="placeholder-glow">
-           <span className="placeholder col-6 mx-auto bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-         </p>
-       </h1>
-       <div className="space-y-4">
-         {[1, 2, 3].map((index) => (
-           <div key={index} className="border-b border-gray-200">
-             <p className="placeholder-glow">
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-10 rounded-md"></span>
-             </p>
-           </div>
-         ))}
-       </div>
-     </div>
+    <div className="container mt-1 bg-gray-100 p-3 rounded-lg">
+    <div className="row">
+      <div className="col-md-9">
+        <p className="placeholder-glow">
+          <span className="placeholder col-12 mb-2 p-5 rounded-md"></span>
+          <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+        </p>
+      </div>
+      <div className="col-md-3">
+        <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
+          <p className="placeholder-glow">
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-6 mx-auto rounded-md"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div className="row p-3 bg-gray-100 rounded-lg mt-2">
+      <div className="col-md-4">
+        <div className="placeholder-glow">
+          <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+        </div>
+      </div>
+      <div className="col-md-4">
+        <div className="placeholder-glow">
+          <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+        </div>
+      </div>
+      <div className="col-md-4">
+        <div className="placeholder-glow">
+          <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+        </div>
+      </div>
+    </div>
+    <div className="mt-3">
+      <div className="row">
+        {[1, 2, 3, 4].map((index) => (
+          <div key={index} className="col-md-3 mb-3">
+            <div className="card shadow-md border-0 rounded-3 bg-gray-100">
+              <div className="card-body text-center">
+                <p className="placeholder-glow">
+                  <span className="placeholder col-8 mb-2 rounded-md"></span>
+                  <span className="placeholder col-6 mb-2 rounded-md"></span>
+                  <span className="placeholder col-6 mb-2 rounded-md"></span>
+                  <span className="placeholder col-6 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 rounded-md"></span>
+                </p>
+                <div className="placeholder-glow mt-3">
+                  <span className="placeholder col-6 mx-auto rounded-md p-2"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="my-2">
+      {[1, 2, 3].map((index) => (
+        <div key={index}>
+          <ul className="list-none">
+            <li>
+              <p className="placeholder-glow">
+                <span className="placeholder col-6 bg-gray-200 rounded-md"></span>
+              </p>
+            </li>
+            <li>
+              <p className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-200 rounded-md"></span>
+              </p>
+            </li>
+          </ul>
+        </div>
+      ))}
+    </div>
+    <h1 className="text-center fw-bold text-gray-500 h4 font my-2">
+      <p className="placeholder-glow">
+        <span className="placeholder col-6 mx-auto bg-gray-200 rounded-md"></span>
+      </p>
+    </h1>
+    <div className="space-y-4">
+      {[1, 2, 3].map((index) => (
+        <div key={index} className="border-b border-gray-200">
+          <p className="placeholder-glow">
+            <span className="placeholder col-12 mb-2 rounded-md"></span>
+            <span className="placeholder col-10 rounded-md"></span>
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <div className="my-2">
+      {[1, 2, 3].map((index) => (
+        <div key={index}>
+          <ul className="list-none">
+            <li>
+              <p className="placeholder-glow">
+                <span className="placeholder col-6 bg-gray-200 rounded-md"></span>
+              </p>
+            </li>
+            <li>
+              <p className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-200 rounded-md"></span>
+              </p>
+            </li>
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
       ) : (
         <div className="container mt-2">
         <div className="row">
@@ -234,9 +272,10 @@ console.log(data)
             </div>
           </div>
   
-          <div className="col-md-3 mt-3">
+          <div className="col-md-3 mt-3" data-aos="zoom-in" data-aos-delay="500" >
             <div
-              className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
+              className="relative flex flex-col p-4 w-full bg-cover rounded-lg shadow-inner 
+              hover:shadow-[0_0_15px_rgba(11,204,75,0.6)] transition duration-300"
               style={{
                 backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
                                   radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
@@ -249,14 +288,14 @@ console.log(data)
               <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
               <div className="text-white flex justify-between">
                 <span
-                  className="text-xl font-semibold mb-3 "
+                  className="text-lg  mb-3 "
                   style={{ fontFamily: "helvetica, Arial, sans-serif" }}
                 >
                   Features
                 </span>
               </div>
               <hr className="border-t border-gray-600" />
-              <ul className="space-y-2">
+               {/* <ul className="space-y-2">
                 {[
                   "Exact Exam level Questions",
                   "Step by Step Explanation",
@@ -288,9 +327,10 @@ console.log(data)
                     <span className="text-white text-sm">{item}</span>
                   </li>
                 ))}
-              </ul>
+              </ul>  */}
   
               <div className="text-center">
+               <p> <img src={data.featurePhoto} alt="Image" className="w-1/2 mx-auto" /></p>
                 <p>
                   <del
                     className="text-red-400"
@@ -523,7 +563,9 @@ console.log(data)
                 (test, idx) =>
                   test.test_type === "Mains" && (
                     <div key={idx} className="col-md-3 mb-3">
-                      <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
+                      <div
+                      className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1 flex flex-col justify-between h-full min-h-[320px]"
+                       >
                         <div className="card-body text-center">
                           <h5
                             className="card-title  fw-bold"
@@ -601,7 +643,9 @@ console.log(data)
                 (test, idx) =>
                   test.test_type === "PYQ" && (
                     <div key={idx} className="col-md-3 mb-3">
-                      <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
+                      <div
+                       className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1 flex flex-col justify-between h-full min-h-[320px]"
+                       >
                         <div className="card-body text-center">
                           <h5 className="card-title font fw-bold">
                             {test.exam_name}
@@ -720,7 +764,7 @@ console.log(data)
   
                 <div
                   className={`overflow-hidden transition-all duration-500 ease-in-out
-                  ${activeIndex === index ? "max-h-40" : "max-h-0"}`}
+                  ${activeIndex === index ? "max-h-40" : "max-h-0"}`} 
                 >
                   <p
                     className="px-5 py-2 text-gray-700 ml-3"
