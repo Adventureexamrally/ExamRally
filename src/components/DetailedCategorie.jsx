@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import Api from '../service/Api';
+import CAmonth from './CAmonth'
 
 const DetailedCategorie = () => {
     const [catDetail, setCatDetails] = useState([]);
     const { link } = useParams();
-    const [amount,setAmount]=useState("")
-    const [discountedAmount,setdiscountedAmount]=useState("");
-    const [CA,setCA]=useState([])
+    const [amount, setAmount] = useState("")
+    const [discountedAmount, setdiscountedAmount] = useState("");
 
     console.log(link);
 
@@ -23,19 +23,14 @@ const DetailedCategorie = () => {
             setCatDetails(response.data.test_content);
             setAmount(response.data.amount);
             setdiscountedAmount(response.data.discountedAmount)
-            
-            const response2=await Api.get("topic-test/getAffairs/all");
-            setCA(response2.data);
-            console.log("CA",response2.data);
-            
+
 
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     }
 
-    console.log(CA);
-    
+
     return (
         <div className='container'>
             {/* <h1 className="text-center fw-bold text-green-600">
@@ -114,7 +109,7 @@ const DetailedCategorie = () => {
                             <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
                                 Rs.{discountedAmount}
                             </button>
-                            <p className="text-white font-bold">You Save Money: 210</p>
+                            <p className="text-white font-bold">You Save Money: {amount-discountedAmount}</p>
                         </div>
                     </div>
                 </div>
@@ -143,6 +138,12 @@ const DetailedCategorie = () => {
                     </button>
                 </div>
             </div>
+           {/* Conditionally render CAmonth only if the link is 'currentaffairs' */}
+           {link === 'currentaffairs' && (
+                <div>
+                    <CAmonth />
+                </div>
+            )}
         </div>
     )
 }
