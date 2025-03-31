@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Api from "../service/Api";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { CiCircleQuestion } from "react-icons/ci";
+import { ImCheckmark2 } from "react-icons/im";
+import { MdOutlineAccessTime } from "react-icons/md";
+import { BsQuestionSquare } from "react-icons/bs";
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -125,138 +131,176 @@ const Packagename = () => {
       setLoading(false);
     }, 500);
   }, []);
-console.log(data)
+
+  useEffect(() => {
+    AOS.init({
+      duration: 2000,
+    });
+    AOS.refresh();
+  }, []);
+  console.log(data);
   return (
     <>
-     {loading ? (
-       <div className="container mt-1 bg-gray-100 p-3 rounded-lg"> {/* Added light gray background and padding */}
-       <div className="row">
-         <div className="col-md-9">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-         <div className="col-md-3">
-           <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
-             <p className="placeholder-glow">
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-6 mx-auto rounded-md"></span>
-             </p>
-           </div>
-         </div>
-       </div>
-       <div className="row p-3 bg-gray-100 rounded-lg mt-2"> {/* Added light gray background and rounded corners */}
-         <div className="col-md-4">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-         <div className="col-md-4">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-         <div className="col-md-4">
-           <p className="placeholder-glow">
-             <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-           </p>
-         </div>
-       </div>
-       <div className="mt-3">
-         <div className="row">
-           {[1, 2, 3, 4].map((index) => (
-             <div key={index} className="col-md-3 mb-3">
-               <div className="card shadow-md border-0 rounded-3 bg-gray-100"> {/* Added light gray background */}
-                 <div className="card-body text-center">
-                   <p className="placeholder-glow">
-                     <span className="placeholder col-8 mb-2 rounded-md"></span>
-                     <span className="placeholder col-6 mb-2 rounded-md"></span>
-                     <span className="placeholder col-6 mb-2 rounded-md"></span>
-                     <span className="placeholder col-6 mb-2 rounded-md"></span>
-                     <span className="placeholder col-12 rounded-md"></span>
-                   </p>
-                 </div>
-               </div>
-             </div>
-           ))}
-         </div>
-       </div>
-       <div className="my-2">
-         {[1, 2, 3].map((index) => (
-           <div key={index}>
-             <ul className="list-none">
-               <li>
-                 <p className="placeholder-glow">
-                   <span className="placeholder col-6 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-                 </p>
-               </li>
-               <li>
-                 <p className="placeholder-glow">
-                   <span className="placeholder col-12 bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-                 </p>
-               </li>
-             </ul>
-           </div>
-         ))}
-       </div>
-       <h1 className="text-center fw-bold text-gray-500 h4 font my-2"> {/* Mild gray text */}
-         <p className="placeholder-glow">
-           <span className="placeholder col-6 mx-auto bg-gray-200 rounded-md"></span> {/* Added mild gray to placeholder */}
-         </p>
-       </h1>
-       <div className="space-y-4">
-         {[1, 2, 3].map((index) => (
-           <div key={index} className="border-b border-gray-200">
-             <p className="placeholder-glow">
-               <span className="placeholder col-12 mb-2 rounded-md"></span>
-               <span className="placeholder col-10 rounded-md"></span>
-             </p>
-           </div>
-         ))}
-       </div>
-     </div>
-      ) : (
-        <div className="container mt-2">
-        <div className="row">
-          <div className="col-md-9">
-            <div>
-              <h1
-                className="leading-8 font h5"
-                dangerouslySetInnerHTML={{ __html: data.description }}
-              />
+      {loading ? (
+        <div className="container mt-1 bg-gray-100 p-3 rounded-lg">
+          <div className="row">
+            <div className="col-md-9">
+              <p className="placeholder-glow">
+                <span className="placeholder col-12 mb-2 p-5 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+              </p>
+            </div>
+            <div className="col-md-3">
+              <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
+                <p className="placeholder-glow">
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-6 mx-auto rounded-md"></span>
+                </p>
+              </div>
             </div>
           </div>
-  
-          <div className="col-md-3 mt-3">
-            <div
-              className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
-              style={{
-                backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
+          <div className="row p-3 bg-gray-100 rounded-lg mt-2">
+            <div className="col-md-4">
+              <div className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="row">
+              {[1, 2, 3, 4].map((index) => (
+                <div key={index} className="col-md-3 mb-3">
+                  <div className="card shadow-md border-0 rounded-3 bg-gray-100">
+                    <div className="card-body text-center">
+                      <p className="placeholder-glow">
+                        <span className="placeholder col-8 mb-2 rounded-md"></span>
+                        <span className="placeholder col-6 mb-2 rounded-md"></span>
+                        <span className="placeholder col-6 mb-2 rounded-md"></span>
+                        <span className="placeholder col-6 mb-2 rounded-md"></span>
+                        <span className="placeholder col-12 rounded-md"></span>
+                      </p>
+                      <div className="placeholder-glow mt-3">
+                        <span className="placeholder col-6 mx-auto rounded-md p-2"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="my-2">
+            {[1, 2, 3].map((index) => (
+              <div key={index}>
+                <ul className="list-none">
+                  <li>
+                    <p className="placeholder-glow">
+                      <span className="placeholder col-6 bg-gray-200 rounded-md"></span>
+                    </p>
+                  </li>
+                  <li>
+                    <p className="placeholder-glow">
+                      <span className="placeholder col-12 bg-gray-200 rounded-md"></span>
+                    </p>
+                  </li>
+                </ul>
+              </div>
+            ))}
+          </div>
+          <h1 className="text-center fw-bold text-gray-500 h4 font my-2">
+            <p className="placeholder-glow">
+              <span className="placeholder col-6 mx-auto bg-gray-200 rounded-md"></span>
+            </p>
+          </h1>
+          <div className="space-y-4">
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="border-b border-gray-200">
+                <p className="placeholder-glow">
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-10 rounded-md"></span>
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="my-2">
+            {[1, 2, 3].map((index) => (
+              <div key={index}>
+                <ul className="list-none">
+                  <li>
+                    <p className="placeholder-glow">
+                      <span className="placeholder col-6 bg-gray-200 rounded-md"></span>
+                    </p>
+                  </li>
+                  <li>
+                    <p className="placeholder-glow">
+                      <span className="placeholder col-12 bg-gray-200 rounded-md"></span>
+                    </p>
+                  </li>
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="container mt-2">
+          <div className="row">
+            <div className="col-md-9">
+              <div>
+                <h1
+                  className="leading-8 font h5"
+                  dangerouslySetInnerHTML={{ __html: data.description }}
+                />
+              </div>
+            </div>
+
+            <div className="col-md-3 mt-3">
+              <div
+                className="relative flex flex-col p-4 w-full bg-cover rounded-lg shadow-inner 
+              hover:shadow-[0_0_15px_rgba(11,204,75,0.6)] transition duration-300"
+                style={{
+                  backgroundImage: `radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
                                   radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
                                   radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
                                   radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
                                   radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
                                   radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)`,
-              }}
-            >
-              <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
-              <div className="text-white flex justify-between">
-                <span
-                  className="text-xl font-semibold mb-3 "
-                  style={{ fontFamily: "helvetica, Arial, sans-serif" }}
-                >
-                  Features
-                </span>
-              </div>
-              <hr className="border-t border-gray-600" />
-              <ul className="space-y-2">
+                }}
+              >
+                <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
+                <div className="text-white flex justify-between">
+                  <span
+                    className="text-lg  mb-3 "
+                    style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+                  >
+                    Features
+                  </span>
+                </div>
+                <hr className="border-t border-gray-600" />
+                {/* <ul className="space-y-2">
                 {[
                   "Exact Exam level Questions",
                   "Step by Step Explanation",
@@ -288,79 +332,92 @@ console.log(data)
                     <span className="text-white text-sm">{item}</span>
                   </li>
                 ))}
-              </ul>
-  
-              <div className="text-center">
-                <p>
+              </ul>  */}
+
+                <div className="text-center">
+                  <p>
+                    {" "}
+                    <img
+                      src={data.featurePhoto}
+                      alt="Image"
+                      className="w-1/2 mx-auto"
+                    />
+                  </p>
+                  <p>
+                    <del
+                      className="text-red-400"
+                      style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+                    >
+                      Package Price:
+                    </del>
+                  </p>
                   <del
-                    className="text-red-400"
+                    className="bg-red-500 text-white rounded p-1 mb-2"
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
                   >
-                    Package Price:
+                    Rs.{data.amount}
                   </del>
-                </p>
-                <del
-                  className="bg-red-500 text-white rounded p-1 mb-2"
-                  style={{ fontFamily: "helvetica, Arial, sans-serif" }}
-                >
-                  Rs.{data.amount}
-                </del>
-                <p
-                  className="text-white font-bold h5 "
-                  style={{ fontFamily: "helvetica, Arial, sans-serif" }}
-                >
-                  Discounted Price:
-                </p>
-                <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-                  Rs.{data.discountedAmount}
-                </button>
+                  <p
+                    className="text-white font-bold h5 "
+                    style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+                  >
+                    Discounted Price:
+                  </p>
+                  <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+                    Rs.{data.discountedAmount}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-  
-        <div className="row p-3 bg-light">
-          <div className="col-md-4">
-  
-            <button
-              className={`btn w-100 mb-2 text-white ${
-                activeSection === "prelims" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
-              }`}
-              onClick={handlePrelimsClick}
-              // disabled={activeSection && activeSection !== "prelims"}
-              style={{ fontFamily: "helvetica, Arial, sans-serif" }}
-            >
-              Prelims
-            </button>
+
+          <div className="row p-3 bg-light">
+            <div className="col-md-4">
+              <button
+                className={`btn w-100 mb-2 text-white ${
+                  activeSection === "prelims"
+                    ? "bg-[#131656] hover:bg-[#131656]"
+                    : "bg-green-500 hover:bg-green-600"
+                }`}
+                onClick={handlePrelimsClick}
+                // disabled={activeSection && activeSection !== "prelims"}
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                Prelims
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button
+                className={`btn w-100 mb-2 text-white ${
+                  activeSection === "mains"
+                    ? "bg-[#131656] hover:bg-[#131656]"
+                    : "bg-green-500 hover:bg-green-600"
+                }`}
+                onClick={handleMainsClick}
+                // disabled={activeSection && activeSection !== "mains"}
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                Mains
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button
+                className={`btn w-100 mb-2 text-white ${
+                  activeSection === "PYQ"
+                    ? "bg-[#131656] hover:bg-[#131656]"
+                    : "bg-green-500 hover:bg-green-600"
+                }`}
+                onClick={handleUpdatesClick}
+                // disabled={activeSection && activeSection !== "PYQ"}
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                Previous Year Question Paper
+              </button>
+            </div>
           </div>
-          <div className="col-md-4">
-            <button
-              className={`btn w-100 mb-2 text-white ${
-                activeSection === "mains" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
-              }`}
-              onClick={handleMainsClick}
-              // disabled={activeSection && activeSection !== "mains"}
-              style={{ fontFamily: "helvetica, Arial, sans-serif" }}
-            >
-              Mains
-            </button>
-          </div>
-          <div className="col-md-4">
-            <button
-              className={`btn w-100 mb-2 text-white ${
-                activeSection === "PYQ" ? "bg-[#131656] hover:bg-[#131656]" : "bg-green-500 hover:bg-green-600"
-              }`}
-              onClick={handleUpdatesClick}
-              // disabled={activeSection && activeSection !== "PYQ"}
-              style={{ fontFamily: "helvetica, Arial, sans-serif" }}
-            >
-              Previous Year Question Paper
-            </button>
-          </div>
-        </div>
-        
-        {/* Prelims Topics - Bootstrap Cards */}
-        {/* {activeSection === "prelims" && (
+
+          {/* Prelims Topics - Bootstrap Cards */}
+          {/* {activeSection === "prelims" && (
           <div className="mt-3">
             <div className="row">
               {data?.exams?.map(
@@ -440,302 +497,328 @@ console.log(data)
             </div>
           </div>
         )} */}
-  
-  {activeSection === "prelims" && (
-    <div className="mt-3">
-      <div className="row">
-        {data?.exams?.map(
-          (test, idx) =>
-            test.test_type === "Prelims" && (
-              <div key={idx} className="col-md-3 mb-3">
-                <div
-                  className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1 flex flex-col justify-between h-full min-h-[320px]"
-                >
-                  <div className="card-body text-center flex flex-col justify-between h-full">
-                    <h5 className="card-title font-bold text-lg">
-                      {test.exam_name}
-                    </h5>
-  
-                    {/* Show Level Button */}
-                    {!showDifficulty[test._id] ? (
-                      <button
-                        onClick={() => handleShowLevelClick(test._id)}
-                        className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                      >
-                        Show Level
-                      </button>
-                    ) : (
-                      <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
-                        <p>
-                          <strong>{test.q_level}</strong>
-                        </p>
-                      </div>
-                    )}
-  
-                    {/* Test Info Section */}
-                    <div className="flex justify-center items-center gap-4 mt-2">
-                      <div className="flex flex-col items-center">
-                        <p className="font-medium">Questions</p>
-                        <p>{test.section[0].t_question}</p>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <p className="font-medium">Marks</p>
-                        <p>{test.section[0].t_mark}</p>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <p className="font-medium">Time</p>
-                        <p>{test.section[0].t_time}</p>
-                      </div>
-                    </div>
-  
-                    {/* Take Test / Lock Button */}
-                    <button
-                      className={`mt-3 py-2 px-4 rounded w-full transition ${
-                        test.status === "true"
-                          ? "bg-green-500 text-white hover:bg-green-600"
-                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                      }`}
-                      onClick={() => {
-                        if (test.status === "true") {
-                          navigate(`/instruction/${test._id}`);
-                        } else {
-                          handleTopicSelect(test.section[0], "prelims");
-                        }
-                      }}
-                    >
-                      {test.status === "true" ? "Take Test" : "Lock"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )
-        )}
-      </div>
-    </div>
-  )}
-  
-  
-        {/* Mains Topics - Bootstrap Cards */}
-        {activeSection === "mains" && (
-          <div className="mt-3">
-            <div className="row">
-              {data?.exams?.map(
-                (test, idx) =>
-                  test.test_type === "Mains" && (
-                    <div key={idx} className="col-md-3 mb-3">
-                      <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
-                        <div className="card-body text-center">
-                          <h5
-                            className="card-title  fw-bold"
-                            style={{
-                              fontFamily: "helvetica, Arial, sans-serif",
-                            }}
-                          >
-                            {test.exam_name}
-                          </h5>
-                          <div className="text-center">
+
+          {activeSection === "prelims" && (
+            <div className="mt-3 bg-slate-50 py-2 px-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+                {data?.exams?.map(
+                  (test, idx) =>
+                    test.test_type === "Prelims" && (
+                      <div key={idx} className="">
+                        <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                          <div className="card-body text-center flex flex-col justify-evenly">
+                            <h5 className="card-title font-bold text-">
+                              {test.exam_name}
+                            </h5>
+
                             {/* Show Level Button */}
-                            {!showDifficulty[test._id] && (
+                            {!showDifficulty[test._id] ? (
                               <button
-                                onClick={() => handleShowLevelClick(test._id)} // Show difficulty for the specific test
-                                className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
-                                style={{ backgroundColor: "#131656" }}
+                                onClick={() => handleShowLevelClick(test._id)}
+                                className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
                               >
                                 Show Level
                               </button>
-                            )}
-  
-                            {/* Display difficulty level */}
-                            {showDifficulty[test._id] && (
-                              <div
-                                className="mt-4 text-sm px-2 py-2 text-center text-white"
-                                style={{ backgroundColor: "#131656" }}
-                              >
+                            ) : (
+                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
                                 <p>
                                   <strong>{test.q_level}</strong>
                                 </p>
                               </div>
                             )}
-                          </div>
-                          <div className="flex justify-center items-center gap-4">
-                            <div className="flex flex-col items-center">
-                              <p>Ques</p>
-                              <p>{test.section[0].t_question}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <p>Marks</p>
-                              <p>{test.section[0].t_mark}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <p>Time</p>
-                              <p>{test.section[0].t_time}</p>
-                            </div>
-                          </div>
-  
-                          <button
-                            className={`mt-2 py-2 px-4 rounded ${
-                              test.status === "true"
-                                ? "bg-green-500 text-white hover:bg-green-600"
-                                : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                            }`}
-                            onClick={() =>
-                              handleTopicSelect(test.section[0], "mains")
-                            }
-                          >
-                            {test.status === "true" ? "Take Test" : "Lock"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )}
-  
-        {/* Previous Year Question Paper */}
-        {activeSection === "PYQ" && (
-          <div className="mt-3">
-            <div className="row">
-              {data?.exams?.map(
-                (test, idx) =>
-                  test.test_type === "PYQ" && (
-                    <div key={idx} className="col-md-3 mb-3">
-                      <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out">
-                        <div className="card-body text-center">
-                          <h5 className="card-title font fw-bold">
-                            {test.exam_name}
-                          </h5>
-                          <div className="text-center">
-                            {/* Show Level Button */}
-                            {!showDifficulty[test.id] && (
-                              <button
-                                onClick={() => handleShowLevelClick(test.id)} // Show difficulty for the specific test
-                                className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
-                                style={{ backgroundColor: "#131656" }}
-                              >
-                                Show Level
-                              </button>
-                            )}
-  
-                            {/* Display difficulty level */}
-                            {showDifficulty[test.id] && (
-                              <div
-                                className="mt-4 text-sm px-2 py-2 text-center text-white"
-                                style={{ backgroundColor: "#131656" }}
-                              >
-                                <p>
-                                  <strong>{test.q_level}</strong>
+
+                            {/* Test Info Section */}
+                            <div className="flex justify-center items-center gap-4 mt-2">
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Questions</p>
+                                <p className="flex items-center gap-1">
+                                  <BsQuestionSquare size={20} color="orange" />
+                                  {test.section[0].t_question}
                                 </p>
                               </div>
-                            )}
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Marks</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <ImCheckmark2 size={20} color="green" />
+                                  {test.section[0].t_mark}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Time</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <MdOutlineAccessTime size={20} color="red" />
+                                  {test.section[0].t_time}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Take Test / Lock Button */}
+                            <button
+                              className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                test.status === "true"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                              }`}
+                              onClick={() => {
+                                if (test.status === "true") {
+                                  navigate(`/instruction/${test._id}`);
+                                } else {
+                                  handleTopicSelect(test.section[0], "prelims");
+                                }
+                              }}
+                            >
+                              {test.status === "true" ? "Take Test" : "Lock"}
+                            </button>
                           </div>
-  
-                          <div className="flex justify-center items-center gap-4">
-                            <div className="flex flex-col items-center">
-                              <p>Ques</p>
-                              <p>{test.section[0].t_question}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <p>Marks</p>
-                              <p>{test.section[0].t_mark}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <p>Time</p>
-                              <p>{test.section[0].t_time}</p>
-                            </div>
-                          </div>
-  
-                          <button
-                            className={`mt-2 py-2 px-4 rounded ${
-                              test.status === "true"
-                                ? "bg-green-500 text-white hover:bg-green-600"
-                                : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                            }`}
-                            onClick={() =>
-                              handleTopicSelect(test.section[0], "mains")
-                            }
-                          >
-                            {test.result_type === " " ? "Take Test" : "Lock"}
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )}
-  
-        <div className="my-2">
-          {subTitles.map((subTitle) => (
-            <div key={subTitle._id}>
-              <ul className="list-none">
-                <li>
-                  <h3 className="fw-bold font">{subTitle.title}</h3>
-                </li>
-                <li>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: subTitle.description }}
-                    className="font ml-3"
-                  ></div>
-                </li>
-              </ul>
-            </div>
-          ))}
-        </div>
-  
-        <h1 className="text-center fw-bold text-green-500 h4 font my-2">
-          Frequently Asked Question
-        </h1>
-  
-        <div className="space-y-4">
-          {faqs.length > 0 ? (
-            faqs.map((faq, index) => (
-              <div key={faq.id} className="border-b border-gray-200">
-                <div key={faq.id} className="border-b border-gray-200">
-                  <div
-                    className={`flex justify-between text-green-500 rounded my-2 w-full text-left py-2 px-5 font-medium text-lg transition-all ease-in-out duration-300 ${
-                      activeIndex === index
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-100 hover:bg-green-100"
-                    }`}
-                    onClick={() => handleAccordionToggle(index)}
-                  >
-                    <div
-                      className="flex"
-                      style={{ justifyContent: "space-between", width: "100%" }}
-                    >
-                      <span dangerouslySetInnerHTML={{ __html: faq.question }} />
-                      <span>
-                        {activeIndex === index ? (
-                         <i className="bi bi-arrow-up fs-2 fw-bolder"></i>
-                        ) : (
-                          <i className="bi bi-arrow-down fs-2 fw-bolder"></i>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-  
-                <div
-                  className={`overflow-hidden transition-all duration-500 ease-in-out
-                  ${activeIndex === index ? "max-h-40" : "max-h-0"}`}
-                >
-                  <p
-                    className="px-5 py-2 text-gray-700 ml-3"
-                    dangerouslySetInnerHTML={{ __html: faq.answer }}
-                  />
-                </div>
+                    )
+                )}
               </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">Loading FAQs...</p> // Show a loading message if no FAQs are available
+            </div>
           )}
+
+          {/* Mains Topics - Bootstrap Cards */}
+          {activeSection === "mains" && (
+            <div className="mt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+                {data?.exams?.map(
+                  (test, idx) =>
+                    test.test_type === "Mains" && (
+                      <div key={idx} className="">
+                        <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                          <div className="card-body text-center flex flex-col justify-evenly">
+                            <h5 className="card-title font-bold text-">
+                              {test.exam_name}
+                            </h5>
+
+                            {/* Show Level Button */}
+                            {!showDifficulty[test._id] ? (
+                              <button
+                                onClick={() => handleShowLevelClick(test._id)}
+                                className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                              >
+                                Show Level
+                              </button>
+                            ) : (
+                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                                <p>
+                                  <strong>{test.q_level}</strong>
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Test Info Section */}
+                            <div className="flex justify-center items-center gap-4 mt-2">
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Questions</p>
+                                <p className="flex items-center gap-1">
+                                  <BsQuestionSquare size={20} color="orange" />
+                                  {test.section[0].t_question}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Marks</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <ImCheckmark2 size={20} color="green" />
+                                  {test.section[0].t_mark}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Time</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <MdOutlineAccessTime size={20} color="red" />
+                                  {test.section[0].t_time}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Take Test / Lock Button */}
+                            <button
+                              className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                test.status === "true"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                              }`}
+                              onClick={() => {
+                                if (test.status === "true") {
+                                  navigate(`/instruction/${test._id}`);
+                                } else {
+                                  handleTopicSelect(test.section[0], "mains");
+                                }
+                              }}
+                            >
+                              {test.status === "true" ? "Take Test" : "Lock"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Previous Year Question Paper */}
+          {activeSection === "PYQ" && (
+            <div className="mt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+                {data?.exams?.map(
+                  (test, idx) =>
+                    test.test_type === "PYQ" && (
+                      <div key={idx} className="">
+                        <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                          <div className="card-body text-center flex flex-col justify-evenly">
+                            <h5 className="card-title font-bold text-">
+                              {test.exam_name}
+                            </h5>
+
+                            {/* Show Level Button */}
+                            {!showDifficulty[test._id] ? (
+                              <button
+                                onClick={() => handleShowLevelClick(test._id)}
+                                className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                              >
+                                Show Level
+                              </button>
+                            ) : (
+                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                                <p>
+                                  <strong>{test.q_level}</strong>
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Test Info Section */}
+                            <div className="flex justify-center items-center gap-4 mt-2">
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Questions</p>
+                                <p className="flex items-center gap-1">
+                                  <BsQuestionSquare size={20} color="orange" />
+                                  {test.section[0].t_question}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Marks</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <ImCheckmark2 size={20} color="green" />
+                                  {test.section[0].t_mark}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Time</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <MdOutlineAccessTime size={20} color="red" />
+                                  {test.section[0].t_time}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Take Test / Lock Button */}
+                            <button
+                              className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                test.status === "true"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                              }`}
+                              onClick={() => {
+                                if (test.status === "true") {
+                                  navigate(`/instruction/${test._id}`);
+                                } else {
+                                  handleTopicSelect(test.section[0], "PYQ");
+                                }
+                              }}
+                            >
+                              {test.status === "true" ? "Take Test" : "Lock"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="my-2">
+            {subTitles.map((subTitle) => (
+              <div key={subTitle._id}>
+                <ul className="list-none">
+                  <li>
+                    <h3 className="fw-bold font">{subTitle.title}</h3>
+                  </li>
+                  <li>
+                    <div
+                      dangerouslySetInnerHTML={{ __html: subTitle.description }}
+                      className="font ml-3"
+                    ></div>
+                  </li>
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-center fw-bold text-green-500 h4 font my-2">
+            Frequently Asked Question
+          </h1>
+
+          <div className="space-y-4">
+            {faqs.length > 0 ? (
+              faqs.map((faq, index) => (
+                <div key={faq.id} className="border-b border-gray-200">
+                  <div key={faq.id} className="border-b border-gray-200">
+                    <div
+                      className={`flex justify-between text-green-500 rounded my-2 w-full text-left py-2 px-5 font-medium text-lg transition-all ease-in-out duration-300 ${
+                        activeIndex === index
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-100 hover:bg-green-100"
+                      }`}
+                      onClick={() => handleAccordionToggle(index)}
+                    >
+                      <div
+                        className="flex"
+                        style={{
+                          justifyContent: "space-between",
+                          width: "100%",
+                        }}
+                      >
+                        <span
+                          dangerouslySetInnerHTML={{ __html: faq.question }}
+                        />
+                        <span>
+                          {activeIndex === index ? (
+                            <i className="bi bi-arrow-up fs-2 fw-bolder"></i>
+                          ) : (
+                            <i className="bi bi-arrow-down fs-2 fw-bolder"></i>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`overflow-hidden transition-all duration-500 ease-in-out
+                  ${activeIndex === index ? "max-h-40" : "max-h-0"}`}
+                  >
+                    <p
+                      className="px-5 py-2 text-gray-700 ml-3"
+                      dangerouslySetInnerHTML={{ __html: faq.answer }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">Loading FAQs...</p> // Show a loading message if no FAQs are available
+            )}
+          </div>
         </div>
-      </div>
       )}
-    
     </>
   );
 };
