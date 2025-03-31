@@ -40,16 +40,26 @@ const Test = () => {
 // });
 
 
-  useEffect(() => {
+const [isDataFetched, setIsDataFetched] = useState(false);
+const [show_name,setShow_name] = useState("")
+const [t_questions,sett_questions]=useState("")
+useEffect(() => {
+  // Check if data has already been fetched
+  if (!isDataFetched) {
     Api.get(`exams/getExam/${id}`)
       .then((res) => {
         if (res.data) {
           setExamData(res.data);
-          console.log(res.data);
+          setIsDataFetched(true); 
+          setShow_name(res.data.show_name)
+          sett_questions(res.data.t_questions) // Mark that data is fetched
+          console.log("kl",res.data.show_name);
         }
       })
       .catch((err) => console.error("Error fetching data:", err));
-  }, []);
+  }
+}, [id]);  // Only trigger when `id` changes
+
 
   const startingIndex =
     examData?.section
@@ -159,6 +169,7 @@ const Test = () => {
                 correct: question.correct,
                 Incorrect:0,
                 answer: question.answer,
+                common_data:question.common_data,
                 explanation: question.explanation,
                 selectedOption: question.selectedOption,
                 isVisited: 0,
@@ -171,6 +182,7 @@ const Test = () => {
                 correct: question.correct,
                 Incorrect:0,
                 answer: question.answer,
+                common_data:question.common_data,
                 explanation: question.explanation,
                 selectedOption: question.selectedOption,
                 isVisited: 0,
@@ -183,6 +195,7 @@ const Test = () => {
                 correct: question.correct,
                 Incorrect:0,
                 answer: question.answer,
+                common_data:question.common_data,
                 explanation: question.explanation,
                 selectedOption: question.selectedOption,
                 isVisited:0,
@@ -340,31 +353,35 @@ const Test = () => {
 
   const [questionTime, setQuestionTime] = useState(0);
   const [questionTimerActive, setQuestionTimerActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const questionTimerRef = useState(null)
 
-  let questionTimerInterval;
+  // let questionTimerInterval;
 
   useEffect(() => {
-    // Reset time when switching questions
-    setQuestionTime(0);
+    // setQuestionTime(0);
     setQuestionTimerActive(true);
+    // Reset time when switching questions
+    if (questionTimerActive && !isPaused) {
 
-    questionTimerInterval = setInterval(() => {
-      setQuestionTime((prevTime) => prevTime + 1);
-    }, 1000);
-
-    return () => clearInterval(questionTimerInterval);
-  }, [clickedQuestionIndex]);
+      questionTimerRef.current = setInterval(() => {
+        setQuestionTime((prev) => prev + 1);
+      }, 1000);
+    }
+  
+    return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
+  }, [questionTimerActive, isPaused]);
 
   const datatime = examData?.duration ?? 0;
   const [timeLeft, setTimeLeft] = useState(datatime * 60);
 
-  const formatTime = (durationInSeconds) => {
-    const hours = Math.floor(durationInSeconds / 3600);
-    const minutes = Math.floor((durationInSeconds % 3600) / 60);
-    const seconds = durationInSeconds % 60;
+  // const formatTime = (durationInSeconds) => {
+  //   const hours = Math.floor(durationInSeconds / 3600);
+  //   const minutes = Math.floor((durationInSeconds % 3600) / 60);
+  //   const seconds = durationInSeconds % 60;
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2, "0")}`;
-  };
+  //   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2, "0")}`;
+  // };
 
   useEffect(() => {
     setTimeLeft(datatime * 60); // Reset when duration changes
@@ -565,6 +582,7 @@ const Test = () => {
         correct: question?.answer === selectedOption ? 1 : 0,
         explanation: question?.explanation,
         answer: question?.answer,
+        common_data:question?.common_data,
         selectedOption: question?.selectedOption || selectedOption,
         isVisited: isVisited,
         NotVisited: notVisited,
@@ -603,6 +621,8 @@ const Test = () => {
         english: section.questions.english.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
+          answer:question?.answer,
+          common_data:question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
@@ -613,6 +633,8 @@ const Test = () => {
         hindi: section.questions.hindi.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
+          answer:question?.answer,
+          common_data:question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
@@ -623,6 +645,8 @@ const Test = () => {
         tamil: section.questions.tamil.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
+          answer:question?.answer,
+          common_data:question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
@@ -682,13 +706,16 @@ const Test = () => {
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
+  // const [isPaused, setIsPaused] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
+
   useEffect(() => {
   const sectionTimeInSeconds = examData?.section[currentSectionIndex]?.t_time * 60; // Convert minutes to seconds
     settimeminus(sectionTimeInSeconds); // Reset time when the section changes
   }, [examData, currentSectionIndex]);
 
   useEffect(() => {
-    if (timeminus > 0) {
+    if (timeminus > 0  && !isPaused) {
       const timerInterval = setInterval(() => {
         settimeminus((prevTime) => {
           const newTime = prevTime - 1;
@@ -696,19 +723,26 @@ const Test = () => {
         });
       }, 1000); // Update every second
       return () => clearInterval(timerInterval);
+    } 
+  }, [timeminus, isPaused]); // Runs whenever timeminus changes
+  const handlePauseResume = () => {
+    if (pauseCount < 1) {
+      clearInterval(questionTimerRef.current);
+      setIsPaused(true); // Pause the timer
+      setPauseCount(pauseCount + 1);
+      Swal.fire("SweetAlert2 is working!");
     } else {
-      // Automatically call handleSubmitSection when time reaches 0
-      handleSubmitSection();
+      setIsPaused(false); // Resume the timer
+      setPauseCount(0);
     }
-  }, [timeminus]); // Runs whenever timeminus changes
-
+  };
   // Trigger submission on timeLeft = 0 or when exam is submitted
-  useEffect(() => {
-    if (timeLeft <= 0) {
+  // useEffect(() => {
+  //   if (timeLeft <= 0) {
       // console.log("2 time called in time")
       // submitExam();
-    }
-  }, [timeLeft]);
+  //   }
+  // }, [timeLeft]);
 
   const [sectionSummary, setSectionSummary] = useState(null);
 
@@ -723,13 +757,46 @@ const Test = () => {
     clickedQuestionIndex ===
     quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
 
+    // const [timeLeft, setTimeLeft] = useState(60); // Example starting time
+  const [isRunning, setIsRunning] = useState(false);
+
+
+  useEffect(() => {
+    let interval;
+    if (isRunning && !isPaused) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (!isRunning) {
+      clearInterval(interval);
+    }
+
+    return () => clearInterval(interval);
+  }, [isRunning, isPaused]);
+
+  const toggleTimer = () => {
+    if (isRunning && !isPaused) {
+      setIsPaused(true);  // Pause the timer
+    } else {
+      setIsRunning((prev) => !prev);  // Toggle play/pause
+      setIsPaused(false);  // Ensure it's not paused when restarting
+    }
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+  };
   
-
-
   return (
-    <div className="container-fluid mock-font ">
+    <div className="mock-font p-1">
       <div>
-        <p className="text-lg">Selected Language: {selectedLanguage}</p>
+      <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+  <h1 className="h3 font-bold mt-3">{show_name}</h1>
+  <img src={logo} alt="logo" className="h-10 w-auto" />
+</div>
+        {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
         <div>
           {/* Modal for showing section summary */}
@@ -813,12 +880,13 @@ const Test = () => {
         {/* Toast Container */}
         <ToastContainer />
       </div>
+     
+
+
       <div className="d-flex justify-content-between align-items-center mb-3">
         <span className="h4">Reading Ability! English Language!!</span>
         <div className="badge bg-warning fs-6 p-2">
-          <div className="badge bg-warning fs-6 p-2">
-            <h1>Time-Left: {formatTime(timeLeft)}</h1>
-          </div>
+        
         </div>
       </div>
       <div className="row">
@@ -829,7 +897,7 @@ const Test = () => {
               <div className="d-flex  justify-between">
                 <h3>
                   Question No: {clickedQuestionIndex + 1}/
-                  {examData?.t_questions}
+                  {t_questions}
                 </h3>
 
                 <h1>
@@ -968,6 +1036,14 @@ const Test = () => {
             <h1 className=" bg-blue-400 text-center text-white p-2 ">
               Time Left:{formatTime(timeminus)}
             </h1>
+            <button
+  onClick={handlePauseResume}
+  className={`px-4 py-2 rounded-lg font-semibold transition duration-300 ml-24 mt-2 ${
+    isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+  }`}
+>Pause
+  {isPaused}
+</button>
 
             <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
               {examData?.section[currentSectionIndex]?.questions?.[
@@ -1021,49 +1097,60 @@ const Test = () => {
 
       {/* Footer Buttons */}
       <div className="fixed-bottom bg-white p-3">
-        <div className="d-flex justify-content-between">
-          <button
-            onClick={handleClearResponse}
-            className="btn bg-blue-300 fw-bold"
-          >
-            Clear Response
-          </button>
-          <button
-            onClick={handleMarkForReview}
-            className="btn bg-blue-300 fw-bold"
-          >
-            Mark for Review
-          </button>
+      <div className="d-flex justify-content-between border-8">
+  {/* Left side - Mark for Review and Clear Response */}
+  <div className="d-flex">
+    <button
+      onClick={handleMarkForReview}
+      className="btn bg-blue-300 fw-bold hover:bg-blue-200"
+    >
+      Mark for Review
+    </button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button
+      onClick={handleClearResponse}
+      className="btn bg-blue-300 fw-bold hover:bg-blue-200"
+    >
+      Clear Response
+    </button>
+  </div>
 
-          {examData?.section?.[currentSectionIndex]?.questions?.[
-            selectedLanguage?.toLowerCase()
-          ]?.length > 0 &&
-            clickedQuestionIndex !==
-              startingIndex +
-                (examData?.section?.[currentSectionIndex]?.questions?.[
-                  selectedLanguage?.toLowerCase()
-                ]?.length || 0) -
-                1 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white fw-bold"
-              >
-                Save & Next
-              </button>
-            )}
-
-          <button
-            className="btn bg-blue-500 text-white fw-bold"
-            onClick={handleSubmitSection}
-            data-bs-toggle="modal"
-            data-bs-target="#staticBackdrop"
-          >
-            {currentSectionIndex === examData?.section?.length - 1
-              ? "Submit Test"
-              : "Submit Section"}
-          </button>
-        </div>
-      </div>
+  {/* Right side - Save & Next and Submit Section */}
+  <div className="d-flex justify-content-end">
+    {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 &&
+      clickedQuestionIndex !==
+        startingIndex +
+          (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0) - 1 && (
+        <button
+          onClick={handleNextClick}
+          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+        >
+          Save & Next
+        </button>
+      )}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button
+      className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+      onClick={handleSubmitSection}
+      data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop"
+    >
+      {currentSectionIndex === examData?.section?.length - 1
+        ? "Submit Test"
+        : "Submit Section"}
+    </button>
+  </div>
+</div>
+</div>
     </div>
   );
 };

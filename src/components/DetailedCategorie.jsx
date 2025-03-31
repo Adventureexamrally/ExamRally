@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import Api from '../service/Api';
+import CAmonth from './CAmonth'
 
 const DetailedCategorie = () => {
     const [catDetail, setCatDetails] = useState([]);
     const { link } = useParams();
+    const [amount, setAmount] = useState("")
+    const [discountedAmount, setdiscountedAmount] = useState("");
+
     console.log(link);
 
 
@@ -16,12 +20,17 @@ const DetailedCategorie = () => {
         try {
             const response = await Api.get(`topic-test/test/${link}`);
             console.log("livetest", response.data);
-            setCatDetails(response.data.test_content)
+            setCatDetails(response.data.test_content);
+            setAmount(response.data.amount);
+            setdiscountedAmount(response.data.discountedAmount)
+
 
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     }
+
+
     return (
         <div className='container'>
             {/* <h1 className="text-center fw-bold text-green-600">
@@ -95,12 +104,12 @@ const DetailedCategorie = () => {
                             <p>
                                 <del className="text-red-400 font">Original Price:</del>
                             </p>
-                            <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.299</del>
+                            <del className="bg-red-500 text-white rounded p-1 mb-2">Rs.{amount}</del>
                             <p className="text-white font h5">Discounted Price:</p>
                             <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-                                Rs.89
+                                Rs.{discountedAmount}
                             </button>
-                            <p className="text-white font-bold">You Save Money: 210</p>
+                            <p className="text-white font-bold">You Save Money: {amount-discountedAmount}</p>
                         </div>
                     </div>
                 </div>
@@ -129,6 +138,12 @@ const DetailedCategorie = () => {
                     </button>
                 </div>
             </div>
+           {/* Conditionally render CAmonth only if the link is 'currentaffairs' */}
+           {link === 'currentaffairs' && (
+                <div>
+                    <CAmonth />
+                </div>
+            )}
         </div>
     )
 }
