@@ -500,7 +500,7 @@ const Packagename = () => {
 
           {activeSection === "prelims" && (
             <div className="mt-3 bg-slate-50 py-2 px-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
                 {data?.exams?.map(
                   (test, idx) =>
                     test.test_type === "Prelims" && (
@@ -528,7 +528,7 @@ const Packagename = () => {
                             )}
 
                             {/* Test Info Section */}
-                            <div className="flex justify-center items-center gap-4 mt-2">
+                            <div className="flex justify-around items-center gap-4 mt-2">
                               <div className="flex flex-col items-center">
                                 <p className="font-medium">Questions</p>
                                 <p className="flex items-center gap-1">
