@@ -96,19 +96,7 @@ const Packagename = () => {
   // Store FAQ data
   const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
 
-  // useEffect(() => {
-  //   // Fetching data based on the id from the URL params
-  //   Api.get(`packages/package-content/${id}`)
-  //     .then((res) => {
-  //       console.log(res.data);
-  //       // Setting the FAQ data from the response
-  //       setFaqs(res.data?.package_content?.[0]?.faqs || []);
-  //       console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching data:', error);
-  //     });
-  // }, [id]);  // Effect will run whenever 'id' changes
+ 
 
   const handleAccordionToggle = (index) => {
     // Toggle the active index (open/close the panel)
@@ -399,87 +387,7 @@ console.log(data)
           </div>
         </div>
         
-        {/* Prelims Topics - Bootstrap Cards */}
-        {/* {activeSection === "prelims" && (
-          <div className="mt-3">
-            <div className="row">
-              {data?.exams?.map(
-                (test, idx) =>
-                  test.test_type === "Prelims" && (
-                    <div key={idx} className="col-md-3 mb-3">
-                      <div className="card shadow-lg border-0 rounded-3 transform transition-all duration-300 ease-in-out border-gray-500 hover:scale-105 border-1">
-                        <div className="card-body text-center">
-                          <h5
-                            className="card-title fw-bold"
-                            style={{
-                              fontFamily: "helvetica, Arial, sans-serif",
-                            }}
-                          >
-                            {test.exam_name}
-                          </h5>
-                          <div className="text-center">
-                            Show Level Button
-                            {!showDifficulty[test._id] && (
-                              <button
-                                onClick={() => handleShowLevelClick(test._id)} // Show difficulty for the specific test
-                                className="text-white py-2 px-2 rounded mt-2 bg-green-500 hover:bg-green-600 w-100"
-                                style={{ backgroundColor: "#131656" }}
-                              >
-                                Show Level
-                              </button>
-                            )}
-  
-                            Display difficulty level
-                            {showDifficulty[test._id] && (
-                              <div
-                                className="mt-4 text-sm px-2 py-2 text-center text-white"
-                                style={{ backgroundColor: "#131656" }}
-                              >
-                                <p>
-                                  <strong>{test.q_level}</strong>
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex justify-center items-center gap-4">
-                            <div className="flex flex-col items-center">
-                              <p>Questions</p>
-                              <p>{test.section[0].t_question}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <p>Marks</p>
-                              <p>{test.section[0].t_mark}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <p>Time</p>
-                              <p>{test.section[0].t_time}</p>
-                            </div>
-                          </div>
-  
-                          <button
-                            className={`mt-2 py-2 px-4 rounded ${
-                              test.status === "true"
-                                ? "bg-green-500 text-white hover:bg-green-600"
-                                : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                            }`}
-                            onClick={() => {
-                              if (test.status === "true") {
-                                navigate(`/instruction/${test._id}`); // Redirects to instruction page
-                              } else {
-                                handleTopicSelect(test.section[0], "prelims"); // Keeps the original function for locked state
-                              }
-                            }}
-                          >
-                            {test.status === "true" ? "Take Test" : "Lock"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )} */}
+     
   
   {activeSection === "prelims" && (
     <div className="mt-3">
