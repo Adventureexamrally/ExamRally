@@ -910,7 +910,7 @@ const Packagename = () => {
                     onClick={() => handleAccordionToggle(index)}
                   >
                     <span
-                      className="font-medium"
+                      className="font-medium flex items-center "
                       dangerouslySetInnerHTML={{ __html: faq.question }}
                     />
                     <span className="text-lg">

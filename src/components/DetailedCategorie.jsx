@@ -2,30 +2,62 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Api from "../service/Api";
 import CAmonth from "./CAmonth";
+import { ImCheckmark2 } from "react-icons/im";
+import { MdOutlineAccessTime } from "react-icons/md";
+import { BsQuestionSquare } from "react-icons/bs";
+import { IoMdLock } from "react-icons/io";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 
 const DetailedCategorie = () => {
   const [catDetail, setCatDetails] = useState([]);
   const { link } = useParams();
   const [amount, setAmount] = useState("");
   const [discountedAmount, setdiscountedAmount] = useState("");
-
+  const [subMenuData, setSubMenuData] = useState([""]);
+  const [sub, setSub] = useState("");
+  const [data, setData] = useState({});
+  const [showDifficulty, setShowDifficulty] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("All");
+  
   console.log(link);
 
   useEffect(() => {
     run();
-  }, []);
+  }, [link, sub]);
 
   async function run() {
     try {
       const response = await Api.get(`topic-test/test/${link}`);
       console.log("livetest", response.data);
+      setData(response.data);
       setCatDetails(response.data.test_content);
+      setSub(response.data.categorys);
       setAmount(response.data.amount);
+      fetchSubMenus(response.data.categorys);
       setdiscountedAmount(response.data.discountedAmount);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   }
+console.log(activeSection);
+
+  const fetchSubMenus = async (subLink) => {
+    // setActiveSection(subLink);
+    // setLoading(true);
+    if (sub !== "") {
+      try {
+        const response = await Api.get(`topic-test/test-sub/${sub}`);
+        console.log("subMenu data", response.data);
+        setSubMenuData(response.data[0].submenus);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching sub-menu data:", error);
+        setLoading(false);
+        setSubMenuData([]);
+      }
+    }
+  };
 
   return (
     <div className="container">
@@ -51,7 +83,7 @@ const DetailedCategorie = () => {
 
         <div className="col-md-3">
           <div
-            className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner hoverstyle"
+            className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner "
             style={{
               backgroundImage: `
                     radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
@@ -67,36 +99,9 @@ const DetailedCategorie = () => {
             <div className="text-white flex justify-between">
               <span className="text-xl font-semibold font mb-3">Features</span>
             </div>
-            <hr className="border-t border-gray-600" />
-            <ul className="space-y-2">
-              {[
-                "Exact Exam Level Questions",
-                "New Pattern Questions",
-                "Detailed Solution",
-                "Covered All Models",
-                "Clerk to RBI Grade B level Questions",
-                "Real Exam Interface",
-              ].map((item, index) => (
-                <li key={index} className="flex items-center gap-2 font">
-                  <span className="flex justify-center items-center w-4 h-4 bg-green-500 rounded-full">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                      className="w-3 h-3 text-white"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
-                        clipRule="evenodd"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span className="text-white text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
+            {/* <hr className="border-t border-gray-600" /> */}
 
+            <img src={data.featurePhoto} alt="" />
             <div className="text-center">
               <p>
                 <del className="text-red-400 font">Original Price:</del>
@@ -116,32 +121,125 @@ const DetailedCategorie = () => {
         </div>
       </div>
       {/* Sidebar Buttons */}
-      <div className="row p-3 bg-light">
-        <div className="col-md-4">
-          <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
-            //onClick={handlePrelimsClick}
-          >
-            Prelims
-          </button>
-        </div>
-        <div className="col-md-4">
-          <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
-            //onClick={handleMainsClick}
-          >
-            Mains
-          </button>
-        </div>
-        <div className="col-md-4">
-          <button
-            className="btn bg-green-500 w-100 mb-2 text-white hover:bg-green-600"
-            //   onClick={handleUpdatesClick}
-          >
-            Previous Year Questions
-          </button>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-3">
+        <button
+          onClick={() => setActiveSection("All")}
+          className={`btn w-100 mb-2 text-white ${
+            activeSection === 'All'
+              ? "bg-[#131656] hover:bg-[#131656]"
+              : "bg-green-500 hover:bg-green-600"
+          }`}
+        >
+          All
+        </button>
+        {subMenuData.length > 0 &&
+          subMenuData.map((sub) => (
+            <button
+              key={sub.id}
+              onClick={() => setActiveSection(sub)}
+              className={`btn w-100 mb-2 text-white ${
+                activeSection === sub
+                  ? "bg-[#131656] hover:bg-[#131656]"
+                  : "bg-green-500 hover:bg-green-600"
+              }`}
+            >
+              {sub}
+            </button>
+          ))}
       </div>
+      {activeSection && (
+        <div className="mt-3 bg-slate-50 py-2 px-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
+            {data?.exams?.map((test, idx) => {
+              // If activeSection is "All" or matches the test's sub_menu, render the test
+              if (
+                activeSection === "All" ||
+                test.topic_test?.sub_menu === activeSection
+              ) {
+                return (
+                  <div key={idx} className="">
+                    <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                      <div className="card-body text-center flex flex-col justify-evenly">
+                        <h5 className="card-title font-bold text-">
+                          {test.exam_name}
+                        </h5>
+                        <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
+                        {/* Show Level Button */}
+                        {!showDifficulty[test._id] ? (
+                          <button
+                            onClick={() => handleShowLevelClick(test._id)}
+                            className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                          >
+                            Show Level
+                          </button>
+                        ) : (
+                          <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                            <p>
+                              <strong>{test.q_level}</strong>
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Test Info Section */}
+                        <div className="flex justify-center items-center gap-4 mt-2">
+                          <div className="flex flex-col items-center">
+                            <p className="font-medium">Questions</p>
+                            <p className="flex items-center gap-1">
+                              <BsQuestionSquare size={20} color="orange" />
+                              {test.section[0].t_question}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <p className="font-medium">Marks</p>
+                            <p className="flex items-center gap-1">
+                              <ImCheckmark2 size={20} color="green" />
+                              {test.section[0].t_mark}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <p className="font-medium">Time</p>
+                            <p className="flex items-center gap-1">
+                              <MdOutlineAccessTime size={20} color="red" />
+                              {test.section[0].t_time}
+                            </p>
+                          </div>
+                        </div>
+                        <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                        {/* Take Test / Lock Button */}
+                        <button
+                          className={`mt-3 py-2 px-4 rounded w-full transition ${
+                            test.status === "true"
+                              ? "bg-green-500 text-white hover:bg-green-600"
+                              : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                          }`}
+                          onClick={() => {
+                            if (test.status === "true") {
+                              navigate(`/instruction/${test._id}`);
+                            } else {
+                              handleTopicSelect(test.section[0], "PYQ");
+                            }
+                          }}
+                        >
+                          {test.status === "true" ? (
+                            "Take Test"
+                          ) : (
+                            <div className="flex items-center justify-center font-semibold gap-1">
+                              <IoMdLock />
+                              Lock
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null; // Don't render if activeSection doesn't match
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Conditionally render CAmonth only if the link is 'currentaffairs' */}
       {link === "currentaffairs" && (
         <div>
@@ -152,14 +250,15 @@ const DetailedCategorie = () => {
       {catDetail?.sub_titles?.length > 0 &&
         catDetail?.sub_titles?.map((sub) => (
           <div className="flex flex-col gap-3 flex-wrap py-2 bg-gray-50 px-2 my-3 shadow-lg">
-        
-              <h1
-                className="my-2 p-3"
-                dangerouslySetInnerHTML={{ __html: sub.title }}
-              ></h1>
-            
-              <p className="my-2 p-3" dangerouslySetInnerHTML={{ __html: sub.description }}></p>
-        
+            <h1
+              className="my-2 p-3"
+              dangerouslySetInnerHTML={{ __html: sub.title }}
+            ></h1>
+
+            <p
+              className="my-2 p-3"
+              dangerouslySetInnerHTML={{ __html: sub.description }}
+            ></p>
           </div>
         ))}
     </div>
