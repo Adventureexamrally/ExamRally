@@ -151,15 +151,15 @@ const DetailedCategorie = () => {
 
       {catDetail?.sub_titles?.length > 0 &&
         catDetail?.sub_titles?.map((sub) => (
-          <div className=" staticheader">
-            <p className="font mt-2 h5 leading-8">
+          <div className="flex flex-col gap-3 flex-wrap py-2 bg-gray-50 px-2 my-3 shadow-lg">
+        
               <h1
-                className=" font font-bold "
+                className="my-2 p-3"
                 dangerouslySetInnerHTML={{ __html: sub.title }}
               ></h1>
-              <br />
-              <p dangerouslySetInnerHTML={{ __html: sub.description }}></p>
-            </p>
+            
+              <p className="my-2 p-3" dangerouslySetInnerHTML={{ __html: sub.description }}></p>
+        
           </div>
         ))}
     </div>

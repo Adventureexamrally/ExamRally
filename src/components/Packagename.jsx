@@ -3,10 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import Api from "../service/Api";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { CiCircleQuestion } from "react-icons/ci";
+// import { CiCircleQuestion } from "react-icons/ci";
 import { ImCheckmark2 } from "react-icons/im";
 import { MdOutlineAccessTime } from "react-icons/md";
 import { BsQuestionSquare } from "react-icons/bs";
+import { IoMdLock } from "react-icons/io";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -372,14 +374,14 @@ const Packagename = () => {
           </div>
 
           <div className="row p-3 bg-light">
-          <div className="col-md-2">
+            <div className="col-md-2">
               <button
                 className={`btn w-100 mb-2 text-white ${
                   activeSection === "All"
                     ? "bg-[#131656] hover:bg-[#131656]"
                     : "bg-green-500 hover:bg-green-600"
                 }`}
-                onClick={()=>setActiveSection("All")}
+                onClick={() => setActiveSection("All")}
                 // disabled={activeSection && activeSection !== "prelims"}
                 style={{ fontFamily: "helvetica, Arial, sans-serif" }}
               >
@@ -511,84 +513,90 @@ const Packagename = () => {
             </div>
           </div>
         )} */}
-        
-        {activeSection === "All" && (
+
+          {activeSection === "All" && (
             <div className="mt-3 bg-slate-50 py-2 px-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-                {data?.exams?.map(
-                  (test, idx) =>(
-                      <div key={idx} className="">
-                        <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                          <div className="card-body text-center flex flex-col justify-evenly">
-                            <h5 className="card-title font-bold text-">
-                              {test.exam_name}
-                            </h5>
+                {data?.exams?.map((test, idx) => (
+                  <div key={idx} className="">
+                    <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                      <div className="card-body text-center flex flex-col justify-evenly">
+                        <h5 className="card-title font-bold text-">
+                          {test.exam_name}
+                        </h5>
+                        <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
+                        {/* Show Level Button */}
+                        {!showDifficulty[test._id] ? (
+                          <button
+                            onClick={() => handleShowLevelClick(test._id)}
+                            className="text-white text-sm py-2 px-2 rounded my-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                          >
+                            Show Level
+                          </button>
+                        ) : (
+                          <div className="text-sm  my-2 px-2 py-2 rounded text-center text-white bg-[#131656]">
+                            <p>
+                              <strong>{test.q_level.toUpperCase()}</strong>
+                            </p>
+                          </div>
+                        )}
 
-                            {/* Show Level Button */}
-                            {!showDifficulty[test._id] ? (
-                              <button
-                                onClick={() => handleShowLevelClick(test._id)}
-                                className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                              >
-                                Show Level
-                              </button>
-                            ) : (
-                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
-                                <p>
-                                  <strong>{test.q_level}</strong>
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Test Info Section */}
-                            <div className="flex justify-around items-center gap-4 mt-2">
-                              <div className="flex flex-col items-center">
-                                <p className="font-medium">Questions</p>
-                                <p className="flex items-center gap-1">
-                                  <BsQuestionSquare size={20} color="orange" />
-                                  {test.section[0].t_question}
-                                </p>
-                              </div>
-                              <div className="flex flex-col items-center">
-                                <p className="font-medium">Marks</p>
-                                <p className="flex items-center gap-1">
-                                  {" "}
-                                  <ImCheckmark2 size={20} color="green" />
-                                  {test.section[0].t_mark}
-                                </p>
-                              </div>
-                              <div className="flex flex-col items-center">
-                                <p className="font-medium">Time</p>
-                                <p className="flex items-center gap-1">
-                                  {" "}
-                                  <MdOutlineAccessTime size={20} color="red" />
-                                  {test.section[0].t_time}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Take Test / Lock Button */}
-                            <button
-                              className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                test.status === "true"
-                                  ? "bg-green-500 text-white hover:bg-green-600"
-                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                              }`}
-                              onClick={() => {
-                                if (test.status === "true") {
-                                  navigate(`/instruction/${test._id}`);
-                                } else {
-                                  handleTopicSelect(test.section[0], "prelims");
-                                }
-                              }}
-                            >
-                              {test.status === "true" ? "Take Test" : "Lock"}
-                            </button>
+                        {/* Test Info Section */}
+                        <div className="flex justify-around items-center gap-4 mt-2">
+                          <div className="flex flex-col items-center">
+                            <p className="font-medium">Questions</p>
+                            <p className="flex items-center gap-1">
+                              <BsQuestionSquare size={20} color="orange" />
+                              {test.section[0].t_question}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <p className="font-medium">Marks</p>
+                            <p className="flex items-center gap-1">
+                              {" "}
+                              <ImCheckmark2 size={20} color="green" />
+                              {test.section[0].t_mark}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <p className="font-medium">Time</p>
+                            <p className="flex items-center gap-1">
+                              {" "}
+                              <MdOutlineAccessTime size={20} color="red" />
+                              {test.section[0].t_time}
+                            </p>
                           </div>
                         </div>
+                        <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
+
+                        {/* Take Test / Lock Button */}
+                        <button
+                          className={`mt-3 py-2 px-4 rounded w-full transition ${
+                            test.status === "true"
+                              ? "bg-green-500 text-white hover:bg-green-600"
+                              : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                          }`}
+                          onClick={() => {
+                            if (test.status === "true") {
+                              navigate(`/instruction/${test._id}`);
+                            } else {
+                              handleTopicSelect(test.section[0], "prelims");
+                            }
+                          }}
+                        >
+                          {test.status === "true" ? (
+                            "Take Test"
+                          ) : (
+                            <div className="flex items-center justify-center font-semibold gap-1">
+                              <IoMdLock />
+                              Lock
+                            </div>
+                          )}
+                        </button>
                       </div>
-                    )
-                )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -605,6 +613,7 @@ const Packagename = () => {
                             <h5 className="card-title font-bold text-">
                               {test.exam_name}
                             </h5>
+                            <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
 
                             {/* Show Level Button */}
                             {!showDifficulty[test._id] ? (
@@ -648,6 +657,7 @@ const Packagename = () => {
                                 </p>
                               </div>
                             </div>
+                            <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
                             {/* Take Test / Lock Button */}
                             <button
@@ -664,7 +674,14 @@ const Packagename = () => {
                                 }
                               }}
                             >
-                              {test.status === "true" ? "Take Test" : "Lock"}
+                              {test.status === "true" ? (
+                                "Take Test"
+                              ) : (
+                                <div className="flex items-center justify-center font-semibold gap-1">
+                                  <IoMdLock />
+                                  Lock
+                                </div>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -677,8 +694,8 @@ const Packagename = () => {
 
           {/* Mains Topics - Bootstrap Cards */}
           {activeSection === "mains" && (
-            <div className="mt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+            <div className="mt-3 bg-slate-50 py-2 px-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
                 {data?.exams?.map(
                   (test, idx) =>
                     test.test_type === "Mains" && (
@@ -688,7 +705,7 @@ const Packagename = () => {
                             <h5 className="card-title font-bold text-">
                               {test.exam_name}
                             </h5>
-
+                            <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Show Level Button */}
                             {!showDifficulty[test._id] ? (
                               <button
@@ -731,13 +748,13 @@ const Packagename = () => {
                                 </p>
                               </div>
                             </div>
-
+                            <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Take Test / Lock Button */}
                             <button
                               className={`mt-3 py-2 px-4 rounded w-full transition ${
                                 test.status === "true"
                                   ? "bg-green-500 text-white hover:bg-green-600"
-                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                               }`}
                               onClick={() => {
                                 if (test.status === "true") {
@@ -747,7 +764,14 @@ const Packagename = () => {
                                 }
                               }}
                             >
-                              {test.status === "true" ? "Take Test" : "Lock"}
+                              {test.status === "true" ? (
+                                "Take Test"
+                              ) : (
+                                <div className="flex items-center justify-center font-semibold gap-1">
+                                  <IoMdLock />
+                                  Lock
+                                </div>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -760,8 +784,8 @@ const Packagename = () => {
 
           {/* Previous Year Question Paper */}
           {activeSection === "PYQ" && (
-            <div className="mt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+            <div className="mt-3 bg-slate-50 py-2 px-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
                 {data?.exams?.map(
                   (test, idx) =>
                     test.test_type === "PYQ" && (
@@ -771,7 +795,7 @@ const Packagename = () => {
                             <h5 className="card-title font-bold text-">
                               {test.exam_name}
                             </h5>
-
+                            <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Show Level Button */}
                             {!showDifficulty[test._id] ? (
                               <button
@@ -814,13 +838,13 @@ const Packagename = () => {
                                 </p>
                               </div>
                             </div>
-
+                            <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Take Test / Lock Button */}
                             <button
                               className={`mt-3 py-2 px-4 rounded w-full transition ${
                                 test.status === "true"
                                   ? "bg-green-500 text-white hover:bg-green-600"
-                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                               }`}
                               onClick={() => {
                                 if (test.status === "true") {
@@ -830,7 +854,14 @@ const Packagename = () => {
                                 }
                               }}
                             >
-                              {test.status === "true" ? "Take Test" : "Lock"}
+                              {test.status === "true" ? (
+                                "Take Test"
+                              ) : (
+                                <div className="flex items-center justify-center font-semibold gap-1">
+                                  <IoMdLock />
+                                  Lock
+                                </div>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -859,57 +890,53 @@ const Packagename = () => {
             ))}
           </div>
 
-          <h1 className="text-center fw-bold text-green-500 h4 font my-2">
+          <h1 className="text-center fw-bold text-green-800 h4 font py-4 bg-green-200 my-4 rounded-sm">
             Frequently Asked Question
           </h1>
 
           <div className="space-y-4">
             {faqs.length > 0 ? (
               faqs.map((faq, index) => (
-                <div key={faq.id} className="border-b border-gray-200">
-                  <div key={faq.id} className="border-b border-gray-200">
-                    <div
-                      className={`flex justify-between text-green-500 rounded my-2 w-full text-left py-2 px-5 font-medium text-lg transition-all ease-in-out duration-300 ${
-                        activeIndex === index
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-100 hover:bg-green-100"
-                      }`}
-                      onClick={() => handleAccordionToggle(index)}
-                    >
-                      <div
-                        className="flex"
-                        style={{
-                          justifyContent: "space-between",
-                          width: "100%",
-                        }}
-                      >
-                        <span
-                          dangerouslySetInnerHTML={{ __html: faq.question }}
-                        />
-                        <span>
-                          {activeIndex === index ? (
-                            <i className="bi bi-arrow-up fs-2 fw-bolder"></i>
-                          ) : (
-                            <i className="bi bi-arrow-down fs-2 fw-bolder"></i>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
+                <div
+                  key={faq.id}
+                  className="border rounded-lg overflow-hidden shadow-sm "
+                >
+                  <button
+                    className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${
+                      activeIndex === index
+                        ? "bg-green-100 text-green-700"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => handleAccordionToggle(index)}
+                  >
+                    <span
+                      className="font-medium"
+                      dangerouslySetInnerHTML={{ __html: faq.question }}
+                    />
+                    <span className="text-lg">
+                      {activeIndex === index ? (
+                        <FaChevronUp />
+                      ) : (
+                        <FaChevronDown />
+                      )}
+                    </span>
+                  </button>
                   <div
-                    className={`overflow-hidden transition-all duration-500 ease-in-out
-                  ${activeIndex === index ? "max-h-40" : "max-h-0"}`}
+                    className={`transition-max-h duration-300 ease-in-out overflow-hidden ${
+                      activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
+                    }`}
                   >
                     <p
-                      className="px-5 py-2 text-gray-700 ml-3"
+                      className="text-gray-600"
                       dangerouslySetInnerHTML={{ __html: faq.answer }}
                     />
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-500">Loading FAQs...</p> // Show a loading message if no FAQs are available
+              <div className="text-center py-6 text-gray-400">
+                Loading FAQs...
+              </div>
             )}
           </div>
         </div>
