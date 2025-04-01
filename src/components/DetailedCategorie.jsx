@@ -19,7 +19,7 @@ const DetailedCategorie = () => {
   const [showDifficulty, setShowDifficulty] = useState({});
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("All");
-  
+
   console.log(link);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const DetailedCategorie = () => {
       console.error("Error fetching data:", error);
     }
   }
-console.log(activeSection);
+  console.log(activeSection);
 
   const fetchSubMenus = async (subLink) => {
     // setActiveSection(subLink);
@@ -60,6 +60,58 @@ console.log(activeSection);
   };
 
   return (
+    <>
+      {loading ? (
+        <div className="container">
+          <div className="row mt-3">
+            <div className="col-md-9">
+              <p className="placeholder-glow">
+                <span className="placeholder col-12 mb-2 p-5 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+                <span className="placeholder col-12 mb-2 rounded-md"></span>
+              </p>
+            </div>
+            <div className="col-md-3">
+              <div className="relative flex flex-col p-4 w-full bg-gray-200 rounded-xl">
+                <p className="placeholder-glow">
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-12 mb-2 rounded-md"></span>
+                  <span className="placeholder col-6 mx-auto rounded-md"></span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="row p-3 bg-gray-100 rounded-lg mt-2">
+            <div className="col-md-4">
+              <div className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="placeholder-glow">
+                <span className="placeholder col-12 bg-gray-400 rounded-md p-3 font-bold"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) :(
     <div className="container">
       {/* <h1 className="text-center fw-bold text-green-600">
                 {/* <PsychologyIcon fontSize="large" className="text-green-600 me-2" /> 
@@ -121,123 +173,139 @@ console.log(activeSection);
         </div>
       </div>
       {/* Sidebar Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-3">
-        <button
-          onClick={() => setActiveSection("All")}
-          className={`btn w-100 mb-2 text-white ${
-            activeSection === 'All'
-              ? "bg-[#131656] hover:bg-[#131656]"
-              : "bg-green-500 hover:bg-green-600"
-          }`}
-        >
-          All
-        </button>
-        {subMenuData.length > 0 &&
-          subMenuData.map((sub) => (
+
+      {link === "currentaffairs" ? (
+        ""
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-3">
             <button
-              key={sub.id}
-              onClick={() => setActiveSection(sub)}
+              onClick={() => setActiveSection("All")}
               className={`btn w-100 mb-2 text-white ${
-                activeSection === sub
+                activeSection === "All"
                   ? "bg-[#131656] hover:bg-[#131656]"
                   : "bg-green-500 hover:bg-green-600"
               }`}
             >
-              {sub}
+              All
             </button>
-          ))}
-      </div>
-      {activeSection && (
-        <div className="mt-3 bg-slate-50 py-2 px-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-            {data?.exams?.map((test, idx) => {
-              // If activeSection is "All" or matches the test's sub_menu, render the test
-              if (
-                activeSection === "All" ||
-                test.topic_test?.sub_menu === activeSection
-              ) {
-                return (
-                  <div key={idx} className="">
-                    <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                      <div className="card-body text-center flex flex-col justify-evenly">
-                        <h5 className="card-title font-bold text-">
-                          {test.exam_name}
-                        </h5>
-                        <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
-                        {/* Show Level Button */}
-                        {!showDifficulty[test._id] ? (
-                          <button
-                            onClick={() => handleShowLevelClick(test._id)}
-                            className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                          >
-                            Show Level
-                          </button>
-                        ) : (
-                          <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
-                            <p>
-                              <strong>{test.q_level}</strong>
-                            </p>
-                          </div>
-                        )}
+            {subMenuData.length > 0 &&
+              subMenuData.map((sub) => (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveSection(sub)}
+                  className={`btn w-100 mb-2 text-white ${
+                    activeSection === sub
+                      ? "bg-[#131656] hover:bg-[#131656]"
+                      : "bg-green-500 hover:bg-green-600"
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+          </div>
+          <div>
+            {activeSection && (
+              <div className="mt-3 bg-slate-50 py-2 px-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
+                  {data?.exams?.map((test, idx) => {
+                    // If activeSection is "All" or matches the test's sub_menu, render the test
+                    if (
+                      activeSection === "All" ||
+                      test.topic_test?.sub_menu === activeSection
+                    ) {
+                      return (
+                        <div key={idx} className="">
+                          <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                            <div className="card-body text-center flex flex-col justify-evenly">
+                              <h5 className="card-title font-bold text-">
+                                {test.exam_name}
+                              </h5>
+                              <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
+                              {/* Show Level Button */}
+                              {!showDifficulty[test._id] ? (
+                                <button
+                                  onClick={() => handleShowLevelClick(test._id)}
+                                  className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                                >
+                                  Show Level
+                                </button>
+                              ) : (
+                                <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                                  <p>
+                                    <strong>{test.q_level}</strong>
+                                  </p>
+                                </div>
+                              )}
 
-                        {/* Test Info Section */}
-                        <div className="flex justify-center items-center gap-4 mt-2">
-                          <div className="flex flex-col items-center">
-                            <p className="font-medium">Questions</p>
-                            <p className="flex items-center gap-1">
-                              <BsQuestionSquare size={20} color="orange" />
-                              {test.section[0].t_question}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <p className="font-medium">Marks</p>
-                            <p className="flex items-center gap-1">
-                              <ImCheckmark2 size={20} color="green" />
-                              {test.section[0].t_mark}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <p className="font-medium">Time</p>
-                            <p className="flex items-center gap-1">
-                              <MdOutlineAccessTime size={20} color="red" />
-                              {test.section[0].t_time}
-                            </p>
+                              {/* Test Info Section */}
+                              <div className="flex justify-center items-center gap-4 mt-2">
+                                <div className="flex flex-col items-center">
+                                  <p className="font-medium">Questions</p>
+                                  <p className="flex items-center gap-1">
+                                    <BsQuestionSquare
+                                      size={20}
+                                      color="orange"
+                                    />
+                                    {test.section[0].t_question}
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <p className="font-medium">Marks</p>
+                                  <p className="flex items-center gap-1">
+                                    <ImCheckmark2 size={20} color="green" />
+                                    {test.section[0].t_mark}
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <p className="font-medium">Time</p>
+                                  <p className="flex items-center gap-1">
+                                    <MdOutlineAccessTime
+                                      size={20}
+                                      color="red"
+                                    />
+                                    {test.section[0].t_time}
+                                  </p>
+                                </div>
+                              </div>
+                              <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                              {/* Take Test / Lock Button */}
+                              <button
+                                className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                  test.status === "true"
+                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                    : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                }`}
+                                onClick={() => {
+                                  if (test.status === "true") {
+                                    navigate(`/instruction/${test._id}`);
+                                  } else {
+                                    handleTopicSelect(test.section[0], "PYQ");
+                                  }
+                                }}
+                              >
+                                {test.status === "true" ? (
+                                  "Take Test"
+                                ) : (
+                                  <div className="flex items-center justify-center font-semibold gap-1">
+                                    <IoMdLock />
+                                    Lock
+                                  </div>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                        {/* Take Test / Lock Button */}
-                        <button
-                          className={`mt-3 py-2 px-4 rounded w-full transition ${
-                            test.status === "true"
-                              ? "bg-green-500 text-white hover:bg-green-600"
-                              : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                          }`}
-                          onClick={() => {
-                            if (test.status === "true") {
-                              navigate(`/instruction/${test._id}`);
-                            } else {
-                              handleTopicSelect(test.section[0], "PYQ");
-                            }
-                          }}
-                        >
-                          {test.status === "true" ? (
-                            "Take Test"
-                          ) : (
-                            <div className="flex items-center justify-center font-semibold gap-1">
-                              <IoMdLock />
-                              Lock
-                            </div>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-              return null; // Don't render if activeSection doesn't match
-            })}
+                      );
+                    }
+                    return null; // Don't render if activeSection doesn't match
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+         
+        </>
       )}
 
       {/* Conditionally render CAmonth only if the link is 'currentaffairs' */}
@@ -262,6 +330,8 @@ console.log(activeSection);
           </div>
         ))}
     </div>
+     )}
+    </>
   );
 };
 
