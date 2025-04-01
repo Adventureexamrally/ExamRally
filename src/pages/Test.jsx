@@ -3,7 +3,7 @@ import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useParams } from "react-router-dom";
-
+import Swal from 'sweetalert2'
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -727,13 +727,35 @@ useEffect(() => {
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
   const handlePauseResume = () => {
     if (pauseCount < 1) {
-      clearInterval(questionTimerRef.current);
-      setIsPaused(true); // Pause the timer
+      setIsPaused(true);
       setPauseCount(pauseCount + 1);
-      Swal.fire("SweetAlert2 is working!");
-    } else {
-      setIsPaused(false); // Resume the timer
-      setPauseCount(0);
+  
+      Swal.fire({
+        title: "Pause Exam",
+        text: "Do you want to quit the exam?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Quit",
+        cancelButtonText: "No, Resume",
+        position: 'center',
+        width: '100vw',
+        height: '100vh', // Direct height setting - important
+        padding: '100',
+        customClass: {
+          container: 'swal-full-screen',
+          popup: 'swal-popup-full-height', // Target the popup
+        },
+        //  Remove didOpen -  setting height directly
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/top-trending-exams/rrb-po";
+        } else {
+          setIsPaused(false);
+          setPauseCount(0);
+        }
+      });
     }
   };
   // Trigger submission on timeLeft = 0 or when exam is submitted
@@ -794,7 +816,7 @@ useEffect(() => {
       <div>
       <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
   <h1 className="h3 font-bold mt-3">{show_name}</h1>
-  <img src={logo} alt="logo" className="h-10 w-auto" />
+  {/* <img src={logo} alt="logo" className="h-10 w-auto" /> */}
 </div>
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
@@ -1041,8 +1063,8 @@ useEffect(() => {
   className={`px-4 py-2 rounded-lg font-semibold transition duration-300 ml-24 mt-2 ${
     isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
   }`}
->Pause
-  {isPaused}
+>
+  {isPaused ? "Resume" : "Pause"}
 </button>
 
             <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
