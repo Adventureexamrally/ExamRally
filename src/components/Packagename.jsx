@@ -23,7 +23,7 @@ const Packagename = () => {
 
   // console.log(subTitles);
 
-  const [activeSection, setActiveSection] = useState(""); // Tracks active section (Prelims/Mains/Previous Year Questions)
+  const [activeSection, setActiveSection] = useState("All"); // Tracks active section (Prelims/Mains/Previous Year Questions)
   const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
   const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
   const [timer, setTimer] = useState(600); // Timer (10 min)
@@ -372,7 +372,21 @@ const Packagename = () => {
           </div>
 
           <div className="row p-3 bg-light">
-            <div className="col-md-4">
+          <div className="col-md-2">
+              <button
+                className={`btn w-100 mb-2 text-white ${
+                  activeSection === "All"
+                    ? "bg-[#131656] hover:bg-[#131656]"
+                    : "bg-green-500 hover:bg-green-600"
+                }`}
+                onClick={()=>setActiveSection("All")}
+                // disabled={activeSection && activeSection !== "prelims"}
+                style={{ fontFamily: "helvetica, Arial, sans-serif" }}
+              >
+                All
+              </button>
+            </div>
+            <div className="col-md-2">
               <button
                 className={`btn w-100 mb-2 text-white ${
                   activeSection === "prelims"
@@ -386,7 +400,7 @@ const Packagename = () => {
                 Prelims
               </button>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
               <button
                 className={`btn w-100 mb-2 text-white ${
                   activeSection === "mains"
@@ -400,7 +414,7 @@ const Packagename = () => {
                 Mains
               </button>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
               <button
                 className={`btn w-100 mb-2 text-white ${
                   activeSection === "PYQ"
@@ -411,7 +425,7 @@ const Packagename = () => {
                 // disabled={activeSection && activeSection !== "PYQ"}
                 style={{ fontFamily: "helvetica, Arial, sans-serif" }}
               >
-                Previous Year Question Paper
+                PYQ
               </button>
             </div>
           </div>
@@ -497,6 +511,87 @@ const Packagename = () => {
             </div>
           </div>
         )} */}
+        
+        {activeSection === "All" && (
+            <div className="mt-3 bg-slate-50 py-2 px-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
+                {data?.exams?.map(
+                  (test, idx) =>(
+                      <div key={idx} className="">
+                        <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+                          <div className="card-body text-center flex flex-col justify-evenly">
+                            <h5 className="card-title font-bold text-">
+                              {test.exam_name}
+                            </h5>
+
+                            {/* Show Level Button */}
+                            {!showDifficulty[test._id] ? (
+                              <button
+                                onClick={() => handleShowLevelClick(test._id)}
+                                className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                              >
+                                Show Level
+                              </button>
+                            ) : (
+                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                                <p>
+                                  <strong>{test.q_level}</strong>
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Test Info Section */}
+                            <div className="flex justify-around items-center gap-4 mt-2">
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Questions</p>
+                                <p className="flex items-center gap-1">
+                                  <BsQuestionSquare size={20} color="orange" />
+                                  {test.section[0].t_question}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Marks</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <ImCheckmark2 size={20} color="green" />
+                                  {test.section[0].t_mark}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <p className="font-medium">Time</p>
+                                <p className="flex items-center gap-1">
+                                  {" "}
+                                  <MdOutlineAccessTime size={20} color="red" />
+                                  {test.section[0].t_time}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Take Test / Lock Button */}
+                            <button
+                              className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                test.status === "true"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                              }`}
+                              onClick={() => {
+                                if (test.status === "true") {
+                                  navigate(`/instruction/${test._id}`);
+                                } else {
+                                  handleTopicSelect(test.section[0], "prelims");
+                                }
+                              }}
+                            >
+                              {test.status === "true" ? "Take Test" : "Lock"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                )}
+              </div>
+            </div>
+          )}
 
           {activeSection === "prelims" && (
             <div className="mt-3 bg-slate-50 py-2 px-2">
