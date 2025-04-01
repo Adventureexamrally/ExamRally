@@ -391,7 +391,9 @@ const Packagename = () => {
                     }`}
                     onClick={() => {
                       if (test.status === "true") {
-                        navigate(`/instruction/${test._id}`);
+                    
+                      openNewWindow (`/instruction/${test._id}`);
+
                       } else {
                         handleTopicSelect(test.section[0], "prelims");
                       }
@@ -467,17 +469,22 @@ const Packagename = () => {
                         </div>
 
                         <button
-                          className={`mt-2 py-2 px-4 rounded ${
-                            test.status === "true"
-                              ? "bg-green-500 text-white hover:bg-green-600"
-                              : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                          }`}
-                          onClick={() =>
-                            handleTopicSelect(test.section[0], "mains")
-                          }
-                        >
-                          {test.status === "true" ? "Take Test" : "Lock"}
-                        </button>
+  className={`mt-2 py-2 px-4 rounded ${
+    test.status === "true"
+      ? "bg-green-500 text-white hover:bg-green-600"
+      : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+  }`}
+  onClick={() => {
+    if (test.status === "true") {
+      handleTopicSelect(test.section[0], "mains");
+      openNewWindow(`/instruction/${test._id}`);
+    } 
+  }}
+>
+  {test.status === "true" ? "Take Test" : "Lock"}
+</button>
+
+                  
                       </div>
                     </div>
                   </div>
@@ -541,17 +548,24 @@ const Packagename = () => {
                         </div>
 
                         <button
-                          className={`mt-2 py-2 px-4 rounded ${
-                            test.status === "true"
-                              ? "bg-green-500 text-white hover:bg-green-600"
-                              : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                          }`}
-                          onClick={() =>
-                            handleTopicSelect(test.section[0], "mains")
-                          }
-                        >
-                          {test.result_type === " " ? "Take Test" : "Lock"}
-                        </button>
+  className={`mt-2 py-2 px-4 rounded ${
+    test.status === "true"
+      ? "bg-green-500 text-white hover:bg-green-600"
+      : "border-4 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+  }`}
+  onClick={() => {
+    console.error('Button clicked');
+    if (test.status === "true") {
+      console.error('Status is true, handling topic select');
+      handleTopicSelect(test.section[0], "mains");
+      console.error('Opening new window');
+      openNewWindow(`/instruction/${test._id}`);
+    } 
+  }}
+>
+  {test.status === "true" ? "Take Test" : "Lock"}
+</button>
+
                       </div>
                     </div>
                   </div>
