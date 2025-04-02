@@ -169,8 +169,8 @@ function MainApp() {
 
         <Route path='/mocksolution' element={<Mocksolution/>} />
 
-        <Route path="/livebatch" element={<Blog/>}/>
-        <Route path="/blogdetails/:id" element={<Subblog/>}/>
+        <Route path="/blog" element={<Blog/>}/>
+        <Route path="/blogdetails/:link" element={<Subblog/>}/>
 
         <Route path="/livetest/:link" element={<DetailedCategorie/>}/>
 
