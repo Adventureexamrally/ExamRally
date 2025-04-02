@@ -11,6 +11,8 @@ import version from "../assets/images/version.png";
 import answer from "../assets/images/answer.png";
 import { useNavigate, useParams } from "react-router-dom";
 import { Link , } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+
 
 const ResultPage = () => {
   const [resultData, setResultData] = useState(null);
@@ -36,6 +38,8 @@ const ResultPage = () => {
   let totalTimeTaken = 0;
   let totalNotVisited = 0;
   let totalCutOff = 0;
+  let totalQRE =0;
+  let totalCorrectWrong=0;
 
   section.forEach(sect => {
     overallScore += sect.score;
@@ -46,13 +50,25 @@ const ResultPage = () => {
     totalTimeTaken += sect.t_time;
     totalNotVisited += sect.questions.english.filter(q => q.selectedOption === undefined).length;
     totalCutOff += sect.cutoff_mark
+    totalQRE =sect.questions.english.filter(q => q.correct === q.selectedOption).length-sect.questions.english.filter(q => q.correct !== q.selectedOption).length;
+    totalCorrectWrong += totalQRE
   });
 
 
   
   // const accuracy = Attempted > 0 ? ((  q.correct/ Attempted) * 100).toFixed(2) : "N/A";
 
+  const data = section.map((sect) => ({
+    name: sect.name,
+    score: sect.score,
+    answered: sect.t_question - (sect.t_question - Attempted), // or just Attempted if it is section specific.
+    notAnswered: sect.t_question - (sect.t_question - Attempted),
+    correct: sect.questions.english.filter(q => q.correct === q.selectedOption).length,
+    wrong: sect.questions.english.filter(q => q.correct !== q.selectedOption).length,
+    timeTaken: sect.t_time,
+  }));
 
+  
 
   return (
     <div className="container font my-4">
@@ -229,17 +245,18 @@ const ResultPage = () => {
     Cutoff Missed :5
   </p>
 </div>
+<div>
       <h1>Comparison With Toppers
       </h1>
-    <div>
-      <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-    View Solution
+    <div className='mt-4'>
+      <button className="bg-green-500 text-white px-4 py-2  hover:bg-green-400">
+    Quantitative Aptitude
   </button>
-  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-    View Solution
+  <button className=" px-4 py-2 ">
+    Reasoning Ability
   </button>
-  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-    View Solution
+  <button className=" px-4 py-2 ">
+    English Learning
   </button></div>
       
       <div className="d-flex justify-content-center align-items-center p-4">
@@ -291,14 +308,77 @@ const ResultPage = () => {
           </tbody>
         </table>
       </div>
+      </div>
     </div>
 
 
+    <div>
+      <h1>Time Management
+      </h1>
+   
+      <div className='d-flex justify-content-center align-items-center p-4'>
+      <div className="container">
+          <table className="table table-bordered table-striped table-responsive">
+            <thead>
+              <tr>
+                <th scope="col">Section</th>
+               
+                <th scope="col">Answered/Marks</th>
+                <th scope="col">Not Answered/Marks</th>
+                <th scope="col">Correct/Marks</th>
+                <th scope="col">Wrong/-ve Marks</th>
+                <th scope='col'>Total Mark Scored / Negative 
+                MarK </th>
+              </tr>
+            </thead>
+            <tbody>
+              {section.map((sect, index) => (
+                <tr key={index}>
+                  <th scope="row">{sect.name}</th>
+                  <td>{Attempted}</td>
+                  <td>{sect.t_question - Attempted}</td>
+                  <td>{sect.questions.english.filter(q => q.correct === q.selectedOption).length}</td>
+                  <td>{sect.questions.english.filter(q => q.correct !== q.selectedOption).length}</td>
+                  <td>{totalQRE =sect.questions.english.filter(q => q.correct === q.selectedOption).length-sect.questions.english.filter(q => q.correct !== q.selectedOption).length}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Overall</th>
+              
+                <th>{totalAnswered}</th>
+                <th>{totalNotAnswered}</th>
+                <th>{totalCorrect}</th>
+                <th>{totalWrong}</th>  
+                <th>{totalCorrectWrong}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        </div>
+    </div>
+
+    <h1>Bar Charts</h1>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      
+      <BarChart width={800} height={400} data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="score" name="Score" fill="#8884d8"/>
+        <Bar dataKey="answered" name="Answered" fill="#82ca9d" />
+        <Bar dataKey="notAnswered" name="Not Answered" fill="#ffc658" />
+        <Bar dataKey="correct" name="Correct" fill="#0088FE" />
+        <Bar dataKey="wrong" name="Wrong" fill="#FF8042" />
+        <Bar dataKey="timeTaken" name="Time Taken" fill="#a0522d" />
+      </BarChart>
+    </div>
 
 
-
-
-
+ 
     </div>
   );
 };
