@@ -9,23 +9,50 @@ import resilience from "../assets/images/resilience.png";
 import studying from "../assets/images/studying.png";
 import version from "../assets/images/version.png";
 import answer from "../assets/images/answer.png";
-import { Link } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
+import { Link , } from 'react-router-dom';
 
 const ResultPage = () => {
   const [resultData, setResultData] = useState(null);
-
+  const {id} = useParams()
+  
   useEffect(() => {
-    Api.get("results/65a12345b6c78d901e23f456/67c5900a09a3bf8c7f605d71")
+    Api.get(`results/65a12345b6c78d901e23f456/${id}`)
       .then(res => setResultData(res.data))
-      .then(res => console.log(res.data))
       .catch(error => console.error("Error fetching data:", error.message));
-  }, []);
-
+  }, [id]);
+ 
   if (!resultData) {
     return <div>Loading...</div>;
   }
 
-  const { score, Attempted, timeTaken, Accuracy, section, takenAt, submittedAt } = resultData;
+  const { score, Attempted, timeTaken, Accuracy, section ,cutoff_mark, } = resultData;
+
+  let overallScore = 0;
+  let totalAnswered = 0;
+  let totalNotAnswered = 0;
+  let totalCorrect = 0;
+  let totalWrong = 0;
+  let totalTimeTaken = 0;
+  let totalNotVisited = 0;
+  let totalCutOff = 0;
+
+  section.forEach(sect => {
+    overallScore += sect.score;
+    totalAnswered += Attempted;
+    totalNotAnswered += sect.t_question - Attempted;
+    totalCorrect += sect.questions.english.filter(q => q.correct === q.selectedOption).length;
+    totalWrong += sect.questions.english.filter(q => q.correct !== q.selectedOption).length;
+    totalTimeTaken += sect.t_time;
+    totalNotVisited += sect.questions.english.filter(q => q.selectedOption === undefined).length;
+    totalCutOff += sect.cutoff_mark
+  });
+
+
+  
+  // const accuracy = Attempted > 0 ? ((  q.correct/ Attempted) * 100).toFixed(2) : "N/A";
+
+
 
   return (
     <div className="container font my-4">
@@ -146,13 +173,13 @@ const ResultPage = () => {
               {section.map((sect, index) => (
                 <tr key={index}>
                   <th scope="row">{sect.name}</th>
-                  <td>{score}</td>
+                  <td>{sect.score}</td>
                   <td>{Attempted}</td>
                   <td>{sect.t_question - Attempted}</td>
                   <td>{sect.questions.english.filter(q => q.correct === q.selectedOption).length}</td>
                   <td>{sect.questions.english.filter(q => q.correct !== q.selectedOption).length}</td>
-                  <td>{timeTaken}</td>
-                  <td>{Accuracy}</td>
+                  <td>{sect.t_time}</td>
+                  <td>{((sect.questions.english.filter(q => q.correct !== q.selectedOption).length / Attempted) * 100).toFixed(2)}%</td>
                   <td>1</td> {/* Rank placeholder */}
                   <td>90</td> {/* Percentile placeholder */}
                   <td>{sect.questions.english.filter(q => q.selectedOption === undefined).length}</td>
@@ -160,16 +187,32 @@ const ResultPage = () => {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <th>Overall</th>
+                <th>{overallScore}</th>
+                <th>{totalAnswered}</th>
+                <th>{totalNotAnswered}</th>
+                <th>{totalCorrect}</th>
+                <th>{totalWrong}</th>
+                <th>{totalTimeTaken}</th>
+                <th>{((totalCorrect / totalAnswered) * 100).toFixed(2)}%</th>
+                <th>1</th>
+                <th>90</th>
+                <th>{totalNotVisited}</th>
+                <th>{totalCutOff}</th>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
 
       <div className="flex justify-center my-4">
-      <Link to='/result'>
+      {/* <Link to='/result'>
         <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
           View Analysis
         </button>
-        </Link>
+        </Link> */}
         &nbsp;&nbsp;
         <Link to='/mocksolution'>
   <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
@@ -178,21 +221,27 @@ const ResultPage = () => {
 </Link>
       </div>
 
-      <div>
-        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-          Cutoff Cleared
-        </button>
-        &nbsp;&nbsp;
-        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-          Cutoff Missed
-        </button>
-      </div>
+      <div className="flex justify-end space-x-4">
+  <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+    Cutoff Cleared :5
+  </p>
+  <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+    Cutoff Missed :5
+  </p>
+</div>
       <h1>Comparison With Toppers
       </h1>
-      <div className='d-flex'>
-     <p></p>Quantitative Aptitude  <p>Reasoning Ability </p>English Language
-
-      </div>
+    <div>
+      <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+    View Solution
+  </button>
+  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+    View Solution
+  </button>
+  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+    View Solution
+  </button></div>
+      
       <div className="d-flex justify-content-center align-items-center p-4">
       <div className="container">
         <table className="table table-bordered table-striped table-responsive">

@@ -812,7 +812,7 @@ useEffect(() => {
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
        await submitExam();
-        navigate(`/result`);
+        navigate(`/result/${id}`);
       }
     } 
   };

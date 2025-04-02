@@ -163,7 +163,7 @@ function MainApp() {
         <Route path="/terms-condition" element={<Terms_Condition />} />
         
         {/* Only render Test component without Header and Footer */}
-        <Route path="/result" element={<ResultPage />} />
+        <Route path="/result/:id" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
 
