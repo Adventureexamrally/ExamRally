@@ -374,7 +374,7 @@ const Packagename = () => {
           </div>
 
           <div className="row p-3 bg-light">
-            <div className="col-md-2">
+            {/* <div className="col-md-2">
               <button
                 className={`btn w-100 mb-2 text-white ${
                   activeSection === "All"
@@ -387,7 +387,7 @@ const Packagename = () => {
               >
                 All
               </button>
-            </div>
+            </div> */}
             <div className="col-md-2">
               <button
                 className={`btn w-100 mb-2 text-white ${
@@ -624,9 +624,9 @@ const Packagename = () => {
                                 Show Level
                               </button>
                             ) : (
-                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                              <div className="mt-2 text-sm rounded px-2 py-2 text-center text-white bg-[#131656]">
                                 <p>
-                                  <strong>{test.q_level}</strong>
+                                  <strong>{test.q_level.toUpperCase()}</strong>
                                 </p>
                               </div>
                             )}
@@ -715,9 +715,9 @@ const Packagename = () => {
                                 Show Level
                               </button>
                             ) : (
-                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                              <div className="mt-2 rounded text-sm px-2 py-2 text-center text-white bg-[#131656]">
                                 <p>
-                                  <strong>{test.q_level}</strong>
+                                  <strong>{test.q_level.toUpperCase()}</strong>
                                 </p>
                               </div>
                             )}
@@ -805,9 +805,9 @@ const Packagename = () => {
                                 Show Level
                               </button>
                             ) : (
-                              <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                              <div className="mt-2 rounded text-sm px-2 py-2 text-center text-white bg-[#131656]">
                                 <p>
-                                  <strong>{test.q_level}</strong>
+                                  <strong>{test.q_level.toUpperCase()}</strong>
                                 </p>
                               </div>
                             )}

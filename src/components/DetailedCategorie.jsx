@@ -18,13 +18,26 @@ const DetailedCategorie = () => {
   const [data, setData] = useState({});
   const [showDifficulty, setShowDifficulty] = useState({});
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState("All");
+  const [activeSection, setActiveSection] = useState("");
 
   console.log(link);
 
   useEffect(() => {
     run();
   }, [link, sub]);
+// console.log(subMenuData);
+useEffect(() => {
+  if (subMenuData.length > 0 && activeSection === "") {
+    setActiveSection(subMenuData[0]);
+  }
+})
+const handleShowLevelClick = (testId) => {
+  setShowDifficulty((prevState) => ({
+    ...prevState,
+    [testId]: true, // Mark the test's difficulty as shown
+  }));
+};
+
 
   async function run() {
     try {
@@ -179,7 +192,7 @@ const DetailedCategorie = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-3">
-            <button
+            {/* <button
               onClick={() => setActiveSection("All")}
               className={`btn w-100 mb-2 text-white ${
                 activeSection === "All"
@@ -188,11 +201,12 @@ const DetailedCategorie = () => {
               }`}
             >
               All
-            </button>
+            </button> */}
+
             {subMenuData.length > 0 &&
               subMenuData.map((sub) => (
                 <button
-                  key={sub.id}
+                  key={sub}
                   onClick={() => setActiveSection(sub)}
                   className={`btn w-100 mb-2 text-white ${
                     activeSection === sub
@@ -226,14 +240,14 @@ const DetailedCategorie = () => {
                               {!showDifficulty[test._id] ? (
                                 <button
                                   onClick={() => handleShowLevelClick(test._id)}
-                                  className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+                                  className="text-white text-base py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
                                 >
                                   Show Level
                                 </button>
                               ) : (
-                                <div className="mt-4 text-sm px-2 py-2 text-center text-white bg-[#131656]">
+                                <div className="mt-2 rounded text-sm px-2 py-2 text-center text-white bg-[#131656]">
                                   <p>
-                                    <strong>{test.q_level}</strong>
+                                    <strong>{test.q_level.toUpperCase()}</strong>
                                   </p>
                                 </div>
                               )}
