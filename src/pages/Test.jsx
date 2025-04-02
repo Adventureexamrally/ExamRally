@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useLocation, useParams } from "react-router-dom";
-
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import logo from '../assets/logo/sample-logo.png';
+import Swal from 'sweetalert2'
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -20,24 +21,24 @@ const Test = () => {
   const { id } = useParams();
 // Prevent page refresh on F5 and refresh button click
 // Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
-// window.addEventListener('beforeunload', function (e) {
-//   // Customize the confirmation message
-//   var confirmationMessage = 'Are you sure you want to leave?';
+window.addEventListener('beforeunload', function (e) {
+  // Customize the confirmation message
+  var confirmationMessage = 'Are you sure you want to leave?';
 
-//   // Standard for most browsers
-//   e.returnValue = confirmationMessage;
+  // Standard for most browsers
+  e.returnValue = confirmationMessage;
 
-//   // For some browsers
-//   return confirmationMessage;
-// });
+  // For some browsers
+  return confirmationMessage;
+});
 
-// // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
-// window.addEventListener('keydown', function (e) {
-//   // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
-//   if ((e.key === 'F5') || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.shiftKey && e.key === 'R')) {
-//       e.preventDefault();  // Prevent F5, Ctrl+R, or Ctrl+Shift+R
-//   }
-// });
+// Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
+window.addEventListener('keydown', function (e) {
+  // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
+  if ((e.key === 'F5') || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.shiftKey && e.key === 'R')) {
+      e.preventDefault();  // Prevent F5, Ctrl+R, or Ctrl+Shift+R
+  }
+});
 
 
 const [isDataFetched, setIsDataFetched] = useState(false);
@@ -404,41 +405,39 @@ useEffect(() => {
   const [examDataSubmission, setExamDataSubmission] = useState(null);  // Define examDataSubmission state
 
   useEffect(() => {
-    const storedSelectedOptions = localStorage.getItem('selectedOptions');
+    if (!id) return; // Ensure id is available before proceeding
+
+    const storedSelectedOptions = localStorage.getItem(`selectedOptions_${id}`);
     if (storedSelectedOptions) {
-      // Parse and set the selected options if they exist in localStorage
       const parsedOptions = JSON.parse(storedSelectedOptions);
-      setSelectedOptions(parsedOptions.filter(option => option !== null && option !== '')); // Filter out null or empty values
+      setSelectedOptions(parsedOptions.filter(option => option !== null && option !== ""));
     }
-  }, []);  // This effect runs once when the component mounts
-  
+  }, [id]); // Runs when `id` changes
+
   // Save selected options to localStorage whenever they are updated
   useEffect(() => {
+    if (!id) return; // Ensure id is available before proceeding
+
     if (selectedOptions.length > 0) {
-      // Filter out null or empty values before saving to localStorage
-      const validOptions = selectedOptions.filter(option => option !== null && option !== '');
-      localStorage.setItem('selectedOptions', JSON.stringify(validOptions));
+      const validOptions = selectedOptions.filter(option => option !== null && option !== "");
+      localStorage.setItem(`selectedOptions_${id}`, JSON.stringify(validOptions));
     } else {
-      // Optionally clear the stored data when there are no selected options
-      localStorage.removeItem('selectedOptions');
+      localStorage.removeItem(`selectedOptions_${id}`);
     }
-  }, [selectedOptions]); // This effect runs every time selectedOptions change
-  
+  }, [selectedOptions, id]); // Runs when `selectedOptions` or `id` changes
+
   // Function to update selected options
   const updateSelectedOption = (newSelectedOption, index) => {
     const updatedSelectedOptions = [...selectedOptions];
 
-    // Only update the option if it's not null or empty
-    if (newSelectedOption !== null && newSelectedOption !== '') {
-      updatedSelectedOptions[index] = newSelectedOption; // Set the new selected option at the given index
+    if (newSelectedOption !== null && newSelectedOption !== "") {
+      updatedSelectedOptions[index] = newSelectedOption;
     } else {
-      updatedSelectedOptions[index] = null; // Optionally set it to null if invalid value
+      updatedSelectedOptions[index] = null;
     }
 
-    // Update the state and local storage with the new selected options
     setSelectedOptions(updatedSelectedOptions);
   };
-
 
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
@@ -465,9 +464,9 @@ useEffect(() => {
       (index) =>
         index >= startingIndex && index < startingIndex + totalQuestions
     ).length;
-
+  
     const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
- 
+  
     // Calculate marked for review questions
     const reviewedQuestions = markedForReview.filter(
       (index) =>
@@ -491,25 +490,29 @@ useEffect(() => {
     // Display modal
     setShowModal(true);
   
-    if (currentSectionIndex < examData.section.length - 1) {
-      setCurrentSectionIndex((prev) => prev + 1);
+    // If modal is shown, and you're ready to go to the next section or submit the exam
+    if (showModal) { // You can check if the modal is shown
+      if (currentSectionIndex < examData.section.length - 1) {
+        setCurrentSectionIndex((prev) => prev + 1);
   
-      // Move to the first question of the next section
-      const newStartingIndex = examData?.section
-        ?.slice(0, currentSectionIndex + 1)
-        .reduce(
-          (acc, section) =>
-            acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
-          0
-        );
+        // Move to the first question of the next section
+        const newStartingIndex = examData?.section
+          ?.slice(0, currentSectionIndex + 1)
+          .reduce(
+            (acc, section) =>
+              acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+            0
+          );
   
-      setClickedQuestionIndex(newStartingIndex);
-    } else {
-      console.log("submitting exam else condition");
+        setClickedQuestionIndex(newStartingIndex);
+      } else {
+        console.log("submitting exam else condition");
   
-      submitExam();
+        submitExam();
+      }
     }
   };
+  
 
   
   const submitExam = () => {
@@ -675,6 +678,21 @@ useEffect(() => {
   };
   
   
+  const [dataid, setDataid] = useState(null); // State to store the data
+
+  useEffect(() => {
+    // Fetch the data when the component mounts or when `id` changes
+    Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+      .then(response => {
+        // Set the fetched data to state
+        setDataid(response.data._id);
+        console.error("test",response.data._id); // Log the _id from the fetched data
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, [id]);
+
   useEffect(() => {
     if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
   
@@ -730,12 +748,33 @@ useEffect(() => {
       clearInterval(questionTimerRef.current);
       setIsPaused(true); // Pause the timer
       setPauseCount(pauseCount + 1);
-      Swal.fire("SweetAlert2 is working!");
-    } else {
-      setIsPaused(false); // Resume the timer
-      setPauseCount(0);
-    }
-  };
+      Swal.fire({
+        title: "Pause Exam",
+        text: "Do you want to quit the exam?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Quit",
+        cancelButtonText: "No, Resume",
+        position: 'center',
+        width: '100vw',
+        height: '100vh', // Direct height setting - important
+        padding: '100',
+        customClass: {
+          container: 'swal-full-screen',
+          popup: 'swal-popup-full-height', // Target the popup
+        },
+        //  Remove didOpen -  setting height directly
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/top-trending-exams/rrb-po";
+        } else {
+          setIsPaused(false);
+          setPauseCount(0);
+        }
+      });
+  };}
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
   //   if (timeLeft <= 0) {
@@ -746,13 +785,43 @@ useEffect(() => {
 
   const [sectionSummary, setSectionSummary] = useState(null);
 
-  const showToast = () => {
-    toast.success("Test Submitted");
-    setShowModal(false);
+  // const [currentSectionIndex, setCurrentSectionIndex] = useState(0); // Tracks the current section
+ // To check if the section is complete
+  // const navigate = useNavigate(); // For programmatic navigation
+
+
+
+  const navigate = useNavigate();
+  // Function to show the toast and move to the next section (or result if last section)
+  const handleSectionCompletion = async () => {
+    console.log("handleSectionCompletion called");
+  
+    if (true) {
+      console.log("Section is complete");
+  console.log(currentSectionIndex)
+  console.log(examData?.section?.length-1)
+      // Move to the next section if there's another one
+      if (currentSectionIndex < examData?.section?.length - 1) {
+        setShowModal(false)
+        console.log(`Current section index: ${currentSectionIndex}`);
+        console.log(`Total sections: ${examData?.section?.length}`);
+        setCurrentSectionIndex(currentSectionIndex + 1);
+        console.log(`Moving to the next section. New index: ${currentSectionIndex + 1}`);
+      } else {
+        // If last section is complete, navigate to result
+        console.log("Last section complete. Navigating to results.");
+        toast.success("Test Completed! Moving to result.");
+       await submitExam();
+        navigate(`/result`);
+      }
+    } 
   };
+
+
 
   // Calculate starting index for the current section
   const quantsSection = examData?.section?.[currentSectionIndex];
+
   const isLastQuestion =
     clickedQuestionIndex ===
     quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
@@ -862,14 +931,14 @@ useEffect(() => {
                   </div>
                   <div className="modal-footer">
                     <div className="d-flex justify-content-center w-100">
-                      <button
-                        type="button"
-                        className="btn btn-success"
-                        data-bs-dismiss="modal"
-                        onClick={showToast} // Show toast when clicking "Submit"
-                      >
-                        Submit
-                      </button>
+                    <button
+        type="button"
+        className="btn btn-success"
+        data-bs-dismiss="modal"
+        onClick={handleSectionCompletion} // Check completion and move to next section
+      >
+        {currentSectionIndex === examData?.section?.length - 1 ? 'Submit' : 'Next Section'}
+      </button>
                     </div>
                   </div>
                 </div>
@@ -1146,7 +1215,7 @@ useEffect(() => {
     >
       {currentSectionIndex === examData?.section?.length - 1
         ? "Submit Test"
-        : "Submit Section"}
+        : "Submit Sections"}
     </button>
   </div>
 </div>

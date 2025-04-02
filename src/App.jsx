@@ -70,8 +70,9 @@ function MainApp() {
     }
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
-  const isMockTestRoute = location.pathname === "/mocktest";
-  
+  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct"].some((path) =>
+    location.pathname.startsWith(path)
+  );
   useEffect(() => {
     // Check if the modal has been shown before by looking into localStorage
     const hasModalBeenShown = localStorage.getItem("abcmodal123");
@@ -162,7 +163,6 @@ function MainApp() {
         <Route path="/terms-condition" element={<Terms_Condition />} />
         
         {/* Only render Test component without Header and Footer */}
-        <Route path="/mocktest" element={<Test />} />
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />

@@ -25,7 +25,7 @@ const Packagename = () => {
 
   // console.log(subTitles);
 
-  const [activeSection, setActiveSection] = useState("All"); // Tracks active section (Prelims/Mains/Previous Year Questions)
+  const [activeSection, setActiveSection] = useState("prelims"); // Tracks active section (Prelims/Mains/Previous Year Questions)
   const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
   const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
   const [timer, setTimer] = useState(600); // Timer (10 min)
@@ -514,7 +514,7 @@ const Packagename = () => {
           </div>
         )} */}
 
-          {activeSection === "All" && (
+          {/* {activeSection === "All" && (
             <div className="mt-3 bg-slate-50 py-2 px-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
                 {data?.exams?.map((test, idx) => (
@@ -525,7 +525,7 @@ const Packagename = () => {
                           {test.exam_name}
                         </h5>
                         <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
-                        {/* Show Level Button */}
+                       
                         {!showDifficulty[test._id] ? (
                           <button
                             onClick={() => handleShowLevelClick(test._id)}
@@ -541,7 +541,7 @@ const Packagename = () => {
                           </div>
                         )}
 
-                        {/* Test Info Section */}
+                  
                         <div className="flex justify-around items-center gap-4 mt-2">
                           <div className="flex flex-col items-center">
                             <p className="font-medium">Questions</p>
@@ -569,7 +569,7 @@ const Packagename = () => {
                         </div>
                         <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
-                        {/* Take Test / Lock Button */}
+                       
                         <button
                           className={`mt-3 py-2 px-4 rounded w-full transition ${
                             test.status === "true"
@@ -599,7 +599,7 @@ const Packagename = () => {
                 ))}
               </div>
             </div>
-          )}
+          )} */}
 
           {activeSection === "prelims" && (
             <div className="mt-3 bg-slate-50 py-2 px-2">
@@ -668,7 +668,7 @@ const Packagename = () => {
                               }`}
                               onClick={() => {
                                 if (test.status === "true") {
-                                  navigate(`/instruction/${test._id}`);
+                                  openNewWindow (`/instruction/${test._id}`);
                                 } else {
                                   handleTopicSelect(test.section[0], "prelims");
                                 }
@@ -758,7 +758,7 @@ const Packagename = () => {
                               }`}
                               onClick={() => {
                                 if (test.status === "true") {
-                                  navigate(`/instruction/${test._id}`);
+                                  openNewWindow (`/instruction/${test._id}`);
                                 } else {
                                   handleTopicSelect(test.section[0], "mains");
                                 }
@@ -848,7 +848,7 @@ const Packagename = () => {
                               }`}
                               onClick={() => {
                                 if (test.status === "true") {
-                                  navigate(`/instruction/${test._id}`);
+                                  openNewWindow (`/instruction/${test._id}`);
                                 } else {
                                   handleTopicSelect(test.section[0], "PYQ");
                                 }

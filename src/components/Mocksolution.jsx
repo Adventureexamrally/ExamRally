@@ -45,6 +45,7 @@ useEffect(() => {
           setExamData(res.data);
           setIsDataFetched(true); 
           setShow_name(res.data.show_name) // Mark that data is fetched
+          console.error("valueee",res.data.show_name)
           sett_questions(res.data.t_questions)
           console.error("kl",res.data.t_question);
         }
@@ -230,7 +231,7 @@ useEffect(() => {
         <span className="p bg-blue-400 text-white fw-bold p-1">{ examData?.section[currentSectionIndex]?.name}</span>
       &nbsp;
       &nbsp;
-        <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" class="text-decoration-underline">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" className="text-decoration-underline">
   Comment 📩
 </a>
 
