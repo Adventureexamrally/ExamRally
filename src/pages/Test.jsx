@@ -1215,7 +1215,7 @@ useEffect(() => {
     >
       {currentSectionIndex === examData?.section?.length - 1
         ? "Submit Test"
-        : "Submit Section"}
+        : "Submit Sections"}
     </button>
   </div>
 </div>
