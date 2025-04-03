@@ -332,16 +332,19 @@ useEffect(() => {
     if (
       examData &&
       examData.section[currentSectionIndex] &&
-      clickedQuestionIndex <
-        startingIndex +
-          examData.section[currentSectionIndex].questions?.[
-            selectedLanguage?.toLowerCase()
-          ]?.length -
-          1
+      examData.section[currentSectionIndex].questions?.[selectedLanguage?.toLowerCase()]
     ) {
-      setClickedQuestionIndex(clickedQuestionIndex + 1);
+      const totalQuestions = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()]?.length;
+  
+      if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+        setClickedQuestionIndex(clickedQuestionIndex + 1);
+      } else {
+        // If it's the last question, reset to the first question
+        setClickedQuestionIndex(startingIndex);
+      }
     }
   };
+ 
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
 
@@ -801,11 +804,11 @@ useEffect(() => {
   console.log(currentSectionIndex)
   console.log(examData?.section?.length-1)
       // Move to the next section if there's another one
-      if (currentSectionIndex < examData?.section?.length - 1) {
+      if (currentSectionIndex < examData?.section?.length -1) {
         setShowModal(false)
         console.log(`Current section index: ${currentSectionIndex}`);
         console.log(`Total sections: ${examData?.section?.length}`);
-        setCurrentSectionIndex(currentSectionIndex + 1);
+        setCurrentSectionIndex(currentSectionIndex +1);
         console.log(`Moving to the next section. New index: ${currentSectionIndex + 1}`);
       } else {
         // If last section is complete, navigate to result
@@ -1186,38 +1189,26 @@ useEffect(() => {
 
   {/* Right side - Save & Next and Submit Section */}
   <div className="d-flex justify-content-end">
-    {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 &&
-      clickedQuestionIndex !==
-        startingIndex +
-          (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0) - 1 && (
-        <button
-          onClick={handleNextClick}
-          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-        >
-          Save & Next
-        </button>
-      )}
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;
+  {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
     <button
+      onClick={handleNextClick}
       className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-      onClick={handleSubmitSection}
-      data-bs-toggle="modal"
-      data-bs-target="#staticBackdrop"
     >
-      {currentSectionIndex === examData?.section?.length - 1
-        ? "Submit Test"
-        : "Submit Sections"}
+      Save & Next
     </button>
-  </div>
+  )}
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <button
+    className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+    onClick={handleSubmitSection}
+    data-bs-toggle="modal"
+    data-bs-target="#staticBackdrop"
+  >
+    {currentSectionIndex === examData?.section?.length - 1
+      ? "Submit Test"
+      : "Submit Section"}
+  </button>
+</div>
 </div>
 </div>
     </div>

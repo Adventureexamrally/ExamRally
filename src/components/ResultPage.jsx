@@ -42,7 +42,7 @@ const ResultPage = () => {
   let totalCorrectWrong=0;
 
   section.forEach(sect => {
-    overallScore += sect.score;
+    overallScore += score;
     totalAnswered += Attempted;
     totalNotAnswered += sect.t_question - Attempted;
     totalCorrect += sect.questions.english.filter(q => q.correct === q.selectedOption).length;
@@ -189,7 +189,7 @@ const ResultPage = () => {
               {section.map((sect, index) => (
                 <tr key={index}>
                   <th scope="row">{sect.name}</th>
-                  <td>{sect.score}</td>
+                  <td>{score}</td>
                   <td>{Attempted}</td>
                   <td>{sect.t_question - Attempted}</td>
                   <td>{sect.questions.english.filter(q => q.correct === q.selectedOption).length}</td>
