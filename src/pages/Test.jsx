@@ -338,13 +338,14 @@ useEffect(() => {
   
       if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
         setClickedQuestionIndex(clickedQuestionIndex + 1);
+        setQuestionTime(0);
       } else {
         // If it's the last question, reset to the first question
         setClickedQuestionIndex(startingIndex);
       }
     }
   };
- 
+
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
 
@@ -537,9 +538,8 @@ useEffect(() => {
     // Get the questions for the current section and selected language
     const questions =
       currentSection.questions?.[selectedLanguage?.toLowerCase()];
-    if (!questions) return; // If no questions for the selected language, return early.
+    if (!questions) return;
   
-    // Total questions in the current section
     const totalQuestions = questions.length;
   
     // Calculate answered and unanswered questions
@@ -549,24 +549,38 @@ useEffect(() => {
   
     const notAnsweredQuestions = totalQuestions - answeredQuestions;
   
-    // Calculate visited and not visited questions for the current section
+    // Calculate visited and not visited questions (now as arrays)
+  
+    
     const visitedQuestionsCount = visitedQuestions.filter(
       (index) =>
         index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
+    );
+    
+    // Create an array of not visited questions based on visitedQuestionsCount
+    const notVisitedQuestions = Array.from({ length: totalQuestions }, (_, index) =>
+      !visitedQuestionsCount.includes(index + startingIndex) ? index + startingIndex : null
+    ).filter((index) => index !== null); // Remove null values
   
-    console.log("visit", visitedQuestionsCount);
+    console.log(visitedQuestionsCount);
+    console.log(notVisitedQuestions);
   
-    const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
-    console.log("notvisit", notVisitedQuestions);
+    // Correct the section summary with arrays, but show only the first index in visited and not visited
+    const sectionSummary = {
+      visitedQuestionsCount: visitedQuestionsCount.length > 0 ? visitedQuestionsCount[0] : null,  // Show only the first visited question index
+      notVisitedQuestions: notVisitedQuestions.length > 0 ? notVisitedQuestions[0] : null,    // Show only the first not visited question index
+    };
+  console.log(sectionSummary)
+    // Store section summary
+    setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
   
-    // Calculate marked for review questions
+    // Calculate reviewed questions
     const reviewedQuestions = markedForReview.filter(
       (index) =>
         index >= startingIndex && index < startingIndex + totalQuestions
     ).length;
   
-    // Processing selected answers
+    // Processing selected answers and calculating scores
     const answersData = selectedOptions.map((selectedOption, index) => {
       const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
@@ -578,32 +592,34 @@ useEffect(() => {
         isCorrect: optionIndex === question?.answer,
       }));
   
-      // Fixing the visited and not visited logic
+      // Fixing visited/not visited logic
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
-      const notVisited = isVisited === 1 ? 0 : 1; // 'notVisited' is the inverse of 'isVisited'
+      const notVisited = isVisited === 1 ? 0 : 1;
+  
+      // Calculate the score for each question
+      const questionScore = selectedOption !== undefined
+        ? (selectedOption === question?.answer
+          ? question?.plus_mark // Correct answer, add plus mark
+          : -question?.minus_mark) // Incorrect answer, subtract minus mark
+        : 0; // No option selected, score is 0
   
       return {
         question: question?.question,
         options: optionsData,
-        correct: question?.answer === selectedOption ? 1 : 0,
+        correct: question?.answer === selectedOption,
         explanation: question?.explanation,
         answer: question?.answer,
-        common_data:question?.common_data,
-        selectedOption: question?.selectedOption || selectedOption,
+        common_data: question?.common_data,
+        selectedOption: selectedOption,
         isVisited: isVisited,
         NotVisited: notVisited,
         q_on_time: singleQuestionTime,
+        score: questionScore,
       };
     });
   
-    // Calculating total score
-    const totalScore = selectedOptions.reduce((total, option, index) => {
-      const currentQuestion = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
-      const plusmark = currentQuestion?.plus_mark || 1;
-      const minusmark = currentQuestion?.minus_mark || 0.25;
-      const scoreForThisQuestion = currentQuestion?.answer === option ? plusmark : -minusmark;
-      return total + scoreForThisQuestion;
-    }, 0);
+    // Calculate the total score by summing the individual question scores
+    const totalScore = answersData.reduce((total, answerData) => total + answerData.score, 0);
   
     // Formatting sections data for API submission
     const formattedSections = examData.section.map((section) => ({
@@ -614,10 +630,10 @@ useEffect(() => {
       plus_mark: section.plus_mark,
       minus_mark: section.minus_mark,
       cutoff_mark: section.cutoff_mark,
-      isVisited: visitedQuestionsCount,
-      NotVisited: notVisitedQuestions,
-      Answer:answeredQuestions,
-      NotAnswer:notAnsweredQuestions,
+      visitedQuestionsCount: sectionSummary.visitedQuestionsCount,  // Use the first visited question index
+      notVisitedQuestions: sectionSummary.notVisitedQuestions,     // Use the first not visited question index
+      Answer: answeredQuestions,
+      NotAnswer: notAnsweredQuestions,
       s_blueprint: section.s_blueprint.map((blueprint) => ({
         subject: blueprint.subject,
         topic: blueprint.topic,
@@ -627,58 +643,68 @@ useEffect(() => {
         english: section.questions.english.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
-          answer:question?.answer,
-          common_data:question?.common_data,
+          answer: question?.answer,
+          common_data: question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
           q_on_time: answersData[index]?.q_on_time || "0",
           isVisited: answersData[index]?.isVisited,
           NotVisited: answersData[index]?.NotVisited,
+          score: answersData[index]?.score,
         })),
         hindi: section.questions.hindi.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
-          answer:question?.answer,
-          common_data:question?.common_data,
+          answer: question?.answer,
+          common_data: question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
           q_on_time: answersData[index]?.q_on_time || "0",
           isVisited: answersData[index]?.isVisited,
           NotVisited: answersData[index]?.NotVisited,
+          score: answersData[index]?.score,
         })),
         tamil: section.questions.tamil.map((question, index) => ({
           question: question?.question,
           options: question.options || [],
-          answer:question?.answer,
-          common_data:question?.common_data,
+          answer: question?.answer,
+          common_data: question?.common_data,
           correct: answersData[index]?.correct || 0,
           explanation: question?.explanation || "",
           selectedOption: answersData[index]?.selectedOption,
           q_on_time: answersData[index]?.q_on_time || "0",
           isVisited: answersData[index]?.isVisited,
           NotVisited: answersData[index]?.NotVisited,
+          score: answersData[index]?.score,
         })),
       },
       s_order: section.s_order || 0,
+      s_score: totalScore,
+      Attempted: answeredQuestions,
+      Not_Attempted: notAnsweredQuestions,
     }));
   
-    // Include visited and not visited totals in totalcheck
+    // Include visited and not visited arrays in totalcheck
     const totalcheck = {
-      visitedQuestionsCount,
-      notVisitedQuestions,
+      visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
+      notVisitedQuestions: sectionSummary.notVisitedQuestions,
     };
   
     // Update the state that triggers the API call
     setExamDataSubmission({
-      formattedSections, // Ensure formattedSections is part of examDataSubmission
-      totalScore, // Ensure totalScore is part of examDataSubmission
+      formattedSections,
+      totalScore,
       timeTakenInSeconds,
-      totalcheck, // Include visited and not visited totals
+      totalcheck,
       endTime,
     });
   };
+  
+  
+  
+  
   
   
   const [dataid, setDataid] = useState(null); // State to store the data
@@ -809,6 +835,18 @@ useEffect(() => {
         console.log(`Current section index: ${currentSectionIndex}`);
         console.log(`Total sections: ${examData?.section?.length}`);
         setCurrentSectionIndex(currentSectionIndex +1);
+        setQuestionTime(0)
+           // Calculate the starting index for the new section
+        const newStartingIndex = examData?.section
+           ?.slice(0, currentSectionIndex + 1)
+         .reduce(
+            (acc, section) =>
+               acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+             0
+           );
+        
+         // Set clicked question to first question of new section
+         setClickedQuestionIndex(newStartingIndex);
         console.log(`Moving to the next section. New index: ${currentSectionIndex + 1}`);
       } else {
         // If last section is complete, navigate to result
@@ -819,6 +857,35 @@ useEffect(() => {
       }
     } 
   };
+
+
+  
+ 
+  
+  
+        
+  //       // Calculate the starting index for the new section
+  //       const newStartingIndex = examData?.section
+  //         ?.slice(0, currentSectionIndex + 1)
+  //         .reduce(
+  //           (acc, section) =>
+  //             acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+  //           0
+  //         );
+        
+  //       // Set clicked question to first question of new section
+  //       setClickedQuestionIndex(newStartingIndex);
+        
+  //       console.log(`Moving to the next section. New index: ${currentSectionIndex + 1}`);
+  //     } else {
+  //       // If last section is complete, navigate to result
+  //       console.log("Last section complete. Navigating to results.");
+  //       toast.success("Test Completed! Moving to result.");
+  //       await submitExam();
+  //       navigate(`/result`);
+  //     }
+  //   } 
+  // };
 
 
 
