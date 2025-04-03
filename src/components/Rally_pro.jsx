@@ -62,8 +62,8 @@ const Rally_bro = () => {
                 ))} */}
 
       </Helmet>
-      <div className="flex">
-        <div  className={`container m-2 w-full ${ad.length> 0 ? "md:w-4/5" : "md:full "}`}>
+      <div className="flex container">
+        <div  className={` m-2 w-full ${ad.length> 0 ? "md:w-4/5" : "md:full "}`}>
       <div className="container border border-black mt-2 rounded-lg">
         {loading ? (
           <div className="mt-3 bg-gray-100 p-4 rounded-lg"> {/* Added light gray background and padding */}

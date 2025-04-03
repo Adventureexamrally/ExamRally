@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Api from "../service/Api";
 import { Helmet } from "react-helmet";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Import the icons
+
 
 // const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
@@ -49,7 +51,14 @@ const Blog = () => {
     // Fetch blogs by topic
     try {
       const response = await Api.get(`blogs/all?topic=${topicId}`);
-      setBlogData(response.data);
+      console.log(response);
+      
+      if(response.data?.length>0){
+        setBlogData(response.data);
+      }
+      else{
+        handleTopicSelect("")
+      }
     } catch (error) {
       console.error("Error fetching blogs by topic:", error);
     }
@@ -64,6 +73,38 @@ const Blog = () => {
     }, 500);
   }, []);
 
+
+  const carouselRef = React.useRef(null);
+  const [isAtStart, setIsAtStart] = useState(true);
+  const [isAtEnd, setIsAtEnd] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (carouselRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        setIsAtStart(scrollLeft === 0);
+        setIsAtEnd(scrollLeft === scrollWidth - clientWidth);
+      }
+    };
+
+    const carousel = carouselRef.current;
+    carousel.addEventListener("scroll", handleScroll);
+    return () => {
+      carousel.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const scrollToNext = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 150, behavior: "smooth" });
+    }
+  };
+
+  const scrollToPrevious = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -150, behavior: "smooth" });
+    }
+  };
   return (
     <>
       <Helmet>
@@ -80,24 +121,52 @@ const Blog = () => {
 
       </Helmet>
       <div className="flex">
-      <div className={`container mt-4 w-full ${blogAd.length> 0 ? "md:w-4/5" : "md:full "}`}>
-      <div className=" flex justify-center items-center flex-wrap bg-blue-100">
-            <span
-              className="m-2 py-2 px-4 cursor-pointer rounded-sm bg-blue-950 text-white"
-              onClick={() => handleTopicSelect("")} // Show all blogs if "All" is clicked
-            >
-              All
-            </span>
-
-            {topics.map((title) => (
-              <span
-                key={title._id} // Add unique key to each topic
-                className="m-2 py-2 px-4 cursor-pointer rounded-sm bg-blue-950 text-white"
-                onClick={() => handleTopicSelect(title.topic)} // Fetch blogs based on the topic
+        <div className={`mt-4 w-full ${blogAd.length > 0 ? "md:w-4/5" : "md:full "}`}>
+        <div className="relative py-2">
+            <div className="flex items-center justify-center mx-5">
+              <button
+                onClick={scrollToPrevious}
+                className={`absolute left-0 z-10 text-blue-950 p-2 rounded-full ${isAtStart ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={isAtStart}
               >
-                {title.topic}
-              </span>
-            ))}
+                <FaChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div
+                ref={carouselRef}
+                className="flex overflow-x-auto gap-4 pb-2 scroll-smooth w-full"
+                style={{
+                  scrollBehavior: "smooth",
+                  scrollSnapType: "x mandatory",
+                  scrollbarWidth: "none", // Hide scrollbar for Firefox
+                  msOverflowStyle: "none", // Hide scrollbar for IE
+                }}
+              >
+                <span
+                  className="py-2 px-4 cursor-pointer rounded-sm bg-blue-950 text-white flex items-center whitespace-nowrap"
+                  onClick={() => handleTopicSelect("")}
+                >
+                  All
+                </span>
+                {topics.map((title) => (
+                  <span
+                    key={title._id}
+                    className="py-2 px-4 cursor-pointer rounded-sm bg-blue-950 text-white flex items-center whitespace-nowrap"
+                    onClick={() => handleTopicSelect(title.topic)}
+                  >
+                    {title.topic}
+                  </span>
+                ))}
+              </div>
+
+              <button
+                onClick={scrollToNext}
+                className={`absolute right-0 z-10 text-blue-950 p-2 rounded-full ${isAtEnd ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={isAtEnd}
+              >
+                <FaChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           <div className=" h4 bg-green-200  p-1 m-1 ">Trending Articles</div>
           {/* <div class="border-b-2 border-gray-300 w-[200px] mt-2 mx-20"></div> */}
