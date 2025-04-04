@@ -5,6 +5,21 @@ import notans from "../assets/images/notans.png";
 import notandmaeked from "../assets/images/notansMarked.png";
 import { Link, useParams } from "react-router-dom";
 
+
+window.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+});
+
+// Prevent F12, Ctrl+R, Ctrl+Shift+R, and Ctrl+Shift+I key presses
+window.addEventListener('keydown', function (e) {
+  if ((e.key === 'F12') || 
+      (e.ctrlKey && e.key === 'r') || 
+      (e.ctrlKey && e.shiftKey && e.key === 'R') || 
+      (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+      e.preventDefault();  // Prevent F12, Ctrl+R, Ctrl+Shift+R, or Ctrl+Shift+I
+  }
+});
+
 const images = [
   { img: notvisit, para: "1. You have not visited the question yet." },
   { img: notans, para: "2. You have not answered the question." },

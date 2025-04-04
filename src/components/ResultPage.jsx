@@ -17,8 +17,8 @@ const ResultPage = () => {
   useEffect(() => {
     Api.get("results/65a12345b6c78d901e23f456/67c5900a09a3bf8c7f605d71")
       .then(res => setResultData(res.data))
-     
-      .catch(error => console.error("Error fetching data:", error));
+      .then(res => console.log(res.data))
+      .catch(error => console.error("Error fetching data:", error.message));
   }, []);
 
   if (!resultData) {
@@ -30,7 +30,7 @@ const ResultPage = () => {
   return (
     <div className="container font my-4">
       <div className="d-flex justify-content-between">
-        <h1 className="display-5">Prilims Data</h1>
+        <h1 className="display-5">Result</h1>
         <button className=" text-white font-bold py-2 px-4 rounded bg-green-500 hover:bg-green-400">
           View Solution
         </button>
@@ -165,9 +165,11 @@ const ResultPage = () => {
       </div>
 
       <div className="flex justify-center my-4">
+      <Link to='/result'>
         <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
           View Analysis
         </button>
+        </Link>
         &nbsp;&nbsp;
         <Link to='/mocksolution'>
   <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
