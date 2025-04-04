@@ -687,7 +687,7 @@ const Packagename = () => {
         </div>
         <div className="w-fill md:w-1/5">
 
-          {ad.length > 0 &&
+        
             <div>
               <div className=" mt-3">
                 <div
@@ -772,14 +772,16 @@ const Packagename = () => {
                   </div>
                 </div>
               </div>
-              {ad.map((item) => (
+              {ad.length > 0 &&
+              ad.map((item) => (
                 <div className='m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300'>
                   <Link to={item.link_name}>
                     <img src={item.photo} alt="Not Found" className='rounded-md' /></Link >
                 </div>
-              ))}
+              ))
+            }
             </div>
-          }
+          
         </div>
       </div>
     </>
