@@ -108,7 +108,7 @@ const NavBar = () => {
               Free PDF
             </Link>
             <Link
-              to="/livebatch"
+              to="/blog"
               className="hover:text-blue-600 transition duration-300"
             >
              Blogs
