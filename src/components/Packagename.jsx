@@ -9,6 +9,8 @@ import { BsQuestionSquare } from "react-icons/bs";
 import { IoMdLock } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { Helmet } from "react-helmet";
+import { FaTachometerAlt } from "react-icons/fa";  // Import the correct icon
+
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -514,7 +516,7 @@ const Packagename = () => {
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       {" "}
-                                      <ImCheckmark2 size={20} color="green" />
+                                      <FaTachometerAlt size={20} color="green" />
                                       {test.section[0].t_mark}
                                     </p>
                                   </div>
