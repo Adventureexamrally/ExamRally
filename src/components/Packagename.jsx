@@ -9,7 +9,9 @@ import { BsQuestionSquare } from "react-icons/bs";
 import { IoMdLock } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { Helmet } from "react-helmet";
+
 import { BsSpeedometer2 } from "react-icons/bs";
+
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -516,8 +518,10 @@ const Packagename = () => {
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       {" "}
+
                                       <BsSpeedometer2 size={20} color="green" />
                                       {test.t_marks}
+
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
