@@ -7,16 +7,16 @@ import BlogAdveryisement from './BlogAdveryisement';
 // const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Subblog = () => {
-    const { id } = useParams();
-    const [blogDetails, setBlogDetails] = useState({})
+    const { link } = useParams();
+    const [blogDetails, setBlogDetails] = useState([])
 
     useEffect(() => {
         run();
-    }, [id])
+    }, [link])
 
     async function run() {
         try {
-            const response = await Api.get(`blogs/get/${id}`);
+            const response = await Api.get(`blogs/get/${link}`);
             console.log(response.data);
             setBlogDetails(response.data);
         } catch (error) {
@@ -25,6 +25,8 @@ const Subblog = () => {
     }
     return (
         <div className='flex'>
+            {blogDetails.map((blogDetails)=>(
+                <>
             <div className='container w-full md:w-4/5'>
                 <div className='mt-4'>
                     <h2
@@ -63,9 +65,12 @@ const Subblog = () => {
 
                 </div>
             </div>
+           
             <div  className='w-1/5 hidden md:block'>
                 <BlogAdveryisement />
             </div>
+            </>
+             ))}
         </div>
     )
 }

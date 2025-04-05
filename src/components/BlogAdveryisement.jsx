@@ -10,7 +10,7 @@ const BlogAdveryisement = () => {
 
     async function run() {
         try {
-            const topics = await Api.get(`blog-Ad`);
+            const topics = await Api.get(`blog-Ad/getbypage/blog`);
             setBlogAd(topics.data)
             console.log(topics.data);
             
