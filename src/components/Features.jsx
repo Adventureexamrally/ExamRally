@@ -240,7 +240,6 @@ export default function Features() {
         <i className="bi bi-chevron-right"></i>
       </button>
     </div>
- 
 
     </>
   );
