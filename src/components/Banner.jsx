@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Custom arrows from React Icons
 
 import Api from "../service/Api";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const Banner = () => {
   const settings = {
@@ -14,6 +15,12 @@ const Banner = () => {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
+    prevArrow: (
+      <FaChevronLeft className="slick-prev w-2 h-5 text-black" />
+    ),
+    nextArrow: (
+      <FaChevronRight className="slick-next w-2 h-5 text-black" />
+    ),
   };
 
   const [slides, setSlides] = useState([]);
@@ -28,7 +35,7 @@ const Banner = () => {
   }, []);
 
   return (
-    <div className="bg-gray-100 flex justify-center items-center rounded-md py-1">
+<div className="bg-gray-100 flex justify-center items-center rounded-md py-1">
       <div className="w-full rounded-md">
         <Slider {...settings}>
           {slides.map((slide, index) => (
