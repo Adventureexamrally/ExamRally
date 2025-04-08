@@ -9,7 +9,8 @@ import { BsQuestionSquare } from "react-icons/bs";
 import { IoMdLock } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { Helmet } from "react-helmet";
-import { FaTachometerAlt } from "react-icons/fa";  // Import the correct icon
+
+import { BsSpeedometer2 } from "react-icons/bs";
 
 
 const Packagename = () => {
@@ -509,15 +510,18 @@ const Packagename = () => {
                                         size={20}
                                         color="orange"
                                       />
-                                      {test.section[0].t_question}
+                                      {test.t_questions
+                                      }
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       {" "}
-                                      <FaTachometerAlt size={20} color="green" />
-                                      {test.section[0].t_mark}
+
+                                      <BsSpeedometer2 size={20} color="green" />
+                                      {test.t_marks}
+
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -528,7 +532,7 @@ const Packagename = () => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.section[0].t_time}
+                                      {test.duration}
                                     </p>
                                   </div>
                                 </div>
@@ -605,7 +609,7 @@ const Packagename = () => {
                                 )}
 
                                 {/* Test Info Section */}
-                                <div className="flex justify-center items-center gap-4 mt-2">
+                                <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Questions</p>
                                     <p className="flex items-center gap-1">
@@ -613,15 +617,16 @@ const Packagename = () => {
                                         size={20}
                                         color="orange"
                                       />
-                                      {test.section[0].t_question}
+                                      {test.t_questions
+                                      }
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       {" "}
-                                      <ImCheckmark2 size={20} color="green" />
-                                      {test.section[0].t_mark}
+                                      <BsSpeedometer2 size={20} color="green" />
+                                      {test.t_marks}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -632,7 +637,7 @@ const Packagename = () => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.section[0].t_time}
+                                      {test.duration}
                                     </p>
                                   </div>
                                 </div>
@@ -708,7 +713,7 @@ const Packagename = () => {
                                 )}
 
                                 {/* Test Info Section */}
-                                <div className="flex justify-center items-center gap-4 mt-2">
+                                <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Questions</p>
                                     <p className="flex items-center gap-1">
@@ -716,15 +721,16 @@ const Packagename = () => {
                                         size={20}
                                         color="orange"
                                       />
-                                      {test.section[0].t_question}
+                                      {test.t_questions
+                                      }
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       {" "}
-                                      <ImCheckmark2 size={20} color="green" />
-                                      {test.section[0].t_mark}
+                                      <BsSpeedometer2 size={20} color="green" />
+                                      {test.t_marks}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -735,7 +741,7 @@ const Packagename = () => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.section[0].t_time}
+                                      {test.duration}
                                     </p>
                                   </div>
                                 </div>
