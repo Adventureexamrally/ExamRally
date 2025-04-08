@@ -39,15 +39,26 @@ import Sbi_po from "./components/Sbi_po";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Packagename from "./components/Packagename";
-import Free_pdf from "./components/Free_pdf";
 import ResultPage from "./components/ResultPage";
 import jaiib from '../src/assets/logo/offer.jpg'
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import Resultanalysis from "./components/Resultanalysis";
 import Mocksolution from "./components/Mocksolution";
 import Blog from "./components/Blog";
 import Subblog from "./components/Subblog";
 import DetailedCategorie from "./components/DetailedCategorie";
+import PdfCourse from "./pages/PdfCourse";
+import Free_pdf from "./pages/Free_pdf";
+import VideoCourse from "./pages/VideoCourse";
+import DashBoard from "./pages/user/DashBoard";
+import Profile from "./pages/user/Profile";
+import ActiveDevicesBrowser from "./pages/user/ActiveDevicesBrowser";
+import OrderHIstory from "./pages/user/OrderHIstory";
+import PurchaseHistory  from "./pages/user/PurchaseHistory";
+import RecentTestResults from "./pages/user/RecentTestResults";
+import ReferAndEarn from "./pages/user/ReferAndEarn";
+
+
 
 function App() {
   return (
@@ -58,8 +69,8 @@ function App() {
 }
 
 function MainApp() {
-  const location = useLocation(); 
- const [showModal, setShowModal] = useState(false);
+  const location = useLocation();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     // Show modal when navigating to "/mocktest"
@@ -95,35 +106,35 @@ function MainApp() {
           <NavBar />
         </>
       )}
-     {/* Modal */}
+      {/* Modal */}
       {showModal && (
-  <div
-    className="modal fade show d-flex align-items-center justify-content-center"
-    tabIndex="-1"
-    role="dialog"
-    style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }} // Full-screen overlay
-  >
-    <div
-      className="modal-dialog modal-dialog-centered"
-      role="document"
-    >
-      <div className="modal-content">
-        <div className="modal-header">
-    
-          <button
-            type="button"
-            className="btn-close text-sm"
-            onClick={() => setShowModal(false)}
-            aria-label="Close"
-          ></button>
+        <div
+          className="modal fade show d-flex align-items-center justify-content-center"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }} // Full-screen overlay
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            role="document"
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+
+                <button
+                  type="button"
+                  className="btn-close text-sm"
+                  onClick={() => setShowModal(false)}
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body">
+                <img src={jaiib} alt="Mock Test" className="img-fluid" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="modal-body">
-          <img src={jaiib} alt="Mock Test" className="img-fluid" />
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -132,7 +143,7 @@ function MainApp() {
         <Route path="/englishlang" element={<Englishlang />} />
         <Route path="/sigin" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/free-pdf" element={<Free_pdf/>} />
+        <Route path="/free-pdf" element={<Free_pdf />} />
         <Route path="/subscriptions" element={<TestSeries />} />
         <Route path="/rally-pro" element={<Rally_pro />} />
         <Route path="/rally-super-pro" element={<Rallysuper_Pro />} />
@@ -161,19 +172,29 @@ function MainApp() {
         <Route path="/hardlevelreasoning" element={<HardlevelReasoning />} />
         <Route path="/privacy-policy" element={<Privacy_Policy />} />
         <Route path="/terms-condition" element={<Terms_Condition />} />
-        
+
         {/* Only render Test component without Header and Footer */}
         <Route path="/result" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
 
-        <Route path='/mocksolution' element={<Mocksolution/>} />
+        <Route path='/mocksolution' element={<Mocksolution />} />
 
-        <Route path="/blog" element={<Blog/>}/>
-        <Route path="/blogdetails/:link" element={<Subblog/>}/>
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blogdetails/:link" element={<Subblog />} />
 
-        <Route path="/livetest/:link" element={<DetailedCategorie/>}/>
+        <Route path="/livetest/:link" element={<DetailedCategorie />} />
+        <Route path="/pdf-course" element={<PdfCourse />} />
+        <Route path="/video-course" element={<VideoCourse />} />
 
+        <Route path="profile">
+          <Route index element={<Profile />} />
+          <Route path="recent-test-results" element={<RecentTestResults/>} />
+          <Route path="purchase-history" element={<PurchaseHistory/>}/>
+          <Route path="order-history" element={<OrderHIstory/>} />
+          <Route path="refer-and-earn" element={<ReferAndEarn/>} />
+          <Route path="active-devices-browser" element={<ActiveDevicesBrowser/>} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>

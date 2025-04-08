@@ -1,45 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet';
-import { useParams } from 'react-router-dom';
-import Api from '../service/Api';
+import React from 'react'
 
-const Free_pdf = () => {
-    const [seo, setSeo] = useState([])
-
-    
-  useEffect(() => {
-    run()
-  }, []);
-  async function run() {
-    const response2 = await Api.get(`/get-Specific-page/free-pdf`);
-    setSeo(response2.data);
-    console.log(response2.data);
-  }
-
-  console.log(seo);
-  
+const CommingSoon = () => {
   return (
-    <>
-      <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
-        <title>{seo[0]?.seoData?.title}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                ))} */}
-
-      </Helmet>
-      <div className='text-center p-5'>
-        <div className="fire-text">
-          Coming Soon
-        </div></div>
-    </>
-  );
-};
+    <div className='text-center p-5'>
+    <div className="fire-text">
+      Coming Soon
+    </div></div>
+  )
+}
 
 const styles = `
   /* Fire Animation Styles */
@@ -110,4 +78,4 @@ const injectStyles = () => {
 
 injectStyles();
 
-export default Free_pdf;
+export default CommingSoon

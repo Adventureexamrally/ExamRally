@@ -3,4 +3,45 @@
 @tailwind utilities;
 
 
+/* Custom styles for slick arrows */
+.slick-prev, .slick-next {
+    position: absolute;   /* Make them absolutely positioned */
+    top: 50%;             /* Vertically center the arrows */
+    transform: translateY(-50%); /* Adjust to center them */
+    color: black !important;  /* Set the arrow color */
+    z-index: 1000;         /* Ensure they appear above other content */
+    cursor: pointer;       /* Show a pointer cursor on hover */
+    background-color: white; /* Optional: Add a background for visibility */
+    padding: 10px;          /* Make the arrows larger and clickable */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;            /* Set width of arrow button */
+    height: 20%;           /* Set height of arrow button */
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+    border-radius: 5px;
+  }
+  
+  /* Make the arrows appear when hovering */
+  .slick-prev:hover, .slick-next:hover {
+    background-color: white; /* Slight dark background on hover */
+    color: #FF6347;  /* Change color on hover to give it a visible effect */
+  }
+  
+  /* Position the left arrow */
+  .slick-prev {
+    left: 2px;             /* Position the left arrow on the left side */
+  }
+  
+  /* Position the right arrow */
+  .slick-next {
+    right: 2px;            /* Position the right arrow on the right side */
+  }
+  
+  
 
+
+  
+  
+ 
+  
