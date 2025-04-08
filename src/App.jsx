@@ -166,7 +166,7 @@ function MainApp() {
         <Route path="/mocktest/:id" element={<Test />} />
         {/* <Route path="/ibps-po" element={<Ibps_Po />} /> */}
         {/* <Route path="/sbi-clerk" element={<Sbi_clerk />} /> */}
-        {/* <Route path="/sbi-po" element={<Sbi_po />} /> */}
+        <Route path="/sbi-po" element={<Sbi_po />} />
         <Route path="/instruction/:id" element={<Instruction />} />
         <Route path="/otherinstruct/:id" element={<Otherinstruction />} />
         <Route path="/hardlevelreasoning" element={<HardlevelReasoning />} />
