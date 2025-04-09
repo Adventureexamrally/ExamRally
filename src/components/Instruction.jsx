@@ -4,11 +4,14 @@ import notvisit from "../assets/images/notvisit.png";
 import notans from "../assets/images/notans.png";
 import notandmaeked from "../assets/images/notansMarked.png";
 import { Link, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import Api from "../service/Api";
+import { useState } from "react";
 
 
-window.addEventListener('contextmenu', function (e) {
-  e.preventDefault();
-});
+// window.addEventListener('contextmenu', function (e) {
+//   e.preventDefault();
+// });
 
 // Prevent F12, Ctrl+R, Ctrl+Shift+R, and Ctrl+Shift+I key presses
 window.addEventListener('keydown', function (e) {
@@ -35,7 +38,20 @@ const images = [
 ];
 
 const Instruction = () => {
+  const [examData, setExamData] = useState(null);
   const {id}=useParams()
+
+  useEffect(() => {
+    // Fetch exam data based on the id
+    Api.get(`exams/getExam/${id}`)
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data); // Update state with the fetched data
+          console.log("Exam Data:", res.data); // Logs the fetched data
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err)); // Logs any errors
+  }, [id]);
 
   return (
     <div className="p-4">
@@ -48,14 +64,54 @@ const Instruction = () => {
         </select>
       </div>
 
+<div className="p-2">
+  <h1> Section : <strong> {examData?.exam_name}</strong> </h1>
+</div>
+
+
+
+
+
+<table className="table table-bordered table-striped table-responsive mt-2">
+  <thead>
+    <tr>
+      <th>S.No</th>
+      <th>Section Exam Name</th>
+      <th>No. of Questions</th>
+      <th>Section Time (Minutes)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {examData?.section?.map((section, index) => (
+      <tr key={index}>
+        <td>{index + 1}</td>
+        <td>{section.name}</td>
+        <td>{section.t_question}</td>
+        <td>{section.t_time}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+
+
+
       <div className="mt-4">
         <p className="font-semibold">General Instructions:</p>
         <ul className="list-decimal list-inside space-y-2 mt-2">
-          <li>
-            Total duration of examination is <strong>60 minutes</strong>. (20
-            minutes extra for every 60 minutes (1 hour) of the examination time
-            for candidates with disability eligible for compensatory time).
-          </li>
+      {
+  examData?.time?.toLowerCase() === "composite" ? (
+    <li>
+      Total duration of examination is <strong>{examData?.duration}</strong>. (20 minutes extra for every 60 minutes (1 hour) of the examination time for candidates with disability eligible for compensatory time).
+    </li>
+  ) : (
+    <li>
+      No sectional time specified. Please check the schedule for section-specific durations.
+    </li>
+  )
+}
+
+
           <li>
             The clock will be set at the server. The countdown timer in the top
             right corner of the screen will display the remaining time available

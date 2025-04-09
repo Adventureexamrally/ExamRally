@@ -70,7 +70,7 @@ function MainApp() {
     }
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
-  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct"].some((path) =>
+  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct","/mocksolution","/result"].some((path) =>
     location.pathname.startsWith(path)
   );
   useEffect(() => {
@@ -163,11 +163,11 @@ function MainApp() {
         <Route path="/terms-condition" element={<Terms_Condition />} />
         
         {/* Only render Test component without Header and Footer */}
-        <Route path="/result" element={<ResultPage />} />
+        <Route path="/result/:id" element={<ResultPage />} />
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
 
-        <Route path='/mocksolution' element={<Mocksolution/>} />
+        <Route path='/mocksolution/:id' element={<Mocksolution/>} />
 
         <Route path="/blog" element={<Blog/>}/>
         <Route path="/blogdetails/:link" element={<Subblog/>}/>

@@ -9,59 +9,173 @@ import resilience from "../assets/images/resilience.png";
 import studying from "../assets/images/studying.png";
 import version from "../assets/images/version.png";
 import answer from "../assets/images/answer.png";
+import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import ResultAnimation from '../animationeffect/ResultAnimation';
 
 const ResultPage = () => {
   const [resultData, setResultData] = useState(null);
+  const { id } = useParams();
+  const [value, setValue] = useState(50);
+  const [selectedBlueprint, setSelectedBlueprint] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [sectionData, setSectionData] = useState([]);
+  const [examData, setExamData] = useState(null);
+  const [isDataFetched, setIsDataFetched] = useState(false);
+  const [show_name,setShow_name] = useState("")
+
+ 
 
   useEffect(() => {
-    Api.get("results/65a12345b6c78d901e23f456/67c5900a09a3bf8c7f605d71")
-      .then(res => setResultData(res.data))
-      .then(res => console.log(res.data))
-      .catch(error => console.error("Error fetching data:", error.message));
-  }, []);
+    Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+      .then(res => {
+        setResultData(res.data);
+        console.log(res.data);
+        if (res.data && res.data.section && Array.isArray(res.data.section)) {
+          setSectionData(res.data.section); // Store the section data
+        }
+        // Assuming 'percentile' exists in the response and it should be the initial value for the range slider
+        if (res.data && res.data.Percentile) {
+          setValue(res.data.Percentile);  // Set slider value based on percentile
+       
+     
+      }})
+      .catch(error => {
+        console.error("Error fetching data:", error);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    // Step 2: Set the default section (e.g., first section or any other logic you want)
+    if (sectionData && sectionData.length > 0) {
+      const defaultSection = sectionData[0];
+      setSelectedTopic(defaultSection.name);
+      setSelectedBlueprint(defaultSection.s_blueprint);
+    }
+  }, [sectionData]);
+
+
+useEffect(() => {
+  // Check if data has already been fetched
+  if (!isDataFetched) {
+    Api.get(`exams/getExam/${id}`)
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data);
+          setIsDataFetched(true); 
+          setShow_name(res.data.show_name) // Mark that data is fetched
+          console.error("valueee",res.data.show_name)
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }
+}, [id]); 
 
   if (!resultData) {
     return <div>Loading...</div>;
   }
 
-  const { score, Attempted, timeTaken, Accuracy, section, takenAt, submittedAt } = resultData;
+  const { score,correct,s_accuracy, incorrect,skipped, Attempted,Not_Attempted,NotVisited,isVisited, timeTaken, Accuracy, section ,cutoff_mark, } = resultData;
+
+  let overallScore = 0;
+  let totalAnswered = 0;
+  let totalNotAnswered = 0;
+  let totalCorrect = 0;
+  let totalWrong = 0;
+  let totalTimeTaken = 0;
+  let totalVisited=0;
+  let totalNotVisited = 0;
+  let totalCutOff = 0;
+  let totalQRE =0;
+  let totalCorrectWrong=0;
+  let totalSkipped=0;
+  let totalAccuracy=0;
+
+  section.forEach(sect => {
+    overallScore += sect.s_score;
+    totalAnswered += sect.Attempted;
+    totalNotAnswered += sect.Not_Attempted;
+    totalCorrect += sect.correct;
+    totalWrong += sect.incorrect;
+    totalTimeTaken += sect.t_time;
+    totalVisited += sect.isVisited;
+    totalNotVisited +=sect.NotVisited;
+    totalCutOff += sect.cutoff_mark
+    totalQRE =sect.questions.english.filter(q => q.correct === q.selectedOption).length-sect.questions.english.filter(q => q.correct !== q.selectedOption).length;
+    totalCorrectWrong += totalQRE;
+    totalSkipped += sect.skipped;
+    totalAccuracy =  ((totalCorrect / totalAnswered) * 100).toFixed(2);
+  });
+
+  // Data for BarChart
+  const data = section.map((sect) => ({
+    name: sect.name,
+    score: sect.score,
+    // answered: sect.t_question - (sect.t_question - Attempted), // or just Attempted if it is section specific.
+    // notAnswered: sect.t_question - (sect.t_question - Attempted),
+    correct: sect.questions.english.filter(q => q.correct === q.selectedOption).length,
+    wrong: sect.questions.english.filter(q => q.correct !== q.selectedOption).length,
+    timeTaken: sect.t_time,
+  }));
+ // Runs only once when sectionData is available
+
+  // Step 3: Update the selected section
+  const handleSectionClick = (sectionName) => {
+    console.log('Section clicked:', sectionName);
+
+    const selectedSection = sectionData.find(sect => sect.name === sectionName);
+    console.log('Selected section:', selectedSection);
+
+    if (selectedSection) {
+      console.log('Setting selectedTopic:', sectionName);
+      setSelectedTopic(sectionName);
+      console.log('Setting selectedBlueprint:', selectedSection.s_blueprint);
+      setSelectedBlueprint(selectedSection.s_blueprint);
+    } else {
+      console.log('No section found for name:', sectionName);
+    }
+  };
+
+  const handleSliderChange = (event) => {
+    setValue(event.target.value);
+  };
+
 
   return (
     <div className="container font my-4">
       <div className="d-flex justify-content-between">
-        <h1 className="display-5">Result</h1>
-        <button className=" text-white font-bold py-2 px-4 rounded bg-green-500 hover:bg-green-400">
+        <h5 className='h4'>{show_name}</h5>
+        <button className="text-white font-bold py-2 px-4 rounded bg-green-500 hover:bg-green-400">
           View Solution
         </button>
       </div>
 
-      {/* Information Grid Section */}
       <div className="row d-flex justify-content-center align-items-start">
   {/* Mark Scored */}
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={checklist} alt="Score" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Mark Scored</p>
-      <p className="mb-0">{score}</p>
+      <p className="mb-0">{overallScore}</p>
     </div>
   </div>
 
   {/* Attempted */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
+  {/* <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={ambition} alt="Attempted" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Attempted</p>
       <p className="mb-0">{Attempted}</p>
     </div>
-  </div>
+  </div> */}
 
   {/* Answered */}
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={answer} alt="Answered" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Answered</p>
-      <p className="mb-0">{Attempted}</p>
+      <p className="mb-0">{totalAnswered}</p>
     </div>
   </div>
 
@@ -70,7 +184,7 @@ const ResultPage = () => {
     <img src={mark} alt="Correct" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Correct</p>
-      {/* <p className="mb-0">{section[0].questions.english.filter(q => q.correct === q.selectedOption).length}</p> */}
+      {totalCorrect}
     </div>
   </div>
 
@@ -79,7 +193,7 @@ const ResultPage = () => {
     <img src={version} alt="Incorrect" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Wrong</p>
-      {/* <p className="mb-0">{section[0].questions.english.filter(q => q.correct !== q.selectedOption).length}</p> */}
+      {totalWrong}
     </div>
   </div>
 
@@ -88,7 +202,7 @@ const ResultPage = () => {
     <img src={resilience} alt="Skipped" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Skipped</p>
-      {/* <p className="mb-0">{section[0].questions.english.filter(q => q.selectedOption === undefined).length}</p> */}
+      {totalSkipped}
     </div>
   </div>
 
@@ -97,7 +211,7 @@ const ResultPage = () => {
     <img src={studying} alt="Unseen" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Percentile</p>
-      <p className="mb-0">{Accuracy}</p>
+      <p className="mb-0">{Accuracy}%</p>
     </div>
   </div>
 
@@ -106,7 +220,7 @@ const ResultPage = () => {
     <img src={target} alt="Accuracy" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Accuracy</p>
-      <p className="mb-0">{Accuracy}</p>
+      <p className="mb-0">{totalAccuracy}%</p>
     </div>
   </div>
 
@@ -115,11 +229,10 @@ const ResultPage = () => {
     <img src={ambition} alt="Time Taken" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0">Time Taken</p>
-      <p className="mb-0">{timeTaken}</p>
+      <p className="mb-0">{totalTimeTaken}</p>
     </div>
   </div>
 </div>
-
 
       {/* Section Summary */}
       <div>
@@ -138,61 +251,81 @@ const ResultPage = () => {
                 <th scope="col">Accuracy</th>
                 <th scope="col">Rank</th>
                 <th scope="col">Percentile</th>
+                <th scope="col">Visited</th>
                 <th scope="col">Not Visited</th>
                 <th scope="col">Cutoff</th>
               </tr>
             </thead>
             <tbody>
-              {section.map((sect, index) => (
+              {sectionData.map((sect, index) => (
                 <tr key={index}>
-                  <th scope="row">{sect.name}</th>
-                  <td>{score}</td>
-                  <td>{Attempted}</td>
-                  <td>{sect.t_question - Attempted}</td>
-                  <td>{sect.questions.english.filter(q => q.correct === q.selectedOption).length}</td>
-                  <td>{sect.questions.english.filter(q => q.correct !== q.selectedOption).length}</td>
-                  <td>{timeTaken}</td>
-                  <td>{Accuracy}</td>
-                  <td>1</td> {/* Rank placeholder */}
-                  <td>90</td> {/* Percentile placeholder */}
-                  <td>{sect.questions.english.filter(q => q.selectedOption === undefined).length}</td>
-                  <td>{sect.cutoff_mark}</td>
-                </tr>
+                <th scope="row">{sect.name}</th>
+                <td>{sect.s_score}</td>
+                <td>{sect.Attempted}</td>
+                <td>{sect.Not_Attempted}</td>
+                <td>{sect.correct}</td>
+                <td>{sect.incorrect}</td>
+                <td>{sect.t_time}</td>
+                <td>{sect.s_accuracy}%</td>
+                <td>1</td> {/* Rank placeholder */}
+                <td>90</td> {/* Percentile placeholder */}
+                <td>{sect.isVisited}</td>
+                <td>{sect.NotVisited}</td>
+                <td>{sect.cutoff_mark}</td>
+              </tr>
               ))}
             </tbody>
+            <tfoot>
+            <tr>
+                <th>Overall</th>
+                <th>{overallScore}</th>
+                <th>{totalAnswered}</th>
+                <th>{totalNotAnswered}</th>
+                <th>{totalCorrect}</th>
+                <th>{totalWrong}</th>
+                <th>{totalTimeTaken}</th>
+                <th>{totalAccuracy}%</th>
+                <th>1</th>
+                <th>90</th>
+                <th>{totalVisited}</th>
+                <th>{totalNotVisited}</th>
+                <th>{totalCutOff}</th>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
 
       <div className="flex justify-center my-4">
-      <Link to='/result'>
-        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-          View Analysis
-        </button>
-        </Link>
-        &nbsp;&nbsp;
-        <Link to='/mocksolution'>
+      <Link to={`/mocksolution/${id}`}>
   <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
     View Solution
   </button>
 </Link>
       </div>
 
-      <div>
-        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-          Cutoff Cleared
-        </button>
-        &nbsp;&nbsp;
-        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-          Cutoff Missed
-        </button>
+      <div className="flex justify-end space-x-4">
+      <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+        Cutoff Cleared :5
+      </p>
+      <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+        Cutoff Missed :5
+      </p>
       </div>
+<div>
       <h1>Comparison With Toppers
       </h1>
-      <div className='d-flex'>
-     <p></p>Quantitative Aptitude  <p>Reasoning Ability </p>English Language
-
-      </div>
+    <div className='mt-4'>
+      <button className="bg-green-500 text-white px-4 py-2  hover:bg-green-400">
+    Quantitative Aptitude
+  </button>
+  <button className=" px-4 py-2 ">
+    Reasoning Ability
+  </button>
+  <button className=" px-4 py-2 ">
+    English Learning
+  </button></div>
+      
       <div className="d-flex justify-content-center align-items-center p-4">
       <div className="container">
         <table className="table table-bordered table-striped table-responsive">
@@ -242,14 +375,163 @@ const ResultPage = () => {
           </tbody>
         </table>
       </div>
+      </div>
     </div>
+    <div>
+      <h1>Time Management
+      </h1>
+   
+      <div className='d-flex justify-content-center align-items-center p-4'>
+      <div className="container">
+          <table className="table table-bordered table-striped table-responsive">
+            <thead>
+              <tr>
+                <th scope="col">Section</th>
+               
+                <th scope="col">Answered/Marks</th>
+                <th scope="col">Not Answered/Marks</th>
+                <th scope="col">Correct/Marks</th>
+                <th scope="col">Wrong/-ve Marks</th>
+                <th scope='col'>Total Mark Scored / Negative 
+                MarK </th>
+              </tr>
+            </thead>
+            <tbody>
+              {section.map((sect, index) => (
+                <tr key={index}>
+                  <th scope="row">{sect.name}</th>
+                  <td>{sect.Attempted}</td>
+                  <td>{sect.Not_Attempted}</td>
+                  <td>{sect.correct}</td>
+                  <td>{sect.incorrect}</td>
+                  <td>{}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Overall</th>
+              
+                <th>{totalAnswered}</th>
+                <th>{totalNotAnswered}</th>
+                <th>{totalCorrect}</th>
+                <th>{totalWrong}</th>  
+                <th>{totalCorrectWrong}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        </div>
+    </div>
+    <h1>Bar Charts</h1>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <BarChart width={800} height={400} data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="score" name="Score" fill="#8884d8"/>
+          <Bar dataKey="answered" name="Answered" fill="#82ca9d" />
+          <Bar dataKey="notAnswered" name="Not Answered" fill="#ffc658" />
+          <Bar dataKey="correct" name="Correct" fill="#0088FE" />
+          <Bar dataKey="wrong" name="Wrong" fill="#FF8042" />
+          <Bar dataKey="timeTaken" name="Time Taken" fill="#a0522d" />
+        </BarChart>
+      </div>
+      {/* Section buttons */}
+      <h1 className='bg-blue-100 text-blue-600 p-2 h4 text-center fw-bold'>Scoring Blueprint</h1>
+
+      <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 mt-2">
 
 
+        {sectionData.map((sect, index) => (
+          <div key={index} className="flex-shrink-0">
+            <button
+              type="button"
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md w-full md:w-auto"
+              onClick={() => handleSectionClick(sect.name)}
+            >
+              {sect.name}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Blueprint */}
+      {selectedBlueprint && (
+        <div className="m-2">
+          <h2 className='mb-2 fw-bold'>Blueprint for {selectedTopic} :-</h2>
+          <table className="table table-bordered table-striped table-responsive">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Topic</th>
+                <th>Time Taken (Min*)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedBlueprint.map((item, index) => (
+                <tr key={item._id}>
+                  <td>{item.subject}</td>
+                  <td>{item.topic}</td>
+                  <td>{item.tak_time}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
 
+     
+<div className='p-2'>
+        <label
+          htmlFor="default-range"
+          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          Percentile
+        </label>
+        <div className="relative">
+          <input
+            id="default-range"
+            type="range"
+            value={value}
+            min="0"
+            max="100"
+            step="5"
+            onChange={handleSliderChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 mt-8"
+            disabled
+          />
+          <span
+            className="absolute top-[-30px] left-1/2 transform -translate-x-1/2 bg-green-500  px-3 p-1 text-sm font-medium text-white"
+            style={{ left: `${(value / 100) * 100}%` }}
+          >
+             <p><strong>Percentile:</strong> {resultData?.Percentile || 'Loading...'}</p>
+             <p><strong>Score:</strong> {resultData?.o_score || 'Loading...'}</p>
+          </span>
+        </div>
 
+        <div className="relative">
+          <div className="flex justify-between text-xs">
+            {/* Custom marks (0, 5, 10, 15, ..., 100) */}
+            {[...Array(21)].map((_, index) => {
+              const markValue = index * 5;
+              return (
+                <div key={markValue} className="flex flex-col items-center">
+                  <div className="h-2 w-0.5 bg-gray-600 dark:bg-gray-300 mt-1" />
+                  <span>{markValue}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-
+      </div>
+      <div>
+        <ResultAnimation/>
+      </div>
     </div>
   );
 };

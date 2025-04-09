@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Api from "../service/Api";
 import "react-toastify/dist/ReactToastify.css";
-import { useLocation, useParams } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../assets/logo/bg-logo.png'; 
 
 const Mocksolution = () => {
@@ -23,10 +23,10 @@ const Mocksolution = () => {
     const [show_name,setShow_name] = useState("")
     const [t_questions,sett_questions]=useState("")
     const { id } = useParams();
-
+    const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
     useEffect(() => {
-        Api.get(`results/65a12345b6c78d901e23f456/67c5900a09a3bf8c7f605d71`)
+        Api.get(`results/65a12345b6c78d901e23f456/${id}`)
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);
@@ -34,7 +34,7 @@ const Mocksolution = () => {
                 }
             })
             .catch((err) => console.error("Error fetching data:", err));
-    }, []);
+    }, [id]);
 
 useEffect(() => {
   // Check if data has already been fetched
@@ -82,7 +82,7 @@ useEffect(() => {
         setIsToggled(!isToggled);
     
         // Reset to the first question (starting from the first section and question)
-        if (examData && examData.section && examData.section.length > 0) {
+        // if (examData && examData.section && examData.section.length > 0) {
             // Set the current section to the first section
             setCurrentSectionIndex(0);
             
@@ -93,11 +93,56 @@ useEffect(() => {
             // Optionally, reset other states if needed
             setCheck(null);    // Reset any selected question
             setIsClicked(false); // Reset clicked status for the question
-        }
+
+             // Reset all tracking states
+            setVisitedQuestions([0]); // Clear visited questions
+             setMarkedForReview([]); // Clear marked for review
+              setAnsmarkforrev([]); // Clear answered and marked for review
+            setQuestionTimes({});
+            setSelectedOptions([]); // Clear question times
+        // }
     
         // You can add any additional logic here (e.g., start the timer, etc.)
     };
+
     
+    const [resultData, setResultData] = useState({
+        correct: [],
+        incorrect: [],
+        skipped: [],
+        Not_Attempted: [],
+        Attempted: [],
+        s_score:[]
+    });
+    
+    useEffect(() => {
+        Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+            .then((res) => {
+                if (res.data) {
+                    setExamData(res.data);
+                    // Store the section-specific question status arrays
+                    const sectionData = res.data.section[currentSectionIndex];
+                    if (sectionData) {
+                        setResultData({
+                            correct: sectionData.correct,
+                            incorrect: sectionData.incorrect,
+                            skipped: sectionData.skipped,
+                            Attempted: sectionData.Attempted,
+                            Not_Attempted: sectionData.Not_Attempted,
+                            s_score: sectionData.s_score
+                        });
+                    }
+                }
+            })
+            .catch((err) => console.error("Error fetching data:", err));
+    }, [id, currentSectionIndex]);
+        
+  
+
+        
+  
+
+   
 
 
 
@@ -124,6 +169,7 @@ useEffect(() => {
     
         // Check if we've completed all questions in the current section
         if (clickedQuestionIndex < startingIndex + questions.length - 1) {
+            console.error("ullae if)")
             // Move to the next question in the current section
             setClickedQuestionIndex(clickedQuestionIndex + 1);
         } else {
@@ -143,7 +189,8 @@ useEffect(() => {
           // Set the clicked question index to the first question of the next section
           setClickedQuestionIndex(newStartingIndex);// Reset the question index for the new section
             } else {
-                console.log("Exam is complete!"); // Handle case if this is the last section
+                console.error("Exam is complete!"); // Handle case if this is the last section
+                navigate("/"); // Navigate to the homepage
             }
         }
     
@@ -212,9 +259,24 @@ useEffect(() => {
         }
     };
 
-    
+    const [questionStatuses, setQuestionStatuses] = useState({});
 
-    console.log(examData);
+    // Update question status when an option is selected
+    useEffect(() => {
+        if (check !== null) {
+            const currentQuestion = examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex];
+            if (currentQuestion) {
+                const isCorrect = check === currentQuestion.answer;
+                setQuestionStatuses(prev => ({
+                    ...prev,
+                    [clickedQuestionIndex]: {
+                        attempted: true,
+                        correct: isCorrect
+                    }
+                }));
+            }
+        }
+    }, [check, clickedQuestionIndex, currentSectionIndex, examData, selectedLanguage]);
 
     return (
         <div className="p-1 mock-font ">
@@ -222,18 +284,21 @@ useEffect(() => {
                
                 <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
   <h1 className="h3 font-bold mt-3">{show_name}</h1>
-  <img src={logo} alt="logo" className="h-10 w-auto" />
+  <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
 </div>
              
             </div>
             
             <div className="mb-3 mt-1">
-        <span className="p bg-blue-400 text-white fw-bold p-1">{ examData?.section[currentSectionIndex]?.name}</span>
-      &nbsp;
-      &nbsp;
-        <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" className="text-decoration-underline">
-  Comment 📩
-</a>
+            <div className="d-flex justify-content-start align-items-center m-2 flex-wrap">
+  {examData?.section?.map((section, index) => (
+    <h1 key={index} className="h6 bg-blue-400 p-1 text-white border">
+      ✔ {section.name}
+    </h1>
+  ))}
+</div>
+   
+     
 
 
 
@@ -242,20 +307,20 @@ useEffect(() => {
   <div className="modal-dialog modal-dialog-centered">
     <div className="modal-content">
       <div className="modal-header">
-        <h1 className="modal-title fs-5" id="exampleModalLabel">Comment Section</h1>
+        <h1 className="modal-title fs-5" id="exampleModalLabel">Review Section</h1>
         <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div className="modal-body">
         <form>
           <div className="mb-3">
             <label for="userInput" className="form-label">Please descripe it below!!</label>
-            <input type="text" className="form-control" id="userInput" placeholder="Enter Comments!!"/>
+            <input type="text" className="form-control" id="userInput" placeholder="Enter Review!!"/>
           </div>
         </form>
       </div>
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" className="btn btn-primary">Submit</button>
+        <button type="button" className="btn bg-green-400 text-white hover:bg-green-500">Submit</button>
       </div>
     </div>
   </div>
@@ -264,12 +329,7 @@ useEffect(() => {
                 
                 
                 
-                <div className="text-center fs-6 p-2">
-                    <h1>
-                        Exam Name Show &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                        &nbsp; &nbsp;
-                    </h1>
-                </div>
+          
             </div>
             <div className="row">
                 {/* Question Panel */}
@@ -282,33 +342,7 @@ useEffect(() => {
                   {t_questions}
                 </h3>
 
-                                <h1>
-                                    <span className="border p-1">
-                                        &nbsp;Marks&nbsp;
-                                        <span>
-                                            +
-                                            {examData?.section &&
-                                                examData.section[currentSectionIndex]
-                                                ? examData.section[currentSectionIndex].plus_mark
-                                                : "No plus marks"}
-                                        </span>
-                                        &nbsp;
-                                        <span>
-                                            -
-                                            {examData?.section &&
-                                                examData.section[currentSectionIndex]
-                                                ? examData.section[currentSectionIndex].minus_mark
-                                                : "No minus marks"}
-                                        </span>
-                                    </span>{" "}
-                                    <span className="border px-2 p-1">Correct</span>&nbsp;
-                                    <span className="border px-2 p-1">In Correct</span>
-                                    &nbsp;&nbsp;
-                                    <span className="border px-2 p-1">Time : {examData?.section[currentSectionIndex]?.questions?.[
-                                        selectedLanguage?.toLowerCase()
-                                    ]?.[clickedQuestionIndex - startingIndex]?.q_on_time}</span>
-
-                                </h1>
+                               
                                 <div className="flex justify-center items-center ">
                                     <p>Re-Attempt   &nbsp;&nbsp;</p>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -339,7 +373,7 @@ useEffect(() => {
                                         ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                                 <div
                                                     className="col-lg-6 col-md-6"
-                                                    style={{ maxHeight: "420px", overflowY: "auto" }}
+                                                    style={{ maxHeight: "380px", overflowY: "auto" }}
                                                 >
                                                     <h5>Common Data:</h5>
 
@@ -369,7 +403,7 @@ useEffect(() => {
                                                 ? "col-lg-6 col-md-6"
                                                 : "col-lg-12 col-md-12" // Make it full width when no common data
                                                 }`}
-                                            style={{ maxHeight: "420px", overflowY: "auto" }}
+                                            style={{ maxHeight: "380px", overflowY: "auto" }}
                                         >
                                             <h5>Question:</h5>
 
@@ -436,7 +470,6 @@ useEffect(() => {
                 backgroundColor: "green", // Correct answer
                 color: "white", // Optional, for better contrast
             };
-            console.log('Correct Option (User Incorrect) Style:', optionStyle);
         }
 
 
@@ -451,22 +484,18 @@ useEffect(() => {
               backgroundColor: 'red', // Incorrect answer
               color: 'white', // White text for contrast
             };
-            console.log('Incorrect Option Style:', changestyle); // Log the incorrect style
-            console.error("check",check,!isCorrect)
           }
          if (check && isCorrect) {
             changestyle = {
                 backgroundColor: "green", // Correct answer
                 color: "white", // Optional, for better contrast
             };
-            console.log('Correct Option Style:', optionStyle);console.error("check",check,isCorrect)
         }
         
         } else {
-          console.log('No value selected.'); // Log when no option is selected
+            // If check is not set, apply the default style
+            optionStyle = {};
         }
-        
-        console.error(check)
         // const isDisabled = !isToggled || (isSelected && !isToggled); 
         
 
@@ -486,6 +515,12 @@ useEffect(() => {
       setCheck(Number(e.target.value)); // Set the selected value
       setIsClicked(true); // Mark that the user clicked the option
       console.error("value", e.target.value); // Log the selected value
+      
+      setSelectedOptions(prev => ({
+        ...prev,
+        [clickedQuestionIndex]: Number(e.target.value)
+    }));
+
     }}
     disabled={!isToggled || isClicked} // Disable if toggle is off or if it's clicked already
   />
@@ -531,7 +566,7 @@ useEffect(() => {
                                                             selectedLanguage?.toLowerCase()
                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
                                                             <div
-                                                                className="fw-bold text-wrap"
+                                                                className="fw-bold text-wrap mb-2"
                                                                 style={{
                                                                     whiteSpace: "normal",
                                                                     wordWrap: "break-word",
@@ -543,9 +578,16 @@ useEffect(() => {
                                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                                 }}
                                                             />
+                                                            
                                                         ) : (
                                                             <p>No explanation available</p>
                                                         )}
+                                                        <div className="text-center">
+                                                        <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" className="bg-green-500 p-1 px-2 text-white text-decoration-underline">
+                                                             Review
+                                                            </a>
+                                                        </div>
+                                                          
                                                     </>
                                                 )}
                                             </div>
@@ -562,12 +604,13 @@ useEffect(() => {
                     ) : (
                         <div className="text-center">
                             <h1 className="display-6 text-success">Test Completed!</h1>
+                            
                         </div>
                     )}
                 </div>
 
-                {/* Sidebar */}
-                <div
+             {/* Sidebar */}
+             <div
                     className="bg-light  shadow-sm col-lg-3"
                     style={{ maxHeight: "450px", overflowY: "auto" }}
                 >
@@ -577,74 +620,102 @@ useEffect(() => {
 
                         <div className="d-flex justify-content-between p-1">
                             <h1>Mark</h1>
-                            <h1>{examData?.score}</h1>
+                            <h1>{resultData?.s_score}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Attempted</h1>
-                            <h1>{examData?.Attempted}</h1>
+                            <h1>{resultData?.Attempted}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Correct</h1>
-                            <h1>6</h1>
+                            <h1>{resultData?.correct}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>InCorrect</h1>
-                            <h1>7</h1>
+                            <h1>{resultData?.incorrect}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>You</h1>
                             <h1>67</h1>
                         </div>                                   
 
+                       
+
                         <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
-                            {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((_, index) => {
-                                const fullIndex = startingIndex + index; // Correct question index
+    {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
+        // Calculate the actual question number including previous sections
+        const actualQuestionNumber = startingIndex + index + 1;
+        const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
+        const answer = currentQuestion?.answer;
+        
+         
+        
+        let className = "";
 
-                                // Access the current section and question data
-                                const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][fullIndex];
-                                console.log(currentQuestion);
 
-                                // Initialize className variable to store the dynamically set class
-                                let className = "";
+       
+        if (!isToggled) {
+            // Default view - show correct/incorrect/skipped status
+           
+                if (answer === currentQuestion.selectedOption) {
+                    className = "answerImg"; // Correct answer                  
+             } else if(currentQuestion?.isVisited == 1 && currentQuestion?.selectedOption == null){
+                className = "skipImg";
+            }
+              else if (answer !== currentQuestion.selectedOption && currentQuestion?.NotVisited == 0)  {
+                    className = "notansImg"; // Wrong answer
+                }
+                
+             
+              else     {
+                className = "notVisitImg"; // Not visited
+            }
+            
+        } else {
+            // Re-attempt mode
+            if (selectedOptions[startingIndex + index] !== undefined) {
+                className = "answerImg";
+                if (markedForReview.includes(startingIndex + index)) {
+                    className += " mdansmarkedImg";
+                }
+            } else if (visitedQuestions.includes(startingIndex + index)) {
+                className = "notansImg";
+            } else {
+                className = "notVisitImg";
+            }
+        }
+        
+              // if (resultData?.section.isVisited - resultData?.section.Attempted){
+        //     className = "skipImg"; // Skipped question - visited but no answer selected
+        // }
+        return (
+            <div key={index}>
+                <span
+                    onClick={() => {
+                        setClickedQuestionIndex(startingIndex + index);
+                        handleNextClick()
+                        
+                        if (!visitedQuestions.includes(startingIndex + index)) {
+                            setVisitedQuestions(prev => [...prev, startingIndex + index]);
+                        }
+                
+             
+                     
+                    }}
+                    className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                >
+                    {actualQuestionNumber}
+                </span>
+            </div>
+        );
+    })}
+</div>    
 
-                                // Determine the class based on whether the question is answered, visited, or skipped
-                                if (selectedOptions[fullIndex] !== undefined) {
-                                    className = "answerImg"; // Class for answered questions
-                                    if (markedForReview.includes(fullIndex)) {
-                                        className += " mdansmarkedImg"; // Add marked class if it's marked for review
-                                    }
-                                } else if (visitedQuestions.includes(fullIndex)) {
-                                    className = "notansImg"; // Class for visited but not answered questions
-                                } else {
-                                    className = "notVisitImg"; // Class for unvisited questions
-                                }
 
-                                // If the question is skipped, change its class
-                                if (currentQuestion?.isSkipped) {
-                                    className = "skippedImg"; // Custom class for skipped questions (you can adjust as needed)
-                                }
 
-                                // If the question is marked for review, add a specific class
-                                if (currentQuestion?.isMarkedForReview) {
-                                    className += " reviewed mdmarkedImg"; // Additional class for questions marked for review
-                                }
 
-                                return (
-                                    <div key={fullIndex}>
-                                        {/* Question number with click functionality */}
-                                        <span
-                                            onClick={() => {
-                                                console.log("Clicked question index:", fullIndex);
-                                                setClickedQuestionIndex(fullIndex); // Set clicked question index
-                                            }}
-                                            className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                                        >
-                                            {fullIndex + 1}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                 
+   
 
                         <div className="container mt-3 bg-gray-100">
                             <div className="container mt-3">

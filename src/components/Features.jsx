@@ -155,32 +155,33 @@ export default function Features() {
                   height: `${customHeight}px`,
                 }}
               >
-                <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1>
+                {/* <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1> */}
                 <iframe
                   className="w-full h-full rounded-lg shadow-xl"
                   src={getEmbedUrl(youtubeVideos[currentIndex])}
                   title="Current Video"
                   allowFullScreen
-                /> <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                />
+                 <h1 className="p font p-3 bg-green-300 text-center rounded m-2">{youtubeVideos[prevIndex]?.description}</h1>
               </div>
             ) : (
               <>
                 {/* Previous Video (Left) */}
                 <div
-                  className="relative opacity-70 scale-90 transition-transform duration-300 mx-2"
+                  className="relative  scale-90 transition-transform duration-300 mx-2"
                   style={{
                     width: `${customWidth * 0.8}px`,
                     height: `${customHeight * 0.8}px`,
                   }}
                 >
-                  <h1 className="h5 font">{youtubeVideos[prevIndex]?.title}</h1>
+                  {/* <h1 className="h5 font">{youtubeVideos[prevIndex]?.title}</h1> */}
                   <iframe
                     className="w-full h-full rounded-lg shadow-lg"
                     src={getEmbedUrl(youtubeVideos[prevIndex])}
                     title="Previous Video"
                     allowFullScreen
                   />
-                 <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                 <h1 className="p font p-3 bg-green-300 text-center rounded m-5">{youtubeVideos[prevIndex]?.description}</h1>
                 </div>
 
                 {/* Current Video (Center) */}
@@ -191,32 +192,32 @@ export default function Features() {
                     height: `${customHeight}px`,
                   }}
                 >
-                  <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1>
+                  {/* <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1> */}
                   <iframe
                     className="w-full h-full rounded-lg shadow-xl"
                     src={getEmbedUrl(youtubeVideos[currentIndex])}
                     title="Current Video"
                     allowFullScreen
                   />
-                  <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                  <h1 className="p font p-3 bg-green-500 text-center text-white rounded m-4">{youtubeVideos[prevIndex]?.description}</h1>
                 </div>
 
                 {/* Next Video (Right) */}
                 <div
-                  className="relative opacity-70 scale-90 transition-transform duration-300 mx-2"
+                  className="relative  scale-90 transition-transform duration-300 mx-2"
                   style={{
                     width: `${customWidth * 0.8}px`,
                     height: `${customHeight * 0.8}px`,
                   }}
                 >
-                  <h1 className="h5 font">{youtubeVideos[nextIndex]?.title}</h1>
+                  {/* <h1 className="h5 font">{youtubeVideos[nextIndex]?.title}</h1> */}
                   <iframe
                     className="w-full h-full rounded-lg shadow-lg"
                     src={getEmbedUrl(youtubeVideos[nextIndex])}
                     title="Next Video"
                     allowFullScreen
                   />
-                 <h1 className="p font p-3">{youtubeVideos[prevIndex]?.description}</h1>
+                 <h1 className="p font p-3 bg-green-300 text-center rounded m-5">{youtubeVideos[prevIndex]?.description}</h1>
                 </div>
               </>
             )}
@@ -226,20 +227,22 @@ export default function Features() {
 
       {/* Left Navigation Button */}
       <button
-        className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-black opacity-50 hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-green-600  hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
         onClick={prevVideo}
       >
-        <i className="bi bi-chevron-left"></i>
+                <i className=" fw-bold bi bi-chevron-double-left"></i>
+
       </button>
 
       {/* Right Navigation Button */}
       <button
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-black opacity-50 hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-green-600  hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
         onClick={nextVideo}
       >
-        <i className="bi bi-chevron-right"></i>
+        <i className=" fw-bold bi bi-chevron-double-right"></i>
       </button>
     </div>
+ 
 
     </>
   );
