@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Api from "../service/Api";
 import { useNavigate } from "react-router-dom";
-import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+import { FaChevronUp, FaChevronDown, FaDownload, FaFileDownload, FaSortDown, FaCloudDownloadAlt } from "react-icons/fa";
 const CAmonth = () => {
   const [CA, setCA] = useState([]);
   const navigate = useNavigate();
@@ -19,6 +19,16 @@ const CAmonth = () => {
 
     fetchData();
   }, []);
+
+  const openNewWindow = (url) => {
+    const width = screen.width;
+    const height = screen.height;
+    window.open(
+      url,
+      "_blank",
+      `noopener,noreferrer,width=${width},height=${height}`
+    );
+  };
 
   const toggleWeek = (weekTitle) => {
     setExpandedWeeks((prevExpanded) => ({
@@ -57,7 +67,7 @@ const CAmonth = () => {
               </div>
               {expandedWeeks[week.title] && (
                 <div className="p-3 bg-gray-100">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="flex flex-wrap justify-center items-center gap-4">
                     {week.model.map((model) => (
                       <div
                         key={model.show_name}
@@ -72,30 +82,30 @@ const CAmonth = () => {
                               <a
                                 href={model.pdfLink}
                                 target="blank"
-                                className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white py-2 px-4 rounded-lg text-sm text-center font-semibold transition-colors duration-300"
+                                className="flex bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white py-2 px-4 rounded-lg text-sm text-center font-semibold transition-colors duration-300"
                               >
-                                Download PDF
+                                <FaCloudDownloadAlt className="m-1"/> PDF
                               </a>
                             ) : (
                               <a
                                 href={model.pdfLink}
                                 target="blank"
-                                className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white py-2 px-4  rounded-lg text-xs text-center font-semibold transition-colors duration-300"
+                                className="flex bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white py-2 px-4 rounded-lg text-sm text-center font-semibold transition-colors duration-300"
                               >
-                                Download PDF
-                              </a>
+                                <FaCloudDownloadAlt className="m-1"/> PDF
+                                </a>
                             )
                           ) : (
                             <button
                               disabled
-                              className="bg-gray-200 text-gray-500 py-2 px-4  rounded-lg text-sm text-center font-semibold cursor-not-allowed"
+                              className=" flex bg-gray-200 text-gray-500 py-2 px-4  rounded-lg text-sm text-center font-semibold cursor-not-allowed"
                             >
-                              Download PDF
-                            </button>
+                                <FaCloudDownloadAlt className="m-1"/> PDF
+                                </button>
                           )}
                           <button
                             onClick={() =>
-                              navigate(`/instruction/${model.exams[0]}`)
+                              openNewWindow(`/instruction/${model.exams[0]}`)
                             }
                             className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-300"
                           >

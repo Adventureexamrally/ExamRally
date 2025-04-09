@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo/logo.webp";
-import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser } from "@clerk/clerk-react";
+import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp, useUser } from "@clerk/clerk-react";
 
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
+import { Avatar } from "@mui/material";
+import User from "./User";
 
 const NavBar = () => {
-  const {isSignedIn, user, isLoaded } = useUser();
+  const { isSignedIn, user, isLoaded } = useUser();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -108,10 +110,16 @@ const NavBar = () => {
               Free PDF
             </Link>
             <Link
+              to="/pdf-course"
+              className="hover:text-blue-600 transition duration-300"
+            >
+              PDF Course
+            </Link>
+            <Link
               to="/blog"
               className="hover:text-blue-600 transition duration-300"
             >
-             Blogs
+              Blogs
             </Link>
             <Link
               to="/rally-pro"
@@ -123,7 +131,13 @@ const NavBar = () => {
               to="/rally-super-pro"
               className="hover:text-blue-600 transition duration-300"
             >
-             Rally Super Pro
+              Rally Super Pro
+            </Link>
+            <Link
+              to="/video-course"
+              className="hover:text-blue-600 transition duration-300"
+            >
+              Video Course
             </Link>
             {/* <Link
               to="/blogs"
@@ -137,6 +151,8 @@ const NavBar = () => {
           <button className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-600 hover:text-white transition duration-300">
             Get App
           </button>
+          {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
+          <User />
 
           {/* Mobile Hamburger Menu */}
           <button onClick={toggleMenu} className="md:hidden text-black">
@@ -203,7 +219,7 @@ const NavBar = () => {
               to="/livebatch"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-             Blogs
+              Blogs
             </Link>
             <Link
               to="/interviews"
@@ -215,7 +231,7 @@ const NavBar = () => {
               to="/materials"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-             Rally Lifetime
+              Rally Lifetime
             </Link>
             {/* <Link
               to="/blogs"
@@ -244,9 +260,8 @@ const NavBar = () => {
               <SignedIn>
                 <UserButton />
               </SignedIn>
-              <p>{!user ? "":user.firstName}</p>
-              <p className=''>  Join Telegram
-           </p>
+              <p>{!user ? "" : user.firstName}</p>
+              <p className=''>  Join Telegram</p>
             </div>
           </div>
         )}
