@@ -137,6 +137,12 @@
   width: 30px;
 }
 
+.skipImg{
+  background: url('./assets/images/ques-sprite.png');
+  background-position:-206px -4px;
+  height: 43px;
+  width: 50px;
+}
 
 .mdmarkedImg{
   background: url('./assets/images/ques-sprite.png');
@@ -230,3 +236,36 @@
   transform: translateY(-10px)scale(1.03);
   box-shadow: 0 0 50px #04b42a;
 }
+
+
+/* ---- reset ---- */
+.github {
+	z-index: 10000;
+	bottom: 10px;
+	right: 10px;
+	position: fixed;
+	border-radius: 10px;
+	background: #fff;
+	padding: 0 12px 6px 12px;
+	border: 1px solid #000;
+}
+
+.github a:hover,
+.github a:link,
+.github a:visited,
+.github a:active {
+	color: #000;
+	text-decoration: none;
+}
+
+.github img {
+	height: 30px;
+}
+
+.github #gh-project {
+	font-size: 20px;
+	padding-left: 5px;
+	font-weight: bold;
+	vertical-align: bottom;
+}
+
