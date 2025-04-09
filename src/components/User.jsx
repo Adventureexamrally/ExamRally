@@ -24,7 +24,7 @@ const User = () => {
                     className="text-white flex items-center space-x-2 hover:bg-green-700 p-2 rounded-full"
                 >
                     {/* <FaUserCircle size={24} /> Profile icon */}
-                    <Avatar alt="Remy Sharp" src="user.jpeg" />
+                    <Avatar alt="Remy Sharp" src="/user.jpeg" />
                 </button>
 
                 {/* Dropdown Menu */}

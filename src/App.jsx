@@ -57,6 +57,7 @@ import OrderHIstory from "./pages/user/OrderHIstory";
 import PurchaseHistory  from "./pages/user/PurchaseHistory";
 import RecentTestResults from "./pages/user/RecentTestResults";
 import ReferAndEarn from "./pages/user/ReferAndEarn";
+import Packages from "./pages/Packages";
 
 
 
@@ -195,6 +196,8 @@ function MainApp() {
           <Route path="refer-and-earn" element={<ReferAndEarn/>} />
           <Route path="active-devices-browser" element={<ActiveDevicesBrowser/>} />
         </Route>
+
+        <Route path="/All-Packages" element={<Packages />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

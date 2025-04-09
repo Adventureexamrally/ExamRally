@@ -1,5 +1,5 @@
 import { Avatar } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaBook, FaCarAlt, FaClipboardList, FaGift, FaHistory, FaLaptop, FaReceipt, FaRegBookmark, FaShoppingBasket, FaShoppingCart, FaUser } from 'react-icons/fa';  // Import the FaUser icon
 import { Link } from 'react-router-dom';  // Import Link from react-router-dom
 import { FiMoreHorizontal, FiMoreVertical } from 'react-icons/fi';
@@ -9,7 +9,19 @@ const drawerWidth = 240;
 
 export default function DashBoard({ handleDrawerToggle, open, setOpen }) {
   // State to track the active link
-  const [activeLink, setActiveLink] = useState('profile');
+
+  const [activeLink, setActiveLink] = useState(() => {
+    // Get the initial activeLink value from localStorage if available
+    const savedLink = localStorage.getItem('activeLink');
+    return savedLink ? savedLink :'profile';
+  });
+  
+  useEffect(() => {
+    // Save the active link to localStorage whenever it changes
+    if (activeLink) {
+      localStorage.setItem('activeLink', activeLink);
+    }
+  }, [activeLink]);
 
   const handleLinkClick = (linkName) => {
     setActiveLink(linkName);
