@@ -29,6 +29,7 @@ import { useEffect } from "react";
 import Packagename from "./Packagename";
 import { useRef } from "react";
 import LiveTest from "./LiveTest";
+import TrendingPackages from "./TrendingPackages";
 
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
@@ -47,7 +48,7 @@ const Dashboard = () => {
   const fetchPakages = async () => {
     try {
       const response = await Api.get("/packages/get/active");
-      console.log("ji",response.data)
+      console.log("ji", response.data)
       setPackages(response.data);
     } catch (error) {
       console.error(error);
@@ -64,7 +65,7 @@ const Dashboard = () => {
 
   const itemsPerView = 3; // Adjust based on screen size
   const totalItems = packages.length;
-  const fg= Math.ceil(totalItems / itemsPerView) - 1;
+  const fg = Math.ceil(totalItems / itemsPerView) - 1;
 
   // const handleLeftClick = () => {
   //   setScrollPosition((prev) => Math.max(prev - 1, 0));
@@ -125,8 +126,9 @@ const Dashboard = () => {
       </div> */}
 
       {/* Main Content */}
-        
-      <LiveTest/>
+
+      <LiveTest />
+
 
       {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="col-span-full">
@@ -321,57 +323,59 @@ const Dashboard = () => {
 
       {/* Upcoming Exams */}
       <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-bold text-lg">Top Trending Exams</h3>
-        <Link to="#" className="text-blue-600 hover:underline">
-          View More
-        </Link>
-      </div>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-bold text-lg">Top Trending Exams</h3>
+          <Link to="#" className="text-blue-600 hover:underline">
+            View More
+          </Link>
+        </div>
 
-      {/* Carousel Container */}
-      <div className="relative py-3 overflow-hidden">
-      {/* Left Button */}
-      {scrollPosition > 0 && (
-        <button
-          onClick={handleLeftClick}
-          className="absolute top-1/2 left-0 p-3 bg-blue-500 text-white rounded-full transform -translate-y-1/2 z-10 shadow-lg"
-        >
-          <i className="bi bi-chevron-left"></i>
-        </button>
-      )}
+        {/* Carousel Container */}
+        <div className="relative py-3 overflow-hidden">
+          {/* Left Button */}
+          {scrollPosition > 0 && (
+            <button
+              onClick={handleLeftClick}
+              className="absolute top-1/2 left-0 p-3 bg-blue-500 text-white rounded-full transform -translate-y-1/2 z-10 shadow-lg"
+            >
+              <i className="bi bi-chevron-left"></i>
+            </button>
+          )}
 
-      {/* Exams Wrapper */}
-      <div className="overflow-hidden" ref={scrollContainerRef}>
-        <div className="flex space-x-5 sm:space-x-3 md:space-x-5 lg:space-x-8 transition-transform duration-300 ease-in-out">
-          {packages.map((exam, index) => (
-            <div key={index} className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/5 lg:w-1/6">
-              <Link to={`/top-trending-exams/${exam.link_name}`} className="text-sm font-medium text-gray-700">
-                <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
-                  <img
-                    src={`${IMG_URL}${exam.photo}`}
-                    alt={exam.name}
-                    className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
-                  />
-                  <p>{exam.name}</p>
+          {/* Exams Wrapper */}
+          <div className="overflow-hidden" ref={scrollContainerRef}>
+            <div className="flex space-x-5 sm:space-x-3 md:space-x-5 lg:space-x-8 transition-transform duration-300 ease-in-out">
+              {packages.map((exam, index) => (
+                <div key={index} className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/5 lg:w-1/6">
+                  <Link to={`/top-trending-exams/${exam.link_name}`} className="text-sm font-medium text-gray-700">
+                    <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
+                      <img
+                        src={`${IMG_URL}${exam.photo}`}
+                        alt={exam.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
+                      />
+                      <p>{exam.name}</p>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Right Button */}
+          {scrollPosition < maxScroll && (
+            <button
+              onClick={handleRightClick}
+              className="absolute top-1/2 right-0 p-3 bg-blue-500 text-white rounded-full transform -translate-y-1/2 z-10 shadow-lg"
+            >
+              <i className="bi bi-chevron-right"></i>
+            </button>
+          )}
         </div>
       </div>
+      <TrendingPackages />
 
-      {/* Right Button */}
-      {scrollPosition < maxScroll && (
-        <button
-          onClick={handleRightClick}
-          className="absolute top-1/2 right-0 p-3 bg-blue-500 text-white rounded-full transform -translate-y-1/2 z-10 shadow-lg"
-        >
-          <i className="bi bi-chevron-right"></i>
-        </button>
-      )}
-    </div>
-    </div>
     </div>
   );
 };

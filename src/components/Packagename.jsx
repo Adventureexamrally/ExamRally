@@ -466,7 +466,6 @@ const Packagename = () => {
               </div>
             </div>
           )} */}
-
               {activeSection === "prelims" && (
                 <div className="mt-3 bg-slate-50 py-2 px-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
@@ -538,33 +537,36 @@ const Packagename = () => {
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
-                                {/* Take Test / Lock Button */}
-                                <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    test.status === "true"
+                                {/* Check if the current date is greater than or equal to live_date */}
+                                {new Date(test.live_date) > new Date() ? (
+                                  // Display "Coming Soon" if the current date is earlier than live_date
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                    Coming Soon
+                                  </div>
+                                ) : (
+                                  <button
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (test.status === "true") {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(
-                                        test.section[0],
-                                        "prelims"
-                                      );
-                                    }
-                                  }}
-                                >
-                                  {test.status === "true" ? (
-                                    "Take Test"
-                                  ) : (
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Lock
-                                    </div>
-                                  )}
-                                </button>
+                                      }`}
+                                    onClick={() => {
+                                      if (test.status === "true") {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      } else {
+                                        handleTopicSelect(test.section[0], "prelims");
+                                      }
+                                    }}
+                                  >
+                                    {test.status === "true" ? (
+                                      "Take Test"
+                                    ) : (
+                                      <div className="flex items-center justify-center font-semibold gap-1">
+                                        <IoMdLock />
+                                        Lock
+                                      </div>
+                                    )}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -642,33 +644,36 @@ const Packagename = () => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Take Test / Lock Button */}
-                                <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    test.status === "true"
+                                {/* Check if the current date is greater than or equal to live_date */}
+                                {new Date(test.live_date) > new Date() ? (
+                                  // Display "Coming Soon" if the current date is earlier than live_date
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                    Coming Soon
+                                  </div>
+                                ) : (
+                                  <button
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
                                       ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (test.status === "true") {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(
-                                        test.section[0],
-                                        "mains"
-                                      );
-                                    }
-                                  }}
-                                >
-                                  {test.status === "true" ? (
-                                    "Take Test"
-                                  ) : (
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Lock
-                                    </div>
-                                  )}
-                                </button>
+                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                      }`}
+                                    onClick={() => {
+                                      if (test.status === "true") {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      } else {
+                                        handleTopicSelect(test.section[0], "prelims");
+                                      }
+                                    }}
+                                  >
+                                    {test.status === "true" ? (
+                                      "Take Test"
+                                    ) : (
+                                      <div className="flex items-center justify-center font-semibold gap-1">
+                                        <IoMdLock />
+                                        Lock
+                                      </div>
+                                    )}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -748,11 +753,10 @@ const Packagename = () => {
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Take Test / Lock Button */}
                                 <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    test.status === "true"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
+                                  className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
+                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                    : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                    }`}
                                   onClick={() => {
                                     if (test.status === "true") {
                                       openNewWindow(`/instruction/${test._id}`);
@@ -773,30 +777,36 @@ const Packagename = () => {
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                            {/* Take Test / Lock Button */}
-                            <button
-                              className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                test.status === "true"
-                                  ? "bg-green-500 text-white hover:bg-green-600"
-                                  : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                              }`}
-                              onClick={() => {
-                                if (test.status === "true") {
-                                  openNewWindow(`/instruction/${test._id}`);
-                                } else {
-                                  handleTopicSelect(test.section[0], "PYQ");
-                                }
-                              }}
-                            >
-                              {test.status === "true" ? (
-                                "Take Test"
-                              ) : (
-                                <div className="flex items-center justify-center font-semibold gap-1">
-                                  <IoMdLock />
-                                  Lock
-                                </div>
-                              )}
-                            </button>
+                            {/* Check if the current date is greater than or equal to live_date */}
+                            {new Date(test.live_date) > new Date() ? (
+                              // Display "Coming Soon" if the current date is earlier than live_date
+                              <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                Coming Soon
+                              </div>
+                            ) : (
+                              <button
+                                className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
+                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                    : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  }`}
+                                onClick={() => {
+                                  if (test.status === "true") {
+                                    openNewWindow(`/instruction/${test._id}`);
+                                  } else {
+                                    handleTopicSelect(test.section[0], "prelims");
+                                  }
+                                }}
+                              >
+                                {test.status === "true" ? (
+                                  "Take Test"
+                                ) : (
+                                  <div className="flex items-center justify-center font-semibold gap-1">
+                                    <IoMdLock />
+                                    Lock
+                                  </div>
+                                )}
+                              </button>
+                            )}
                           </div>
                         )
                     )}
