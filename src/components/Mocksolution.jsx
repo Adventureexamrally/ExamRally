@@ -693,7 +693,7 @@ useEffect(() => {
                 <span
                     onClick={() => {
                         setClickedQuestionIndex(startingIndex + index);
-                        handleNextClick()
+                        // handleNextClick()
                         
                         if (!visitedQuestions.includes(startingIndex + index)) {
                             setVisitedQuestions(prev => [...prev, startingIndex + index]);

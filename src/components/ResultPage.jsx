@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import Api from "../service/Api";
-import checklist from "../assets/images/checklist.png";
-import ambition from "../assets/images/ambition.png";
-import mark from "../assets/images/mark.png";
+import checklist from "../assets/images/test.png";
+import ambition from "../assets/images/waste.png";
+import mark from "../assets/images/check-mark.png";
 import score from "../assets/images/score.png";
 import target from "../assets/images/target.png";
 import resilience from "../assets/images/resilience.png";
-import studying from "../assets/images/studying.png";
-import version from "../assets/images/version.png";
-import answer from "../assets/images/answer.png";
+import studying from "../assets/images/progressive.png";
+import version from "../assets/images/shape.png";
+import answer from "../assets/images/information.png";
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import ResultAnimation from '../animationeffect/ResultAnimation';
 
 const ResultPage = () => {
@@ -108,16 +108,43 @@ useEffect(() => {
     totalAccuracy =  ((totalCorrect / totalAnswered) * 100).toFixed(2);
   });
 
-  // Data for BarChart
-  const data = section.map((sect) => ({
-    name: sect.name,
-    score: sect.score,
-    // answered: sect.t_question - (sect.t_question - Attempted), // or just Attempted if it is section specific.
-    // notAnswered: sect.t_question - (sect.t_question - Attempted),
-    correct: sect.questions.english.filter(q => q.correct === q.selectedOption).length,
-    wrong: sect.questions.english.filter(q => q.correct !== q.selectedOption).length,
-    timeTaken: sect.t_time,
-  }));
+  const chartData = [
+    {
+      name: "s_score",
+      ...section.reduce((acc, sect, index) => ({
+        ...acc,
+        [`section${index + 1}`]: sect.s_score || 0
+      }), {})
+    },
+    {
+      name: "Attempted",
+      ...section.reduce((acc, sect, index) => ({
+        ...acc,
+        [`section${index + 1}`]: sect.Attempted || 0
+      }), {})
+    },
+    {
+      name: "Not_Attempted",
+      ...section.reduce((acc, sect, index) => ({
+        ...acc,
+        [`section${index + 1}`]: sect.Not_Attempted || 0
+      }), {})
+    },
+    {
+      name: "Correct",
+      ...section.reduce((acc, sect, index) => ({
+        ...acc,
+        [`section${index + 1}`]: sect.correct || 0
+      }), {})
+    },
+    {
+      name: "Incorrect",
+      ...section.reduce((acc, sect, index) => ({
+        ...acc,
+        [`section${index + 1}`]: sect.incorrect || 0
+      }), {})
+    }
+  ];
  // Runs only once when sectionData is available
 
   // Step 3: Update the selected section
@@ -145,10 +172,14 @@ useEffect(() => {
   return (
     <div className="container font my-4">
       <div className="d-flex justify-content-between">
-        <h5 className='h4'>{show_name}</h5>
-        <button className="text-white font-bold py-2 px-4 rounded bg-green-500 hover:bg-green-400">
-          View Solution
-        </button>
+      <h5 className='h4 text-green-600'>{show_name}</h5>
+        <div className="flex justify-center my-4">
+      <Link to={`/mocksolution/${id}`}>
+  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+    View Solution
+  </button>
+</Link>
+      </div>
       </div>
 
       <div className="row d-flex justify-content-center align-items-start">
@@ -156,7 +187,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={checklist} alt="Score" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Mark Scored</p>
+      <p className="mb-0 font-semibold">Mark Scored</p>
       <p className="mb-0">{overallScore}</p>
     </div>
   </div>
@@ -174,7 +205,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={answer} alt="Answered" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Answered</p>
+      <p className="mb-0 font-semibold">Answered</p>
       <p className="mb-0">{totalAnswered}</p>
     </div>
   </div>
@@ -183,7 +214,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={mark} alt="Correct" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Correct</p>
+      <p className="mb-0 font-semibold">Correct</p>
       {totalCorrect}
     </div>
   </div>
@@ -192,7 +223,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={version} alt="Incorrect" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Wrong</p>
+      <p className="mb-0 font-semibold">Wrong</p>
       {totalWrong}
     </div>
   </div>
@@ -201,7 +232,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={resilience} alt="Skipped" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Skipped</p>
+      <p className="mb-0 font-semibold">Skipped</p>
       {totalSkipped}
     </div>
   </div>
@@ -210,7 +241,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={studying} alt="Unseen" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Percentile</p>
+      <p className="mb-0 font-semibold">Percentile</p>
       <p className="mb-0">{Accuracy}%</p>
     </div>
   </div>
@@ -219,7 +250,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={target} alt="Accuracy" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Accuracy</p>
+      <p className="mb-0 font-semibold">Accuracy</p>
       <p className="mb-0">{totalAccuracy}%</p>
     </div>
   </div>
@@ -228,7 +259,7 @@ useEffect(() => {
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
     <img src={ambition} alt="Time Taken" style={{ height: "50px", marginRight: "10px" }} />
     <div>
-      <p className="mb-0">Time Taken</p>
+      <p className="mb-0 font-semibold">Time Taken</p>
       <p className="mb-0">{totalTimeTaken}</p>
     </div>
   </div>
@@ -296,13 +327,7 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="flex justify-center my-4">
-      <Link to={`/mocksolution/${id}`}>
-  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-    View Solution
-  </button>
-</Link>
-      </div>
+      
 
       <div className="flex justify-end space-x-4">
       <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
@@ -313,7 +338,7 @@ useEffect(() => {
       </p>
       </div>
 <div>
-      <h1>Comparison With Toppers
+      <h1 className='font-semibold'>Comparison With Toppers
       </h1>
     <div className='mt-4'>
       <button className="bg-green-500 text-white px-4 py-2  hover:bg-green-400">
@@ -378,7 +403,7 @@ useEffect(() => {
       </div>
     </div>
     <div>
-      <h1>Time Management
+      <h1 className='font-semibold'>Time Management
       </h1>
    
       <div className='d-flex justify-content-center align-items-center p-4'>
@@ -423,22 +448,32 @@ useEffect(() => {
         </div>
         </div>
     </div>
-    <h1>Bar Charts</h1>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <BarChart width={800} height={400} data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="score" name="Score" fill="#8884d8"/>
-          <Bar dataKey="answered" name="Answered" fill="#82ca9d" />
-          <Bar dataKey="notAnswered" name="Not Answered" fill="#ffc658" />
-          <Bar dataKey="correct" name="Correct" fill="#0088FE" />
-          <Bar dataKey="wrong" name="Wrong" fill="#FF8042" />
-          <Bar dataKey="timeTaken" name="Time Taken" fill="#a0522d" />
-        </BarChart>
-      </div>
+    <h1 className='font-semibold'>Line Graph</h1>
+      
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
+  <LineChart
+    width={900}
+    height={400}
+    data={chartData}
+    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+  >
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="name" />
+    <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
+    <Tooltip />
+    <Legend />
+    {section.map((sect, index) => (
+      <Line 
+        key={index}
+        type="monotone" 
+        dataKey={`section${index + 1}`} 
+        name={sect.name} 
+        stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
+        strokeWidth={2}
+      />
+    ))}
+  </LineChart>
+</div>
       {/* Section buttons */}
       <h1 className='bg-blue-100 text-blue-600 p-2 h4 text-center fw-bold'>Scoring Blueprint</h1>
 
@@ -509,7 +544,7 @@ useEffect(() => {
             style={{ left: `${(value / 100) * 100}%` }}
           >
              <p><strong>Percentile:</strong> {resultData?.Percentile || 'Loading...'}</p>
-             <p><strong>Score:</strong> {resultData?.o_score || 'Loading...'}</p>
+             <p><strong>Score:</strong> {overallScore || 'Loading...'}</p>
           </span>
         </div>
 
