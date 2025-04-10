@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 // import axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
-import Api from "../service/Api";
 import { Helmet } from "react-helmet";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Import the icons
+import Api from "../../service/Api";
 
 
 // const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Api from "../service/Api";
-import Banner from "./Banner";
+import Api from "../../service/Api";
+import Banner from "../Banner";
+
 
 const LiveTest = () => {
   const [alldata, setAlldata] = useState([]);

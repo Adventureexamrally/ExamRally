@@ -14,7 +14,7 @@ const Test = () => {
   const [markedForReview, setMarkedForReview] = useState([]);
   const [ansmarkforrev, setAnsmarkforrev] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [totalQuestions, setTotalQuestions] = useState(0); 
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const location = useLocation();
@@ -22,80 +22,80 @@ const Test = () => {
   // Fetch exam data
 
   const { id } = useParams();
-      const navigate = useNavigate();
-// Prevent page refresh on F5 and refresh button click
-// Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
-window.addEventListener('beforeunload', function (e) {
-  // Customize the confirmation message
-  var confirmationMessage = 'Are you sure you want to leave?';
+  const navigate = useNavigate();
+  // Prevent page refresh on F5 and refresh button click
+  // Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
+  window.addEventListener('beforeunload', function (e) {
+    // Customize the confirmation message
+    var confirmationMessage = 'Are you sure you want to leave?';
 
-  // Standard for most browsers
-  e.returnValue = confirmationMessage;
+    // Standard for most browsers
+    e.returnValue = confirmationMessage;
 
-  // For some browsers
-  return confirmationMessage;
-});
+    // For some browsers
+    return confirmationMessage;
+  });
 
-// Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
-window.addEventListener('keydown', function (e) {
-  // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
-  if ((e.key === 'F5') || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.shiftKey && e.key === 'R')) {
+  // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
+  window.addEventListener('keydown', function (e) {
+    // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
+    if ((e.key === 'F5') || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.shiftKey && e.key === 'R')) {
       e.preventDefault();  // Prevent F5, Ctrl+R, or Ctrl+Shift+R
-  }
-});
+    }
+  });
 
-const toggleMenu = () => {
-  setIsMobileMenuOpen(!isMobileMenuOpen);
-};
+  const toggleMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
-const [isDataFetched, setIsDataFetched] = useState(false);
-const [show_name,setShow_name] = useState("")
-const [t_questions,sett_questions]=useState("")
-useEffect(() => {
-  // Check if data has already been fetched
-  if (!isDataFetched) {
-    Api.get(`exams/getExam/${id}`)
-      .then((res) => {
-        if (res.data) {
-          setExamData(res.data);
-          setIsDataFetched(true); 
-          setShow_name(res.data.show_name)
-          sett_questions(res.data.t_questions) // Mark that data is fetched
-          console.log("kl",res.data.show_name);
-        }
-      })
-      .catch((err) => console.error("Error fetching data:", err));
-  }
-}, [id]);  // Only trigger when `id` changes
+  const [isDataFetched, setIsDataFetched] = useState(false);
+  const [show_name, setShow_name] = useState("")
+  const [t_questions, sett_questions] = useState("")
+  useEffect(() => {
+    // Check if data has already been fetched
+    if (!isDataFetched) {
+      Api.get(`exams/getExam/${id}`)
+        .then((res) => {
+          if (res.data) {
+            setExamData(res.data);
+            setIsDataFetched(true);
+            setShow_name(res.data.show_name)
+            sett_questions(res.data.t_questions) // Mark that data is fetched
+            console.log("kl", res.data.show_name);
+          }
+        })
+        .catch((err) => console.error("Error fetching data:", err));
+    }
+  }, [id]);  // Only trigger when `id` changes
 
-const scrollRef = useRef(null);
-useEffect(() => {
+  const scrollRef = useRef(null);
+  useEffect(() => {
     const handleWheel = (e) => {
-        e.preventDefault(); // Prevents mouse wheel scrolling
+      e.preventDefault(); // Prevents mouse wheel scrolling
 
-        // Show toast message when user tries to scroll
-        toast.info("Scrolling with the mouse wheel is disabled. Use the scrollbar instead.", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: false,
-            theme: "colored",
-        });
+      // Show toast message when user tries to scroll
+      toast.info("Scrolling with the mouse wheel is disabled. Use the scrollbar instead.", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        theme: "colored",
+      });
     };
 
     const scrollElement = scrollRef.current;
     if (scrollElement) {
-        scrollElement.addEventListener('wheel', handleWheel, { passive: false });
+      scrollElement.addEventListener('wheel', handleWheel, { passive: false });
     }
 
     return () => {
-        if (scrollElement) {
-            scrollElement.removeEventListener('wheel', handleWheel);
-        }
+      if (scrollElement) {
+        scrollElement.removeEventListener('wheel', handleWheel);
+      }
     };
-}, []);
+  }, []);
 
 
   const startingIndex =
@@ -128,7 +128,7 @@ useEffect(() => {
     // Get the correct answer for the clicked question
     const currentQuestion =
       examData?.section[currentSectionIndex]?.questions[
-        clickedQuestionIndex - startingIndex
+      clickedQuestionIndex - startingIndex
       ];
     const correctAnswerIndex = currentQuestion?.answer;
 
@@ -178,105 +178,105 @@ useEffect(() => {
     }
   }, [currentSectionIndex]); // Runs when the user changes questions
 
-// API get method
+  // API get method
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      // Fetch the exam data from your API
-      const res = await Api.get(`exams/getExam/${id}`);
-      console.log(res);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch the exam data from your API
+        const res = await Api.get(`exams/getExam/${id}`);
+        console.log(res);
 
-      // Transform the data
-      const transformedData = {
-        section: res.data.section.map((section) => ({
-          name: section.name,
-          t_question: section.t_question,
-          t_time: section.t_time,
-          t_mark: section.t_mark,
-          plus_mark: section.plus_mark,
-          minus_mark: section.minus_mark,
-          cutoff_mark: section.cutoff_mark,
-          s_blueprint: section.s_blueprint.map((blueprint) => ({
-            subject: blueprint.subject,
-            topic: blueprint.topic,
-            tak_time: blueprint.tak_time,
+        // Transform the data
+        const transformedData = {
+          section: res.data.section.map((section) => ({
+            name: section.name,
+            t_question: section.t_question,
+            t_time: section.t_time,
+            t_mark: section.t_mark,
+            plus_mark: section.plus_mark,
+            minus_mark: section.minus_mark,
+            cutoff_mark: section.cutoff_mark,
+            s_blueprint: section.s_blueprint.map((blueprint) => ({
+              subject: blueprint.subject,
+              topic: blueprint.topic,
+              tak_time: blueprint.tak_time,
+            })),
+            questions: {
+              english: section.questions.english.map((question) => ({
+                question: question.question,
+                options: question.options,
+                correct: question.correct,
+                Incorrect: 0,
+                answer: question.answer,
+                common_data: question.common_data,
+                explanation: question.explanation,
+                selectedOption: question.selectedOption,
+                isVisited: 0,
+                NotVisited: 0,
+                q_on_time: 0,
+              })),
+              hindi: section.questions.hindi.map((question) => ({
+                question: question.question,
+                options: question.options,
+                correct: question.correct,
+                Incorrect: 0,
+                answer: question.answer,
+                common_data: question.common_data,
+                explanation: question.explanation,
+                selectedOption: question.selectedOption,
+                isVisited: 0,
+                NotVisited: 0,
+                q_on_time: 0,
+              })),
+              tamil: section.questions.tamil.map((question) => ({
+                question: question.question,
+                options: question.options,
+                correct: question.correct,
+                Incorrect: 0,
+                answer: question.answer,
+                common_data: question.common_data,
+                explanation: question.explanation,
+                selectedOption: question.selectedOption,
+                isVisited: 0,
+                NotVisited: 0,
+                q_on_time: 0,
+              })),
+            },
+            s_order: section.s_order || 0,
           })),
-          questions: {
-            english: section.questions.english.map((question) => ({
-              question: question.question,
-              options: question.options,
-              correct: question.correct,
-              Incorrect: 0,
-              answer: question.answer,
-              common_data: question.common_data,
-              explanation: question.explanation,
-              selectedOption: question.selectedOption,
-              isVisited: 0,
-              NotVisited: 0,
-              q_on_time: 0,
-            })),
-            hindi: section.questions.hindi.map((question) => ({
-              question: question.question,
-              options: question.options,
-              correct: question.correct,
-              Incorrect: 0,
-              answer: question.answer,
-              common_data: question.common_data,
-              explanation: question.explanation,
-              selectedOption: question.selectedOption,
-              isVisited: 0,
-              NotVisited: 0,
-              q_on_time: 0,
-            })),
-            tamil: section.questions.tamil.map((question) => ({
-              question: question.question,
-              options: question.options,
-              correct: question.correct,
-              Incorrect: 0,
-              answer: question.answer,
-              common_data: question.common_data,
-              explanation: question.explanation,
-              selectedOption: question.selectedOption,
-              isVisited: 0,
-              NotVisited: 0,
-              q_on_time: 0,
-            })),
-          },
-          s_order: section.s_order || 0,
-        })),
-        score: res.data.score || 0,
-        Attempted: res.data.Attempted || 0,
-        timeTaken: res.data.timeTaken || 60,
-        Accuracy: res.data.Accuracy || 0,
-        takenAt: res.data.takenAt || new Date(),
-        submittedAt: res.data.submittedAt || new Date(),
-      };
+          score: res.data.score || 0,
+          Attempted: res.data.Attempted || 0,
+          timeTaken: res.data.timeTaken || 60,
+          Accuracy: res.data.Accuracy || 0,
+          takenAt: res.data.takenAt || new Date(),
+          submittedAt: res.data.submittedAt || new Date(),
+        };
 
-      // Set the transformed data to state
-      setExamData(transformedData);
-      console.log(transformedData);
+        // Set the transformed data to state
+        setExamData(transformedData);
+        console.log(transformedData);
 
-      // Set totalQuestions from the response
-      setTotalQuestions(res.data.t_questions || 0);
+        // Set totalQuestions from the response
+        setTotalQuestions(res.data.t_questions || 0);
 
-      // Initialize selectedOptions with null for all questions
-      const initialOptions = Array(res.data.t_questions).fill(null);
-      setSelectedOptions(initialOptions);
+        // Initialize selectedOptions with null for all questions
+        const initialOptions = Array(res.data.t_questions).fill(null);
+        setSelectedOptions(initialOptions);
 
-      // Now post the transformed data to your '/results' endpoint
-      const postResponse = await Api.post(`/results/65a12345b6c78d901e23f456/${id}`, transformedData);
-      console.log("Data posted successfully:", postResponse);
+        // Now post the transformed data to your '/results' endpoint
+        const postResponse = await Api.post(`/results/65a12345b6c78d901e23f456/${id}`, transformedData);
+        console.log("Data posted successfully:", postResponse);
 
-    } catch (error) {
-      console.error("Error occurred:", error.message);
-      // Handle error (show error message, etc.)
-    }
-  };
+      } catch (error) {
+        console.error("Error occurred:", error.message);
+        // Handle error (show error message, etc.)
+      }
+    };
 
-  // Call the async function inside useEffect
-  fetchData();
-}, [id]);  // Ensure to add 'id' as a dependency for the effect
+    // Call the async function inside useEffect
+    fetchData();
+  }, [id]);  // Ensure to add 'id' as a dependency for the effect
 
 
   const handleSubmitTest = () => {
@@ -308,8 +308,13 @@ useEffect(() => {
       examData.section[currentSectionIndex].questions?.[selectedLanguage?.toLowerCase()]
     ) {
       const totalQuestions = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()]?.length;
-  
+
       if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+         // Save current question time before moving to next
+         setQuestionTimes(prevTimes => ({
+          ...prevTimes,
+          [clickedQuestionIndex]: questionTime
+        }));
         setClickedQuestionIndex(clickedQuestionIndex + 1);
         setQuestionTime(0);
       } else {
@@ -346,7 +351,7 @@ useEffect(() => {
         setQuestionTime((prev) => prev + 1);
       }, 1000);
     }
-  
+
     return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
   }, [questionTimerActive, isPaused]);
 
@@ -369,57 +374,57 @@ useEffect(() => {
 
   // useEffect(() => {
 
-      const [selectedOptions, setSelectedOptions] = useState(Array(totalQuestions).fill(null));
-    
-      useEffect(() => {
-        console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
-    
-        if (!id) return;
-    
-        const storedSelectedOptions = localStorage.getItem(`selectedOptions_${id}`);
-        if (storedSelectedOptions) {
-          try {
-            const parsedOptions = JSON.parse(storedSelectedOptions);
-            setSelectedOptions(parsedOptions);
-          } catch (e) {
-            console.error('Error parsing stored selected options:', e);
-            // Initialize with null for all questions if parsing fails
-            const initialOptions = Array(totalQuestions).fill(null);
-            setSelectedOptions(initialOptions);
-          }
-        } else {
-          // Initialize with null for all questions if no data in localStorage
-          const initialOptions = Array(totalQuestions).fill(null);
-          setSelectedOptions(initialOptions);
-        }
-      }, [id, totalQuestions]);
-    
-      useEffect(() => {
-        if (!id) return;
-    
-        if (selectedOptions.length > 0) {
-          // Store selected options along with question number
-          const combinedData = selectedOptions.map((selectedOption, index) => ({
-            questionNumber: index,
-            selectedOption: selectedOption, // Could be null or the selected value
-          }));
-    
-          // Save combined data to localStorage
-          localStorage.setItem(`selectedOptions_${id}`, JSON.stringify(combinedData));
-        } else {
-          // Remove the stored data from localStorage if no selections
-          localStorage.removeItem(`selectedOptions_${id}`);
-        }
-      }, [selectedOptions, id]);
-    
-      // Function to update selected option for a specific question
-      const updateSelectedOption = (newSelectedOption, questionIndex) => {
-        const updatedSelectedOptions = [...selectedOptions];
-        updatedSelectedOptions[questionIndex] = newSelectedOption; // Update specific question's selectedOption
-        setSelectedOptions(updatedSelectedOptions);
-      };
-    
-     
+  const [selectedOptions, setSelectedOptions] = useState(Array(totalQuestions).fill(null));
+
+  useEffect(() => {
+    console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
+
+    if (!id) return;
+
+    const storedSelectedOptions = localStorage.getItem(`selectedOptions_${id}`);
+    if (storedSelectedOptions) {
+      try {
+        const parsedOptions = JSON.parse(storedSelectedOptions);
+        setSelectedOptions(parsedOptions);
+      } catch (e) {
+        console.error('Error parsing stored selected options:', e);
+        // Initialize with null for all questions if parsing fails
+        const initialOptions = Array(totalQuestions).fill(null);
+        setSelectedOptions(initialOptions);
+      }
+    } else {
+      // Initialize with null for all questions if no data in localStorage
+      const initialOptions = Array(totalQuestions).fill(null);
+      setSelectedOptions(initialOptions);
+    }
+  }, [id, totalQuestions]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    if (selectedOptions.length > 0) {
+      // Store selected options along with question number
+      const combinedData = selectedOptions.map((selectedOption, index) => ({
+        questionNumber: index,
+        selectedOption: selectedOption, // Could be null or the selected value
+      }));
+
+      // Save combined data to localStorage
+      localStorage.setItem(`selectedOptions_${id}`, JSON.stringify(combinedData));
+    } else {
+      // Remove the stored data from localStorage if no selections
+      localStorage.removeItem(`selectedOptions_${id}`);
+    }
+  }, [selectedOptions, id]);
+
+  // Function to update selected option for a specific question
+  const updateSelectedOption = (newSelectedOption, questionIndex) => {
+    const updatedSelectedOptions = [...selectedOptions];
+    updatedSelectedOptions[questionIndex] = newSelectedOption; // Update specific question's selectedOption
+    setSelectedOptions(updatedSelectedOptions);
+  };
+
+
 
 
 
@@ -427,54 +432,54 @@ useEffect(() => {
   const handleSubmitSection = () => {
     console.log("Handling section submission...");
 
-  
+
     const currentSection = examData?.section[currentSectionIndex];
     console.log("Current Section:", currentSection);
-  
+
     if (!currentSection) {
       console.log("No current section found. Exiting function.");
       return;
     }
-  
+
     // Get the questions for the current section and selected language
     const questions = currentSection.questions?.[selectedLanguage?.toLowerCase()];
     console.log("Questions for the selected language:", questions);
-  
+
     if (!questions) {
       console.log("No questions for the selected language. Exiting function.");
       return; // If no questions for the selected language, return early.
     }
-  
+
     // Total questions in the current section
     const totalQuestions = questions.length;
     console.log("Total Questions in Section:", totalQuestions);
-  
+
     // Calculate answered and unanswered questions
     const answeredQuestions = selectedOptions
       .slice(startingIndex, startingIndex + totalQuestions)
-      .filter((option) => option !== undefined).length;
+      .filter((option) => option !== null).length;
     console.log("Answered Questions Count:", answeredQuestions);
-  
+
     const notAnsweredQuestions = totalQuestions - answeredQuestions;
     console.log("Not Answered Questions Count:", notAnsweredQuestions);
-  
+
     // Calculate visited and not visited questions
     const visitedQuestionsCount = visitedQuestions.filter(
       (index) =>
         index >= startingIndex && index < startingIndex + totalQuestions
     ).length;
     console.log("Visited Questions Count:", visitedQuestionsCount);
-  
+
     const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
     console.log("Not Visited Questions Count:", notVisitedQuestions);
-  
+
     // Calculate marked for review questions
     const reviewedQuestions = markedForReview.filter(
       (index) =>
         index >= startingIndex && index < startingIndex + totalQuestions
     ).length;
     console.log("Reviewed Questions Count:", reviewedQuestions);
-  
+
     // Set the section summary
     const sectionSummary = {
       sectionName: currentSection.name, // Add the section name
@@ -486,26 +491,26 @@ useEffect(() => {
       totalQuestions,
     };
     console.log("Section Summary:", sectionSummary);
-  
+
     // Store section summary
     setSectionSummaryData((prevData) => {
       const newData = [...prevData, sectionSummary];
       console.log("Updated Section Summary Data:", newData);
       return newData;
     });
-  
+
     // Display modal
     setShowModal(true);
     console.log("Modal shown:", showModal);
-  
+
     // If modal is shown, and you're ready to go to the next section or submit the exam
     if (showModal) {
       console.log("Modal is shown, checking for next section or submission.");
-  
+
       if (currentSectionIndex < examData.section.length - 1) {
         console.log("Moving to the next section.");
         setCurrentSectionIndex((prev) => prev + 1);
-  
+
         // Move to the first question of the next section
         const newStartingIndex = examData?.section
           ?.slice(0, currentSectionIndex + 1)
@@ -515,7 +520,7 @@ useEffect(() => {
             0
           );
         console.log("New Starting Index for Next Section:", newStartingIndex);
-  
+
         setClickedQuestionIndex(newStartingIndex);
       } else {
         console.log("Submitting the exam.");
@@ -523,73 +528,73 @@ useEffect(() => {
       }
     }
   };
-  
-  
- 
+
+
+
   const submitExam = () => {
     console.log("submitExam called");
-  
+
     if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
       console.error("Exam data or section not available");
       return;
     }
-  
+
     const currentSection = examData.section[currentSectionIndex];
     const endTime = new Date();
     const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
     const formattedTotalTime = formatTime(timeTakenInSeconds);
-  
+
     setTotalTime(formattedTotalTime);
     if (!currentSection) return;
-  
+
     const questions = currentSection.questions?.[selectedLanguage?.toLowerCase()];
     if (!questions) return;
-  
+
     const totalQuestions = questions.length;
-  
+
     // Calculate answered and unanswered
     const answeredQuestions = selectedOptions
       .slice(startingIndex, startingIndex + totalQuestions)
-      .filter(option => option !== undefined).length;
-  
+      .filter(option => option !== null).length;
+
     const notAnsweredQuestions = totalQuestions - answeredQuestions;
-  
+
     const visitedQuestionsCount = visitedQuestions.filter(
       index => index >= startingIndex && index < startingIndex + totalQuestions
     );
-  
+
     const notVisitedQuestions = Array.from({ length: totalQuestions }, (_, index) =>
       !visitedQuestionsCount.includes(index + startingIndex) ? index + startingIndex : null
     ).filter(index => index !== null);
-  
+
     const sectionSummary = {
       visitedQuestionsCount: visitedQuestionsCount.length > 0 ? visitedQuestionsCount[0] : null,
       notVisitedQuestions: notVisitedQuestions.length > 0 ? notVisitedQuestions[0] : null,
     };
-  
+
     setSectionSummaryData(prevData => [...prevData, sectionSummary]);
-  
+
     const reviewedQuestions = markedForReview.filter(
       index => index >= startingIndex && index < startingIndex + totalQuestions
     ).length;
-  
+
     const answersData = selectedOptions.map((selectedOption, index) => {
       const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
-  
+
       const optionsData = question?.options?.map((option, optionIndex) => ({
         option: option,
         index: optionIndex,
         isSelected: optionIndex === selectedOption,
         isCorrect: optionIndex === question?.answer,
       }));
-  
+
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
       const notVisited = isVisited === 1 ? 0 : 1;
 
       console.error("isVisited:", isVisited);  // Nested array: [ [0, 1, 0, 1, 0, 1, 0, 1], [0, 1, 2, 3, 4, 5, 6, 7] ]
-      console.error("notVisited:", notVisited); 
-   
+      console.error("notVisited:", notVisited);
+
 
 
       const questionScore = selectedOption !== undefined
@@ -597,7 +602,7 @@ useEffect(() => {
           ? question?.plus_mark
           : -question?.minus_mark)
         : 0;
- 
+
       return {
         question: question?.question,
         options: optionsData,
@@ -612,24 +617,24 @@ useEffect(() => {
         score: questionScore,
       };
     });
-  
+
     const totalScore = answersData.reduce((total, answerData) => total + answerData.score, 0);
-  
+
     const formattedSections = examData.section.map((section, sectionIndex) => {
       const sectionQuestions = section.questions?.[selectedLanguage?.toLowerCase()];
       if (!sectionQuestions) return null;
-  
+
       const sectionStartIndex = examData.section
         .slice(0, sectionIndex)
         .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
       const sectionEndIndex = sectionStartIndex + sectionQuestions.length;
-  
+
       const sectionAnswered = selectedOptions
         .slice(sectionStartIndex, sectionEndIndex)
         .filter(option => option !== undefined && option !== null).length;
-  
+
       const sectionNotAnswered = sectionQuestions.length - sectionAnswered;
-  
+
       const sectionVisited = visitedQuestions
         .filter(index => index >= sectionStartIndex && index < sectionEndIndex).length;
 
@@ -656,7 +661,7 @@ useEffect(() => {
           score: questionScore
         };
       });
-  
+
       const correctCount = sectionAnswersData.filter(q => q.correct === 1).length;
       const attemptedCount = sectionAnswersData.filter(q => q.selectedOption !== undefined).length;
       const incorrectCount = attemptedCount - correctCount;
@@ -664,7 +669,7 @@ useEffect(() => {
       const secaccuracy = sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
       console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
       const skippedQuestions = sectionVisited - sectionAnswered;
-     
+
       return {
         name: section.name,
         t_question: section.t_question,
@@ -721,7 +726,7 @@ useEffect(() => {
             score: answersData[sectionStartIndex + index]?.score,
           })),
         },
-        
+
         s_order: section.s_order || 0,
         s_score: sectionScore,
         correct: correctCount,
@@ -730,11 +735,11 @@ useEffect(() => {
         Not_Attempted: sectionNotAnswered,
         visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
         notVisitedQuestions: sectionSummary.notVisitedQuestions,
-        s_accuracy:secaccuracy,
+        s_accuracy: secaccuracy,
         skipped: skippedQuestions
       };
     }).filter(Boolean);
-  
+
     const totalStats = formattedSections.reduce((acc, section) => ({
       visitedCount: acc.visitedCount + (section.isVisited || 0),
       notVisitedCount: acc.notVisitedCount + (section.NotVisited || 0),
@@ -746,7 +751,7 @@ useEffect(() => {
       answeredCount: 0,
       notAnsweredCount: 0
     });
-  
+
     setExamDataSubmission({
       formattedSections,
       totalScore: formattedSections.reduce((sum, section) => sum + (section.s_score || 0), 0),
@@ -760,12 +765,12 @@ useEffect(() => {
       endTime
     });
   };
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
   const [dataid, setDataid] = useState(null); // State to store the data
 
   useEffect(() => {
@@ -774,7 +779,7 @@ useEffect(() => {
       .then(response => {
         // Set the fetched data to state
         setDataid(response.data._id);
-        console.error("test",response.data._id); // Log the _id from the fetched data
+        console.error("test", response.data._id); // Log the _id from the fetched data
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -783,24 +788,24 @@ useEffect(() => {
 
   useEffect(() => {
     if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
-  
+
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
-  
+
     // API call with the necessary data
     Api.post(`results/65a12345b6c78d901e23f456/${id}`, {
       ExamId: `${id}`,
-      section: formattedSections, 
-       // Now this will work since formattedSections is part of examDataSubmission
+      section: formattedSections,
+      // Now this will work since formattedSections is part of examDataSubmission
       score: totalScore,           // totalScore is also included
       totalTime: formattedTotalTime,
       timeTakenInSeconds: timeTakenInSeconds,
       takenAt: examStartTime,
       submittedAt: endTime,
     })
-    .then((res) => {
-      console.log("Response Data-sample:", res.data);
+      .then((res) => {
+        console.log("Response Data-sample:", res.data);
 
-  })
+      })
       .catch((err) => {
         console.error("Error submitting marks:", err);
       });
@@ -809,7 +814,7 @@ useEffect(() => {
     selectedOptions,     // Trigger when selected options change
     id,                  // Trigger when ID changes (if needed)
   ]);
-  
+
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
@@ -819,28 +824,27 @@ useEffect(() => {
 
   useEffect(() => {
     const sectionTimeInSeconds = examData?.section[currentSectionIndex]?.t_time * 60; // Convert minutes to seconds
-      settimeminus(sectionTimeInSeconds); // Reset time when the section changes
-    }, [examData, currentSectionIndex]);
- 
+    settimeminus(sectionTimeInSeconds); // Reset time when the section changes
+  }, [examData, currentSectionIndex]);
 
 
 
-  
+
+
 
   useEffect(() => {
-    if (timeminus > 0  && !isPaused) {
+    if (timeminus > 0 && !isPaused) {
       const timerInterval = setInterval(() => {
         settimeminus((prevTime) => {
           const newTime = prevTime - 1;
-          if(newTime===0)
-          {
+          if (newTime === 0) {
             handleSubmitSection()
           }
           return newTime;
         });
       }, 1000); // Update every second
       return () => clearInterval(timerInterval);
-    } 
+    }
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
   const handlePauseResume = () => {
     if (pauseCount < 1) {
@@ -865,27 +869,29 @@ useEffect(() => {
           popup: 'swal-popup-full-height', // Target the popup
         },
         //  Remove didOpen -  setting height directly
-      }).then((result) => {
+      }).then(async(result) => {
         if (result.isConfirmed) {
-          window.location.href = "/top-trending-exams/rrb-po";
+          await submitExam(); // Submit exam data before navigating
+          navigate(`/result/${id}`);
         } else {
           setIsPaused(false);
           setPauseCount(0);
         }
       });
-  };}
+    };
+  }
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
   //   if (timeLeft <= 0) {
-      // console.log("2 time called in time")
-      // submitExam();
+  // console.log("2 time called in time")
+  // submitExam();
   //   }
   // }, [timeLeft]);
 
   const [sectionSummary, setSectionSummary] = useState(null);
 
   // const [currentSectionIndex, setCurrentSectionIndex] = useState(0); // Tracks the current section
- // To check if the section is complete
+  // To check if the section is complete
   // const navigate = useNavigate(); // For programmatic navigation
 
 
@@ -893,46 +899,46 @@ useEffect(() => {
   // Function to show the toast and move to the next section (or result if last section)
   const handleSectionCompletion = async () => {
     console.log("handleSectionCompletion called");
-  
+
     if (true) {
       console.log("Section is complete");
-  console.log(currentSectionIndex)
-  console.log(examData?.section?.length-1)
+      console.log(currentSectionIndex)
+      console.log(examData?.section?.length - 1)
       // Move to the next section if there's another one
-      if (currentSectionIndex < examData?.section?.length -1) {
+      if (currentSectionIndex < examData?.section?.length - 1) {
         setShowModal(false)
         console.log(`Current section index: ${currentSectionIndex}`);
         console.log(`Total sections: ${examData?.section?.length}`);
-        setCurrentSectionIndex(currentSectionIndex +1);
+        setCurrentSectionIndex(currentSectionIndex + 1);
         setQuestionTime(0)
-           // Calculate the starting index for the new section
+        // Calculate the starting index for the new section
         const newStartingIndex = examData?.section
-           ?.slice(0, currentSectionIndex + 1)
-         .reduce(
+          ?.slice(0, currentSectionIndex + 1)
+          .reduce(
             (acc, section) =>
-               acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-             0
-           );
-        
-         // Set clicked question to first question of new section
-         setClickedQuestionIndex(newStartingIndex);
+              acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+            0
+          );
+
+        // Set clicked question to first question of new section
+        setClickedQuestionIndex(newStartingIndex);
         console.log(`Moving to the next section. New index: ${currentSectionIndex + 1}`);
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
-       await submitExam();
+        await submitExam();
         navigate(`/result/${id}`);
       }
-    } 
+    }
   };
 
 
-  
- 
-  
-  
-        
+
+
+
+
+
 
 
 
@@ -943,7 +949,7 @@ useEffect(() => {
     clickedQuestionIndex ===
     quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
 
-    // const [timeLeft, setTimeLeft] = useState(60); // Example starting time
+  // const [timeLeft, setTimeLeft] = useState(60); // Example starting time
   const [isRunning, setIsRunning] = useState(false);
 
 
@@ -974,20 +980,20 @@ useEffect(() => {
     const seconds = time % 60;
     return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   };
-  
- 
-  
-     
+
+
+
+
 
 
 
   return (
     <div className="mock-font p-1">
       <div>
-      <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
-      <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
-  <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-</div>
+        <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+          <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
+          <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+        </div>
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
         <div>
@@ -1013,7 +1019,7 @@ useEffect(() => {
                     <h1 className="modal-title fs-5 text-green-500" id="staticBackdropLabel">
                       Section Submit
                     </h1>
-                 
+
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -1042,20 +1048,20 @@ useEffect(() => {
                             </tr>
                           ))}
                         </tbody>
-          
+
                       </table>
                     </div>
                   </div>
                   <div className="modal-footer">
                     <div className="d-flex justify-content-center w-100">
-                    <button
-                      type="button"
-                      className="btn btn-success"
-                      data-bs-dismiss="modal"
-                      onClick={handleSectionCompletion} // Check completion and move to next section
-                    >
-                      {currentSectionIndex === examData?.section?.length - 1 ? 'Submit' : 'Next Section'}
-                    </button>
+                      <button
+                        type="button"
+                        className="btn btn-success"
+                        data-bs-dismiss="modal"
+                        onClick={handleSectionCompletion} // Check completion and move to next section
+                      >
+                        {currentSectionIndex === examData?.section?.length - 1 ? 'Submit' : 'Next Section'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1066,41 +1072,45 @@ useEffect(() => {
         {/* Toast Container */}
         <ToastContainer />
       </div>
-     
+
 
 
       <div className="d-flex justify-content-start align-items-center m-2 flex-wrap">
-  {examData?.section?.map((section, index) => (
-    <h1 key={index} className="h6 bg-blue-400 p-1 text-white border">
-      ✔ {section.name}
-    </h1>
-  ))}
-</div>
-
-             {/* Mobile Hamburger Menu */}
-             <button
-          onClick={toggleMenu}
-          className="md:hidden text-black p-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            className="w-6 h-6"
+        {examData?.section?.map((section, index) => (
+          <h1
+            key={index}
+            className={`h6 p-1 text-white border ${currentSectionIndex === index ? 'bg-blue-400 border-3 border-blue-500 fw-bold' : 'bg-gray-400'}`}
+          // Set the current section when clicked
           >
-          
-              {/* // Hamburger icon when the menu is closed */}
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-         
-          </svg>
-        </button>
-   
+            ✔ {section.name}
+          </h1>
+        ))}
+      </div>
+
+      {/* Mobile Hamburger Menu */}
+      <button
+        onClick={toggleMenu}
+        className="md:hidden text-black p-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+
+          {/* // Hamburger icon when the menu is closed */}
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+
+        </svg>
+      </button>
+
       <div className="row">
         {/* Question Panel */}
         <div className="col-lg-9 col-md-8 p-4">
@@ -1140,33 +1150,33 @@ useEffect(() => {
                     {examData.section[currentSectionIndex]?.questions?.[
                       selectedLanguage?.toLowerCase()
                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                      <div
-                      ref={scrollRef}
-                        className="col-lg-6 col-md-6"
-                        style={{ maxHeight: "380px", overflowY: "auto" }}
-                      >
-
                         <div
-                          className="fw-bold text-wrap"
-                          style={{
-                            whiteSpace: "normal",
-                            wordWrap: "break-word",
-                          }}
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              examData.section[currentSectionIndex]
-                                ?.questions?.[
-                                selectedLanguage?.toLowerCase()
-                              ]?.[clickedQuestionIndex - startingIndex]
-                                ?.common_data || "No common data available",
-                          }}
-                        />
-                      </div>
-                    )}
+                          ref={scrollRef}
+                          className="col-lg-6 col-md-6"
+                          style={{ maxHeight: "380px", overflowY: "auto" }}
+                        >
+
+                          <div
+                            className="fw-bold text-wrap"
+                            style={{
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                            dangerouslySetInnerHTML={{
+                              __html:
+                                examData.section[currentSectionIndex]
+                                  ?.questions?.[
+                                  selectedLanguage?.toLowerCase()
+                                ]?.[clickedQuestionIndex - startingIndex]
+                                  ?.common_data || "No common data available",
+                            }}
+                          />
+                        </div>
+                      )}
 
                     {/* Right side for Question */}
                     <div
-                           ref={scrollRef}
+                      ref={scrollRef}
                       className="col-lg-6 col-md-6"
                       style={{ maxHeight: "420px", overflowY: "auto" }}
                     >
@@ -1327,7 +1337,7 @@ useEffect(() => {
 
                 // Set className based on question status
                 let className = "";
-                if (selectedOptions[fullIndex] !== undefined) {
+                if (selectedOptions[fullIndex] !== null) {
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
@@ -1364,7 +1374,7 @@ useEffect(() => {
           </div>
         </div>
       </div>
-   
+
 
       {/* Footer Buttons */}
       <div className="fixed-bottom bg-white p-3">
@@ -1388,27 +1398,27 @@ useEffect(() => {
 
           {/* Right side - Save & Next and Submit Section */}
           <div className="d-flex justify-content-end">
-  {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
-    <button
-      onClick={handleNextClick}
-      className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-    >
-      Save & Next
-    </button>
-  )}
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <button
-    className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-    onClick={handleSubmitSection}
-    data-bs-toggle="modal"
-    data-bs-target="#staticBackdrop"
-  >
-    {currentSectionIndex === examData?.section?.length - 1
-      ? "Submit Test"
-      : "Submit Section"}
-  </button>
-</div>
-      
+            {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
+              <button
+                onClick={handleNextClick}
+                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+              >
+                Save & Next
+              </button>
+            )}
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button
+              className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+              onClick={handleSubmitSection}
+              data-bs-toggle="modal"
+              data-bs-target="#staticBackdrop"
+            >
+              {currentSectionIndex === examData?.section?.length - 1
+                ? "Submit Test"
+                : "Submit Section"}
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1417,4 +1427,3 @@ useEffect(() => {
 
 export default Test;
 
- 
