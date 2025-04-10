@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { ThreeDots } from "react-loader-spinner";
+import { Helmet } from "react-helmet";
+import Api from "../service/Api";
 import Rally_bro from "./Rally_pro";
 import Rallysuper_Pro from "./Rallysuper_Pro";
-import Examimglist from "./Examimglist";
-import { ThreeDots } from "react-loader-spinner";
-import Api from "../service/Api";
-import { Helmet } from "react-helmet";
+import Examimglist from "../components/Examimglist"
 
 const data = {
   name: "Moct test Start Now!!",

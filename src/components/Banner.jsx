@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Custom arrows from React Icons
 
-import Api from "../service/Api";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import Api from "../service/Api";
 
 const Banner = () => {
   const settings = {

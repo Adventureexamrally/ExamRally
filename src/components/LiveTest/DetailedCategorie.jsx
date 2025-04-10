@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { Link, useParams } from "react-router-dom";
-import Api from "../service/Api";
-import CAmonth from "./CAmonth";
+import CAmonth from "../CAmonth";
 import { Helmet } from "react-helmet";
 import { ImCheckmark2 } from "react-icons/im";
 import { MdOutlineAccessTime } from "react-icons/md";
@@ -11,6 +10,7 @@ import { IoMdLock } from "react-icons/io";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import LiveTestcategorieModel from "./LiveTestcategorieModel";
 import LiveTestCategorieTopics from "./LiveTestCategorieTopics";
+import Api from "../../service/Api";
 
 const DetailedCategorie = () => {
   const [catDetail, setCatDetails] = useState([]);

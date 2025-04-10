@@ -750,14 +750,14 @@ useEffect(() => {
 
             {/* Footer Buttons */}
             <div className="fixed-bottom bg-white p-3">
-                <div className="d-flex justify-content-center">
+                <div className="d-flex justify-content-around">
                     {/* Previous Button */}
                     <button
                         className="border-4 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
                         onClick={handlePreviousClick} // Ensure this function is defined to handle the logic for going to the previous question
                         disabled={clickedQuestionIndex === startingIndex} // Disable if it's the first question
                     >
-                        Previous
+                        Previous Ques
                     </button>
                     &nbsp; &nbsp;
                     {/* Next Button */}
