@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useRef } from "react";
 import LiveTest from "./LiveTest/LiveTest";
 import TrendingPackages from "./TrendingPackages";
+import Archivements from "./Archivements";
 
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
@@ -153,7 +154,7 @@ const Dashboard = () => {
         </div>
       </div>
       <TrendingPackages />
-
+          <Archivements/>
     </div>
   );
 };

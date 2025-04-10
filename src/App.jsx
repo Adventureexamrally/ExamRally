@@ -34,6 +34,7 @@ import ReferAndEarn from "./pages/user/ReferAndEarn";
 import Packages from "./pages/Packages";
 import Blog from "./pages/blog/Blog";
 import TestSeries from "./pages/TestSeries";
+import AllArch from "./components/AllArch";
 
 
 
@@ -152,6 +153,8 @@ function MainApp() {
         </Route>
 
         <Route path="/All-Packages" element={<Packages />} />
+        <Route path="/All-Archivers" element={<AllArch />} />
+
 
         <Route path="*" element={<NotFound />} />
       </Routes>
