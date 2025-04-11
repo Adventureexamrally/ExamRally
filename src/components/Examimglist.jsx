@@ -1,91 +1,61 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import sbi from "../assets/logo/sbi.png";
-import ibps from "../assets/logo/ibps.png";
-import {
-  Calculate as CalculateIcon,
-  Psychology as PsychologyIcon,
-  MenuBook as MenuBookIcon,
-  Public as PublicIcon,
-  Computer as ComputerIcon,
-  AccountBalance as AccountBalanceIcon,
-  LibraryBooks as LibraryBooksIcon,
-  Speed as SpeedIcon,
-  HelpOutline as HelpOutlineIcon,
-  Quiz as QuizIcon,
-  PictureAsPdf as PictureAsPdfIcon,
-  EventNote as EventNoteIcon,
-  Star as StarIcon,
-  Diamond as DiamondIcon,
-  Celebration as CelebrationIcon,
-  EmojiEvents as EmojiEventsIcon,
-  Forum as ForumIcon,
-  MailOutline as MailOutlineIcon,
-} from "@mui/icons-material";
+
+import Api from "../service/Api";
 
 const Examimglist = () => {
-  const exams = [
-    { name: "RRB PO", image: ibps, link: "/rrb-po" },
-    { name: "RRB Clerk", image: ibps, link: "/rrb-clerk" },
-    { name: "IBPS Clerk", image: ibps, link: "/ibps-clerk" },
-    { name: "IBPS PO", image: ibps, link: "/ibps-po" },
-    { name: "SBI Clerk", image: sbi, link: "/sbi-clerk" },
-    { name: "SBI PO", image: sbi, link: "/sbi-po" },
-  ];
 
-  const topics = [
-    { name: "Quantitative Aptitude", icon: <CalculateIcon />, link: "/quantitativeapti" },
-    { name: "Reasoning Ability", icon: <PsychologyIcon />, link: "/reasoningability" },
-    { name: "English Language", icon: <MenuBookIcon />, link: "/englishlang" },
-    { name: "Current Affairs", icon: <PublicIcon />, link: "/currentaffairs" },
-    { name: "Computer Awareness", icon: <ComputerIcon />, link: "/computerawareness" },
-    { name: "Banking Awareness", icon: <AccountBalanceIcon />, link: "/bankingawareness" },
-    { name: "Static GK", icon: <LibraryBooksIcon />, link: "/staticgk" },
-    { name: "Insurance Awareness", icon: <QuizIcon />, link: "/insuranceawareness" },
-  ];
 
-  const mockTests = [
-    { name: "Previous Year Papers", icon: <SpeedIcon />, link: "/previouspaper" },
-    { name: "Hard Level Reasoning", icon: <HelpOutlineIcon />, link: "/hardlevelreasoning" },
-    { name: "Hard Level Quants", icon: <HelpOutlineIcon />, link: "/hardlevelquants" },
-    { name: "Hard Level English", icon: <EventNoteIcon />, link: "/hardlevelenglish" },
-    { name: "Descriptive", icon: <PictureAsPdfIcon />, link: "/descriptive" },
-    { name: "Critical Reasoning", icon: <LibraryBooksIcon />, link: "/criticalreasoning" },
-  ];
 
-  const extras = [
-    { name: "Hindu Editorial", icon: <StarIcon />, link: "/hindueditorial" },
-    { name: "Interview Prep", icon: <DiamondIcon />, link: "#" },
-    { name: "Success Stories", icon: <CelebrationIcon />, link: "#" },
-    { name: "Special Mocks", icon: <EmojiEventsIcon />, link: "#" },
-    { name: "GD", icon: <ForumIcon />, link: "#" },
-    { name: "Email & Precis Writing", icon: <MailOutlineIcon />, link: "#" },
-  ];
+  const [LiveTest,setLiveTest]=useState([]);
+  const [Data,setData]=useState([])
 
+    useEffect(() => {
+      run();
+    }, []);
+  
+    async function run() {
+      try {
+        const response = await Api.get(`topic-test/livetest/getall`);
+        console.log("livetest", response.data);
+        setLiveTest(response.data);
+
+        const response2 = await Api.get("/packages/get/active");
+        console.log("ji", response2.data)
+        setData(response2.data);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
   return (
     <div className="container mt-4">
       <div className="row">
-        {[...topics, ...mockTests, ...extras].map((item, index) => (
+        {LiveTest.map((item, index) => (
           <div key={index} className="col-6 col-sm-4 col-md-3 col-lg-2 mb-3 shadow-lg">
             <Link
-              to={item.link}
+              to={`/livetest/${item.link_name}`}
               className="d-flex flex-column align-items-center text-green-500 justify-content-center p-3 rounded text-decoration-none"
               style={{
                 height: "120px",
                 transition: "0.3s",
                 textAlign: "center",
               }}
-            >
-              {React.cloneElement(item.icon, { fontSize: "large" })}
-              <span className="text-sm font-weight-bold mt-2 text-gray-800">{item.name}</span>
+            >  
+            <img
+            src={item.photo}
+            alt="not found"
+            className="w-8 h-8"
+          />
+              <span className="text-sm font-weight-bold mt-2 text-gray-800">{item.categorys}</span>
             </Link>
           </div>
         ))}
 
-        {exams.map((exam, index) => (
+        {Data.map((exam, index) => (
           <div key={index} className="col-6 col-sm-4 col-md-3 col-lg-2 mb-3 shadow-lg text-center">
             <Link
-              to={exam.link}
+              to={`/top-trending-exams/${exam.link_name}`}
               className="d-flex flex-column align-items-center justify-content-center  p-3 rounded text-decoration-none"
               style={{
                 height: "120px",
@@ -94,7 +64,7 @@ const Examimglist = () => {
               }}
             >
               <img
-                src={exam.image}
+                src={exam.photo}
                 alt={exam.name}
                 className="img-fluid"
                 style={{ width: "80px", height: "80px" }}

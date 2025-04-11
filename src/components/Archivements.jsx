@@ -19,7 +19,7 @@ const Archivements = () => {
   }, []);
 
   return (
-    <div className="mx-auto my-7 p-6 rounded-3xl shadow-xl bg-gradient-to-br from-green-50 via-white to-emerald-50 border border-green-100">
+    <div className="mx-auto my-7 p-6 rounded-3xl shadow-xl bg-gradient-to-br from-green-100 via-white to-emerald-50 border border-green-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h2 className="text-sm font-semibold text-green-600 uppercase tracking-wider mb-1">Celebrating Success</h2>
