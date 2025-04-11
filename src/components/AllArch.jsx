@@ -19,12 +19,31 @@ const AllArch = () => {
   }, []);
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-white">
+    <div
+
+    className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-100 to-white">
+      <style>
+        {`
+          @keyframes swing {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-20deg); }
+          }
+                      @keyframes swing2 {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(20deg); }
+          }
+        `}
+      </style>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+          <div className='flex justify-center items-center'>
+          <img src="/cup.png" alt="cup" height={100} width={100}   className="w-[70px] h-[70px] md:w-[100px] md:h-[100px] animate-[swing_2s_ease-in-out_infinite]"/>
+          <h1 className="text-xl md:text-3xl font-extrabold text-gray-900  sm:tracking-tight lg:text-6xl">
             Our <span className="text-green-600">Achievements</span>
           </h1>
+          <img src="/cup2.png" alt="cup" height={100} width={100}   className="w-[70px] h-[70px] md:w-[100px] md:h-[100px] animate-[swing2_2s_ease-in-out_infinite]"/>
+
+          </div>
           <p className="mt-4 text-lg text-gray-500 italic">
             “Celebrating excellence and remarkable accomplishments”
           </p>

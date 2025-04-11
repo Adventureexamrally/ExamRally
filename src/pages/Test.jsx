@@ -1250,7 +1250,7 @@ const Test = () => {
 
         {/* Sidebar */}
         <div
-          className={`mb-14 bg-light ${isMobileMenuOpen ? ' translate-x-0' : 'translate-x-full'} md:translate-x-0 md:block fixed top-14 right-0 w-3/4 md:w-1/4 z-40 md:static shadow-sm col-lg-4`}
+          className={`mb-14 pb-14 bg-light ${isMobileMenuOpen ? ' translate-x-0' : 'translate-x-full'} md:translate-x-0 md:block fixed top-14 right-0 z-40 md:static shadow-sm col-9 col-md-4 col-lg-3`}
           style={{
             maxHeight: "450px",
             overflowY: "auto",
@@ -1295,30 +1295,30 @@ const Test = () => {
             </center>
             <div className="container mt-3">
               <div className="row align-items-center">
-                <div className="col-12 col-md-6 d-flex flex-md-column flex-row align-items-center">
+                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                   <div className="smanswerImg"></div>
-                  <p className="ml-2 mb-0">Answered</p>
+                  <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
                 </div>
-                <div className="col-12 col-md-6 d-flex flex-md-column flex-row align-items-center">
+                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                   <div className="smnotansImg"></div>
-                  <p className="ml-2 mb-0">Not Answered</p>
+                  <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
                 </div>
               </div>
             </div>
             <div className="container mb-3">
-              <div className="row align-items-center">
-                <div className="col-12 col-md-6 d-flex flex-md-column flex-row align-items-center">
+              <div className="row">
+                <div className=" mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                   <div className="smnotVisitImg"></div>
-                  <p className="ml-2 text-center mb-0">Not Visited</p>
+                  <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
                 </div>
-                <div className="col-12 col-md-6 d-flex flex-md-column flex-row align-items-center">
+                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                   <div className="smmarkedImg"></div>
-                  <p className="ml-2 text-center">Marked for Review</p>
+                  <p className="ml-2 text-start text-lg-center">Marked for Review</p>
                 </div>
               </div>
-              <div className="col-12 col-md-6 d-flex flex-md-column flex-row align-items-center">
+              <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                 <div className="smansmarkedImg"></div>
-                <p className="ml-2 text-start text-md-center mb-0">Answered & Marked for Review</p>
+                <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
               </div>
               {/* <div className="col-12 flex text-center mt-1">
                 <div className="smansmarkedImg"></div>

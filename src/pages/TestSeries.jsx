@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ThreeDots } from "react-loader-spinner";
 import { Helmet } from "react-helmet";
 import Api from "../service/Api";
-import Rally_bro from "./Rally_pro";
-import Rallysuper_Pro from "./Rallysuper_Pro";
 import Examimglist from "../components/Examimglist"
+import Rally_pro from "../components/subscription/Rally_pro";
+import RallySuper_pro from "../components/subscription/RallySuper_pro";
 
 const data = {
   name: "Moct test Start Now!!",
@@ -158,12 +158,12 @@ function TestSeries() {
               </div>
               <div className="row">
                 <div className="col-md-6">
-                  <Rally_bro />
+                  <Rally_pro />
 
                 </div>
                 <div className="col-md-6">
 
-                  <Rallysuper_Pro />
+                  <RallySuper_pro />
                 </div>
               </div>
               {/* <div className="from-indigo-300 to-teal-400">
