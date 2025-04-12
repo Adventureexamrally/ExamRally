@@ -39,9 +39,35 @@
   }
   
   
+/* Customize scrollbar */
+::-webkit-scrollbar {
+  width: 16px; /* Increased width of the scrollbar */
+  height: 16px; /* Increased height for horizontal scrolling */
+}
 
+/* Customize the track (background) of the scrollbar */
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Light gray background */
+  border-radius: 50px; /* Make it more circular-like, like a bubble */
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.7); /* Create a bubble effect */
+}
 
-  
+/* Customize the thumb (the draggable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Gray color for the thumb */
+  border-radius: 10px; /* Rounded corners */
+  border: 4px solid #f1f1f1; /* Border around the thumb */
+}
+
+/* Customize the thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #666; /* Darker gray when hovered */
+}
+
+/* Customize the corner (where horizontal and vertical scrollbars meet) */
+::-webkit-scrollbar-corner {
+  background-color: #f1f1f1;
+}
   
  
   

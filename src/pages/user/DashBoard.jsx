@@ -1,7 +1,7 @@
 import { Avatar } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { FaBook, FaCarAlt, FaClipboardList, FaGift, FaHistory, FaLaptop, FaReceipt, FaRegBookmark, FaShoppingBasket, FaShoppingCart, FaUser } from 'react-icons/fa';  // Import the FaUser icon
-import { Link } from 'react-router-dom';  // Import Link from react-router-dom
+import { Link, useLocation } from 'react-router-dom';  // Import Link from react-router-dom
 import { FiMoreHorizontal, FiMoreVertical } from 'react-icons/fi';
 
 
@@ -26,6 +26,27 @@ export default function DashBoard({ handleDrawerToggle, open, setOpen }) {
   const handleLinkClick = (linkName) => {
     setActiveLink(linkName);
   };
+
+  const location = useLocation();
+
+useEffect(() => {
+  // Set the active link based on the current path
+  const path = location.pathname;
+
+  if (path.includes('recent-test-results')) {
+    setActiveLink('recent-test');
+  } else if (path.includes('purchase-history')) {
+    setActiveLink('purchase-history');
+  } else if (path.includes('order-history')) {
+    setActiveLink('order-history');
+  } else if (path.includes('refer-and-earn')) {
+    setActiveLink('refer-and-earn');
+  } else if (path.includes('active-devices-browser')) {
+    setActiveLink('active-devices-browser');
+  } else {
+    setActiveLink('profile');
+  }
+}, [location.pathname]);
 
   return (
     <div className="flex md:h-screen relative">
@@ -67,8 +88,8 @@ export default function DashBoard({ handleDrawerToggle, open, setOpen }) {
 
           {/* Profile Information */}
           <div>
-            <h1 className='text-md font-semibold text-gray-800'>Kiruthika T</h1>
-            <p className='text-sm text-gray-600'>kiruthi@gmail.com</p>
+            <h1 className='text-md font-semibold text-gray-800'>Test</h1>
+            <p className='text-sm text-gray-600'>test@gmail.com</p>
           </div>
         </div>
 

@@ -39,7 +39,7 @@ const AllArch = () => {
           <div className='flex justify-center items-center'>
           <img src="/cup.png" alt="cup" height={100} width={100}   className="w-[70px] h-[70px] md:w-[100px] md:h-[100px] animate-[swing_2s_ease-in-out_infinite]"/>
           <h1 className="text-xl md:text-3xl font-extrabold text-gray-900  sm:tracking-tight lg:text-6xl">
-            Our <span className="text-green-600">Achievements</span>
+          Our <span className="text-green-600">Achievers'</span> Wall
           </h1>
           <img src="/cup2.png" alt="cup" height={100} width={100}   className="w-[70px] h-[70px] md:w-[100px] md:h-[100px] animate-[swing2_2s_ease-in-out_infinite]"/>
 

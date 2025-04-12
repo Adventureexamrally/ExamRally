@@ -5,16 +5,16 @@ import { FaEdit } from 'react-icons/fa';
 const Profile = () => {
   const [open, setOpen] = useState(false);
   const [userDetails, setUserDetails] = useState({
-    name: 'kiruthika',
-    email: 'kiruthi@gmail.com',
+    name: 'test',
+    email: 'test@gmail.com',
     mobile: 1234567893,
     gender: 'female',
-    DOB: "2025-04-04",
+    DOB: "YYYY-xx-yy",
     Address: {
-      district: 'tiruppur',
-      state: 'tamilnadu',
-      city: 'palladam',
-      pin: 641664,
+      district: 'XXXX',
+      state: 'YYYYYY',
+      city: 'XXXXX',
+      pin: 123456,
     },
   });
   const [isEditing, setIsEditing] = useState(false);
