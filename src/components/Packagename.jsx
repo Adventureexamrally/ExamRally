@@ -46,17 +46,40 @@ const Packagename = () => {
     setIsTimerRunning(true);
     setTimer(600); // Reset Timer on topic change
   };
-  useEffect(() => {
-    // Fetching data based on the id from the URL params
-    Api.get(`packages/package-content/${id}`).then((res) => {
-      console.log(res.data);
-      setData(res.data.data[0]);
-      setFaqs(res.data.data[0].faqs);
-      console.log(res.data);
-    });
 
-    run();
-  }, [id]);
+  const [resultData, setResultData] = useState(null);
+
+useEffect(() => {
+  // Fetch package content
+  Api.get(`packages/package-content/${id}`).then((res) => {
+    console.log("Package Content:", res.data);
+    setData(res.data.data[0]);
+    setFaqs(res.data.data[0].faqs);
+  });
+
+  // Fetch test result for each test
+  data?.exams?.forEach((test) => {
+    Api.get(`/results/65a12345b6c78d901e23f456/${test._id}`)
+      .then((res) => {
+        if (res.data?.status === "completed") {
+          setResultData((prev) => ({
+            ...prev,
+            [test._id]: res.data
+          }));
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching result:", err);
+      });
+  });
+
+  run();
+}, [id, data?.exams]);
+
+  
+    // Fetch test result
+    // Api.get(`/results/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
+    
 
   async function run() {
     const response2 = await Api.get(`/get-Specific-page/${id}`);
@@ -545,27 +568,34 @@ const Packagename = () => {
                                   </div>
                                 ) : (
                                   <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
+                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                    resultData?.[test._id]?.status === "completed"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : test.status === "true"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                      }`}
-                                    onClick={() => {
-                                      if (test.status === "true") {
-                                        openNewWindow(`/instruction/${test._id}`);
-                                      } else {
-                                        handleTopicSelect(test.section[0], "prelims");
-                                      }
-                                    }}
-                                  >
-                                    {test.status === "true" ? (
-                                      "Take Test"
-                                    ) : (
-                                      <div className="flex items-center justify-center font-semibold gap-1">
-                                        <IoMdLock />
-                                        Lock
-                                      </div>
-                                    )}
-                                  </button>
+                                  }`}
+                                  onClick={() => {
+                                    if (resultData?.[test._id]?.status === "completed") {
+                                      openNewWindow(`/result/${test._id}`);
+                                    } else if (test.status === "true") {
+                                      openNewWindow(`/instruction/${test._id}`);
+                                    } else {
+                                      handleTopicSelect(test.section[0], "prelims");
+                                    }
+                                  }}
+                                >
+                                  {resultData?.[test._id]?.status === "completed" ? (
+                                    "View Result"
+                                  ) : test.status === "true" ? (
+                                    "Take Test"
+                                  ) : (
+                                    <div className="flex items-center justify-center font-semibold gap-1">
+                                      <IoMdLock />
+                                      Lock
+                                    </div>
+                                  )}
+                                </button>
                                 )}
                               </div>
                             </div>
@@ -652,27 +682,34 @@ const Packagename = () => {
                                   </div>
                                 ) : (
                                   <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
+                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                    resultData?.[test._id]?.status === "completed"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : test.status === "true"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                      }`}
-                                    onClick={() => {
-                                      if (test.status === "true") {
-                                        openNewWindow(`/instruction/${test._id}`);
-                                      } else {
-                                        handleTopicSelect(test.section[0], "prelims");
-                                      }
-                                    }}
-                                  >
-                                    {test.status === "true" ? (
-                                      "Take Test"
-                                    ) : (
-                                      <div className="flex items-center justify-center font-semibold gap-1">
-                                        <IoMdLock />
-                                        Lock
-                                      </div>
-                                    )}
-                                  </button>
+                                  }`}
+                                  onClick={() => {
+                                    if (resultData?.[test._id]?.status === "completed") {
+                                      openNewWindow(`/result/${test._id}`);
+                                    } else if (test.status === "true") {
+                                      openNewWindow(`/instruction/${test._id}`);
+                                    } else {
+                                      handleTopicSelect(test.section[0], "prelims");
+                                    }
+                                  }}
+                                >
+                                  {resultData?.[test._id]?.status === "completed" ? (
+                                    "View Result"
+                                  ) : test.status === "true" ? (
+                                    "Take Test"
+                                  ) : (
+                                    <div className="flex items-center justify-center font-semibold gap-1">
+                                      <IoMdLock />
+                                      Lock
+                                    </div>
+                                  )}
+                                </button>
                                 )}
                               </div>
                             </div>
@@ -753,19 +790,26 @@ const Packagename = () => {
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Take Test / Lock Button */}
                                 <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
-                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                    : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                    }`}
+                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                    resultData?.[test._id]?.status === "completed"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : test.status === "true"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  }`}
                                   onClick={() => {
-                                    if (test.status === "true") {
+                                    if (resultData?.[test._id]?.status === "completed") {
+                                      openNewWindow(`/result/${test._id}`);
+                                    } else if (test.status === "true") {
                                       openNewWindow(`/instruction/${test._id}`);
                                     } else {
-                                      handleTopicSelect(test.section[0], "PYQ");
+                                      handleTopicSelect(test.section[0], "prelims");
                                     }
                                   }}
                                 >
-                                  {test.status === "true" ? (
+                                  {resultData?.[test._id]?.status === "completed" ? (
+                                    "View Result"
+                                  ) : test.status === "true" ? (
                                     "Take Test"
                                   ) : (
                                     <div className="flex items-center justify-center font-semibold gap-1">
