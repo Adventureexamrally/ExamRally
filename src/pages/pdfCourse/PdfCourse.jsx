@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import Api from '../service/Api';
-import { Link } from 'react-router-dom';
+import Api from '../../service/Api';
+import { Link, useParams } from 'react-router-dom';
 
 const PdfCourse = () => {
     const currentYear = new Date().getFullYear();
@@ -12,11 +12,20 @@ const PdfCourse = () => {
     const [month, setMonth] = useState(currentMonth);
     const [ad, setAD] = useState([])
     const [seo, setSeo] = useState([])
+    const [alldata, setAlldata] = useState([]);
 
+    const { level } = useParams();
     useEffect(() => {
         run()
     }, []);
+
+    const pdfRefs = useRef({});
     async function run() {
+
+        const response = await Api.get(`pdf-Course/courses`);
+        const filteredData = response.data.filter(item => item.level === level);
+        setAlldata(filteredData);
+
         const response2 = await Api.get(`/get-Specific-page/pdf-course`);
         setSeo(response2.data);
         console.log(response2.data);
@@ -79,6 +88,34 @@ const PdfCourse = () => {
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
+    const formatDateToYMD = (dateString) => {
+        const date = new Date(dateString);
+        return {
+            year: date.getFullYear(),
+            month: date.getMonth(),
+            day: date.getDate(),
+        };
+    };
+
+    const filteredPdfs = alldata.filter((pdf) => {
+        if (!pdf.date) return false; // Skip if no date field
+
+        const { year: pdfYear, month: pdfMonth, day: pdfDay } = formatDateToYMD(pdf.date);
+
+        const isSameMonthYear = pdfYear === year && pdfMonth === month;
+        const isSameDay = selectedDate ? pdfDay === selectedDate : true;
+
+        return isSameMonthYear && isSameDay;
+    });
+
+    useEffect(() => {
+        if (selectedDate) {
+            setTimeout(() => {
+                const key = `${year}-${month}-${selectedDate}`;
+                pdfRefs.current[key]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100); // slight delay to ensure DOM is rendered
+        }
+    }, [selectedDate, year, month]);
     return (
         <>
             <Helmet>
@@ -99,28 +136,28 @@ const PdfCourse = () => {
                     <div className="p-8">
                         <style>
                             {`
-          @keyframes blinkScaleTranslateColor {
-            0% {
-              transform: scale(1) translate(0, 0);
-              background-color:yellow;
-            }
-            50% {
-              transform: scale(1.1) translate(0, 0);
-              background-color: #fbbf24; /* bg-yellow-300 */
-            }
-            100% {
-              transform: scale(1) translate(0, 0);
-             background-color:yellow;
+                          @keyframes blinkScaleTranslateColor {
+                           0% {
+                              transform: scale(1) translate(0, 0);
+                                background-color:yellow;
+                                  }
+                               50% {
+                          transform: scale(1.1) translate(0, 0);
+                              background-color: #fbbf24; /* bg-yellow-300 */
+                              }
+                                                 100% {
+                         transform: scale(1) translate(0, 0);
+                         background-color:yellow;
 
-            }
-          }
+                           }
+                        }
           
-          .animate-blink {
-            animation: blinkScaleTranslateColor 1s infinite ease-in-out;
-          }
-        `}
+                          .animate-blink {
+                           animation: blinkScaleTranslateColor 1s infinite ease-in-out;
+                           }
+                        `}
                         </style>
-                        <h2 className="text-2xl m-2 font-bold text-center text-green-600">365 Days Rally PDF Course Challenge</h2>
+                        <h2 className="text-2xl m-2 font-bold text-center text-green-600">365 Days Rally PDF Course Challenge - {level}</h2>
 
                         <div className="flex items-center m-4 space-x-4">
                             <label for="year">Enter Year:</label>
@@ -184,15 +221,71 @@ const PdfCourse = () => {
                                     </tbody>
                                 </table>
 
-                                {/* Selected Date */}
+                                {/* Selected Date
                                 {selectedDate && (
                                     <div className="mt-4">
                                         <h3 className="text-lg font-semibold">Selected Date:</h3>
                                         <p className="text-xl">{`${year} ${new Date(year, month).toLocaleString('default', { month: 'short' })} ${selectedDate}`}</p>
                                     </div>
+                                )} */}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+
+
+
+                        <div className="bg-white p-4 rounded-2xl shadow-lg">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 items-center">
+                                {filteredPdfs.length === 0 ? (
+                                    <div className="text-center col-span-full text-red-500 text-xl font-semibold">
+                                        No PDFs found for this date.
+                                    </div>
+                                ) : (
+                                    filteredPdfs.map((pdf, index) => {
+                                        const { day } = formatDateToYMD(pdf.date);
+                                        const key = `${year}-${month}-${day}`;
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                ref={(el) => (pdfRefs.current[key] = el)}
+                                                className="border rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300"
+                                            >
+                                                <h2 className="text-lg font-bold mb-2 bg-green-200 text-center">{pdf.examName}</h2>
+                                                <div className='flex justify-around m-2'>
+                                                    <p>questions :{pdf.questions}</p>
+                                                    <p>time :{pdf.time}</p>
+                                                    <p>marks :{pdf.marks}</p>
+                                                </div>
+                                                <div className='text-center'>
+                                                    <p
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: pdf.schedule,
+                                                        }}
+                                                    ></p>
+                                                </div>
+                                                <div className='flex justify-evenly m-2'>
+                                                    <a
+                                                        href={pdf.pdfLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
+                                                    >
+                                                        View PDF
+                                                    </a>
+                                                    <Link
+                                                        to={'/'}
+                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
+
+                                                    >Take test</Link></div>
+                                            </div>
+                                        );
+                                    })
                                 )}
                             </div>
                         </div>
+
                     </div>
                 </div>
                 {ad.length > 0 &&

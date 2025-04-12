@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../assets/logo/sample-logo.png';
 import Swal from 'sweetalert2'
+import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -45,7 +46,12 @@ const Test = () => {
   });
 
   const toggleMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsMobileMenuOpen(prevState => !prevState);
+  };
+
+  const [closeSideBar, setCloseSideBar] = useState(false)
+  const toggleMenu2 = () => {
+    setCloseSideBar(!closeSideBar);
   };
 
   const [isDataFetched, setIsDataFetched] = useState(false);
@@ -68,31 +74,58 @@ const Test = () => {
     }
   }, [id]);  // Only trigger when `id` changes
 
-  const scrollRef = useRef(null);
-  useEffect(() => {
-    const handleWheel = (e) => {
-      e.preventDefault(); // Prevents mouse wheel scrolling
+  const questionRef = useRef(null);
+  const commonDataRef = useRef(null);
+  const sidebarRef = useRef(null);
 
-      // Show toast message when user tries to scroll
-      toast.info("Scrolling with the mouse wheel is disabled. Use the scrollbar instead.", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        theme: "colored",
-      });
+  const toastId = useRef(null); // Keep track of toast ID
+
+  useEffect(() => {
+    const handleWheel = (e, ref) => {
+      e.preventDefault(); // Prevent mouse wheel scrolling
+
+      // Only show toast if no toast is currently active
+      if (!toast.isActive(toastId.current)) {
+        toastId.current = toast.info("Scrolling with the mouse wheel is disabled. Use the scrollbar instead.", {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          theme: "colored",
+        });
+      }
     };
 
-    const scrollElement = scrollRef.current;
-    if (scrollElement) {
-      scrollElement.addEventListener('wheel', handleWheel, { passive: false });
+    // Attach event listeners to all scrollable elements
+    const questionElement = questionRef.current;
+    const commonDataElement = commonDataRef.current;
+    const sidebarElement = sidebarRef.current;
+
+    if (questionElement) {
+      questionElement.addEventListener('wheel', (e) => handleWheel(e, questionRef), { passive: false });
+    }
+
+    if (commonDataElement) {
+      commonDataElement.addEventListener('wheel', (e) => handleWheel(e, commonDataRef), { passive: false });
+    }
+
+    if (sidebarElement) {
+      sidebarElement.addEventListener('wheel', (e) => handleWheel(e, sidebarRef), { passive: false });
     }
 
     return () => {
-      if (scrollElement) {
-        scrollElement.removeEventListener('wheel', handleWheel);
+      if (questionElement) {
+        questionElement.removeEventListener('wheel', (e) => handleWheel(e, questionRef));
+      }
+
+      if (commonDataElement) {
+        commonDataElement.removeEventListener('wheel', (e) => handleWheel(e, commonDataRef));
+      }
+
+      if (sidebarElement) {
+        sidebarElement.removeEventListener('wheel', (e) => handleWheel(e, sidebarRef));
       }
     };
   }, []);
@@ -310,8 +343,8 @@ const Test = () => {
       const totalQuestions = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()]?.length;
 
       if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-         // Save current question time before moving to next
-         setQuestionTimes(prevTimes => ({
+        // Save current question time before moving to next
+        setQuestionTimes(prevTimes => ({
           ...prevTimes,
           [clickedQuestionIndex]: questionTime
         }));
@@ -869,7 +902,7 @@ const Test = () => {
           popup: 'swal-popup-full-height', // Target the popup
         },
         //  Remove didOpen -  setting height directly
-      }).then(async(result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
           await submitExam(); // Submit exam data before navigating
           navigate(`/result/${id}`);
@@ -985,14 +1018,141 @@ const Test = () => {
 
 
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Function to toggle fullscreen mode
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      // If not in fullscreen, enter fullscreen
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+        document.documentElement.mozRequestFullScreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+        document.documentElement.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      // If in fullscreen, exit fullscreen
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) { // Firefox
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) { // Chrome, Safari
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { // IE/Edge
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
+    }
+  };
+
+  const [answeredCount, setAnsweredCount] = useState(0);
+  const [notAnsweredCount, setNotAnsweredCount] = useState(0);
+  const [notVisitedCount, setNotVisitedCount] = useState(0);
+  const [markedForReviewCount, setMarkedForReviewCount] = useState(0);
+  const [answeredAndMarkedCount, setAnsweredAndMarkedCount] = useState(0);
+
+  useEffect(() => {
+    const calculateCounts = () => {
+      let answered = 0;
+      let notAnswered = 0;
+      let notVisited = 0;
+      let markedForReviewCount = 0;
+      let answeredAndMarked = 0;
+
+      examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.forEach((_, index) => {
+        const fullIndex = startingIndex + index;
+
+        const isAnswered = selectedOptions[fullIndex] !== null;
+        const isVisited = visitedQuestions.includes(fullIndex);
+        const isMarked = markedForReview.includes(fullIndex);
+
+        if (isMarked && isAnswered) {
+          answeredAndMarked++; // ✅ Answered + Marked
+        } else if (isMarked && !isAnswered) {
+          markedForReviewCount++; // ✅ Just Marked
+        } else if (isAnswered) {
+          answered++; // ✅ Only Answered
+        } else if (isVisited) {
+          notAnswered++; // ✅ Visited but Not Answered
+        } else {
+          notVisited++; // ✅ Not Visited at all
+        }
+      });
+
+      setAnsweredCount(answered);
+      setNotAnsweredCount(notAnswered);
+      setNotVisitedCount(notVisited);
+      setMarkedForReviewCount(markedForReviewCount);
+      setAnsweredAndMarkedCount(answeredAndMarked);
+    };
+
+    calculateCounts();
+  }, [selectedOptions, visitedQuestions, markedForReview, examData, currentSectionIndex, selectedLanguage, startingIndex]);
 
 
+  const getSectionCounts = (
+    section,
+    selectedOptions,
+    visitedQuestions,
+    markedForReview,
+    selectedLanguage,
+    startingIndex
+  ) => {
+    let answered = 0;
+    let notAnswered = 0;
+    let notVisited = 0;
+    let markedForReviewCount = 0;
+    let answeredAndMarked = 0;
+  
+    const questions = section?.questions?.[selectedLanguage?.toLowerCase()];
+  
+    questions?.forEach((_, index) => {
+      const fullIndex = startingIndex + index;
+  
+      const isAnswered = selectedOptions[fullIndex] !== null;
+      const isVisited = visitedQuestions.includes(fullIndex);
+      const isMarked = markedForReview.includes(fullIndex);
+  
+      if (isMarked && isAnswered) {
+        answeredAndMarked++;
+      } else if (isMarked && !isAnswered) {
+        markedForReviewCount++;
+      } else if (isAnswered) {
+        answered++;
+      } else if (isVisited) {
+        notAnswered++;
+      } else {
+        notVisited++;
+      }
+    });
+  
+    return {
+      answered,
+      notAnswered,
+      notVisited,
+      markedForReviewCount,
+      answeredAndMarked,
+    };
+  };
   return (
     <div className="mock-font p-1">
       <div>
-        <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+        <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
+
           <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
           <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+          {/* Fullscreen Toggle Button */}
+          <button
+            onClick={toggleFullScreen}
+            className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
+          >
+            {/* Show the appropriate icon based on fullscreen state */}
+            {isFullscreen ? <FaCompress /> : <FaExpand />}
+          </button>
         </div>
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
@@ -1076,19 +1236,68 @@ const Test = () => {
 
 
       <div className="d-flex justify-content-start align-items-center m-2 flex-wrap">
-        {examData?.section?.map((section, index) => (
-          <h1
-            key={index}
-            className={`h6 p-1 text-white border ${currentSectionIndex === index ? 'bg-blue-400 border-3 border-blue-500 fw-bold' : 'bg-gray-400'}`}
-          // Set the current section when clicked
-          >
-            ✔ {section.name}
-          </h1>
-        ))}
-      </div>
+      {examData?.section?.map((section, index) => {
+    // Calculate the starting index for this section
+    const startingIndex = examData.section
+      .slice(0, index)
+      .reduce((acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
 
-      {/* Mobile Hamburger Menu */}
-      <button
+    // Get counts using fixed starting index
+    const sectionCounts = getSectionCounts(
+      section,
+      selectedOptions,
+      visitedQuestions,
+      markedForReview,
+      selectedLanguage,
+      startingIndex
+    );
+
+    return (
+      <div key={index} className="m-1">
+        <h1
+          className={`h6 p-1 text-white border d-inline-flex align-items-center 
+            ${currentSectionIndex === index
+              ? 'bg-blue-400 border-3 border-blue-500 fw-bold'
+              : 'bg-gray-400'}`}
+        >
+          ✔ {section.name}
+          <div className="relative group ml-2 d-inline-block">
+            <FaInfoCircle className="cursor-pointer text-white" />
+            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+  min-w-[220px]     w-fit md:max-w-xs md:w-max
+  left-1/2 -translate-x-1/2
+  ">
+              <div className="mt-2 flex align-items-center">
+                <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answered}</div>
+                <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.notAnswered}</div>
+                <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{sectionCounts.notVisited}</div>
+                <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.markedForReviewCount}</div>
+                <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answeredAndMarked}</div>
+                <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
+              </div>
+            </div>
+          </div>
+        </h1>
+      </div>
+    );
+  })}
+    </div>
+
+ 
+      {/* Mobile Hamburger Menu */ }
+      < button
         onClick={toggleMenu}
         className="md:hidden text-black p-2"
       >
@@ -1111,9 +1320,10 @@ const Test = () => {
         </svg>
       </button>
 
-      <div className="row">
+      <div className="row mb-24">
         {/* Question Panel */}
-        <div className="col-lg-9 col-md-8 p-4">
+        <div className={`p-4 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
+
           {!isSubmitted ? (
             <>
               <div className="d-flex  justify-between">
@@ -1144,14 +1354,14 @@ const Test = () => {
                 </h1>
               </div>
               {examData?.section[currentSectionIndex] ? (
-                <div className="row">
+                <div className="row" >
                   <div className="row">
                     {/* Left side for Common Data */}
                     {examData.section[currentSectionIndex]?.questions?.[
                       selectedLanguage?.toLowerCase()
                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                         <div
-                          ref={scrollRef}
+                          ref={commonDataRef}
                           className="col-lg-6 col-md-6"
                           style={{ maxHeight: "380px", overflowY: "auto" }}
                         >
@@ -1176,7 +1386,7 @@ const Test = () => {
 
                     {/* Right side for Question */}
                     <div
-                      ref={scrollRef}
+                      ref={questionRef}
                       className="col-lg-6 col-md-6"
                       style={{ maxHeight: "420px", overflowY: "auto" }}
                     >
@@ -1247,181 +1457,194 @@ const Test = () => {
             </div>
           )}
         </div>
-
         {/* Sidebar */}
-        <div
-          className={`mb-14 pb-14 bg-light ${isMobileMenuOpen ? ' translate-x-0' : 'translate-x-full'} md:translate-x-0 md:block fixed top-14 right-0 z-40 md:static shadow-sm col-9 col-md-4 col-lg-3`}
-          style={{
-            maxHeight: "450px",
-            overflowY: "auto",
-            transition: 'transform 0.3s ease-in-out',  // Added transition for smooth sliding
-          }}
-        >
-          {isMobileMenuOpen &&
-            <button
-              onClick={toggleMenu}
-              className="md:hidden text-black p-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                {/* // Close icon (X) when the menu is open */}
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-
-              </svg>
-            </button>
-          }
-          <div className="container mt-3">
-            <h1 className=" bg-blue-400 text-center text-white p-2 ">
-              Time Left:{formatTime(timeminus)}
-            </h1>
-            <center>
-              <button
-                onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
-                  }`}
-              >Pause
-                {isPaused}
-              </button>
-            </center>
-            <div className="container mt-3">
-              <div className="row align-items-center">
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smanswerImg"></div>
-                  <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
-                </div>
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smnotansImg"></div>
-                  <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
-                </div>
-              </div>
+        <div className="col-9 col-md-4 col-lg-3 md:flex"  >
+          <div className="md:flex hidden items-center">
+            <div className={` fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} onClick={toggleMenu2}>
+              <FaChevronRight className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} />
             </div>
-            <div className="container mb-3">
-              <div className="row">
-                <div className=" mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smnotVisitImg"></div>
-                  <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
-                </div>
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smmarkedImg"></div>
-                  <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+          </div>
+
+
+          <div
+            ref={sidebarRef}
+            className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300
+    ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+    ${closeSideBar ? 'md:translate-x-full md:w-0' : 'md:translate-x-0'}
+    fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
+            style={{
+              maxHeight: '450px',
+              overflowY: 'auto',
+            }}
+          >
+
+            {isMobileMenuOpen &&
+              <button
+                onClick={toggleMenu}
+                className="md:hidden text-black p-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  {/* // Close icon (X) when the menu is open */}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+
+                </svg>
+              </button>
+            }
+            <div className="container mt-3">
+              <h1 className=" bg-blue-400 text-center text-white p-2 ">
+                Time Left:{formatTime(timeminus)}
+              </h1>
+              <center>
+                <button
+                  onClick={handlePauseResume}
+                  className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+                    }`}
+                >Pause
+                  {isPaused}
+                </button>
+              </center>
+
+              <div className="container mt-3">
+                <div className="row align-items-center">
+                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+                    <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{answeredCount}</div>
+                    <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+                  </div>
+                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+                    <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{notAnsweredCount}</div>
+                    <p className="ml-2 text-start text-lg-center mb-0">Not Answered </p>
+                  </div>
                 </div>
               </div>
-              <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                <div className="smansmarkedImg"></div>
-                <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
-              </div>
-              {/* <div className="col-12 flex text-center mt-1">
+              <div className="container mb-3">
+                <div className="row">
+                  <div className=" mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+                    <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{notVisitedCount}</div>
+                    <p className="ml-2 text-start text-lg-center mb-0">Not Visited </p>
+                  </div>
+                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+                    <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{markedForReviewCount}</div>
+                    <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+                  </div>
+                </div>
+                <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+                  <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{answeredAndMarkedCount}</div>
+                  <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
+                </div>
+                {/* <div className="col-12 flex text-center mt-1">
                 <div className="smansmarkedImg"></div>
                 <p className="ml-2 mb-0">Answered & Marked for Review</p>
               </div> */}
-            </div>
-            <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
-              {examData?.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.map((_, index) => {
-                const fullIndex = startingIndex + index; // Correct question index
+              </div>
+              <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
+                {examData?.section[currentSectionIndex]?.questions?.[
+                  selectedLanguage?.toLowerCase()
+                ]?.map((_, index) => {
+                  const fullIndex = startingIndex + index; // Correct question index
 
-                // Access the current section from the examData
-                const currentSection = examData.section[currentSectionIndex];
-                const timeFormatted = formatTime(timeLeft); // Format the remaining time for the current section
+                  // Access the current section from the examData
+                  const currentSection = examData.section[currentSectionIndex];
+                  const timeFormatted = formatTime(timeLeft); // Format the remaining time for the current section
 
-                // Set className based on question status
-                let className = "";
-                if (selectedOptions[fullIndex] !== null) {
-                  className = "answerImg";
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " mdansmarkedImg";
+                  // Set className based on question status
+                  let className = "";
+                  if (selectedOptions[fullIndex] !== null) {
+                    className = "answerImg";
+                    if (markedForReview.includes(fullIndex)) {
+                      className += " mdansmarkedImg";
+                    }
+                  } else if (visitedQuestions.includes(fullIndex)) {
+                    className = "notansImg"; // Visited but not answered
+                  } else {
+                    className = "notVisitImg"; // Not visited
                   }
-                } else if (visitedQuestions.includes(fullIndex)) {
-                  className = "notansImg"; // Visited but not answered
-                } else {
-                  className = "notVisitImg"; // Not visited
-                }
 
-                // Mark for review
-                if (markedForReview.includes(fullIndex)) {
-                  className += " reviewed mdmarkedImg";
-                }
+                  // Mark for review
+                  if (markedForReview.includes(fullIndex)) {
+                    className += " reviewed mdmarkedImg";
+                  }
 
-                return (
-                  <div key={fullIndex}>
-                    {/* Show countdown timer */}
+                  return (
+                    <div key={fullIndex}>
+                      {/* Show countdown timer */}
 
-                    {/* Question number with click functionality */}
-                    <span
-                      onClick={() => {
-                        console.log("Clicked question index:", fullIndex);
-                        setClickedQuestionIndex(fullIndex);
-                      }}
-                      className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                    >
-                      {fullIndex + 1}
-                    </span>
-                  </div>
-                );
-              })}
+                      {/* Question number with click functionality */}
+                      <span
+                        onClick={() => {
+                          console.log("Clicked question index:", fullIndex);
+                          setClickedQuestionIndex(fullIndex);
+                        }}
+                        className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                      >
+                        {fullIndex + 1}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
 
-      {/* Footer Buttons */}
-      <div className="fixed-bottom bg-white p-3">
-        <div className="d-flex justify-content-between border-8">
-          {/* Left side - Mark for Review and Clear Response */}
-          <div className="d-flex">
-            <button
-              onClick={handleMarkForReview}
-              className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
-            >
-              Mark for Review
-            </button>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <button
-              onClick={handleClearResponse}
-              className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
-            >
-              Clear Response
-            </button>
-          </div>
-
-          {/* Right side - Save & Next and Submit Section */}
-          <div className="d-flex justify-content-end">
-            {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-              >
-                Save & Next
-              </button>
-            )}
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <button
-              className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-              onClick={handleSubmitSection}
-              data-bs-toggle="modal"
-              data-bs-target="#staticBackdrop"
-            >
-              {currentSectionIndex === examData?.section?.length - 1
-                ? "Submit Test"
-                : "Submit Section"}
-            </button>
-          </div>
-
-        </div>
+  {/* Footer Buttons */ }
+  <div className="fixed-bottom bg-white p-3">
+    <div className="d-flex justify-content-between border-8">
+      {/* Left side - Mark for Review and Clear Response */}
+      <div className="d-flex">
+        <button
+          onClick={handleMarkForReview}
+          className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+        >
+          Mark for Review
+        </button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button
+          onClick={handleClearResponse}
+          className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+        >
+          Clear Response
+        </button>
       </div>
+
+      {/* Right side - Save & Next and Submit Section */}
+      <div className="d-flex justify-content-end">
+        {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
+          <button
+            onClick={handleNextClick}
+            className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+          >
+            Save & Next
+          </button>
+        )}
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button
+          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+          onClick={handleSubmitSection}
+          data-bs-toggle="modal"
+          data-bs-target="#staticBackdrop"
+        >
+          {currentSectionIndex === examData?.section?.length - 1
+            ? "Submit Test"
+            : "Submit Section"}
+        </button>
+      </div>
+
     </div>
+  </div>
+    </div >
   );
 };
 

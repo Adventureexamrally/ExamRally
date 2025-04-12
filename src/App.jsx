@@ -22,7 +22,6 @@ import Resultanalysis from "./components/Resultanalysis";
 import Mocksolution from "./components/Mocksolution";
 import Subblog from "./pages/blog/Subblog";
 import DetailedCategorie from "./components/LiveTest/DetailedCategorie";
-import PdfCourse from "./pages/PdfCourse";
 import Free_pdf from "./pages/Free_pdf";
 import VideoCourse from "./pages/VideoCourse";
 import Profile from "./pages/user/Profile";
@@ -35,6 +34,8 @@ import Packages from "./pages/Packages";
 import Blog from "./pages/blog/Blog";
 import TestSeries from "./pages/TestSeries";
 import AllArch from "./components/AllArch";
+import PdfCourse from "./pages/pdfCourse/PdfCourse";
+import PdfCourseHome from "./pages/pdfCourse/PdfCourseHome";
 
 
 
@@ -140,7 +141,9 @@ function MainApp() {
         <Route path="/blogdetails/:link" element={<Subblog />} />
 
         <Route path="/livetest/:link" element={<DetailedCategorie />} />
-        <Route path="/pdf-course" element={<PdfCourse />} />
+        <Route path="/pdf-course" element={<PdfCourseHome />} />
+        <Route path="/pdf-course/:level" element={<PdfCourse />} />
+
         <Route path="/video-course" element={<VideoCourse />} />
 
         <Route path="profile">
