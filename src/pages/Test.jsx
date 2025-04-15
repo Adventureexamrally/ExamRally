@@ -834,6 +834,7 @@ const Test = () => {
       timeTakenInSeconds: timeTakenInSeconds,
       takenAt: examStartTime,
       submittedAt: endTime,
+      status:"completed"
     })
       .then((res) => {
         console.log("Response Data-sample:", res.data);

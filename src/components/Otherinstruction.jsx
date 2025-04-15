@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const OtherInstruction = () => {
   const [isChecked, setIsChecked] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("English"); // Default language
+  const [selectedLanguage, setSelectedLanguage] = useState(""); // Default language
   const navigate = useNavigate();
 
   const handleCheckboxChange = (event) => {
@@ -14,13 +14,17 @@ const OtherInstruction = () => {
     setSelectedLanguage(event.target.value);
   };
 const {id} = useParams()
-  const handleNextClick = () => {
-    if (isChecked) {
-      navigate(`/mocktest/${id}`, { state: { language: selectedLanguage } }); // Pass language as state
-    } else {
-      alert("Please accept the declaration to proceed.");
-    }
-  };
+const handleNextClick = () => {
+  if (!selectedLanguage) {
+    alert("Please select a language to proceed.");
+    return;
+  }
+  if (!isChecked) {
+    alert("Please accept the declaration to proceed.");
+    return;
+  }
+  navigate(`/mocktest/${id}`, { state: { language: selectedLanguage } });
+};
 
   const handlePreviousClick = () => {
     navigate("/instruction");
@@ -39,6 +43,7 @@ const {id} = useParams()
             value={selectedLanguage}
             onChange={handleLanguageChange}
           >
+             <option value="">Select Language</option>
             <option value="English">English</option>
             <option value="Hindi">Hindi</option>
             <option value="Tamil">Tamil</option>
@@ -47,23 +52,24 @@ const {id} = useParams()
       </div>
 
       {/* Instruction Content */}
-      <div className="border-4 border-green-400 p-4 mt-4">
+      {/* <div className="border-4 border-green-400 p-4 mt-4">
         <p>
           This is a Mock test. The Question Paper displayed is for practice
           purposes only. Under no circumstances should this be presumed as a
           sample paper.
         </p>
-      </div>
+      </div> */}
 
       {/* Language Selection */}
       <div className="mt-4">
         <p className="bg-blue-200 p-2 rounded">
-          Choose your default language:{" "}
+          Choose your default language:{"Select Language"}
           <select
             className="p-1 border rounded"
             value={selectedLanguage}
             onChange={handleLanguageChange}
           >
+             <option value="">Select Language</option>
             <option value="English">English</option>
             <option value="Hindi">Hindi</option>
             <option value="Tamil">Tamil</option>
