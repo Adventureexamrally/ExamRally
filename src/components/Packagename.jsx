@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Api from "../service/Api";
 import AOS from "aos";
@@ -11,7 +11,8 @@ import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { Helmet } from "react-helmet";
 
 import { BsSpeedometer2 } from "react-icons/bs";
-
+import { UserContext } from "../context/UserProvider";
+import { useUser } from "@clerk/clerk-react";
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -26,6 +27,7 @@ const Packagename = () => {
   // Assuming there is only one exam object
   const subTitles = data?.sub_titles || [];
 
+  const { isSignedIn } = useUser();
   // console.log(subTitles);
 
   const [activeSection, setActiveSection] = useState("prelims"); // Tracks active section (Prelims/Mains/Previous Year Questions)
@@ -49,6 +51,9 @@ const Packagename = () => {
 
   const [resultData, setResultData] = useState(null);
 
+    const { user } = useContext(UserContext);
+  console.log(user)
+
 useEffect(() => {
   // Fetch package content
   Api.get(`packages/package-content/${id}`).then((res) => {
@@ -59,7 +64,7 @@ useEffect(() => {
 
   // Fetch test result for each test
   data?.exams?.forEach((test) => {
-    Api.get(`/results/65a12345b6c78d901e23f456/${test._id}`)
+    Api.get(`/results/${user?._id}/${test._id}`)
       .then((res) => {
         if (res.data?.status === "completed") {
           setResultData((prev) => ({
@@ -576,7 +581,10 @@ useEffect(() => {
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                   onClick={() => {
-                                    if (resultData?.[test._id]?.status === "completed") {
+                                    if (!isSignedIn) {
+                                    navigate('/sign-in')
+                                    }
+                                    else if (resultData?.[test._id]?.status === "completed") {
                                       openNewWindow(`/result/${test._id}`);
                                     } else if (test.status === "true") {
                                       openNewWindow(`/instruction/${test._id}`);
@@ -674,8 +682,8 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Check if the current date is greater than or equal to live_date */}
-                                {new Date(test.live_date) > new Date() ? (
+                               {/* Check if the current date is greater than or equal to live_date */}
+                               {new Date(test.live_date) > new Date() ? (
                                   // Display "Coming Soon" if the current date is earlier than live_date
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
                                     Coming Soon
@@ -690,7 +698,10 @@ useEffect(() => {
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                   onClick={() => {
-                                    if (resultData?.[test._id]?.status === "completed") {
+                                    if (!isSignedIn) {
+                                    navigate('/sign-in')
+                                    }
+                                    else if (resultData?.[test._id]?.status === "completed") {
                                       openNewWindow(`/result/${test._id}`);
                                     } else if (test.status === "true") {
                                       openNewWindow(`/instruction/${test._id}`);
@@ -788,8 +799,14 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Take Test / Lock Button */}
-                                <button
+                               {/* Check if the current date is greater than or equal to live_date */}
+                               {new Date(test.live_date) > new Date() ? (
+                                  // Display "Coming Soon" if the current date is earlier than live_date
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                    Coming Soon
+                                  </div>
+                                ) : (
+                                  <button
                                   className={`mt-3 py-2 px-4 rounded w-full transition ${
                                     resultData?.[test._id]?.status === "completed"
                                       ? "bg-green-500 text-white hover:bg-green-600"
@@ -798,7 +815,10 @@ useEffect(() => {
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                   onClick={() => {
-                                    if (resultData?.[test._id]?.status === "completed") {
+                                    if (!isSignedIn) {
+                                    navigate('/sign-in')
+                                    }
+                                    else if (resultData?.[test._id]?.status === "completed") {
                                       openNewWindow(`/result/${test._id}`);
                                     } else if (test.status === "true") {
                                       openNewWindow(`/instruction/${test._id}`);
@@ -818,6 +838,7 @@ useEffect(() => {
                                     </div>
                                   )}
                                 </button>
+                                )}
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
