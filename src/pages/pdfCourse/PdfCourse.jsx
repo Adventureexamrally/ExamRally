@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import Api from '../../service/Api';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { IoMdLock } from 'react-icons/io';
+import { UserContext } from '../../context/UserProvider';
+import { useUser } from '@clerk/clerk-react';
 
 const PdfCourse = () => {
     const currentYear = new Date().getFullYear();
@@ -13,17 +16,23 @@ const PdfCourse = () => {
     const [ad, setAD] = useState([])
     const [seo, setSeo] = useState([])
     const [alldata, setAlldata] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [resultData, setResultData] = useState(null);
 
+    const { user } = useContext(UserContext);
+    console.log(user)
     const { level } = useParams();
     useEffect(() => {
         run()
     }, []);
-
+    const { isSignedIn } = useUser();
     const pdfRefs = useRef({});
+    const navigate = useNavigate();
+
     async function run() {
 
         const response = await Api.get(`pdf-Course/courses`);
-        const filteredData = response.data.filter(item => item.level === level);
+        const filteredData = response.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
         console.log(response.data);
 
         setAlldata(filteredData);
@@ -33,7 +42,23 @@ const PdfCourse = () => {
         console.log(response2.data);
 
         const response3 = await Api.get(`/blog-Ad/getbypage/pdf-course`);
-        setAD(response3.data)
+        setAD(response3.data);
+
+        // Fetch test result for each test
+        alldata?.exams?.forEach((test) => {
+            Api.get(`/results/${user?._id}/${test._id}`)
+                .then((res) => {
+                    if (res.data?.status === "completed") {
+                        setResultData((prev) => ({
+                            ...prev,
+                            [test._id]: res.data
+                        }));
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error fetching result:", err);
+                });
+        });
     }
 
 
@@ -101,10 +126,21 @@ const PdfCourse = () => {
 
     const filteredPdfs = alldata.filter((pdf) => {
         if (!pdf.date) return false;
-    
+
         const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
-    
-        return pdfYear === year && pdfMonth === month;
+
+        const isMatchingYear = pdfYear === year;
+        const isMatchingMonth = pdfMonth === month;
+        const matchesSearch = pdf.examName?.toLowerCase().includes(searchTerm);
+
+        // 📌 Logic:
+        // If there's a search term, show all from the year that match it
+        // Else, show all from selected month
+        if (searchTerm.trim() !== "") {
+            return isMatchingYear && matchesSearch;
+        } else {
+            return isMatchingYear && isMatchingMonth;
+        }
     });
 
     useEffect(() => {
@@ -135,6 +171,17 @@ const PdfCourse = () => {
     };
 
     const formatKey = (year, month, day) => `${year}-${month}-${day}`;
+
+    const openNewWindow = (url) => {
+        const width = screen.width;
+        const height = screen.height;
+        window.open(
+            url,
+            "_blank",
+            `noopener,noreferrer,width=${width},height=${height}`
+        );
+    };
+
     return (
         <>
             <Helmet>
@@ -150,111 +197,180 @@ const PdfCourse = () => {
                 ))} */}
 
             </Helmet>
-            <div className="flex">
-                <div className={` m-2 w-full ${ad.length > 0 ? "md:w-4/5" : "md:full "}`}>
-                    <div className="p-8">
+            <div className="flex overflow-hidden">
+                <div className={` m-2 w-full bg-gradient-to-br from-green-50 to-gray-50 rounded-xl shadow-lg ${ad.length > 0 ? "md:w-4/5" : "md:full "}`}>
+                    <div className="p-4 md:p-8">
                         <style>
                             {`
-                          @keyframes blinkScaleTranslateColor {
-                           0% {
-                              transform: scale(1) translate(0, 0);
-                                background-color:yellow;
-                                  }
-                               50% {
-                          transform: scale(1.1) translate(0, 0);
-                              background-color: #fbbf24; /* bg-yellow-300 */
-                              }
-                                                 100% {
-                         transform: scale(1) translate(0, 0);
-                         background-color:yellow;
-
-                           }
-                        }
-          
-                          .animate-blink {
-                           animation: blinkScaleTranslateColor 1s infinite ease-in-out;
-                           }
-                        `}
+                    @keyframes blinkScaleTranslateColor {
+                     0% {
+                transform: scale(1) translate(0, 0);
+                background-color: rgba(144, 238, 144, 0.8);
+                }   
+                 50% {
+                transform: scale(1.05) translate(0, -2px);
+                background-color: rgba(34, 193, 34, 0.9);
+                    }
+                     100% {
+                transform: scale(1) translate(0, 0);
+                background-color: rgba(144, 238, 144, 0.8);
+                    }
+                }
+        
+                .animate-blink {
+            animation: blinkScaleTranslateColor 1.5s infinite ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(34, 193, 34, 0.3);
+             }
+        
+             .month-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+        
+                .month-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+                }
+        
+                .calendar-day {
+                         transition: all 0.2s ease;
+                }
+        
+                 .empty-day {
+            background-color: transparent !important;
+            pointer-events: none;
+                }
+             `}
                         </style>
-                        <h2 className="text-2xl m-2 font-bold text-center text-green-600">365 Days Rally PDF Course Challenge - {level}</h2>
 
-                        <div className="flex items-center m-4 space-x-4">
-                            <label for="year">Enter Year:</label>
-                            <input type="number" id="year" name="year" min="2000" max="2100" class="border p-2 rounded-md" placeholder='YYYY' value={year} onChange={handleYearChange} />
-                        </div>
-                        <div className="my-4  flex flex-col md:flex-row justify-center space-x-8">
-                            {/* Left side: Month list */}
-                            <div className="w-full md:w-1/3 ">
-                                <h3 className="text-lg m-1 font-medium">Months</h3>
-                                <div className="flex flex-wrap justify-around  border-1 border-blue-950 bg-blue-100">
-                                    {months.map((monthName, index) => (
-                                        <button
-                                            key={index}
-                                            className={`m-2 p-2 text-left text-xl border-1 border-blue-600 rounded-md ${month === index ? 'bg-blue-500 text-white' : ' bg-white hover:bg-gray-200'}`}
-                                            onClick={() => handleMonthClick(index)}
-                                        >
-                                            {monthName}
-                                        </button>
-                                    ))}
-                                </div>
+                        <div className="max-w-6xl mx-auto">
+                            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">
+                                365 Days Rally PDF Course Challenge - {level}
+                            </h2>
+
+                            <div className="flex flex-col md:flex-row items-center justify-center mb-8 p-4 bg-white rounded-xl shadow-md">
+                                <label htmlFor="year" className="text-lg font-medium text-gray-700 mb-2 md:mb-0 md:mr-4">
+                                    Select Year:
+                                </label>
+                                <input
+                                    type="number"
+                                    id="year"
+                                    name="year"
+                                    min="2000"
+                                    max="2100"
+                                    className="border-2 border-green-200 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center w-32"
+                                    placeholder='YYYY'
+                                    value={year}
+                                    onChange={handleYearChange}
+                                />
                             </div>
 
-                            {/* Right side: Calendar Table */}
-                            <div className="flex-1 max-w-3xl"> {/* Smaller table width */}
-                                <div className='text-xl bg-yellow-100 text-center m-2 font-serif'>Each Month First Day is Free</div>
-                                {/* Weekdays Header */}
-                                <table className="w-full text-center border-collapse border border-white">
-                                    <thead>
-                                        <tr className="bg-blue-950 text-white">
-                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                                                <th key={index} className="m-1 p-2 border border-white">{day}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-blue-950 text-white">
-                                        {/* Calendar Grid */}
-                                        {weeks.map((week, weekIndex) => (
-                                            <tr key={weekIndex}>
-                                                {week.map((day, dayIndex) => (
-                                                    day == 1 || isfree ? (
-                                                        <td
-                                                            key={dayIndex}
-                                                            className={`p-2  text-black cursor-pointer border border-white ${day === selectedDate ? 'bg-blue-500 text-white' : 'hover:bg-yellow-200 hover:text-black animate-blink'}`}
-                                                            onClick={() => day && handleDateClick(day)}
-                                                        >
-                                                            FREE
-                                                        </td>
-                                                    ) : (
-                                                        <td
-                                                            key={dayIndex}
-                                                            className={`p-2 cursor-pointer border border-white ${day === selectedDate ? 'bg-blue-500 text-white' : day ? 'hover:bg-gray-200 hover:text-black' : 'bg-blue-950'}`}
-                                                            onClick={() => day && handleDateClick(day)}
-                                                        >
-
-                                                            {day || ''}
-                                                        </td>
-                                                    )
-                                                ))}
-                                            </tr>
+                            <div className="flex flex-col lg:flex-row gap-6">
+                                {/* Month Selection Panel */}
+                                <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl shadow-md">
+                                    <h3 className="text-xl font-semibold mb-4 text-center text-green-800 border-b-2 border-green-100 pb-2">
+                                        Select Month
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {months.map((monthName, index) => (
+                                            <button
+                                                key={index}
+                                                className={`month-btn p-3 text-center rounded-lg transition-all ${month === index
+                                                    ? 'bg-gradient-to-r from-green-600 to-green-800 text-white shadow-lg'
+                                                    : 'bg-gray-50 hover:bg-green-50 text-gray-800'
+                                                    }`}
+                                                onClick={() => handleMonthClick(index)}
+                                            >
+                                                {monthName}
+                                            </button>
                                         ))}
-                                    </tbody>
-                                </table>
-
-                                {/* Selected Date
-                                {selectedDate && (
-                                    <div className="mt-4">
-                                        <h3 className="text-lg font-semibold">Selected Date:</h3>
-                                        <p className="text-xl">{`${year} ${new Date(year, month).toLocaleString('default', { month: 'short' })} ${selectedDate}`}</p>
                                     </div>
-                                )} */}
+                                </div>
+
+                                {/* Calendar Panel */}
+                                <div className="flex-1 bg-white p-4 rounded-xl shadow-md">
+                                    <div className="text-xl md:text-2xl font-bold text-center mb-4 p-3 bg-gradient-to-r from-green-100 to-green-200 rounded-lg border-2 border-green-300 text-green-800">
+                                        Each Month's First Day is Free!
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full table-fixed text-center border-collapse">
+                                            <thead>
+                                                <tr className="bg-gradient-to-r from-green-800 to-green-600 text-white">
+                                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                                                        <th
+                                                            key={index}
+                                                            className="p-3 md:p-4 border border-green-700 font-medium text-sm md:text-base"
+                                                        >
+                                                            {day}
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white">
+                                                {weeks.map((week, weekIndex) => (
+                                                    <tr key={weekIndex}>
+                                                        {week.map((day, dayIndex) => (
+                                                            day == 1 || isfree ? (
+                                                                <td
+                                                                    key={dayIndex}
+                                                                    className={`p-2 md:p-3 border border-gray-100 calendar-day ${day === selectedDate
+                                                                        ? 'selected-day bg-green-600 text-white rounded-full scale-105'
+                                                                        : 'animate-blink bg-green-100 text-green-800 font-medium rounded-lg'
+                                                                        }`}
+                                                                    onClick={() => day && handleDateClick(day)}
+                                                                >
+                                                                    <div className="flex flex-col items-center justify-center h-full">
+                                                                        <span className="text-xs md:text-sm">FREE</span>
+                                                                    </div>
+                                                                </td>
+                                                            ) : (
+                                                                <td
+                                                                    key={dayIndex}
+                                                                    className={`p-2 md:p-3 border border-gray-100 calendar-day ${!day ? 'empty-day' : ''} ${day === selectedDate
+                                                                        ? 'selected-day bg-green-600 text-white rounded-full scale-105'
+                                                                        : day
+                                                                            ? 'hover:bg-green-100 cursor-pointer text-gray-700'
+                                                                            : 'bg-gray-50'
+                                                                        }`}
+                                                                    onClick={() => day && handleDateClick(day)}
+                                                                >
+                                                                    {day || ''}
+                                                                </td>
+                                                            )
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {selectedDate && (
+                                        <div className="mt-6 p-3 bg-green-50 rounded-lg border border-green-200">
+                                            <p className="text-center text-green-800 font-medium">
+                                                Selected: {`${year} ${months[month]} ${selectedDate}`}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
+
                     <div>
 
 
 
-                        <div className="bg-white p-4 rounded-2xl shadow-lg">
+                        <div className=" p-4 ">
+                            <div className="flex justify-end mb-6">
+                                <input
+                                    type="search"
+                                    placeholder="🔍 Filter Exams..."
+                                    className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+                                />
+                            </div>
                             <div >
                                 {filteredPdfs.length === 0 ? (
                                     <div className="text-center col-span-full text-red-500 text-xl font-semibold">
@@ -279,36 +395,80 @@ const PdfCourse = () => {
                                                             <div
                                                                 key={index}
                                                                 ref={(el) => (pdfRefs.current[key] = el)}
-                                                                className={`border rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300 ${selectedDate === pdfDay ? 'ring-2 ring-blue-500' : ''
+                                                                className={`border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 bg-white ${selectedDate === pdfDay ? 'ring-2 ring-blue-500' : ''
                                                                     }`}
                                                             >
-                                                                <h2 className="text-lg font-bold mb-2 bg-green-200 text-center">{pdf.subject}</h2>
-                                                                <div className='flex justify-around m-2'>
-                                                                    <p>Ques :{pdf.questions}</p>
-                                                                    <p>time :{pdf.time}</p>
-                                                                    <p>marks :{pdf.marks}</p>
+                                                                {/* Subject Header */}
+                                                                <h2 className="text-lg font-bold mb-3 text-center py-1 bg-green-100 rounded-md">
+                                                                    {pdf.subject}
+                                                                </h2>
+
+                                                                {/* Exam Details */}
+                                                                <div className="flex justify-between text-sm text-gray-600 mb-3">
+                                                                    <span>📝 {pdf.questions} Qs</span>
+                                                                    <span>⏱️ {pdf.time} min</span>
+                                                                    <span>🏆 {pdf.marks} pts</span>
                                                                 </div>
-                                                                <div className='text-center'>
-                                                                    <p
-                                                                        dangerouslySetInnerHTML={{
-                                                                            __html: pdf.schedule,
-                                                                        }}
-                                                                    ></p>
+
+                                                                {/* Schedule */}
+                                                                <div className="text-center text-sm text-gray-700 mb-4 px-2">
+                                                                    <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
                                                                 </div>
-                                                                <div className='flex justify-evenly m-2'>
+
+                                                                {/* Action Buttons */}
+                                                                <div className="flex justify-between space-x-2">
                                                                     <a
                                                                         href={pdf.pdfLink}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
+                                                                        className="flex-1 text-center text-white bg-blue-600 hover:bg-blue-700 py-2 px-3 rounded-md text-sm font-medium transition-colors"
                                                                     >
                                                                         View PDF
                                                                     </a>
-                                                                    <Link
-                                                                        to={'/'}
-                                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
-
-                                                                    >Take test</Link></div>
+                                                                    {/* <button
+                                                                        onClick={() => openNewWindow(`/instruction/${pdf.exams[0]}`)}
+                                                                        className="flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors"
+                                                                    >
+                                                                        Take Test
+                                                                    </button> */}
+                                                                    {/* Check if the current date is greater than or equal to live_date */}
+                                                                    {new Date(pdf.exams[0]?.live_date) > new Date() ? (
+                                                                        // Display "Coming Soon" if the current date is earlier than live_date
+                                                                        <div className=" text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                                                            Coming Soon
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            className={` flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors ${resultData?.[test._id]?.status === "completed"
+                                                                                ? "bg-green-500 text-white hover:bg-green-600"
+                                                                                : pdf.exams[0]?.status === "true"
+                                                                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                                                                    : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                                                                }`}
+                                                                            onClick={() => {
+                                                                                if (!isSignedIn) {
+                                                                                    navigate('/sign-in')
+                                                                                }
+                                                                                else if (resultData?.[test._id]?.status === "completed") {
+                                                                                    openNewWindow(`/result/${pdf.exams[0]?._id}`);
+                                                                                } else if (pdf.exams[0].status === "true") {
+                                                                                    openNewWindow(`/instruction/${pdf.exams[0]?._id}`);
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {resultData?.[test._id]?.status === "completed" ? (
+                                                                                "View Result"
+                                                                            ) : pdf.exams[0]?.status === "true" ? (
+                                                                                "Take Test"
+                                                                            ) : (
+                                                                                <span className="flex items-center justify-center font-semibold">
+                                                                                    <IoMdLock />
+                                                                                    Lock
+                                                                                </span>
+                                                                            )}
+                                                                        </button>
+                                                                  )}
+                                                                </div>
                                                             </div>
                                                         );
                                                     })}
