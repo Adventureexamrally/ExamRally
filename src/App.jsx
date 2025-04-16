@@ -27,7 +27,7 @@ import VideoCourse from "./pages/VideoCourse";
 import Profile from "./pages/user/Profile";
 import ActiveDevicesBrowser from "./pages/user/ActiveDevicesBrowser";
 import OrderHIstory from "./pages/user/OrderHIstory";
-import PurchaseHistory  from "./pages/user/PurchaseHistory";
+import PurchaseHistory from "./pages/user/PurchaseHistory";
 import RecentTestResults from "./pages/user/RecentTestResults";
 import ReferAndEarn from "./pages/user/ReferAndEarn";
 import Packages from "./pages/Packages";
@@ -60,7 +60,7 @@ function MainApp() {
     }
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
-  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct","/mocksolution","/result"].some((path) =>
+  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct", "/mocksolution", "/result"].some((path) =>
     location.pathname.startsWith(path)
   );
   useEffect(() => {
@@ -135,7 +135,7 @@ function MainApp() {
         {/* Catch-all route for non-existent pages */}
         <Route path="/resultanalysis" element={<Resultanalysis />} />
 
-        <Route path='/mocksolution/:id' element={<Mocksolution/>} />
+        <Route path='/mocksolution/:id' element={<Mocksolution />} />
 
         <Route path="/blog" element={<Blog />} />
         <Route path="/blogdetails/:link" element={<Subblog />} />
@@ -148,11 +148,11 @@ function MainApp() {
 
         <Route path="profile">
           <Route index element={<Profile />} />
-          <Route path="recent-test-results" element={<RecentTestResults/>} />
-          <Route path="purchase-history" element={<PurchaseHistory/>}/>
-          <Route path="order-history" element={<OrderHIstory/>} />
-          <Route path="refer-and-earn" element={<ReferAndEarn/>} />
-          <Route path="active-devices-browser" element={<ActiveDevicesBrowser/>} />
+          <Route path="recent-test-results" element={<RecentTestResults />} />
+          <Route path="purchase-history" element={<PurchaseHistory />} />
+          <Route path="order-history" element={<OrderHIstory />} />
+          <Route path="refer-and-earn" element={<ReferAndEarn />} />
+          <Route path="active-devices-browser" element={<ActiveDevicesBrowser />} />
         </Route>
 
         <Route path="/All-Packages" element={<Packages />} />
@@ -160,6 +160,19 @@ function MainApp() {
 
 
         <Route path="*" element={<NotFound />} />
+        <Route
+          path="/sign-in"
+          element={
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "90vh", // Full screen height
+            }}>
+              <SignIn />
+            </div>
+          }
+        />
       </Routes>
 
       {/* Conditionally render Footer for routes other than "/mock-test" */}

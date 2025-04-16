@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -6,6 +6,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../assets/logo/sample-logo.png';
 import Swal from 'sweetalert2'
 import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
+import { UserContext } from "../context/UserProvider";
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -17,6 +18,8 @@ const Test = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const { user } = useContext(UserContext);
 
   const location = useLocation();
   const selectedLanguage = location.state?.language || "English";
@@ -298,7 +301,7 @@ const Test = () => {
         setSelectedOptions(initialOptions);
 
         // Now post the transformed data to your '/results' endpoint
-        const postResponse = await Api.post(`/results/65a12345b6c78d901e23f456/${id}`, transformedData);
+        const postResponse = await Api.post(`/results/${user?._id}/${id}`, transformedData);
         console.log("Data posted successfully:", postResponse);
 
       } catch (error) {
@@ -808,7 +811,7 @@ const Test = () => {
 
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
-    Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+    Api.get(`results/${user?._id}/${id}`)
       .then(response => {
         // Set the fetched data to state
         setDataid(response.data._id);
@@ -825,7 +828,7 @@ const Test = () => {
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
 
     // API call with the necessary data
-    Api.post(`results/65a12345b6c78d901e23f456/${id}`, {
+    Api.post(`results/${user?._id}/${id}`, {
       ExamId: `${id}`,
       section: formattedSections,
       // Now this will work since formattedSections is part of examDataSubmission

@@ -24,6 +24,8 @@ const PdfCourse = () => {
 
         const response = await Api.get(`pdf-Course/courses`);
         const filteredData = response.data.filter(item => item.level === level);
+        console.log(response.data);
+
         setAlldata(filteredData);
 
         const response2 = await Api.get(`/get-Specific-page/pdf-course`);
@@ -98,24 +100,41 @@ const PdfCourse = () => {
     };
 
     const filteredPdfs = alldata.filter((pdf) => {
-        if (!pdf.date) return false; // Skip if no date field
-
-        const { year: pdfYear, month: pdfMonth, day: pdfDay } = formatDateToYMD(pdf.date);
-
-        const isSameMonthYear = pdfYear === year && pdfMonth === month;
-        const isSameDay = selectedDate ? pdfDay === selectedDate : true;
-
-        return isSameMonthYear && isSameDay;
+        if (!pdf.date) return false;
+    
+        const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
+    
+        return pdfYear === year && pdfMonth === month;
     });
 
     useEffect(() => {
         if (selectedDate) {
+            const key = formatKey(year, month, selectedDate);
             setTimeout(() => {
-                const key = `${year}-${month}-${selectedDate}`;
-                pdfRefs.current[key]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const target = pdfRefs.current[key];
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }, 100); // slight delay to ensure DOM is rendered
         }
     }, [selectedDate, year, month]);
+
+    // Group filtered PDFs by day
+    const groupedPdfs = filteredPdfs.reduce((acc, pdf) => {
+        const date = new Date(pdf.date);
+        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(pdf);
+        return acc;
+    }, {});
+
+    const formatPrettyDate = (dateStr) => {
+        const date = new Date(dateStr);
+        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        return date.toLocaleDateString('en-US', options);
+    };
+
+    const formatKey = (year, month, day) => `${year}-${month}-${day}`;
     return (
         <>
             <Helmet>
@@ -236,49 +255,64 @@ const PdfCourse = () => {
 
 
                         <div className="bg-white p-4 rounded-2xl shadow-lg">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 items-center">
+                            <div >
                                 {filteredPdfs.length === 0 ? (
                                     <div className="text-center col-span-full text-red-500 text-xl font-semibold">
                                         No PDFs found for this date.
                                     </div>
                                 ) : (
-                                    filteredPdfs.map((pdf, index) => {
-                                        const { day } = formatDateToYMD(pdf.date);
-                                        const key = `${year}-${month}-${day}`;
+                                    Object.entries(groupedPdfs).map(([dateKey, pdfs]) => {
+                                        const [y, m, d] = dateKey.split('-');
+                                        const dateStr = new Date(y, m, d).toISOString(); // for formatting
 
                                         return (
-                                            <div
-                                                key={index}
-                                                ref={(el) => (pdfRefs.current[key] = el)}
-                                                className="border rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300"
-                                            >
-                                                <h2 className="text-lg font-bold mb-2 bg-green-200 text-center">{pdf.examName}</h2>
-                                                <div className='flex justify-around m-2'>
-                                                    <p>questions :{pdf.questions}</p>
-                                                    <p>time :{pdf.time}</p>
-                                                    <p>marks :{pdf.marks}</p>
-                                                </div>
-                                                <div className='text-center'>
-                                                    <p
-                                                        dangerouslySetInnerHTML={{
-                                                            __html: pdf.schedule,
-                                                        }}
-                                                    ></p>
-                                                </div>
-                                                <div className='flex justify-evenly m-2'>
-                                                    <a
-                                                        href={pdf.pdfLink}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
-                                                    >
-                                                        View PDF
-                                                    </a>
-                                                    <Link
-                                                        to={'/'}
-                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
+                                            <div key={dateKey} className="mb-6 mt-6">
+                                                <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+                                                    {formatPrettyDate(dateStr)}
+                                                </h3>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
+                                                    {pdfs.map((pdf, index) => {
+                                                        const { year: pdfYear, month: pdfMonth, day: pdfDay } = formatDateToYMD(pdf.date);
+                                                        const key = formatKey(pdfYear, pdfMonth, pdfDay);
 
-                                                    >Take test</Link></div>
+                                                        return (
+                                                            <div
+                                                                key={index}
+                                                                ref={(el) => (pdfRefs.current[key] = el)}
+                                                                className={`border rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300 ${selectedDate === pdfDay ? 'ring-2 ring-blue-500' : ''
+                                                                    }`}
+                                                            >
+                                                                <h2 className="text-lg font-bold mb-2 bg-green-200 text-center">{pdf.subject}</h2>
+                                                                <div className='flex justify-around m-2'>
+                                                                    <p>Ques :{pdf.questions}</p>
+                                                                    <p>time :{pdf.time}</p>
+                                                                    <p>marks :{pdf.marks}</p>
+                                                                </div>
+                                                                <div className='text-center'>
+                                                                    <p
+                                                                        dangerouslySetInnerHTML={{
+                                                                            __html: pdf.schedule,
+                                                                        }}
+                                                                    ></p>
+                                                                </div>
+                                                                <div className='flex justify-evenly m-2'>
+                                                                    <a
+                                                                        href={pdf.pdfLink}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
+                                                                    >
+                                                                        View PDF
+                                                                    </a>
+                                                                    <Link
+                                                                        to={'/'}
+                                                                        className="text-white bg-blue-600 hover:bg-blue-800 py-2 px-4 rounded-md inline-block"
+
+                                                                    >Take test</Link></div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         );
                                     })

@@ -68,10 +68,7 @@ const Archivements = () => {
                   src={item.photo}
                   alt={item.title}
                   className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
-                  }}
+                 
                 />
               </div>
             </div>

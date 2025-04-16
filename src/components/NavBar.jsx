@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo/logo.webp";
 import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp, useUser } from "@clerk/clerk-react";
@@ -6,6 +6,8 @@ import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp, useUser 
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
 import { Avatar } from "@mui/material";
 import User from "./User";
+import Api from "../service/Api";
+
 
 const NavBar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -25,6 +27,60 @@ const NavBar = () => {
   const handleSubMenu = (index) => {
     setActiveSubMenu(activeSubMenu === index ? null : index);
   };
+
+  useEffect(() => {
+    const sendUserData = async () => {
+      if (isLoaded && isSignedIn && user) {
+        const userAlreadySynced = localStorage.getItem(`user_synced_${user.id}`);
+
+        if (userAlreadySynced) {
+          console.log("User already synced");
+          return;
+        }
+
+        const userData = {
+          userId: user.id,
+          username: user.username || "N/A",
+          firstName: user.firstName || "N/A",
+          lastName: user.lastName || "N/A",
+          email: user.primaryEmailAddress?.emailAddress || "N/A",
+          phoneNumber: user.phoneNumbers?.[0]?.phoneNumber || "N/A",
+          profilePicture: user.imageUrl,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          customFields: {
+            address: user.publicMetadata?.address || "N/A",
+            city: user.publicMetadata?.city || "N/A",
+            state: user.publicMetadata?.state || "N/A",
+            country: user.publicMetadata?.country || "N/A",
+            postalCode: user.publicMetadata?.postalCode || "N/A",
+            bio: user.publicMetadata?.bio || "N/A",
+            dateOfBirth: user.publicMetadata?.dateOfBirth || "N/A",
+          },
+        };
+
+        try {
+          // Check if user is logging in or signing up
+          if (userData.userId) {
+            // If the user ID exists, it's a login, call the /auth/login endpoint
+            await Api.post("/auth/login", userData);  // Call login API here
+            console.log("User logged in:", userData);
+          } else {
+            // If the user ID doesn't exist, it's a new signup, call /auth/signup
+            await Api.post("/auth/signup", userData);  // Call signup API here
+            console.log("User signed up:", userData);
+          }
+
+          // Mark as synced so it doesn't re-send next time
+          localStorage.setItem(`user_synced_${user.id}`, "true");
+        } catch (error) {
+          console.error("Error sending user data:", error);
+        }
+      }
+    };
+
+    sendUserData();
+  }, [isLoaded, isSignedIn, user]);
 
   return (
     <>
