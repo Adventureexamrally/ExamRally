@@ -18,6 +18,8 @@ const PdfCourse = () => {
     const [alldata, setAlldata] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [resultData, setResultData] = useState(null);
+    const [AllExamsName, setAllExamsName] = useState([]);
+    const [selectedExam, setSelectedExam] = useState('');
 
     const { user } = useContext(UserContext);
     console.log(user)
@@ -36,6 +38,10 @@ const PdfCourse = () => {
         console.log(response.data);
 
         setAlldata(filteredData);
+
+        const pdfExams = await Api.get("pdf-Course/Exams");
+        setAllExamsName(pdfExams.data);
+        console.log(pdfExams.data);
 
         const response2 = await Api.get(`/get-Specific-page/pdf-course`);
         setSeo(response2.data);
@@ -123,25 +129,26 @@ const PdfCourse = () => {
             day: date.getDate(),
         };
     };
-
     const filteredPdfs = alldata.filter((pdf) => {
-        if (!pdf.date) return false;
-
+        if (!pdf.examName || !pdf.date) return false;
+    
         const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
-
-        const isMatchingYear = pdfYear === year;
-        const isMatchingMonth = pdfMonth === month;
-        const matchesSearch = pdf.examName?.toLowerCase().includes(searchTerm);
-
-        // 📌 Logic:
-        // If there's a search term, show all from the year that match it
-        // Else, show all from selected month
-        if (searchTerm.trim() !== "") {
-            return isMatchingYear && matchesSearch;
-        } else {
-            return isMatchingYear && isMatchingMonth;
+        const matchesYear = pdfYear === year;
+        const matchesMonth = pdfMonth === month;
+        const matchesExam = selectedExam && pdf.examName.toLowerCase() === selectedExam.toLowerCase();
+    
+        // If exam is selected, show PDFs for the whole selected year
+        if (selectedExam) {
+            return matchesExam && matchesYear;
         }
+    
+        // Default: show current month/year PDFs
+        return matchesYear && matchesMonth;
     });
+    
+    // ✅ Sort by date so they're in Jan → Dec order
+    filteredPdfs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
 
     useEffect(() => {
         if (selectedDate) {
@@ -362,14 +369,37 @@ const PdfCourse = () => {
 
 
                         <div className=" p-4 ">
+
                             <div className="flex justify-end mb-6">
-                                <input
-                                    type="search"
-                                    placeholder="🔍 Filter Exams..."
-                                    className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
-                                />
+                                <div className="relative w-full max-w-xs">
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">
+                                        FILTER BY EXAM
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            name="examName"
+                                            value={selectedExam}
+                                            onChange={(e) => setSelectedExam(e.target.value)}
+                                            className="appearance-none w-full pl-4 pr-10 py-2 text-sm border-2 border-indigo-100 rounded-lg bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                                        >
+                                            <option value="">All Exams</option>
+                                            {AllExamsName?.map((Exname) => (
+                                                <option key={Exname._id} value={Exname.Exam}>
+                                                    {Exname.Exam}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg
+                                                className="w-4 h-4 fill-current"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div >
                                 {filteredPdfs.length === 0 ? (
@@ -467,7 +497,7 @@ const PdfCourse = () => {
                                                                                 </span>
                                                                             )}
                                                                         </button>
-                                                                  )}
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         );

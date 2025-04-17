@@ -27,7 +27,7 @@ const handleNextClick = () => {
 };
 
   const handlePreviousClick = () => {
-    navigate("/instruction");
+    navigate(`/instruction/${id}`);
   };
 
   return (
@@ -37,7 +37,7 @@ const handleNextClick = () => {
       {/* Instruction Header */}
       <div className="bg-blue-300 p-3 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Other Important Instructions</h2>
-        <label>
+        {/* <label>
           <select
             className="p-2 border rounded"
             value={selectedLanguage}
@@ -48,7 +48,7 @@ const handleNextClick = () => {
             <option value="Hindi">Hindi</option>
             <option value="Tamil">Tamil</option>
           </select>
-        </label>
+        </label> */}
       </div>
 
       {/* Instruction Content */}
@@ -81,7 +81,7 @@ const handleNextClick = () => {
         </p>
 
         {/* Declaration Checkbox */}
-        <label className="flex items-start gap-2 mt-2">
+        <label className="flex items-start gap-2 mt-2 mb-7">
           <input
             type="checkbox"
             className="mt-1"
@@ -101,19 +101,21 @@ const handleNextClick = () => {
         </label>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-4">
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">  
+          <center>       
           <button
             onClick={handlePreviousClick}
-            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            className="p-2 m-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
             Previous
           </button>
           <button
             onClick={handleNextClick}
-            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            className="p-2 m-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Next
+            I'm Ready to Begin
           </button>
+          </center> 
         </div>
       </div>
     </div>

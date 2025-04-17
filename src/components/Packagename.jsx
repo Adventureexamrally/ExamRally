@@ -23,7 +23,7 @@ const Packagename = () => {
   // Extracting the package content and exams information
   // const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
   const exams = data?.exams || {};
-  console.log("VAR", exams);
+  // console.log("VAR", exams);
   // Assuming there is only one exam object
   const subTitles = data?.sub_titles || [];
 
@@ -51,52 +51,54 @@ const Packagename = () => {
 
   const [resultData, setResultData] = useState(null);
 
-    const { user } = useContext(UserContext);
-  console.log(user)
+  const { user } = useContext(UserContext);
+  // console.log(user)
 
-useEffect(() => {
-  // Fetch package content
-  Api.get(`packages/package-content/${id}`).then((res) => {
-    console.log("Package Content:", res.data);
-    setData(res.data.data[0]);
-    setFaqs(res.data.data[0].faqs);
-  });
-
-  // Fetch test result for each test
-  data?.exams?.forEach((test) => {
-    Api.get(`/results/${user?._id}/${test._id}`)
-      .then((res) => {
-        if (res.data?.status === "completed") {
-          setResultData((prev) => ({
-            ...prev,
-            [test._id]: res.data
-          }));
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching result:", err);
+  useEffect(() => {
+    // Fetch package content
+    Api.get(`packages/package-content/${id}`).then((res) => {
+      // console.log("Package Content:", res.data);
+      setData(res.data.data[0]);
+      setFaqs(res.data.data[0].faqs);
+    });
+    if (!user?._id) return; // Don't run if user is not loaded yet
+    if (isSignedIn) {
+      // Fetch test result for each test
+      data?.exams?.forEach((test) => {
+        Api.get(`/results/${user?._id}/${test._id}`)
+          .then((res) => {
+            if (res.data?.status === "completed") {
+              setResultData((prev) => ({
+                ...prev,
+                [test._id]: res.data
+              }));
+            }
+          })
+          .catch((err) => {
+            console.error("Error fetching result:", err);
+          });
       });
-  });
+    }
 
-  run();
-}, [id, data?.exams]);
+    run();
+  }, [id, data?.exams,isSignedIn]);
 
-  
-    // Fetch test result
-    // Api.get(`/results/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
-    
+
+  // Fetch test result
+  // Api.get(`/results/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
+
 
   async function run() {
     const response2 = await Api.get(`/get-Specific-page/${id}`);
     setSeo(response2.data);
-    console.log(response2.data);
+    // console.log(response2.data);
 
     const response3 = await Api.get(`/blog-Ad/getbypage/${id}`);
     setAD(response3.data);
-    console.log(response3.data);
+    // console.log(response3.data);
   }
 
-  console.log(faqs);
+  // console.log(faqs);
   // Sidebar button handlers
   const handlePrelimsClick = () => {
     setActiveSection("prelims");
@@ -125,7 +127,7 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [timer, isTimerRunning]);
 
-  console.log(data);
+  // console.log(data);
 
   // Show difficulty level for the specific test
   const handleShowLevelClick = (testId) => {
@@ -180,8 +182,8 @@ useEffect(() => {
     }, 500);
   }, []);
 
-  console.log(data);
-  console.log(seo);
+  // console.log(data);
+  // console.log(seo);
 
   useEffect(() => {
     AOS.init({
@@ -189,7 +191,7 @@ useEffect(() => {
     });
     AOS.refresh();
   }, []);
-  console.log(data);
+  // console.log(data);
   return (
     <>
       {loading ? (
@@ -363,11 +365,10 @@ useEffect(() => {
                  </div> */}
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${
-                      activeSection === "prelims"
+                    className={`btn w-100 mb-2 text-white ${activeSection === "prelims"
                         ? "bg-[#131656] hover:bg-[#131656]"
                         : "bg-green-500 hover:bg-green-600"
-                    }`}
+                      }`}
                     onClick={handlePrelimsClick}
                     // disabled={activeSection && activeSection !== "prelims"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
@@ -377,11 +378,10 @@ useEffect(() => {
                 </div>
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${
-                      activeSection === "mains"
+                    className={`btn w-100 mb-2 text-white ${activeSection === "mains"
                         ? "bg-[#131656] hover:bg-[#131656]"
                         : "bg-green-500 hover:bg-green-600"
-                    }`}
+                      }`}
                     onClick={handleMainsClick}
                     // disabled={activeSection && activeSection !== "mains"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
@@ -391,11 +391,10 @@ useEffect(() => {
                 </div>
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${
-                      activeSection === "PYQ"
+                    className={`btn w-100 mb-2 text-white ${activeSection === "PYQ"
                         ? "bg-[#131656] hover:bg-[#131656]"
                         : "bg-green-500 hover:bg-green-600"
-                    }`}
+                      }`}
                     onClick={handleUpdatesClick}
                     // disabled={activeSection && activeSection !== "PYQ"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
@@ -573,37 +572,36 @@ useEffect(() => {
                                   </div>
                                 ) : (
                                   <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    resultData?.[test._id]?.status === "completed"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                    navigate('/sign-in')
-                                    }
-                                    else if (resultData?.[test._id]?.status === "completed") {
-                                      openNewWindow(`/result/${test._id}`);
-                                    } else if (test.status === "true") {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(test.section[0], "prelims");
-                                    }
-                                  }}
-                                >
-                                  {resultData?.[test._id]?.status === "completed" ? (
-                                    "View Result"
-                                  ) : test.status === "true" ? (
-                                    "Take Test"
-                                  ) : (
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Lock
-                                    </div>
-                                  )}
-                                </button>
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : test.status === "true"
+                                          ? "bg-green-500 text-white hover:bg-green-600"
+                                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                      }`}
+                                    onClick={() => {
+                                      if (!isSignedIn) {
+                                        navigate('/sign-in')
+                                      }
+                                      else if (resultData?.[test._id]?.status === "completed") {
+                                        openNewWindow(`/result/${test._id}`);
+                                      } else if (test.status === "true") {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      } else {
+                                        handleTopicSelect(test.section[0], "prelims");
+                                      }
+                                    }}
+                                  >
+                                    {resultData?.[test._id]?.status === "completed" ? (
+                                      "View Result"
+                                    ) : test.status === "true" ? (
+                                      "Take Test"
+                                    ) : (
+                                      <div className="flex items-center justify-center font-semibold gap-1">
+                                        <IoMdLock />
+                                        Lock
+                                      </div>
+                                    )}
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -682,45 +680,44 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                               {/* Check if the current date is greater than or equal to live_date */}
-                               {new Date(test.live_date) > new Date() ? (
+                                {/* Check if the current date is greater than or equal to live_date */}
+                                {new Date(test.live_date) > new Date() ? (
                                   // Display "Coming Soon" if the current date is earlier than live_date
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
                                     Coming Soon
                                   </div>
                                 ) : (
                                   <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    resultData?.[test._id]?.status === "completed"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                    navigate('/sign-in')
-                                    }
-                                    else if (resultData?.[test._id]?.status === "completed") {
-                                      openNewWindow(`/result/${test._id}`);
-                                    } else if (test.status === "true") {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(test.section[0], "prelims");
-                                    }
-                                  }}
-                                >
-                                  {resultData?.[test._id]?.status === "completed" ? (
-                                    "View Result"
-                                  ) : test.status === "true" ? (
-                                    "Take Test"
-                                  ) : (
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Lock
-                                    </div>
-                                  )}
-                                </button>
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : test.status === "true"
+                                          ? "bg-green-500 text-white hover:bg-green-600"
+                                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                      }`}
+                                    onClick={() => {
+                                      if (!isSignedIn) {
+                                        navigate('/sign-in')
+                                      }
+                                      else if (resultData?.[test._id]?.status === "completed") {
+                                        openNewWindow(`/result/${test._id}`);
+                                      } else if (test.status === "true") {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      } else {
+                                        handleTopicSelect(test.section[0], "prelims");
+                                      }
+                                    }}
+                                  >
+                                    {resultData?.[test._id]?.status === "completed" ? (
+                                      "View Result"
+                                    ) : test.status === "true" ? (
+                                      "Take Test"
+                                    ) : (
+                                      <div className="flex items-center justify-center font-semibold gap-1">
+                                        <IoMdLock />
+                                        Lock
+                                      </div>
+                                    )}
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -799,45 +796,44 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                               {/* Check if the current date is greater than or equal to live_date */}
-                               {new Date(test.live_date) > new Date() ? (
+                                {/* Check if the current date is greater than or equal to live_date */}
+                                {new Date(test.live_date) > new Date() ? (
                                   // Display "Coming Soon" if the current date is earlier than live_date
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
                                     Coming Soon
                                   </div>
                                 ) : (
                                   <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    resultData?.[test._id]?.status === "completed"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                    navigate('/sign-in')
-                                    }
-                                    else if (resultData?.[test._id]?.status === "completed") {
-                                      openNewWindow(`/result/${test._id}`);
-                                    } else if (test.status === "true") {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(test.section[0], "prelims");
-                                    }
-                                  }}
-                                >
-                                  {resultData?.[test._id]?.status === "completed" ? (
-                                    "View Result"
-                                  ) : test.status === "true" ? (
-                                    "Take Test"
-                                  ) : (
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Lock
-                                    </div>
-                                  )}
-                                </button>
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : test.status === "true"
+                                          ? "bg-green-500 text-white hover:bg-green-600"
+                                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                      }`}
+                                    onClick={() => {
+                                      if (!isSignedIn) {
+                                        navigate('/sign-in')
+                                      }
+                                      else if (resultData?.[test._id]?.status === "completed") {
+                                        openNewWindow(`/result/${test._id}`);
+                                      } else if (test.status === "true") {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      } else {
+                                        handleTopicSelect(test.section[0], "prelims");
+                                      }
+                                    }}
+                                  >
+                                    {resultData?.[test._id]?.status === "completed" ? (
+                                      "View Result"
+                                    ) : test.status === "true" ? (
+                                      "Take Test"
+                                    ) : (
+                                      <div className="flex items-center justify-center font-semibold gap-1">
+                                        <IoMdLock />
+                                        Lock
+                                      </div>
+                                    )}
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -851,8 +847,8 @@ useEffect(() => {
                             ) : (
                               <button
                                 className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
-                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                    : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                 onClick={() => {
                                   if (test.status === "true") {
@@ -911,11 +907,10 @@ useEffect(() => {
                       className="border rounded-lg overflow-hidden shadow-sm "
                     >
                       <button
-                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${
-                          activeIndex === index
+                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${activeIndex === index
                             ? "bg-green-100 text-green-700"
                             : "hover:bg-gray-50"
-                        }`}
+                          }`}
                         onClick={() => handleAccordionToggle(index)}
                       >
                         <span
@@ -931,9 +926,8 @@ useEffect(() => {
                         </span>
                       </button>
                       <div
-                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${
-                          activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
-                        }`}
+                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
+                          }`}
                       >
                         <p
                           className="text-gray-600"
