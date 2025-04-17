@@ -14,6 +14,7 @@ import { BsSpeedometer2 } from "react-icons/bs";
 import { UserContext } from "../context/UserProvider";
 import { useUser } from "@clerk/clerk-react";
 
+
 const Packagename = () => {
   const [data, setData] = useState({});
   const [faqs, setFaqs] = useState([]);
@@ -51,6 +52,7 @@ const Packagename = () => {
 
   const [resultData, setResultData] = useState(null);
 
+
   const { user } = useContext(UserContext);
   // console.log(user)
 
@@ -77,6 +79,7 @@ const Packagename = () => {
           .catch((err) => {
             console.error("Error fetching result:", err);
           });
+
       });
     }
 
@@ -572,6 +575,7 @@ const Packagename = () => {
                                   </div>
                                 ) : (
                                   <button
+
                                     className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
                                         ? "bg-green-500 text-white hover:bg-green-600"
                                         : test.status === "true"
@@ -596,12 +600,15 @@ const Packagename = () => {
                                     ) : test.status === "true" ? (
                                       "Take Test"
                                     ) : (
+
                                       <div className="flex items-center justify-center font-semibold gap-1">
                                         <IoMdLock />
                                         Lock
                                       </div>
+
                                     )}
                                   </button>
+
                                 )}
                               </div>
                             </div>

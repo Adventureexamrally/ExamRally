@@ -28,9 +28,11 @@ const Mocksolution = () => {
     // exams/getExam/67c5900a09a3bf8c7f605d71
       const { user } = useContext(UserContext);
     useEffect(() => {
+
         if (!user?._id) return; // Don't run if user is not loaded yet
 
         Api.get(`results/${user?._id}/${id}`)
+
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);
@@ -121,8 +123,10 @@ useEffect(() => {
     });
     
     useEffect(() => {
+
         if (!user?._id) return; // Don't run if user is not loaded yet
         Api.get(`results/${user?._id}/${id}`)
+
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);

@@ -26,12 +26,14 @@ const ResultPage = () => {
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name,setShow_name] = useState("")
 
+
      const { user } = useContext(UserContext);
  console.log(user);
  
 
   useEffect(() => {
     if (!user?._id) return; // Don't run if user is not loaded yet
+
     Api.get(`results/${user?._id}/${id}`)
       .then(res => {
         setResultData(res.data);
