@@ -14,6 +14,7 @@ import { BsSpeedometer2 } from "react-icons/bs";
 import { UserContext } from "../context/UserProvider";
 import { useUser } from "@clerk/clerk-react";
 
+
 const Packagename = () => {
   const [data, setData] = useState({});
   const [faqs, setFaqs] = useState([]);
@@ -66,10 +67,16 @@ useEffect(() => {
   data?.exams?.forEach((test) => {
     Api.get(`/results/${user?._id}/${test._id}`)
       .then((res) => {
-        if (res.data?.status === "completed") {
+        if (res.data?.status === "completed"
+          || res.data?.status === "paused"
+        ) {
           setResultData((prev) => ({
             ...prev,
-            [test._id]: res.data
+            [test._id]: {
+              ...res.data,
+              lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+              selectedOptions: res.data.selectedOptions
+            }
           }));
         }
       })
@@ -576,33 +583,45 @@ useEffect(() => {
                                   className={`mt-3 py-2 px-4 rounded w-full transition ${
                                     resultData?.[test._id]?.status === "completed"
                                       ? "bg-green-500 text-white hover:bg-green-600"
+                                      : resultData?.[test._id]?.status === "paused"
+                                      ? "bg-red-500 text-white hover:bg-red-600"
                                       : test.status === "true"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                   onClick={() => {
                                     if (!isSignedIn) {
-                                    navigate('/sign-in')
+                                      navigate('/sign-in')
                                     }
                                     else if (resultData?.[test._id]?.status === "completed") {
                                       openNewWindow(`/result/${test._id}`);
-                                    } else if (test.status === "true") {
+                                    } 
+                                    else if (resultData?.[test._id]?.status === "paused") {
+                                      // Pass last question index and selected options when resuming
+                                      openNewWindow(
+                                        `/mocktest/${test._id}`
+                                      );
+                                    }
+                                    else if (test.status === "true") {
                                       openNewWindow(`/instruction/${test._id}`);
                                     } else {
                                       handleTopicSelect(test.section[0], "prelims");
                                     }
                                   }}
                                 >
-                                  {resultData?.[test._id]?.status === "completed" ? (
-                                    "View Result"
-                                  ) : test.status === "true" ? (
-                                    "Take Test"
-                                  ) : (
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Lock
-                                    </div>
-                                  )}
+                                  {resultData?.[test._id]?.status === "completed" 
+                                    ? "View Result"
+                                    : resultData?.[test._id]?.status === "paused"
+                                    ? "Resume"
+                                    : test.status === "true" 
+                                    ? "Take Test"
+                                    : (
+                                      <div className="flex items-center justify-center font-semibold gap-1">
+                                        <IoMdLock />
+                                        Lock
+                                      </div>
+                                    )
+                                  }
                                 </button>
                                 )}
                               </div>

@@ -412,44 +412,65 @@ const Test = () => {
 
   const [selectedOptions, setSelectedOptions] = useState(Array(totalQuestions).fill(null));
 
+  // useEffect(() => {
+  //   console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
+
+  //   if (!id) return;
+
+  //   const storedSelectedOptions = localStorage.getItem(`selectedOptions_${id}`);
+  //   if (storedSelectedOptions) {
+  //     try {
+  //       const parsedOptions = JSON.parse(storedSelectedOptions);
+  //       setSelectedOptions(parsedOptions);
+  //     } catch (e) {
+  //       console.error('Error parsing stored selected options:', e);
+  //       // Initialize with null for all questions if parsing fails
+  //       const initialOptions = Array(totalQuestions).fill(null);
+  //       setSelectedOptions(initialOptions);
+  //     }
+  //   } else {
+  //     // Initialize with null for all questions if no data in localStorage
+  //     const initialOptions = Array(totalQuestions).fill(null);
+  //     setSelectedOptions(initialOptions);
+  //   }
+  // }, [id, totalQuestions]);
+
+  // useEffect(() => {
+  //   if (!id) return;
+
+  //   if (selectedOptions.length > 0) {
+  //     // Store selected options along with question number
+  //     const combinedData = selectedOptions.map((selectedOption, index) => ({
+  //       questionNumber: index,
+  //       selectedOption: selectedOption, // Could be null or the selected value
+  //     }));
+
+  //     // Save combined data to localStorage
+  //     localStorage.setItem(`selectedOptions_${id}`, JSON.stringify(combinedData));
+  //   } else {
+  //     // Remove the stored data from localStorage if no selections
+  //     localStorage.removeItem(`selectedOptions_${id}`);
+  //   }
+  // }, [selectedOptions, id]);
+
   useEffect(() => {
     console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
-
+  
     if (!id) return;
-
-    const storedSelectedOptions = localStorage.getItem(`selectedOptions_${id}`);
-    if (storedSelectedOptions) {
-      try {
-        const parsedOptions = JSON.parse(storedSelectedOptions);
-        setSelectedOptions(parsedOptions);
-      } catch (e) {
-        console.error('Error parsing stored selected options:', e);
-        // Initialize with null for all questions if parsing fails
-        const initialOptions = Array(totalQuestions).fill(null);
-        setSelectedOptions(initialOptions);
-      }
-    } else {
-      // Initialize with null for all questions if no data in localStorage
-      const initialOptions = Array(totalQuestions).fill(null);
-      setSelectedOptions(initialOptions);
-    }
+    const initialOptions = Array(totalQuestions).fill(null);
+    setSelectedOptions(initialOptions);
   }, [id, totalQuestions]);
-
+  
   useEffect(() => {
     if (!id) return;
-
+  
     if (selectedOptions.length > 0) {
-      // Store selected options along with question number
       const combinedData = selectedOptions.map((selectedOption, index) => ({
         questionNumber: index,
         selectedOption: selectedOption, // Could be null or the selected value
       }));
-
-      // Save combined data to localStorage
-      localStorage.setItem(`selectedOptions_${id}`, JSON.stringify(combinedData));
-    } else {
-      // Remove the stored data from localStorage if no selections
-      localStorage.removeItem(`selectedOptions_${id}`);
+  
+      console.log('Saving selected options:', combinedData);
     }
   }, [selectedOptions, id]);
 
@@ -837,7 +858,7 @@ const Test = () => {
       timeTakenInSeconds: timeTakenInSeconds,
       takenAt: examStartTime,
       submittedAt: endTime,
-      status:"completed"
+      status: isPaused ? "paused" : "completed", 
     })
       .then((res) => {
         console.log("Response Data-sample:", res.data);
@@ -883,10 +904,10 @@ const Test = () => {
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
-  const handlePauseResume = () => {
+    const handlePauseResume = () => {
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
-      setIsPaused(true); // Pause the timer
+      setIsPaused(true);
       setPauseCount(pauseCount + 1);
       Swal.fire({
         title: "Pause Exam",
@@ -899,24 +920,38 @@ const Test = () => {
         cancelButtonText: "No, Resume",
         position: 'center',
         width: '100vw',
-        height: '100vh', // Direct height setting - important
+        height: '100vh',
         padding: '100',
         customClass: {
           container: 'swal-full-screen',
-          popup: 'swal-popup-full-height', // Target the popup
+          popup: 'swal-popup-full-height',
         },
-        //  Remove didOpen -  setting height directly
-      }).then(async (result) => {
+      }).then(async(result) => {
         if (result.isConfirmed) {
-          await submitExam(); // Submit exam data before navigating
-          navigate(`/result/${id}`);
+          setIsPaused(true);
+           
+          await submitExam();
+          // Get active packages and find matching package
+          Api.get('packages/get/active')
+            .then((packagesRes) => {
+              const activePackages = packagesRes.data;
+              const matchingPackage = activePackages.find(pkg => pkg.exams.includes(id));
+              if (matchingPackage) {
+                navigate(`/top-trending-exams/${matchingPackage.link_name}`);
+              } else {
+                navigate('/top-trending-exams');
+              }
+            })
+            .catch(() => {
+              navigate('/top-trending-exams');
+            });
         } else {
           setIsPaused(false);
           setPauseCount(0);
         }
       });
-    };
-  }
+    }
+  };
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
   //   if (timeLeft <= 0) {

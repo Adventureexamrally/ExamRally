@@ -26,7 +26,7 @@ const Mocksolution = () => {
     const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
     useEffect(() => {
-        Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+        Api.get(`results/67ff3e5a3a611ea3c64ef898/${id}`)
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);
@@ -116,7 +116,7 @@ useEffect(() => {
     });
     
     useEffect(() => {
-        Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+        Api.get(`results/67ff3e5a3a611ea3c64ef898/${id}`)
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);

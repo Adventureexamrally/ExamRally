@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Api from "../service/Api";
 import checklist from "../assets/images/test.png";
 import ambition from "../assets/images/waste.png";
@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import ResultAnimation from '../animationeffect/ResultAnimation';
+import { UserContext } from '../context/UserProvider';
 
 const ResultPage = () => {
   const [resultData, setResultData] = useState(null);
@@ -25,10 +26,10 @@ const ResultPage = () => {
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name,setShow_name] = useState("")
 
- 
+ const { user } = useContext(UserContext);
 
   useEffect(() => {
-    Api.get(`results/65a12345b6c78d901e23f456/${id}`)
+    Api.get(`results/${user?._id}/${id}`)
       .then(res => {
         setResultData(res.data);
         console.log(res.data);
