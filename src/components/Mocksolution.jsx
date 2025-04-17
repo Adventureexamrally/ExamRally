@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Api from "../service/Api";
 import "react-toastify/dist/ReactToastify.css";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../assets/logo/bg-logo.png'; 
+import { UserContext } from "../context/UserProvider";
 
 const Mocksolution = () => {
     const [examData, setExamData] = useState(null);
@@ -25,8 +26,13 @@ const Mocksolution = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
+      const { user } = useContext(UserContext);
     useEffect(() => {
-        Api.get(`results/67ff3e5a3a611ea3c64ef898/${id}`)
+
+        if (!user?._id) return; // Don't run if user is not loaded yet
+
+        Api.get(`results/${user?._id}/${id}`)
+
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);
@@ -34,7 +40,8 @@ const Mocksolution = () => {
                 }
             })
             .catch((err) => console.error("Error fetching data:", err));
-    }, [id]);
+            
+    }, [id,user]);
 
 useEffect(() => {
   // Check if data has already been fetched
@@ -116,7 +123,10 @@ useEffect(() => {
     });
     
     useEffect(() => {
-        Api.get(`results/67ff3e5a3a611ea3c64ef898/${id}`)
+
+        if (!user?._id) return; // Don't run if user is not loaded yet
+        Api.get(`results/${user?._id}/${id}`)
+
             .then((res) => {
                 if (res.data) {
                     setExamData(res.data);
@@ -135,7 +145,7 @@ useEffect(() => {
                 }
             })
             .catch((err) => console.error("Error fetching data:", err));
-    }, [id, currentSectionIndex]);
+    }, [id, currentSectionIndex,user]);
         
   
 

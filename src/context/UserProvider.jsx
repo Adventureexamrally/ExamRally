@@ -18,6 +18,8 @@ export const UserProvider = ({ children }) => {
         const clerkId = clerkUser.id;
 
         const res = await Api.get(`/auth/getUserDetails/${clerkId}`);
+        console.log("res",res.data);
+        
         setUser(res.data);
         console.log("Fetched user from backend:", res.data);
       } catch (err) {

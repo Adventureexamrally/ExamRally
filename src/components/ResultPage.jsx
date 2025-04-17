@@ -26,9 +26,14 @@ const ResultPage = () => {
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name,setShow_name] = useState("")
 
- const { user } = useContext(UserContext);
+
+     const { user } = useContext(UserContext);
+ console.log(user);
+ 
 
   useEffect(() => {
+    if (!user?._id) return; // Don't run if user is not loaded yet
+
     Api.get(`results/${user?._id}/${id}`)
       .then(res => {
         setResultData(res.data);
@@ -45,7 +50,7 @@ const ResultPage = () => {
       .catch(error => {
         console.error("Error fetching data:", error);
       });
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     // Step 2: Set the default section (e.g., first section or any other logic you want)
