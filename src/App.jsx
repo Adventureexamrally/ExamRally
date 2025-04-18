@@ -36,6 +36,9 @@ import TestSeries from "./pages/TestSeries";
 import AllArch from "./components/AllArch";
 import PdfCourse from "./pages/pdfCourse/PdfCourse";
 import PdfCourseHome from "./pages/pdfCourse/PdfCourseHome";
+import PdfInstruction from "./pages/pdfCourseExam/PdfInstruction";
+import PdfTest from "./pages/pdfCourseExam/PdfTest";
+import PdfOtherInstruction from "./pages/pdfCourseExam/PdfOtherinstruction";
 
 
 
@@ -60,7 +63,7 @@ function MainApp() {
     }
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
-  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct", "/mocksolution", "/result"].some((path) =>
+  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct", "/mocksolution", "/result","/pdf/instruction","/pdf/otherinstruct","/pdf/mocktest"].some((path) =>
     location.pathname.startsWith(path)
   );
   useEffect(() => {
@@ -145,6 +148,12 @@ function MainApp() {
         <Route path="/pdf-course/:level" element={<PdfCourse />} />
 
         <Route path="/video-course" element={<VideoCourse />} />
+        <Route path="/pdf">
+          <Route path="instruction/:id" element={<PdfInstruction />} />
+          <Route path="mocktest/:id" element={<PdfTest />} />
+          <Route path="otherinstruct/:id" element={<PdfOtherInstruction />} />
+
+        </Route>
 
         <Route path="profile">
           <Route index element={<Profile />} />
