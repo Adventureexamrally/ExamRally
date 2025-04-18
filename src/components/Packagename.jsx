@@ -708,36 +708,49 @@ const Packagename = () => {
                                   </div>
                                 ) : (
                                   <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : test.status === "true"
-                                          ? "bg-green-500 text-white hover:bg-green-600"
-                                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                      }`}
-                                    onClick={() => {
-                                      if (!isSignedIn) {
-                                        navigate('/sign-in')
-                                      }
-                                      else if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}`);
-                                      } else if (test.status === "true") {
-                                        openNewWindow(`/instruction/${test._id}`);
-                                      } else {
-                                        handleTopicSelect(test.section[0], "prelims");
-                                      }
-                                    }}
-                                  >
-                                    {resultData?.[test._id]?.status === "completed" ? (
-                                      "View Result"
-                                    ) : test.status === "true" ? (
-                                      "Take Test"
-                                    ) : (
+                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                    resultData?.[test._id]?.status === "completed"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : resultData?.[test._id]?.status === "paused"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : test.status === "true"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  }`}
+                                  onClick={() => {
+                                    if (!isSignedIn) {
+                                      navigate('/sign-in')
+                                    }
+                                    else if (resultData?.[test._id]?.status === "completed") {
+                                      openNewWindow(`/result/${test._id}`);
+                                    } 
+                                    else if (resultData?.[test._id]?.status === "paused") {
+                                      // Pass last question index and selected options when resuming
+                                      openNewWindow(
+                                        `/mocktest/${test._id}`
+                                      );
+                                    }
+                                    else if (test.status === "true") {
+                                      openNewWindow(`/instruction/${test._id}`);
+                                    } else {
+                                      handleTopicSelect(test.section[0], "prelims");
+                                    }
+                                  }}
+                                >
+                                  {resultData?.[test._id]?.status === "completed" 
+                                    ? "View Result"
+                                    : resultData?.[test._id]?.status === "paused"
+                                    ? "Resume"
+                                    : test.status === "true" 
+                                    ? "Take Test"
+                                    : (
                                       <div className="flex items-center justify-center font-semibold gap-1">
                                         <IoMdLock />
                                         Lock
                                       </div>
-                                    )}
-                                  </button>
+                                    )
+                                  }
+                                </button>
                                 )}
                               </div>
                             </div>
@@ -866,27 +879,49 @@ const Packagename = () => {
                               </div>
                             ) : (
                               <button
-                                className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
+                              className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                resultData?.[test._id]?.status === "completed"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : resultData?.[test._id]?.status === "paused"
+                                  ? "bg-green-500 text-white hover:bg-green-600"
+                                  : test.status === "true"
                                   ? "bg-green-500 text-white hover:bg-green-600"
                                   : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                onClick={() => {
-                                  if (test.status === "true") {
-                                    openNewWindow(`/instruction/${test._id}`);
-                                  } else {
-                                    handleTopicSelect(test.section[0], "prelims");
-                                  }
-                                }}
-                              >
-                                {test.status === "true" ? (
-                                  "Take Test"
-                                ) : (
+                              }`}
+                              onClick={() => {
+                                if (!isSignedIn) {
+                                  navigate('/sign-in')
+                                }
+                                else if (resultData?.[test._id]?.status === "completed") {
+                                  openNewWindow(`/result/${test._id}`);
+                                } 
+                                else if (resultData?.[test._id]?.status === "paused") {
+                                  // Pass last question index and selected options when resuming
+                                  openNewWindow(
+                                    `/mocktest/${test._id}`
+                                  );
+                                }
+                                else if (test.status === "true") {
+                                  openNewWindow(`/instruction/${test._id}`);
+                                } else {
+                                  handleTopicSelect(test.section[0], "prelims");
+                                }
+                              }}
+                            >
+                              {resultData?.[test._id]?.status === "completed" 
+                                ? "View Result"
+                                : resultData?.[test._id]?.status === "paused"
+                                ? "Resume"
+                                : test.status === "true" 
+                                ? "Take Test"
+                                : (
                                   <div className="flex items-center justify-center font-semibold gap-1">
                                     <IoMdLock />
                                     Lock
                                   </div>
-                                )}
-                              </button>
+                                )
+                              }
+                            </button>
                             )}
                           </div>
                         )
