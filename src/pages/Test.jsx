@@ -77,6 +77,66 @@ const Test = () => {
     }
   }, [id]);  // Only trigger when `id` changes
 
+
+  // In the useEffect that fetches exam state
+useEffect(() => {
+  if (user?._id && id) {
+    Api.get(`results/${user?._id}/${id}`)
+      .then(response => {
+        if (response.data) {
+          const state = response.data;
+          const initialOptions = Array(t_questions).fill(null);
+          let lastVisitedIndex = 0;
+          let visitedQuestionsList = [];
+          let markedForReviewList = [];
+          let absoluteIndexCounter = 0;
+
+          if (state.section) {
+            state.section.forEach((section) => {
+              const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+              questions.forEach((question, questionIndex) => {
+                const absoluteIndex = absoluteIndexCounter++;
+                
+                // Set selected option if exists
+                if (question.selectedOption !== undefined && question.selectedOption !== null) {
+                  initialOptions[absoluteIndex] = question.selectedOption;
+                }
+
+                // Track visited questions
+                if (question.isVisited === 1) {
+                  visitedQuestionsList.push(absoluteIndex);
+                  lastVisitedIndex = absoluteIndex; // Track most recently visited
+                }
+
+                // Track marked for review
+                if (question.markforreview === 1 || question.ansmarkforrev === 1) {
+                  markedForReviewList.push(absoluteIndex);
+                }
+              });
+            });
+          }
+
+          setSelectedOptions(initialOptions);
+          setVisitedQuestions(visitedQuestionsList);
+          setMarkedForReview(markedForReviewList);
+          setCurrentSectionIndex(state.currentSectionIndex || 0);
+          
+          // // Show the last visited question, or first question if none visited
+          // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
+          if (visitedQuestionsList.length > 0) {
+        setClickedQuestionIndex(visitedQuestionsList[0]  || lastVisitedIndex); // First visited question
+      } else {
+        setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+        setVisitedQuestions([0]);  // Mark it as visited
+      }
+        }
+      })
+      
+      .catch(error => console.error('Error fetching exam state:', error));
+  }
+}, [id, user?._id, t_questions, selectedLanguage]);  
+
+
   const questionRef = useRef(null);
   const commonDataRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -154,19 +214,36 @@ const Test = () => {
     setClickedQuestionIndex(index);
   };
 
-  const handleOptionChange = (index) => {
+  useEffect(() => {
+    const savedState = localStorage.getItem(`examState_${id}`);
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      setClickedQuestionIndex(state.clickedQuestionIndex);
+      setSelectedOptions(state.selectedOptions);
+      setVisitedQuestions(state.visitedQuestions);
+      setMarkedForReview(state.markedForReview);
+      setCurrentSectionIndex(state.currentSectionIndex);
+    }
+  }, [id]);
+  
+  // Modify handleOptionChange to update database
+  const handleOptionChange = async (index) => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
-      updatedOptions[clickedQuestionIndex] = index; // Store the selected option for the clicked question
+      updatedOptions[clickedQuestionIndex] = index;
+      
+      // Update the database with the new selection
+      Api.post(`results/${user?._id}/${id}`, {
+        selectedOptions: updatedOptions,
+        currentQuestionIndex: clickedQuestionIndex,
+        sectionIndex: currentSectionIndex
+      });
+      
       return updatedOptions;
     });
+  
+   
 
-    // Get the correct answer for the clicked question
-    const currentQuestion =
-      examData?.section[currentSectionIndex]?.questions[
-      clickedQuestionIndex - startingIndex
-      ];
-    const correctAnswerIndex = currentQuestion?.answer;
 
     let mark = 0;
 
@@ -721,8 +798,8 @@ const Test = () => {
 
       const correctCount = sectionAnswersData.filter(q => q.correct === 1).length;
       const attemptedCount = sectionAnswersData.filter(q => q.selectedOption !== undefined).length;
-      const incorrectCount = attemptedCount - correctCount;
-      const sectionScore = sectionAnswersData.reduce((sum, q) => sum + q.score, 0);
+      const incorrectCount = sectionAnswered - correctCount;
+      const sectionScore = (correctCount*1)-(incorrectCount*0.25);
       const secaccuracy = sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
       console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
       const skippedQuestions = sectionVisited - sectionAnswered;
@@ -843,6 +920,9 @@ const Test = () => {
       });
   }, [id]);
 
+  
+ 
+
   useEffect(() => {
     if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
 
@@ -904,11 +984,20 @@ const Test = () => {
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
-    const handlePauseResume = () => {
+     const handlePauseResume = () => {
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
       setIsPaused(true);
       setPauseCount(pauseCount + 1);
+      const currentState = {
+        clickedQuestionIndex,
+        selectedOptions,
+        visitedQuestions,
+        markedForReview,
+        currentSectionIndex
+      };
+      // localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
+  
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
@@ -952,6 +1041,8 @@ const Test = () => {
       });
     }
   };
+
+  
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
   //   if (timeLeft <= 0) {
@@ -999,7 +1090,7 @@ const Test = () => {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
-        await submitExam();
+        submitExam();
         navigate(`/result/${id}`);
       }
     }
@@ -1177,6 +1268,9 @@ const Test = () => {
       answeredAndMarked,
     };
   };
+
+
+
   return (
     <div className="mock-font p-1">
       <div>

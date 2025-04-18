@@ -59,32 +59,35 @@ const Packagename = () => {
   useEffect(() => {
     // Fetch package content
     Api.get(`packages/package-content/${id}`).then((res) => {
-      // console.log("Package Content:", res.data);
+      console.log("Package Content:", res.data);
       setData(res.data.data[0]);
       setFaqs(res.data.data[0].faqs);
     });
-    if (!user?._id) return; // Don't run if user is not loaded yet
-    if (isSignedIn) {
-      // Fetch test result for each test
-      data?.exams?.forEach((test) => {
-        Api.get(`/results/${user?._id}/${test._id}`)
-          .then((res) => {
-            if (res.data?.status === "completed") {
-              setResultData((prev) => ({
-                ...prev,
-                [test._id]: res.data
-              }));
-            }
-          })
-          .catch((err) => {
-            console.error("Error fetching result:", err);
-          });
-
-      });
-    }
-
+  
+    // Fetch test result for each test
+    data?.exams?.forEach((test) => {
+      Api.get(`/results/${user?._id}/${test._id}`)
+        .then((res) => {
+          if (res.data?.status === "completed"
+            || res.data?.status === "paused"
+          ) {
+            setResultData((prev) => ({
+              ...prev,
+              [test._id]: {
+                ...res.data,
+                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                selectedOptions: res.data.selectedOptions
+              }
+            }));
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching result:", err);
+        });
+    });
+  
     run();
-  }, [id, data?.exams,isSignedIn]);
+  }, [id, data?.exams]);
 
 
   // Fetch test result
@@ -575,39 +578,49 @@ const Packagename = () => {
                                   </div>
                                 ) : (
                                   <button
-
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : test.status === "true"
-                                          ? "bg-green-500 text-white hover:bg-green-600"
-                                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                      }`}
-                                    onClick={() => {
-                                      if (!isSignedIn) {
-                                        navigate('/sign-in')
-                                      }
-                                      else if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}`);
-                                      } else if (test.status === "true") {
-                                        openNewWindow(`/instruction/${test._id}`);
-                                      } else {
-                                        handleTopicSelect(test.section[0], "prelims");
-                                      }
-                                    }}
-                                  >
-                                    {resultData?.[test._id]?.status === "completed" ? (
-                                      "View Result"
-                                    ) : test.status === "true" ? (
-                                      "Take Test"
-                                    ) : (
-
+                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                    resultData?.[test._id]?.status === "completed"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : resultData?.[test._id]?.status === "paused"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : test.status === "true"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                  }`}
+                                  onClick={() => {
+                                    if (!isSignedIn) {
+                                      navigate('/sign-in')
+                                    }
+                                    else if (resultData?.[test._id]?.status === "completed") {
+                                      openNewWindow(`/result/${test._id}`);
+                                    } 
+                                    else if (resultData?.[test._id]?.status === "paused") {
+                                      // Pass last question index and selected options when resuming
+                                      openNewWindow(
+                                        `/mocktest/${test._id}`
+                                      );
+                                    }
+                                    else if (test.status === "true") {
+                                      openNewWindow(`/instruction/${test._id}`);
+                                    } else {
+                                      handleTopicSelect(test.section[0], "prelims");
+                                    }
+                                  }}
+                                >
+                                  {resultData?.[test._id]?.status === "completed" 
+                                    ? "View Result"
+                                    : resultData?.[test._id]?.status === "paused"
+                                    ? "Resume"
+                                    : test.status === "true" 
+                                    ? "Take Test"
+                                    : (
                                       <div className="flex items-center justify-center font-semibold gap-1">
                                         <IoMdLock />
                                         Lock
                                       </div>
-
-                                    )}
-                                  </button>
+                                    )
+                                  }
+                                </button>
 
                                 )}
                               </div>
