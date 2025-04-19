@@ -482,7 +482,7 @@ const PdfCourse = () => {
                                                                                 else if (resultData?.[test._id]?.status === "completed") {
                                                                                     openNewWindow(`/result/${pdf.exams[0]?._id}`);
                                                                                 } else if (pdf.exams[0].status === "true") {
-                                                                                    openNewWindow(`/instruction/${pdf.exams[0]?._id}`);
+                                                                                    openNewWindow(`/pdf/instruction/${pdf.exams[0]?._id}`);
                                                                                 }
                                                                             }}
                                                                         >
