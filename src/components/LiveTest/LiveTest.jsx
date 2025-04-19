@@ -94,6 +94,7 @@ const LiveTest = () => {
       console.error("Error fetching data:", error);
     }
   }
+  
 
   return (
     <>

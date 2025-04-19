@@ -1,33 +1,67 @@
-import React, { useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { BsQuestionSquare } from 'react-icons/bs';
 import { ImCheckmark2 } from 'react-icons/im';
 import { IoMdLock } from 'react-icons/io';
 import { MdOutlineAccessTime } from 'react-icons/md';
 import { FaTachometerAlt } from "react-icons/fa";  // Import the correct icon
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
+import { UserContext } from '../../context/UserProvider';
+import Api from '../../service/Api';
 
 
-const LiveTestcategorieModel = ({data,topic,activeSection}) => {
+const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
     console.log(data);
 
-      const [showDifficulty, setShowDifficulty] = useState({});
-    
+    const [showDifficulty, setShowDifficulty] = useState({});
+
     const handleShowLevelClick = (testId) => {
         setShowDifficulty((prevState) => ({
-          ...prevState,
-          [testId]: true, // Mark the test's difficulty as shown
+            ...prevState,
+            [testId]: true, // Mark the test's difficulty as shown
         }));
-      };
-
-      const openNewWindow = (url) => {
+    };
+    const openNewWindow = (url) => {
         const width = screen.width;
         const height = screen.height;
         window.open(
-          url,
-          "_blank",
-          `noopener,noreferrer,width=${width},height=${height}`
+            url,
+            "_blank",
+            `noopener,noreferrer,width=${width},height=${height}`
         );
-      };
-    
+    };
+ const [resultData, setResultData] = useState(null);
+ 
+ 
+   const { user } = useContext(UserContext);
+
+  const navigate = useNavigate();
+  // console.log(user)
+  const { isSignedIn } = useUser();
+  useEffect(() => {
+  
+    // Fetch test result for each test
+    data?.exams?.forEach((test) => {
+      Api.get(`/results/${user?._id}/${test._id}`)
+        .then((res) => {
+          if (res.data?.status === "completed"
+            || res.data?.status === "paused"
+          ) {
+            setResultData((prev) => ({
+              ...prev,
+              [test._id]: {
+                ...res.data,
+                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                selectedOptions: res.data.selectedOptions
+              }
+            }));
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching result:", err);
+        });
+    });
+  }, [ data?.exams]);
     return (
         <div className="modal fade" id="questionsModal" tabIndex="-1" aria-labelledby="questionsModalLabel" aria-hidden="true">
             <div className="modal-dialog modal-lg">
@@ -106,34 +140,57 @@ const LiveTestcategorieModel = ({data,topic,activeSection}) => {
                                                                 </div>
                                                             </div>
                                                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                                            {/* Take Test / Lock Button */}
-                                                            <button
-                                                                className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
-                                                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                                                    : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                                                    }`}
-                                                                onClick={() => {
-                                                                    if (test.status === "true") {
-                                                                        openNewWindow(`/instruction/${test._id}`);
-                                                                    } else {
-                                                                        handleTopicSelect(
-                                                                            test.section[0],
-                                                                            "PYQ"
-                                                                        );
+                                                            {new Date(test.live_date) > new Date() ? (
+                                                                // Display "Coming Soon" if the current date is earlier than live_date
+                                                                <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                                                    Coming Soon
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                                                            ? "bg-green-500 text-white hover:bg-green-600"
+                                                                            : resultData?.[test._id]?.status === "paused"
+                                                                                ? "bg-green-500 text-white hover:bg-green-600"
+                                                                                : test.status === "true"
+                                                                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                                                                    : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                                                        }`}
+                                                                    onClick={() => {
+                                                                        if (!isSignedIn) {
+                                                                            navigate('/sign-in')
+                                                                        }
+                                                                        else if (resultData?.[test._id]?.status === "completed") {
+                                                                            openNewWindow(`/liveresult/${test._id}`);
+                                                                        }
+                                                                        else if (resultData?.[test._id]?.status === "paused") {
+                                                                            // Pass last question index and selected options when resuming
+                                                                            openNewWindow(
+                                                                                `/mocklivetest/${test._id}`
+                                                                            );
+                                                                        }
+                                                                        else if (test.status === "true") {
+                                                                            openNewWindow(`/instruct/${test._id}`);
+                                                                        } else {
+                                                                            handleTopicSelect(test.section[0], "prelims");
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {resultData?.[test._id]?.status === "completed"
+                                                                        ? "View Result"
+                                                                        : resultData?.[test._id]?.status === "paused"
+                                                                            ? "Resume"
+                                                                            : test.status === "true"
+                                                                                ? "Take Test"
+                                                                                : (
+                                                                                    <div className="flex items-center justify-center font-semibold gap-1">
+                                                                                        <IoMdLock />
+                                                                                        Lock
+                                                                                    </div>
+                                                                                )
                                                                     }
-                                                                }}
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#questionsModal"
-                                                            >
-                                                                {test.status === "true" ? (
-                                                                    "Take Test"
-                                                                ) : (
-                                                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                                                        <IoMdLock />
-                                                                        Lock
-                                                                    </div>
-                                                                )}
-                                                            </button>
+                                                                </button>
+
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
