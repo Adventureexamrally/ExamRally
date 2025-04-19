@@ -8,7 +8,6 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
 import Api from "../service/Api";
-import axios from "axios";
 
 const features = [
   {
@@ -162,7 +161,7 @@ export default function Features() {
                   title="Current Video"
                   allowFullScreen
                 />
-                 <h1 className="p font p-3 bg-green-300 text-center rounded m-2">{youtubeVideos[prevIndex]?.description}</h1>
+                 <h1 className="p font p-3 bg-green-300 text-center rounded m-2">{youtubeVideos[currentIndex ]?.description}</h1>
               </div>
             ) : (
               <>
@@ -199,7 +198,7 @@ export default function Features() {
                     title="Current Video"
                     allowFullScreen
                   />
-                  <h1 className="p font p-3 bg-green-500 text-center text-white rounded m-4">{youtubeVideos[prevIndex]?.description}</h1>
+                  <h1 className="p font p-3 bg-green-500 text-center text-white rounded m-4">{youtubeVideos[currentIndex]?.description}</h1>
                 </div>
 
                 {/* Next Video (Right) */}
@@ -217,7 +216,7 @@ export default function Features() {
                     title="Next Video"
                     allowFullScreen
                   />
-                 <h1 className="p font p-3 bg-green-300 text-center rounded m-5">{youtubeVideos[prevIndex]?.description}</h1>
+                 <h1 className="p font p-3 bg-green-300 text-center rounded m-5">{youtubeVideos[nextIndex]?.description}</h1>
                 </div>
               </>
             )}

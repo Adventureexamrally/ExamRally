@@ -1090,7 +1090,8 @@ useEffect(() => {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
-        submitExam();
+        await submitExam();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
         navigate(`/result/${id}`);
       }
     }
@@ -1453,9 +1454,9 @@ useEffect(() => {
         </svg>
       </button>
 
-      <div className="row mb-24">
+      <div className="row mb-24 md:mb-4">
         {/* Question Panel */}
-        <div className={`p-4 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
+        <div className={`p-1 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
 
           {!isSubmitted ? (
             <>
@@ -1591,7 +1592,7 @@ useEffect(() => {
           )}
         </div>
         {/* Sidebar */}
-        <div className="col-9 col-md-4 col-lg-3 md:flex"  >
+        <div className="p-0 col-9 col-md-4 col-lg-3 md:flex"  >
           <div className="md:flex hidden items-center">
             <div className={` fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} onClick={toggleMenu2}>
               <FaChevronRight className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} />

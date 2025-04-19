@@ -78,8 +78,8 @@ const Instruction = () => {
       <th>S.No</th>
       <th>Section Exam Name</th>
       <th>No. of Questions</th>
-      <th>Section Time (Minutes)</th>
       <th>Mark</th>
+      <th>Section Time (Minutes)</th>
     </tr>
   </thead>
   <tbody>
@@ -88,8 +88,8 @@ const Instruction = () => {
         <td>{index + 1}</td>
         <td>{section.name}</td>
         <td>{section.t_question}</td>
-        <td>{section.t_time}</td>
         <td>{section.t_mark}</td>
+        <td>{section.t_time}</td>
       </tr>
     ))}
   </tbody>
@@ -245,9 +245,9 @@ const Instruction = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-        <div className="float-right">
+        <div className="fixed bottom-1 right-4">
         <Link to={`/otherinstruct/${id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
     Next
   </button>
 </Link>
