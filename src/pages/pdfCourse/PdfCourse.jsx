@@ -24,48 +24,56 @@ const PdfCourse = () => {
     const { user } = useContext(UserContext);
     console.log(user)
     const { level } = useParams();
-    useEffect(() => {
-        run()
-    }, []);
+
     const { isSignedIn } = useUser();
     const pdfRefs = useRef({});
     const navigate = useNavigate();
 
-    async function run() {
-
+    useEffect(() => {
+        run(); // Step 1: only fetch and set alldata here
+      }, [level]);
+      
+      const run = async () => {
         const response = await Api.get(`pdf-Course/courses`);
         const filteredData = response.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
-        console.log(response.data);
-
         setAlldata(filteredData);
-
+      
         const pdfExams = await Api.get("pdf-Course/Exams");
         setAllExamsName(pdfExams.data);
-        console.log(pdfExams.data);
-
+      
         const response2 = await Api.get(`/get-Specific-page/pdf-course`);
         setSeo(response2.data);
-        console.log(response2.data);
-
+      
         const response3 = await Api.get(`/blog-Ad/getbypage/pdf-course`);
         setAD(response3.data);
-
-        // Fetch test result for each test
-        alldata?.exams?.forEach((test) => {
-            Api.get(`/results/${user?._id}/${test._id}`)
-                .then((res) => {
-                    if (res.data?.status === "completed") {
-                        setResultData((prev) => ({
-                            ...prev,
-                            [test._id]: res.data
-                        }));
-                    }
-                })
-                .catch((err) => {
-                    console.error("Error fetching result:", err);
-                });
+      };
+      
+      // Step 2: Now that alldata is updated, fetch results
+      useEffect(() => {
+        if (!user?._id || !alldata.length) return;
+      
+        alldata.forEach((pdf) => {
+          const examId = pdf.exams?.[0]?._id;
+          if (!examId) return;
+      
+          Api.get(`/PDFresults/${user._id}/${examId}`)
+            .then((res) => {
+              if (res.data?.status === "completed" || res.data?.status === "paused") {
+                setResultData((prev) => ({
+                  ...prev,
+                  [examId]: {
+                    ...res.data,
+                    lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                    selectedOptions: res.data.selectedOptions,
+                  },
+                }));
+              }
+            })
+            .catch((err) => {
+              console.error("Error fetching result for", examId, ":", err);
+            });
         });
-    }
+      }, [alldata, user?._id]);
 
 
     // Function to generate the calendar dates for the selected month and year
@@ -131,24 +139,24 @@ const PdfCourse = () => {
     };
     const filteredPdfs = alldata.filter((pdf) => {
         if (!pdf.examName || !pdf.date) return false;
-    
+
         const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
         const matchesYear = pdfYear === year;
         const matchesMonth = pdfMonth === month;
         const matchesExam = selectedExam && pdf.examName.toLowerCase() === selectedExam.toLowerCase();
-    
+
         // If exam is selected, show PDFs for the whole selected year
         if (selectedExam) {
             return matchesExam && matchesYear;
         }
-    
+
         // Default: show current month/year PDFs
         return matchesYear && matchesMonth;
     });
-    
+
     // ✅ Sort by date so they're in Jan → Dec order
     filteredPdfs.sort((a, b) => new Date(a.date) - new Date(b.date));
-    
+
 
     useEffect(() => {
         if (selectedDate) {
@@ -469,33 +477,45 @@ const PdfCourse = () => {
                                                                         </div>
                                                                     ) : (
                                                                         <button
-                                                                            className={` flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors ${resultData?.[test._id]?.status === "completed"
+                                                                            className={` flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors${resultData?.[pdf.exams[0]?._id]?.status === "completed"
                                                                                 ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                : pdf.exams[0]?.status === "true"
+                                                                                : resultData?.[pdf.exams[0]?._id]?.status === "paused"
                                                                                     ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                    : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                                                                    : pdf.exams[0]?.status === "true"
+                                                                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                                                                        : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                                                                 }`}
                                                                             onClick={() => {
                                                                                 if (!isSignedIn) {
                                                                                     navigate('/sign-in')
                                                                                 }
-                                                                                else if (resultData?.[test._id]?.status === "completed") {
-                                                                                    openNewWindow(`/result/${pdf.exams[0]?._id}`);
-                                                                                } else if (pdf.exams[0].status === "true") {
-                                                                                    openNewWindow(`/instruction/${pdf.exams[0]?._id}`);
+                                                                                else if (resultData?.[pdf.exams[0]?._id]?.status === "completed") {
+                                                                                    openNewWindow(`/pdf/result/${pdf.exams[0]._id}`);
+                                                                                }
+                                                                                else if (resultData?.[pdf.exams[0]?._id]?.status === "paused") {
+                                                                                    // Pass last question index and selected options when resuming
+                                                                                    openNewWindow(
+                                                                                        `/pdf/mocktest/${pdf.exams[0]?._id}`
+                                                                                    );
+                                                                                }
+                                                                                else if (pdf.exams[0]?.status === "true") {
+                                                                                    openNewWindow(`/pdf/instruction/${pdf.exams[0]?._id}`);
                                                                                 }
                                                                             }}
                                                                         >
-                                                                            {resultData?.[test._id]?.status === "completed" ? (
-                                                                                "View Result"
-                                                                            ) : pdf.exams[0]?.status === "true" ? (
-                                                                                "Take Test"
-                                                                            ) : (
-                                                                                <span className="flex items-center justify-center font-semibold">
-                                                                                    <IoMdLock />
-                                                                                    Lock
-                                                                                </span>
-                                                                            )}
+                                                                            {resultData?.[pdf.exams[0]?._id]?.status === "completed"
+                                                                                ? "View Result"
+                                                                                : resultData?.[pdf.exams[0]?._id]?.status === "paused"
+                                                                                    ? "Resume"
+                                                                                    : pdf.exams[0]?.status === "true"
+                                                                                        ? "Take Test"
+                                                                                        : (
+                                                                                            <div className="flex items-center justify-center font-semibold gap-1">
+                                                                                                <IoMdLock />
+                                                                                                Lock
+                                                                                            </div>
+                                                                                        )
+                                                                            }
                                                                         </button>
                                                                     )}
                                                                 </div>

@@ -41,6 +41,12 @@ import OtherInstruct from "./components/LiveTest/OtherInstruct";
 import MockLiveTest from "./components/LiveTest/MockLiveTest";
 import LiveResult from "./components/LiveTest/LiveResult";
 import LiveSolution from "./components/LiveTest/LiveSolution";
+import PdfInstruction from "./pages/pdfCourseExam/PdfInstruction";
+import PdfTest from "./pages/pdfCourseExam/PdfTest";
+import PdfOtherInstruction from "./pages/pdfCourseExam/PdfOtherinstruction";
+import PdfExamSolution from "./pages/pdfCourseExam/PdfExamSolution";
+import PdfExamResultPage from "./pages/pdfCourseExam/PdfExamResultPage";
+
 
 
 
@@ -65,7 +71,9 @@ function MainApp() {
     }
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
+
   const isMockTestRoute = ["/mocktest","/mocklivetest", "/instruction", "/otherins","/instruct","/otherinstruct", "/mocksolution", "/livesolution", "/result", "/liveresult"].some((path) =>
+  const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct", "/mocksolution", "/result", "/pdf/instruction", "/pdf/otherinstruct", "/pdf/mocktest","/pdf/result","/pdf/mocksolution"].some((path) =>
     location.pathname.startsWith(path)
   );
   useEffect(() => {
@@ -151,6 +159,17 @@ function MainApp() {
         <Route path="/pdf-course/:level" element={<PdfCourse />} />
 
         <Route path="/video-course" element={<VideoCourse />} />
+        <Route path="/pdf">
+          <Route path="instruction/:id" element={<PdfInstruction />} />
+          <Route path="mocktest/:id" element={<PdfTest />} />
+          <Route path="otherinstruct/:id" element={<PdfOtherInstruction />} />
+          {/* Only render Test component without Header and Footer */}
+          <Route path="result/:id" element={<PdfExamResultPage />} />
+          {/* Catch-all route for non-existent pages */}
+          {/* <Route path="/resultanalysis" element={<Resultanalysis />} /> */}
+
+          <Route path='mocksolution/:id' element={<PdfExamSolution />} />
+        </Route>
 
         <Route path="profile">
           <Route index element={<Profile />} />

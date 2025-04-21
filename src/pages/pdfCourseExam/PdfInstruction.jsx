@@ -1,12 +1,12 @@
-import markerreview from "../assets/images/markerReview.png";
-import ans from "../assets/images/ans.png";
-import notvisit from "../assets/images/notvisit.png";
-import notans from "../assets/images/notans.png";
-import notandmaeked from "../assets/images/notansMarked.png";
+import markerreview from "../../assets/images/markerReview.png";
+import ans from "../../assets/images/ans.png";
+import notvisit from "../../assets/images/notvisit.png";
+import notans from "../../assets/images/notans.png";
+import notandmaeked from "../../assets/images/notansMarked.png";
 import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import Api from "../service/Api";
 import { useState } from "react";
+import Api from "../../service/Api";
 
 
 // window.addEventListener('contextmenu', function (e) {
@@ -37,13 +37,13 @@ const images = [
   },
 ];
 
-const Instruction = () => {
+const PdfInstruction = () => {
   const [examData, setExamData] = useState(null);
   const {id}=useParams()
 
   useEffect(() => {
     // Fetch exam data based on the id
-    Api.get(`exams/getExam/${id}`)
+    Api.get(`pdf-exams/getExam/${id}`)
       .then((res) => {
         if (res.data) {
           setExamData(res.data); // Update state with the fetched data
@@ -78,8 +78,8 @@ const Instruction = () => {
       <th>S.No</th>
       <th>Section Exam Name</th>
       <th>No. of Questions</th>
-      <th>Mark</th>
       <th>Section Time (Minutes)</th>
+      <th>Mark</th>
     </tr>
   </thead>
   <tbody>
@@ -88,8 +88,8 @@ const Instruction = () => {
         <td>{index + 1}</td>
         <td>{section.name}</td>
         <td>{section.t_question}</td>
-        <td>{section.t_mark}</td>
         <td>{section.t_time}</td>
+        <td>{section.t_mark}</td>
       </tr>
     ))}
   </tbody>
@@ -246,8 +246,8 @@ const Instruction = () => {
           </li>
         </ul>
         <div className="fixed bottom-1 right-4">
-        <Link to={`/otherinstruct/${id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
+        <Link to={`/pdf/otherinstruct/${id}`}>
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
     Next
   </button>
 </Link>
@@ -257,4 +257,4 @@ const Instruction = () => {
   );
 };
 
-export default Instruction;
+export default PdfInstruction;
