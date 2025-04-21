@@ -1,8 +1,9 @@
 import { Avatar } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaBook, FaCarAlt, FaClipboardList, FaGift, FaHistory, FaLaptop, FaReceipt, FaRegBookmark, FaShoppingBasket, FaShoppingCart, FaUser } from 'react-icons/fa';  // Import the FaUser icon
 import { Link, useLocation } from 'react-router-dom';  // Import Link from react-router-dom
 import { FiMoreHorizontal, FiMoreVertical } from 'react-icons/fi';
+import { UserContext } from '../../context/UserProvider';
 
 
 const drawerWidth = 240;
@@ -48,12 +49,14 @@ useEffect(() => {
   }
 }, [location.pathname]);
 
+const { user } = useContext(UserContext);
+
   return (
     <div className="flex md:h-screen relative">
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 p-3 h-full w-72 shadow-lg bg-white transition-transform transform sm:relative sm:block ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-10`}
+        className={`fixed left-0 top-0 p-3 h-full w-72 shadow-lg bg-white transition-transform transform md:relative md:block ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-10`}
       >
 
         {/* Drawer content */}
@@ -82,14 +85,14 @@ useEffect(() => {
           {/* Profile Image and Link */}
           <div>
             <Link to="/profile">
-              <Avatar alt="Kiruthika T" src="/user.jpeg" sx={{ width: 50, height: 50 }} />
+              <Avatar alt={user?.firstName} src={user?.profilePicture} sx={{ width: 50, height: 50 }} />
             </Link>
           </div>
 
           {/* Profile Information */}
           <div>
-            <h1 className='text-md font-semibold text-gray-800'>Test</h1>
-            <p className='text-sm text-gray-600'>test@gmail.com</p>
+            <h1 className='text-md font-semibold text-gray-800 w-40 break-words'>{user?.firstName +user?.lastName}</h1>
+            <p className='text-sm text-gray-600 w-40 break-words'>{user?.email}</p>
           </div>
         </div>
 

@@ -73,7 +73,7 @@ const PdfCourse = () => {
               console.error("Error fetching result for", examId, ":", err);
             });
         });
-      }, [alldata, user?._id]);
+      }, [alldata, user?._id,level]);
 
 
     // Function to generate the calendar dates for the selected month and year
