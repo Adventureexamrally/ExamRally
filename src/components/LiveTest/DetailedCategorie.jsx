@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { Link, useParams } from "react-router-dom";
 import CAmonth from "../CAmonth";
@@ -11,6 +11,7 @@ import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import LiveTestcategorieModel from "./LiveTestcategorieModel";
 import LiveTestCategorieTopics from "./LiveTestCategorieTopics";
 import Api from "../../service/Api";
+import { UserContext } from "../../context/UserProvider";
 
 const DetailedCategorie = () => {
   const [catDetail, setCatDetails] = useState([]);
@@ -79,6 +80,7 @@ const DetailedCategorie = () => {
       }
     }
   };
+
 
   return (
     <>
@@ -325,7 +327,7 @@ const DetailedCategorie = () => {
                         </div>
                       )}
                     </div> */}
-                    <LiveTestCategorieTopics data={data} activeSection={activeSection} setCurrentTopic={setCurrentTopic}/>
+                    <LiveTestCategorieTopics data={data} activeSection={activeSection} setCurrentTopic={setCurrentTopic} />
                   </>
                 )}
 
@@ -345,7 +347,7 @@ const DetailedCategorie = () => {
                   ))}
               </div>
               <LiveTestcategorieModel data={data} topic={currentTopic}
-                activeSection={activeSection} />
+                activeSection={activeSection}/>
             </div>
 
             {/* advertiswment part */}
