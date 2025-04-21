@@ -15,6 +15,21 @@ const NavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState(null);
+  const [packages, setPackages] = useState([]);
+
+  const fetchPakages = async () => {
+    try {
+      const response = await Api.get("/packages/get/active");
+      console.log("ji", response.data)
+      setPackages(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPakages();
+  }, []);
 
   const toggleMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -113,7 +128,7 @@ const NavBar = () => {
               </button>
               {isDropdownOpen && (
                 <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
-                  {["Banking & Insurance", "SSC",  "Railway"].map(
+                  {["Banking & Insurance", "SSC", "Railway"].map(
                     (item, index) => (
                       <div key={index} className="relative group">
                         <Link
@@ -126,18 +141,15 @@ const NavBar = () => {
                         </Link>
                         {activeSubMenu === index && (
                           <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48">
-                            <Link
-                              to={`/${item.toLowerCase()}-sub1`}
-                              className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-                            >
-                              Sub 1
-                            </Link>
-                            <Link
-                              to={`/${item.toLowerCase()}-sub2`}
-                              className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-                            >
-                              Sub 2
-                            </Link>
+                            {packages.map((item, index) => (
+                              <Link
+                                to={`/top-trending-exams/${item.link_name}`}
+                                className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                              >
+                                {item.name}
+                              </Link>
+                            )
+                            )}
                           </div>
                         )}
                         <hr className="border-t border-gray-300" />
@@ -154,7 +166,7 @@ const NavBar = () => {
               Test Series
             </Link>
             <Link
-              to="/combo"
+              to="/All-Packages"
               className="hover:text-blue-600 transition duration-300"
             >
               Packages

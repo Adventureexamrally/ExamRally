@@ -1,12 +1,12 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import logo from '../assets/logo/sample-logo.png';
+import logo from '../../assets/logo/sample-logo.png';
 import Swal from 'sweetalert2'
 import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
-import { UserContext } from "../context/UserProvider";
+import Api from "../../service/Api";
+import { UserContext } from "../../context/UserProvider";
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -63,7 +63,7 @@ const Test = () => {
   useEffect(() => {
     // Check if data has already been fetched
     if (!isDataFetched) {
-      Api.get(`exams/getExam/${id}`)
+      Api.get(`pdf-exams/getExam/${id}`)
         .then((res) => {
           if (res.data) {
             setExamData(res.data);
@@ -79,62 +79,62 @@ const Test = () => {
 
 
   // In the useEffect that fetches exam state
-useEffect(() => {
-  if (user?._id && id) {
-    Api.get(`results/${user?._id}/${id}`)
-      .then(response => {
-        if (response.data) {
-          const state = response.data;
-          const initialOptions = Array(t_questions).fill(null);
-          let lastVisitedIndex = 0;
-          let visitedQuestionsList = [];
-          let markedForReviewList = [];
-          let absoluteIndexCounter = 0;
+  useEffect(() => {
+    if (user?._id && id) {
+      Api.get(`PDFresults/${user?._id}/${id}`)
+        .then(response => {
+          if (response.data) {
+            const state = response.data;
+            const initialOptions = Array(t_questions).fill(null);
+            let lastVisitedIndex = 0;
+            let visitedQuestionsList = [];
+            let markedForReviewList = [];
+            let absoluteIndexCounter = 0;
 
-          if (state.section) {
-            state.section.forEach((section) => {
-              const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-              questions.forEach((question, questionIndex) => {
-                const absoluteIndex = absoluteIndexCounter++;
-                
-                // Set selected option if exists
-                if (question.selectedOption !== undefined && question.selectedOption !== null) {
-                  initialOptions[absoluteIndex] = question.selectedOption;
-                }
+            if (state.section) {
+              state.section.forEach((section) => {
+                const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                questions.forEach((question, questionIndex) => {
+                  const absoluteIndex = absoluteIndexCounter++;
 
-                // Track visited questions
-                if (question.isVisited === 1) {
-                  visitedQuestionsList.push(absoluteIndex);
-                  lastVisitedIndex = absoluteIndex; // Track most recently visited
-                }
+                  // Set selected option if exists
+                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
+                    initialOptions[absoluteIndex] = question.selectedOption;
+                  }
 
-                // Track marked for review
-                if (question.markforreview === 1 || question.ansmarkforrev === 1) {
-                  markedForReviewList.push(absoluteIndex);
-                }
+                  // Track visited questions
+                  if (question.isVisited === 1) {
+                    visitedQuestionsList.push(absoluteIndex);
+                    lastVisitedIndex = absoluteIndex; // Track most recently visited
+                  }
+
+                  // Track marked for review
+                  if (question.markforreview === 1 || question.ansmarkforrev === 1) {
+                    markedForReviewList.push(absoluteIndex);
+                  }
+                });
               });
-            });
-          }
+            }
 
-          setSelectedOptions(initialOptions);
-          setVisitedQuestions(visitedQuestionsList);
-          setMarkedForReview(markedForReviewList);
-          setCurrentSectionIndex(state.currentSectionIndex || 0);
-          
-          // // Show the last visited question, or first question if none visited
-          // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-          if (visitedQuestionsList.length > 0) {
-        setClickedQuestionIndex(visitedQuestionsList[0]  || lastVisitedIndex); // First visited question
-      } else {
-        setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-        setVisitedQuestions([0]);  // Mark it as visited
-      }
-        }
-      })
-      
-      .catch(error => console.error('Error fetching exam state:', error));
-  }
-}, [id, user?._id, t_questions, selectedLanguage]);  
+            setSelectedOptions(initialOptions);
+            setVisitedQuestions(visitedQuestionsList);
+            setMarkedForReview(markedForReviewList);
+            setCurrentSectionIndex(state.currentSectionIndex || 0);
+
+            // // Show the last visited question, or first question if none visited
+            // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
+            if (visitedQuestionsList.length > 0) {
+              setClickedQuestionIndex(visitedQuestionsList[0] || lastVisitedIndex); // First visited question
+            } else {
+              setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+              setVisitedQuestions([0]);  // Mark it as visited
+            }
+          }
+        })
+
+        .catch(error => console.error('Error fetching exam state:', error));
+    }
+  }, [id, user?._id, t_questions, selectedLanguage]);
 
 
   const questionRef = useRef(null);
@@ -225,24 +225,24 @@ useEffect(() => {
       setCurrentSectionIndex(state.currentSectionIndex);
     }
   }, [id]);
-  
+
   // Modify handleOptionChange to update database
   const handleOptionChange = async (index) => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
       updatedOptions[clickedQuestionIndex] = index;
-      
+
       // Update the database with the new selection
-      Api.post(`results/${user?._id}/${id}`, {
+      Api.post(`PDFresults/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex
       });
-      
+
       return updatedOptions;
     });
-  
-   
+
+
 
 
     let mark = 0;
@@ -378,7 +378,7 @@ useEffect(() => {
         setSelectedOptions(initialOptions);
 
         // Now post the transformed data to your '/results' endpoint
-        const postResponse = await Api.post(`/results/${user?._id}/${id}`, transformedData);
+        const postResponse = await Api.post(`/PDFresults/${user?._id}/${id}`, transformedData);
         console.log("Data posted successfully:", postResponse);
 
       } catch (error) {
@@ -532,21 +532,21 @@ useEffect(() => {
 
   useEffect(() => {
     console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
-  
+
     if (!id) return;
     const initialOptions = Array(totalQuestions).fill(null);
     setSelectedOptions(initialOptions);
   }, [id, totalQuestions]);
-  
+
   useEffect(() => {
     if (!id) return;
-  
+
     if (selectedOptions.length > 0) {
       const combinedData = selectedOptions.map((selectedOption, index) => ({
         questionNumber: index,
         selectedOption: selectedOption, // Could be null or the selected value
       }));
-  
+
       console.log('Saving selected options:', combinedData);
     }
   }, [selectedOptions, id]);
@@ -799,7 +799,7 @@ useEffect(() => {
       const correctCount = sectionAnswersData.filter(q => q.correct === 1).length;
       const attemptedCount = sectionAnswersData.filter(q => q.selectedOption !== undefined).length;
       const incorrectCount = sectionAnswered - correctCount;
-      const sectionScore = (correctCount*1)-(incorrectCount*0.25);
+      const sectionScore = (correctCount * 1) - (incorrectCount * 0.25);
       const secaccuracy = sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
       console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
       const skippedQuestions = sectionVisited - sectionAnswered;
@@ -909,7 +909,7 @@ useEffect(() => {
 
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
-    Api.get(`results/${user?._id}/${id}`)
+    Api.get(`PDFresults/${user?._id}/${id}`)
       .then(response => {
         // Set the fetched data to state
         setDataid(response.data._id);
@@ -920,8 +920,8 @@ useEffect(() => {
       });
   }, [id]);
 
-  
- 
+
+
 
   useEffect(() => {
     if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
@@ -929,7 +929,7 @@ useEffect(() => {
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
 
     // API call with the necessary data
-    Api.post(`results/${user?._id}/${id}`, {
+    Api.post(`PDFresults/${user?._id}/${id}`, {
       ExamId: `${id}`,
       section: formattedSections,
       // Now this will work since formattedSections is part of examDataSubmission
@@ -938,7 +938,7 @@ useEffect(() => {
       timeTakenInSeconds: timeTakenInSeconds,
       takenAt: examStartTime,
       submittedAt: endTime,
-      status: isPaused ? "paused" : "completed", 
+      status: isPaused ? "paused" : "completed",
     })
       .then((res) => {
         console.log("Response Data-sample:", res.data);
@@ -984,7 +984,7 @@ useEffect(() => {
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
-     const handlePauseResume = () => {
+  const handlePauseResume = () => {
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
       setIsPaused(true);
@@ -997,7 +997,7 @@ useEffect(() => {
         currentSectionIndex
       };
       // localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-  
+
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
@@ -1015,25 +1015,15 @@ useEffect(() => {
           container: 'swal-full-screen',
           popup: 'swal-popup-full-height',
         },
-      }).then(async(result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
           setIsPaused(true);
-           
+
           await submitExam();
           // Get active packages and find matching package
-          Api.get('packages/get/active')
-            .then((packagesRes) => {
-              const activePackages = packagesRes.data;
-              const matchingPackage = activePackages.find(pkg => pkg.exams.includes(id));
-              if (matchingPackage) {
-                navigate(`/top-trending-exams/${matchingPackage.link_name}`);
-              } else {
-                navigate('/top-trending-exams');
-              }
-            })
-            .catch(() => {
-              navigate('/top-trending-exams');
-            });
+          
+              navigate('/pdf-course');
+          
         } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -1042,7 +1032,7 @@ useEffect(() => {
     }
   };
 
-  
+
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
   //   if (timeLeft <= 0) {
@@ -1090,8 +1080,9 @@ useEffect(() => {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
-        submitExam();
-        navigate(`/result/${id}`);
+        await submitExam();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second        
+        navigate(`/pdf/result/${id}`);
       }
     }
   };
@@ -1237,16 +1228,16 @@ useEffect(() => {
     let notVisited = 0;
     let markedForReviewCount = 0;
     let answeredAndMarked = 0;
-  
+
     const questions = section?.questions?.[selectedLanguage?.toLowerCase()];
-  
+
     questions?.forEach((_, index) => {
       const fullIndex = startingIndex + index;
-  
+
       const isAnswered = selectedOptions[fullIndex] !== null;
       const isVisited = visitedQuestions.includes(fullIndex);
       const isMarked = markedForReview.includes(fullIndex);
-  
+
       if (isMarked && isAnswered) {
         answeredAndMarked++;
       } else if (isMarked && !isAnswered) {
@@ -1259,7 +1250,7 @@ useEffect(() => {
         notVisited++;
       }
     });
-  
+
     return {
       answered,
       notAnswered,
@@ -1369,67 +1360,67 @@ useEffect(() => {
 
 
       <div className="d-flex justify-content-start align-items-center m-2 flex-wrap">
-      {examData?.section?.map((section, index) => {
-    // Calculate the starting index for this section
-    const startingIndex = examData.section
-      .slice(0, index)
-      .reduce((acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+        {examData?.section?.map((section, index) => {
+          // Calculate the starting index for this section
+          const startingIndex = examData.section
+            .slice(0, index)
+            .reduce((acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
 
-    // Get counts using fixed starting index
-    const sectionCounts = getSectionCounts(
-      section,
-      selectedOptions,
-      visitedQuestions,
-      markedForReview,
-      selectedLanguage,
-      startingIndex
-    );
+          // Get counts using fixed starting index
+          const sectionCounts = getSectionCounts(
+            section,
+            selectedOptions,
+            visitedQuestions,
+            markedForReview,
+            selectedLanguage,
+            startingIndex
+          );
 
-    return (
-      <div key={index} className="m-1">
-        <h1
-          className={`h6 p-1 text-white border d-inline-flex align-items-center 
+          return (
+            <div key={index} className="m-1">
+              <h1
+                className={`h6 p-1 text-white border d-inline-flex align-items-center 
             ${currentSectionIndex === index
-              ? 'bg-blue-400 border-3 border-blue-500 fw-bold'
-              : 'bg-gray-400'}`}
-        >
-          ✔ {section.name}
-          <div className="relative group ml-2 d-inline-block">
-            <FaInfoCircle className="cursor-pointer text-white" />
-            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+                    ? 'bg-blue-400 border-3 border-blue-500 fw-bold'
+                    : 'bg-gray-400'}`}
+              >
+                ✔ {section.name}
+                <div className="relative group ml-2 d-inline-block">
+                  <FaInfoCircle className="cursor-pointer text-white" />
+                  <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
   min-w-[220px]     w-fit md:max-w-xs md:w-max
   left-1/2 -translate-x-1/2
   ">
-              <div className="mt-2 flex align-items-center">
-                <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answered}</div>
-                <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
-              </div>
-              <div className="mt-2 flex align-items-center">
-                <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.notAnswered}</div>
-                <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
-              </div>
-              <div className="mt-2 flex align-items-center">
-                <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{sectionCounts.notVisited}</div>
-                <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
-              </div>
-              <div className="mt-2 flex align-items-center">
-                <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.markedForReviewCount}</div>
-                <p className="ml-2 text-start text-lg-center">Marked for Review</p>
-              </div>
-              <div className="mt-2 flex align-items-center">
-                <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answeredAndMarked}</div>
-                <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
-              </div>
+                    <div className="mt-2 flex align-items-center">
+                      <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answered}</div>
+                      <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+                    </div>
+                    <div className="mt-2 flex align-items-center">
+                      <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.notAnswered}</div>
+                      <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
+                    </div>
+                    <div className="mt-2 flex align-items-center">
+                      <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{sectionCounts.notVisited}</div>
+                      <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
+                    </div>
+                    <div className="mt-2 flex align-items-center">
+                      <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.markedForReviewCount}</div>
+                      <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+                    </div>
+                    <div className="mt-2 flex align-items-center">
+                      <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answeredAndMarked}</div>
+                      <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
+                    </div>
+                  </div>
+                </div>
+              </h1>
             </div>
-          </div>
-        </h1>
+          );
+        })}
       </div>
-    );
-  })}
-    </div>
 
- 
-      {/* Mobile Hamburger Menu */ }
+
+      {/* Mobile Hamburger Menu */}
       < button
         onClick={toggleMenu}
         className="md:hidden text-black p-2"
@@ -1732,51 +1723,51 @@ useEffect(() => {
       </div>
 
 
-  {/* Footer Buttons */ }
-  <div className="fixed-bottom bg-white p-3">
-    <div className="d-flex justify-content-between border-8">
-      {/* Left side - Mark for Review and Clear Response */}
-      <div className="d-flex">
-        <button
-          onClick={handleMarkForReview}
-          className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
-        >
-          Mark for Review
-        </button>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <button
-          onClick={handleClearResponse}
-          className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
-        >
-          Clear Response
-        </button>
-      </div>
+      {/* Footer Buttons */}
+      <div className="fixed-bottom bg-white p-3">
+        <div className="d-flex justify-content-between border-8">
+          {/* Left side - Mark for Review and Clear Response */}
+          <div className="d-flex">
+            <button
+              onClick={handleMarkForReview}
+              className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+            >
+              Mark for Review
+            </button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button
+              onClick={handleClearResponse}
+              className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+            >
+              Clear Response
+            </button>
+          </div>
 
-      {/* Right side - Save & Next and Submit Section */}
-      <div className="d-flex justify-content-end">
-        {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
-          <button
-            onClick={handleNextClick}
-            className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-          >
-            Save & Next
-          </button>
-        )}
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <button
-          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-          onClick={handleSubmitSection}
-          data-bs-toggle="modal"
-          data-bs-target="#staticBackdrop"
-        >
-          {currentSectionIndex === examData?.section?.length - 1
-            ? "Submit Test"
-            : "Submit Section"}
-        </button>
-      </div>
+          {/* Right side - Save & Next and Submit Section */}
+          <div className="d-flex justify-content-end">
+            {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
+              <button
+                onClick={handleNextClick}
+                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+              >
+                Save & Next
+              </button>
+            )}
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button
+              className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+              onClick={handleSubmitSection}
+              data-bs-toggle="modal"
+              data-bs-target="#staticBackdrop"
+            >
+              {currentSectionIndex === examData?.section?.length - 1
+                ? "Submit Test"
+                : "Submit Section"}
+            </button>
+          </div>
 
-    </div>
-  </div>
+        </div>
+      </div>
     </div >
   );
 };
