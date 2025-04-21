@@ -36,11 +36,17 @@ import TestSeries from "./pages/TestSeries";
 import AllArch from "./components/AllArch";
 import PdfCourse from "./pages/pdfCourse/PdfCourse";
 import PdfCourseHome from "./pages/pdfCourse/PdfCourseHome";
+import Instruct from "./components/LiveTest/Instruct";
+import OtherInstruct from "./components/LiveTest/OtherInstruct";
+import MockLiveTest from "./components/LiveTest/MockLiveTest";
+import LiveResult from "./components/LiveTest/LiveResult";
+import LiveSolution from "./components/LiveTest/LiveSolution";
 import PdfInstruction from "./pages/pdfCourseExam/PdfInstruction";
 import PdfTest from "./pages/pdfCourseExam/PdfTest";
 import PdfOtherInstruction from "./pages/pdfCourseExam/PdfOtherinstruction";
 import PdfExamSolution from "./pages/pdfCourseExam/PdfExamSolution";
 import PdfExamResultPage from "./pages/pdfCourseExam/PdfExamResultPage";
+
 
 
 
@@ -65,6 +71,8 @@ function MainApp() {
     }
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
+
+  const isMockTestRoute = ["/mocktest","/mocklivetest", "/instruction", "/otherins","/instruct","/otherinstruct", "/mocksolution", "/livesolution", "/result", "/liveresult"].some((path) =>
   const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct", "/mocksolution", "/result", "/pdf/instruction", "/pdf/otherinstruct", "/pdf/mocktest","/pdf/result","/pdf/mocksolution"].some((path) =>
     location.pathname.startsWith(path)
   );
@@ -131,6 +139,7 @@ function MainApp() {
         <Route path="/top-trending-exams/:id" element={<Packagename />} />
         <Route path="/mocktest/:id" element={<Test />} />
         <Route path="/instruction/:id" element={<Instruction />} />
+      
         <Route path="/otherinstruct/:id" element={<Otherinstruction />} />
         <Route path="/privacy-policy" element={<Privacy_Policy />} />
         <Route path="/terms-condition" element={<Terms_Condition />} />
@@ -173,6 +182,16 @@ function MainApp() {
 
         <Route path="/All-Packages" element={<Packages />} />
         <Route path="/All-Archivers" element={<AllArch />} />
+
+{/*  live test routes */}
+
+        <Route path="/mocklivetest/:id" element={<MockLiveTest />} />
+        <Route path="/instruct/:id" element={<Instruct/>} />
+        <Route path="/otherins/:id" element={<OtherInstruct/>} />
+        <Route path="/liveresult/:id" element={<LiveResult />} />
+        <Route path='/livesolution/:id' element={<LiveSolution />} />
+
+
 
 
         <Route path="*" element={<NotFound />} />
