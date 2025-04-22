@@ -137,9 +137,7 @@ const Test = () => {
   }, [id, user?._id, t_questions, selectedLanguage]);
 
 
-  const questionRef = useRef(null);
   const commonDataRef = useRef(null);
-  const sidebarRef = useRef(null);
 
   const toastId = useRef(null); // Keep track of toast ID
 
@@ -162,34 +160,20 @@ const Test = () => {
     };
 
     // Attach event listeners to all scrollable elements
-    const questionElement = questionRef.current;
     const commonDataElement = commonDataRef.current;
-    const sidebarElement = sidebarRef.current;
-
-    if (questionElement) {
-      questionElement.addEventListener('wheel', (e) => handleWheel(e, questionRef), { passive: false });
-    }
 
     if (commonDataElement) {
       commonDataElement.addEventListener('wheel', (e) => handleWheel(e, commonDataRef), { passive: false });
     }
 
-    if (sidebarElement) {
-      sidebarElement.addEventListener('wheel', (e) => handleWheel(e, sidebarRef), { passive: false });
-    }
 
     return () => {
-      if (questionElement) {
-        questionElement.removeEventListener('wheel', (e) => handleWheel(e, questionRef));
-      }
 
       if (commonDataElement) {
         commonDataElement.removeEventListener('wheel', (e) => handleWheel(e, commonDataRef));
       }
 
-      if (sidebarElement) {
-        sidebarElement.removeEventListener('wheel', (e) => handleWheel(e, sidebarRef));
-      }
+
     };
   }, []);
 
@@ -1263,7 +1247,7 @@ const Test = () => {
 
 
   return (
-    <div className="mock-font p-1">
+    <div className="mock-font "  ref={commonDataRef}>
       <div>
         <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
 
@@ -1359,7 +1343,7 @@ const Test = () => {
 
 
 
-      <div className="d-flex justify-content-start align-items-center m-2 flex-wrap">
+      <div className="d-flex justify-content-start align-items-center flex-wrap">
         {examData?.section?.map((section, index) => {
           // Calculate the starting index for this section
           const startingIndex = examData.section
@@ -1377,7 +1361,7 @@ const Test = () => {
           );
 
           return (
-            <div key={index} className="m-1">
+            <div key={index} >
               <h1
                 className={`h6 p-1 text-white border d-inline-flex align-items-center 
             ${currentSectionIndex === index
@@ -1444,13 +1428,13 @@ const Test = () => {
         </svg>
       </button>
 
-      <div className="row mb-24">
+      <div className="flex lg:flex md:row sm:row">
         {/* Question Panel */}
-        <div className={`p-4 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
+        <div className={`p-1 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
 
           {!isSubmitted ? (
             <>
-              <div className="d-flex  justify-between">
+              <div className="d-flex  justify-between px-2">
                 <h3>
                   Question No: {clickedQuestionIndex + 1}/
                   {t_questions}
@@ -1469,6 +1453,7 @@ const Test = () => {
                       : "No plus marks"}
                   </span>
                   &nbsp;
+                  | &nbsp;
                   <span className="text-danger">
                     -
                     {examData?.section && examData.section[currentSectionIndex]
@@ -1479,15 +1464,14 @@ const Test = () => {
               </div>
               {examData?.section[currentSectionIndex] ? (
                 <div className="row" >
-                  <div className="row">
+                  <div className="row p-0 ml-3">
                     {/* Left side for Common Data */}
                     {examData.section[currentSectionIndex]?.questions?.[
                       selectedLanguage?.toLowerCase()
                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                         <div
-                          ref={commonDataRef}
-                          className="col-lg-6 col-md-6"
-                          style={{ maxHeight: "380px", overflowY: "auto" }}
+                          className="col-lg-6 col-md-6 p-3"
+                          style={{ maxHeight: "430px", overflowY: "auto" }}
                         >
 
                           <div
@@ -1511,7 +1495,7 @@ const Test = () => {
                     {/* Right side for Question */}
                     <div
                       ref={questionRef}
-                      className="col-lg-6 col-md-6"
+                      className="col-lg-6 col-md-6 9-3"
                       style={{ maxHeight: "420px", overflowY: "auto" }}
                     >
                       <div
@@ -1582,7 +1566,7 @@ const Test = () => {
           )}
         </div>
         {/* Sidebar */}
-        <div className="col-9 col-md-4 col-lg-3 md:flex"  >
+        <div className="p-0 col-9 col-md-4 col-lg-3 md:flex"  >
           <div className="md:flex hidden items-center">
             <div className={` fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} onClick={toggleMenu2}>
               <FaChevronRight className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} />
@@ -1591,13 +1575,12 @@ const Test = () => {
 
 
           <div
-            ref={sidebarRef}
             className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300
     ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
     ${closeSideBar ? 'md:translate-x-full md:w-0' : 'md:translate-x-0'}
     fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
             style={{
-              maxHeight: '450px',
+              maxHeight: '480px',
               overflowY: 'auto',
             }}
           >
@@ -1724,8 +1707,8 @@ const Test = () => {
 
 
       {/* Footer Buttons */}
-      <div className="fixed-bottom bg-white p-3">
-        <div className="d-flex justify-content-between border-8">
+      <div className="fixed-bottom bg-white">
+        <div className="d-flex justify-content-between ">
           {/* Left side - Mark for Review and Clear Response */}
           <div className="d-flex">
             <button

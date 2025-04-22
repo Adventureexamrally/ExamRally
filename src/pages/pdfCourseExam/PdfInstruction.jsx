@@ -247,7 +247,7 @@ const PdfInstruction = () => {
         </ul>
         <div className="fixed bottom-1 right-4">
         <Link to={`/pdf/otherinstruct/${id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
     Next
   </button>
 </Link>

@@ -246,9 +246,9 @@ const Instruct = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-        <div className="float-right">
+        <div className="fixed bottom-1 right-4">
         <Link to={`/otherins/${id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
     Next
   </button>
 </Link>
