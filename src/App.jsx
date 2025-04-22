@@ -72,7 +72,7 @@ function MainApp() {
   }, [location.pathname]);
   // Check if the current route is "/mock-test"
 
-  const isMockTestRoute = ["/mocktest","/mocklivetest", "/instruction", "/otherins","/instruct","/otherinstruct", "/mocksolution", "/livesolution", "/result", "/liveresult"].some((path) =>
+  // const isMockTestRoute = ["/mocktest","/mocklivetest", "/instruction", "/otherins","/instruct","/otherinstruct", "/mocksolution", "/livesolution", "/result", "/liveresult"].some((path) =>
   const isMockTestRoute = ["/mocktest", "/instruction", "/otherinstruct", "/mocksolution", "/result", "/pdf/instruction", "/pdf/otherinstruct", "/pdf/mocktest","/pdf/result","/pdf/mocksolution"].some((path) =>
     location.pathname.startsWith(path)
   );
