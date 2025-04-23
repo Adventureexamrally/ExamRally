@@ -7,7 +7,9 @@ import Swal from 'sweetalert2'
 import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
 import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
-const MockLiveTest = () => {
+import { Avatar } from '@mui/material';
+
+const MockLiveTest= () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
@@ -169,12 +171,9 @@ useEffect(() => {
 
 
     return () => {
-
       if (commonDataElement) {
         commonDataElement.removeEventListener('wheel', (e) => handleWheel(e, commonDataRef));
       }
-
-
     };
   }, []);
 
@@ -909,10 +908,7 @@ useEffect(() => {
  
 
   useEffect(() => {
-    console.log("d",examDataSubmission);
-    
     if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
-console.log("dd", examDataSubmission);
 
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
 
@@ -938,7 +934,7 @@ console.log("dd", examDataSubmission);
   }, [
     examDataSubmission,  // Trigger whenever data to submit changes
     selectedOptions,     // Trigger when selected options change
-    id,
+    id,                  // Trigger when ID changes (if needed)
     user?._id,                  // Trigger when ID changes (if needed)
   ]);
 
@@ -1079,7 +1075,8 @@ console.log("dd", examDataSubmission);
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
-        submitExam();
+        await submitExam();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
         navigate(`/liveresult/${id}`);
       }
     }
@@ -1261,7 +1258,7 @@ console.log("dd", examDataSubmission);
 
 
   return (
-    <div className="mock-font"  ref={commonDataRef}>
+    <div className="mock-font " ref={commonDataRef}>
       <div>
         <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
 
@@ -1357,7 +1354,7 @@ console.log("dd", examDataSubmission);
 
 
 
-      <div className="d-flex justify-content-start align-items-center flex-wrap">
+      <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
       {examData?.section?.map((section, index) => {
     // Calculate the starting index for this section
     const startingIndex = examData.section
@@ -1375,16 +1372,16 @@ console.log("dd", examDataSubmission);
     );
 
     return (
-      <div key={index}>
+      <div key={index} >
         <h1
-          className={`h6 p-1 text-white border d-inline-flex align-items-center 
-            ${currentSectionIndex === index
-              ? 'bg-blue-400 border-3 border-blue-500 fw-bold'
-              : 'bg-gray-400'}`}
+                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
+                      ${currentSectionIndex === index
+                          ? ' font-medium underline'
+                          : ''}`}
         >
-          ✔ {section.name}
+          {section.name}
           <div className="relative group ml-2 d-inline-block">
-            <FaInfoCircle className="cursor-pointer text-white" />
+            <FaInfoCircle className="cursor-pointer text-blue-400" />
             <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
   min-w-[220px]     w-fit md:max-w-xs md:w-max
   left-1/2 -translate-x-1/2
@@ -1441,287 +1438,283 @@ console.log("dd", examDataSubmission);
 
         </svg>
       </button>
+      <div className="flex lg:flex md:row sm:row ">
+  {/* Question Panel */}
+  <div className={` ${closeSideBar ? 'col-lg-11 col-md-11' : 'col-lg-9 col-md-8'}`}>
+    {!isSubmitted ? (
+      <>
+        <div className="flex justify-between flex-col md:flex-row p-2 bg-gray-100 border-1 border-gray-300 font-extralight text-[14px]">
+          <h3>
+            Question No: {clickedQuestionIndex + 1}/{t_questions}
+          </h3>
+          <h1 className="flex flex-wrap md:flex-row">
+            <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white " >
+              Qn Time : {formatTime(questionTime)}
+            </span>
+            <span className="font-normal m-1">
+            &nbsp;&nbsp;&nbsp;&nbsp;<b>Marks : </b>&nbsp;&nbsp;&nbsp;&nbsp;
+            <span className="text-success">
+              +
+              {examData?.section && examData.section[currentSectionIndex]
+                ? examData.section[currentSectionIndex].plus_mark
+                : "No plus marks"}
+            </span>
+            &nbsp;<span className="text-gray-400">|</span>&nbsp;
+            <span className="text-danger">
+              -
+              {examData?.section && examData.section[currentSectionIndex]
+                ? examData.section[currentSectionIndex].minus_mark
+                : "No minus marks"}
+            </span>
+            </span>
+          </h1>
+        </div>
+        
+        {examData?.section[currentSectionIndex] ? (
+          <div className="row">
+            <div className="row p-0 ml-3">
+              {/* Left side for Common Data */}
+              {examData.section[currentSectionIndex]?.questions?.[
+                selectedLanguage?.toLowerCase()
+              ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                <div 
+                className={`p-3 ${examData.section[currentSectionIndex]?.questions?.[
+                  selectedLanguage?.toLowerCase()
+              ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                  ? "col-lg-6 col-md-6"
+                  : "col-lg-12 col-md-12" // Make it full width when no common data
+                  }`}                  style={{ maxHeight: "430px", overflowY: "auto" }}
+                >
+                  <div
+                    className="fw-bold text-wrap"
+                    style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        examData.section[currentSectionIndex]?.questions?.[
+                          selectedLanguage?.toLowerCase()
+                        ]?.[clickedQuestionIndex - startingIndex]?.common_data || 
+                        "No common data available",
+                    }}
+                  />
+                </div>
+              )}
 
-      <div className="flex lg:flex md:row sm:row">
-        {/* Question Panel */}
-        <div className={`p-1 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
+              {/* Right side for Question */}
+              <div 
+                className="col-lg-6 col-md-6 p-3" 
+                style={{ maxHeight: "420px", overflowY: "auto" }}
+              >
+                <div
+                  className="fw-bold text-wrap"
+                  style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      examData.section[currentSectionIndex]?.questions?.[
+                        selectedLanguage?.toLowerCase()
+                      ]?.[clickedQuestionIndex - startingIndex]?.question || 
+                      "No question available",
+                  }}
+                />
 
-          {!isSubmitted ? (
-            <>
-              <div className="d-flex  justify-between px-2">
-                <h3>
-                  Question No: {clickedQuestionIndex + 1}/
-                  {t_questions}
-                </h3>
-
-                <h1>
-                  {" "}
-                  <span className="border px-2 p-1">
-                    Qn Time:{formatTime(questionTime)}
-                  </span>
-                  &nbsp;Marks&nbsp;
-                  <span className="text-success">
-                    +
-                    {examData?.section && examData.section[currentSectionIndex]
-                      ? examData.section[currentSectionIndex].plus_mark
-                      : "No plus marks"}
-                  </span>
-                  &nbsp;
-                  | &nbsp;
-                  <span className="text-danger">
-                    -
-                    {examData?.section && examData.section[currentSectionIndex]
-                      ? examData.section[currentSectionIndex].minus_mark
-                      : "No minus marks"}
-                  </span>
-                </h1>
-              </div>
-              {examData?.section[currentSectionIndex] ? (
-                <div className="row" >
-                  <div className="row p-0 ml-3">
-                    {/* Left side for Common Data */}
+                {examData.section[currentSectionIndex]?.questions?.[
+                  selectedLanguage?.toLowerCase()
+                ]?.[clickedQuestionIndex - startingIndex]?.options ? (
+                  <div>
                     {examData.section[currentSectionIndex]?.questions?.[
                       selectedLanguage?.toLowerCase()
-                    ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                        <div
-                          className="col-lg-6 col-md-6 p-3"
-                          style={{ maxHeight: "380px", overflowY: "auto" }}
-                        >
-
-                          <div
-                            className="fw-bold text-wrap"
-                            style={{
-                              whiteSpace: "normal",
-                              wordWrap: "break-word",
-                            }}
-                            dangerouslySetInnerHTML={{
-                              __html:
-                                examData.section[currentSectionIndex]
-                                  ?.questions?.[
-                                  selectedLanguage?.toLowerCase()
-                                ]?.[clickedQuestionIndex - startingIndex]
-                                  ?.common_data || "No common data available",
-                            }}
-                          />
-                        </div>
-                      )}
-
-                    {/* Right side for Question */}
-                    <div
-                      className="col-lg-6 col-md-6 p-3"
-                      style={{ maxHeight: "430px", overflowY: "auto" }}
-                    >
-                      <div
-                        className="fw-bold text-wrap"
-                        style={{
-                          whiteSpace: "normal",
-                          wordWrap: "break-word",
-                        }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.question || "No question available",
-                        }}
-                      />
-
-
-                      {examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.options ? (
-                        <div>
-                          {examData.section[currentSectionIndex]?.questions?.[
-                            selectedLanguage?.toLowerCase()
-                          ]?.[
-                            clickedQuestionIndex - startingIndex
-                          ]?.options.map((option, index) => (
-                            <div key={index}>
-                              <input
-                                type="radio"
-                                id={`option-${index}`}
-                                name="exam-option"
-                                value={index}
-                                checked={
-                                  selectedOptions[clickedQuestionIndex] ===
-                                  index
-                                }
-                                onChange={() => {
-                                  console.log("Selected Option Index:", index);
-                                  handleOptionChange(index);
-                                }}
-                              />
-
-                              <label
-                                htmlFor={`option-${index}`}
-                                dangerouslySetInnerHTML={{
-                                  __html: option || "No option available",
-                                }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No options available</p>
-                      )}
-                    </div>
+                    ]?.[clickedQuestionIndex - startingIndex]?.options.map((option, index) => (
+                      <div key={index}>
+                        <input
+                          type="radio"
+                          id={`option-${index}`}
+                          name="exam-option"
+                          value={index}
+                          checked={selectedOptions[clickedQuestionIndex] === index}
+                          onChange={() => {
+                            console.log("Selected Option Index:", index);
+                            handleOptionChange(index);
+                          }}
+                        />
+                        <label
+                          htmlFor={`option-${index}`}
+                          dangerouslySetInnerHTML={{
+                            __html: option || "No option available",
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
-
-                </div>
-              ) : (
-                <p>No section data available</p>
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <h1 className="display-6 text-success">Test Completed!</h1>
-            </div>
-          )}
-        </div>
-        {/* Sidebar */}
-        <div className="p-0 col-9 col-md-4 col-lg-3 md:flex"  >
-          <div className="md:flex hidden items-center">
-            <div className={` fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} onClick={toggleMenu2}>
-              <FaChevronRight className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} />
+                ) : (
+                  <p>No options available</p>
+                )}
+              </div>
             </div>
           </div>
+        ) : (
+          <p>No section data available</p>
+        )}
+      </>
+    ) : (
+      <div className="text-center">
+        <h1 className="display-6 text-success">Test Completed!</h1>
+      </div>
+    )}
+  </div>
 
+  {/* Sidebar */}
 
-          <div
-            className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300
-    ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-    ${closeSideBar ? 'md:translate-x-full md:w-0' : 'md:translate-x-0'}
-    fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
-            style={{
-              maxHeight: '480px',
-              overflowY: 'auto',
-            }}
+    <div className="md:flex hidden items-center">
+      <div 
+        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} 
+        onClick={toggleMenu2}
+      >
+        <FaChevronRight 
+          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} 
+        />
+      </div>
+    </div>
+
+    <div
+      className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300 md:-mt-10 border
+        ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0'}
+        fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
+      style={{ maxHeight: '490px', overflowY: 'auto' }}
+    >
+      {isMobileMenuOpen && (
+        <button onClick={toggleMenu} className="md:hidden text-black p-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            className="w-6 h-6"
           >
-
-            {isMobileMenuOpen &&
-              <button
-                onClick={toggleMenu}
-                className="md:hidden text-black p-2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  {/* // Close icon (X) when the menu is open */}
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-
-                </svg>
-              </button>
-            }
-            <div className="container mt-3">
-              <h1 className=" bg-blue-400 text-center text-white p-2 ">
-                Time Left:{formatTime(timeminus)}
-              </h1>
-              <center>
-                <button
-                  onClick={handlePauseResume}
-                  className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
-                    }`}
-                >Pause
-                  {isPaused}
-                </button>
-              </center>
-
-              <div className="container mt-3">
-                <div className="row align-items-center">
-                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{answeredCount}</div>
-                    <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      )}
+      
+      <div className="container">
+                <div className='w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400'>
+                  {/* Profile Image and Link */}
+                  <div>
+                      <Avatar alt={user?.firstName} src={user?.profilePicture} sx={{ width: 30, height: 30 }} />
                   </div>
-                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{notAnsweredCount}</div>
-                    <p className="ml-2 text-start text-lg-center mb-0">Not Answered </p>
+        
+                  {/* Profile Information */}
+                  <div>
+                    <h1 className=' text-white'>{user?.firstName +user?.lastName}</h1>
                   </div>
                 </div>
+        <h1 className=" text-center text-black bg-gray-100 p-2">
+          Time Left:{formatTime(timeminus)}
+        </h1>
+        <center>
+          <button
+            onClick={handlePauseResume}
+            className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
+              isPaused 
+                ? "bg-green-500 hover:bg-green-600 text-white" 
+                : "bg-red-500 hover:bg-red-600 text-white"
+            }`}
+          >
+            Pause
+          </button>
+        </center>
+
+        <div className="container mt-3">
+          <div className="row align-items-center">
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">
+                {answeredCount}
               </div>
-              <div className="container mb-3">
-                <div className="row">
-                  <div className=" mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{notVisitedCount}</div>
-                    <p className="ml-2 text-start text-lg-center mb-0">Not Visited </p>
-                  </div>
-                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{markedForReviewCount}</div>
-                    <p className="ml-2 text-start text-lg-center">Marked for Review</p>
-                  </div>
-                </div>
-                <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{answeredAndMarkedCount}</div>
-                  <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
-                </div>
-                {/* <div className="col-12 flex text-center mt-1">
-                <div className="smansmarkedImg"></div>
-                <p className="ml-2 mb-0">Answered & Marked for Review</p>
-              </div> */}
+              <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+            </div>
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">
+                {notAnsweredCount}
               </div>
-              <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
-                {examData?.section[currentSectionIndex]?.questions?.[
-                  selectedLanguage?.toLowerCase()
-                ]?.map((_, index) => {
-                  const fullIndex = startingIndex + index; // Correct question index
-
-                  // Access the current section from the examData
-                  const currentSection = examData.section[currentSectionIndex];
-                  const timeFormatted = formatTime(timeLeft); // Format the remaining time for the current section
-
-                  // Set className based on question status
-                  let className = "";
-                  if (selectedOptions[fullIndex] !== null) {
-                    className = "answerImg";
-                    if (markedForReview.includes(fullIndex)) {
-                      className += " mdansmarkedImg";
-                    }
-                  } else if (visitedQuestions.includes(fullIndex)) {
-                    className = "notansImg"; // Visited but not answered
-                  } else {
-                    className = "notVisitImg"; // Not visited
-                  }
-
-                  // Mark for review
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " reviewed mdmarkedImg";
-                  }
-
-                  return (
-                    <div key={fullIndex}>
-                      {/* Show countdown timer */}
-
-                      {/* Question number with click functionality */}
-                      <span
-                        onClick={() => {
-                          console.log("Clicked question index:", fullIndex);
-                          setClickedQuestionIndex(fullIndex);
-                        }}
-                        className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                      >
-                        {fullIndex + 1}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
             </div>
           </div>
+        </div>
+        
+        <div className="container mb-3">
+          <div className="row">
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">
+                {notVisitedCount}
+              </div>
+              <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
+            </div>
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+                {markedForReviewCount}
+              </div>
+              <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+            </div>
+          </div>
+          <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+            <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+              {answeredAndMarkedCount}
+            </div>
+            <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
+          </div>
+        </div>
+
+        <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
+          {examData?.section[currentSectionIndex]?.questions?.[
+            selectedLanguage?.toLowerCase()
+          ]?.map((_, index) => {
+            const fullIndex = startingIndex + index;
+            const currentSection = examData.section[currentSectionIndex];
+            const timeFormatted = formatTime(timeLeft);
+
+            let className = "";
+            if (selectedOptions[fullIndex] !== null) {
+              className = "answerImg";
+              if (markedForReview.includes(fullIndex)) {
+                className += " mdansmarkedImg";
+              }
+            } else if (visitedQuestions.includes(fullIndex)) {
+              className = "notansImg";
+            } else {
+              className = "notVisitImg";
+            }
+
+            if (markedForReview.includes(fullIndex)) {
+              className += " reviewed mdmarkedImg";
+            }
+
+            return (
+              <div key={fullIndex} >
+                <span
+                  onClick={() => {
+                    console.log("Clicked question index:", fullIndex);
+                    setClickedQuestionIndex(fullIndex);
+                  }}
+                  className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                >
+                  {fullIndex + 1}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
+    </div>
 
+</div>
 
   {/* Footer Buttons */ }
-  <div className="fixed-bottom bg-white ">
-    <div className="d-flex justify-content-between">
+  <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">  
+  <div className="d-flex justify-content-between">
       {/* Left side - Mark for Review and Clear Response */}
       <div className="d-flex">
         <button
