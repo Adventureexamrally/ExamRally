@@ -7,6 +7,8 @@ import logo from '../assets/logo/sample-logo.png';
 import Swal from 'sweetalert2'
 import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
+import { Avatar } from '@mui/material';
+
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -1351,7 +1353,7 @@ useEffect(() => {
 
 
 
-      <div className="d-flex justify-content-start align-items-center flex-wrap">
+      <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
       {examData?.section?.map((section, index) => {
     // Calculate the starting index for this section
     const startingIndex = examData.section
@@ -1371,14 +1373,14 @@ useEffect(() => {
     return (
       <div key={index} >
         <h1
-          className={`h6 p-1 text-white border d-inline-flex align-items-center 
-            ${currentSectionIndex === index
-              ? 'bg-blue-400 border-3 border-blue-500 fw-bold'
-              : 'bg-gray-400'}`}
+                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
+                      ${currentSectionIndex === index
+                          ? ' font-medium underline'
+                          : ''}`}
         >
-          ✔ {section.name}
+          {section.name}
           <div className="relative group ml-2 d-inline-block">
-            <FaInfoCircle className="cursor-pointer text-white" />
+            <FaInfoCircle className="cursor-pointer text-blue-400" />
             <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
   min-w-[220px]     w-fit md:max-w-xs md:w-max
   left-1/2 -translate-x-1/2
@@ -1435,32 +1437,34 @@ useEffect(() => {
 
         </svg>
       </button>
-      <div className="flex lg:flex md:row sm:row">
+      <div className="flex lg:flex md:row sm:row ">
   {/* Question Panel */}
-  <div className={`p-1 ${closeSideBar ? 'col-lg-11 col-md-11' : 'col-lg-9 col-md-8'}`}>
+  <div className={` ${closeSideBar ? 'col-lg-11 col-md-11' : 'col-lg-9 col-md-8'}`}>
     {!isSubmitted ? (
       <>
-        <div className="d-flex justify-between px-2">
+        <div className="flex justify-between flex-col md:flex-row p-2 bg-gray-100 border-1 border-gray-300 font-extralight text-[14px]">
           <h3>
             Question No: {clickedQuestionIndex + 1}/{t_questions}
           </h3>
-          <h1>
-            <span className="border px-2 p-1">
-              Qn Time:{formatTime(questionTime)}
+          <h1 className="flex flex-wrap md:flex-row">
+            <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white " >
+              Qn Time : {formatTime(questionTime)}
             </span>
-            &nbsp;Marks&nbsp;
+            <span className="font-normal m-1">
+            &nbsp;&nbsp;&nbsp;&nbsp;<b>Marks : </b>&nbsp;&nbsp;&nbsp;&nbsp;
             <span className="text-success">
               +
               {examData?.section && examData.section[currentSectionIndex]
                 ? examData.section[currentSectionIndex].plus_mark
                 : "No plus marks"}
             </span>
-            &nbsp;|&nbsp;
+            &nbsp;<span className="text-gray-400">|</span>&nbsp;
             <span className="text-danger">
               -
               {examData?.section && examData.section[currentSectionIndex]
                 ? examData.section[currentSectionIndex].minus_mark
                 : "No minus marks"}
+            </span>
             </span>
           </h1>
         </div>
@@ -1492,8 +1496,12 @@ useEffect(() => {
 
               {/* Right side for Question */}
               <div 
-                className="col-lg-6 col-md-6 p-3" 
-                style={{ maxHeight: "420px", overflowY: "auto" }}
+                                            className={`p-3 ${examData.section[currentSectionIndex]?.questions?.[
+                                              selectedLanguage?.toLowerCase()
+                                          ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                                              ? "col-lg-6 col-md-6"
+                                              : "col-lg-12 col-md-12" // Make it full width when no common data
+                                              }`}                style={{ maxHeight: "420px", overflowY: "auto" }}
               >
                 <div
                   className="fw-bold text-wrap"
@@ -1566,11 +1574,11 @@ useEffect(() => {
     </div>
 
     <div
-      className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300
-        ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-        ${closeSideBar ? 'md:translate-x-full md:w-0' : 'md:translate-x-0'}
+      className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300 md:-mt-10 border
+        ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0'}
         fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
-      style={{ maxHeight: '480px', overflowY: 'auto' }}
+      style={{ maxHeight: '490px', overflowY: 'auto' }}
     >
       {isMobileMenuOpen && (
         <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -1591,8 +1599,19 @@ useEffect(() => {
         </button>
       )}
       
-      <div className="container mt-3">
-        <h1 className="bg-blue-400 text-center text-white p-2">
+      <div className="container">
+                <div className='w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400'>
+                  {/* Profile Image and Link */}
+                  <div>
+                      <Avatar alt={user?.firstName} src={user?.profilePicture} sx={{ width: 30, height: 30 }} />
+                  </div>
+        
+                  {/* Profile Information */}
+                  <div>
+                    <h1 className=' text-white'>{user?.firstName +user?.lastName}</h1>
+                  </div>
+                </div>
+        <h1 className=" text-center text-black bg-gray-100 p-2">
           Time Left:{formatTime(timeminus)}
         </h1>
         <center>
@@ -1673,7 +1692,7 @@ useEffect(() => {
             }
 
             return (
-              <div key={fullIndex}>
+              <div key={fullIndex} >
                 <span
                   onClick={() => {
                     console.log("Clicked question index:", fullIndex);
@@ -1693,8 +1712,8 @@ useEffect(() => {
 </div>
 
   {/* Footer Buttons */ }
-  <div className="fixed-bottom bg-white">
-    <div className="d-flex justify-content-between">
+  <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">  
+  <div className="d-flex justify-content-between">
       {/* Left side - Mark for Review and Clear Response */}
       <div className="d-flex">
         <button
