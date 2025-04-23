@@ -39,7 +39,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
   // console.log(user)
   const { isSignedIn } = useUser();
   useEffect(() => {
-  
+    if (user?._id) {
     // Fetch test result for each test
     data?.exams?.forEach((test) => {
       Api.get(`/results/${user?._id}/${test._id}`)
@@ -61,7 +61,10 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
           console.error("Error fetching result:", err);
         });
     });
-  }, [ data?.exams]);
+}
+  }, [ data?.exams,user?._id]);
+  console.log(resultData);
+
     return (
         <div className="modal fade" id="questionsModal" tabIndex="-1" aria-labelledby="questionsModalLabel" aria-hidden="true">
             <div className="modal-dialog modal-lg">
