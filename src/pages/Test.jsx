@@ -20,6 +20,8 @@ const Test = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sectionTimes, setSectionTimes] = useState({});
+const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
 
   const { user } = useContext(UserContext);
 
@@ -275,6 +277,58 @@ useEffect(() => {
     }
   }, [currentSectionIndex]); // Runs when the user changes questions
 
+// 2. Update section time tracking useEffect - REPLACE THIS SECTION
+useEffect(() => {
+  const handleSectionTiming = () => {
+    const now = new Date();
+    const prevSectionIndex = currentSectionIndex - 1;
+
+    if (prevSectionIndex >= 0) {
+      const timeSpent = Math.floor(
+        (now - currentSectionStartTimeRef.current) / 1000
+      );
+      
+      setSectionTimes(prev => ({
+        ...prev,
+        [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent
+      }));
+    }
+
+    // Reset timer for new section
+    currentSectionStartTimeRef.current = new Date();
+  };
+
+  handleSectionTiming();
+}, [currentSectionIndex]);
+
+// 3. Add cleanup effect for final section timing - ADD THIS NEW EFFECT
+useEffect(() => {
+  return () => {
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
+  };
+}, [currentSectionIndex]);
+
+// 4. Update initial data load useEffect - MODIFY THIS EXISTING EFFECT
+useEffect(() => {
+  if (examData) {
+    const initialTimes = {};
+    examData.section.forEach((_, index) => {
+      initialTimes[index] = 0;
+    });
+    setSectionTimes(initialTimes);
+    currentSectionStartTimeRef.current = new Date(); // Initialize ref here
+  }
+}, [examData]);
+
+
   // API get method
 
   useEffect(() => {
@@ -344,7 +398,7 @@ useEffect(() => {
           })),
           score: res.data.score || 0,
           Attempted: res.data.Attempted || 0,
-          timeTaken: res.data.timeTaken || 60,
+          // timeTaken: res.data.timeTaken || 60,
           Accuracy: res.data.Accuracy || 0,
           takenAt: res.data.takenAt || new Date(),
           submittedAt: res.data.submittedAt || new Date(),
@@ -549,8 +603,19 @@ useEffect(() => {
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
     console.log("Handling section submission...");
+  // Save current section time before modal
+  const now = new Date();
+  const timeSpent = Math.floor(
+    (now - currentSectionStartTimeRef.current) / 1000
+  );
+  
+  setSectionTimes(prev => ({
+    ...prev,
+    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+  }));
 
-
+  // Reset timer for accuracy
+  currentSectionStartTimeRef.current = new Date();
     const currentSection = examData?.section[currentSectionIndex];
     console.log("Current Section:", currentSection);
 
@@ -651,7 +716,16 @@ useEffect(() => {
 
   const submitExam = () => {
     console.log("submitExam called");
-
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
+  console.log("Final times:", sectionTimes);
     if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
       console.error("Exam data or section not available");
       return;
@@ -854,8 +928,9 @@ useEffect(() => {
         visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
         notVisitedQuestions: sectionSummary.notVisitedQuestions,
         s_accuracy: secaccuracy,
-        skipped: skippedQuestions
-      };
+        skipped: skippedQuestions,
+  timeTaken: sectionTimes[sectionIndex] || 0, // Add section time      
+  };
     }).filter(Boolean);
 
     const totalStats = formattedSections.reduce((acc, section) => ({
@@ -981,7 +1056,16 @@ useEffect(() => {
         currentSectionIndex
       };
       // localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-  
+    // Capture current time data before showing the dialog
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
