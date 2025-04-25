@@ -217,11 +217,11 @@ const [payment, setPayment] = useState("");
   
   console.log("check", user?.enrolledCourses);
   
-  if (isEnrolled) {
-    console.log("Hii");
-  } else if (status) {
-    console.log("bye");
-  }
+  // if (isEnrolled) {
+  //   console.log("Hii");
+  // } else if (status) {
+  //   console.log("bye");
+  // }
   
 
  const loadRazorpayScript = () => {
@@ -300,6 +300,9 @@ console.log("ji".options)
   };
 
 
+  const isPaidTest = (test) => {
+    return test?.result_type?.toLowerCase() === "paid";
+  };
 
   return (
     <>
@@ -674,65 +677,58 @@ console.log("ji".options)
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
                                 {/* Check if the current date is greater than or equal to live_date */}
-                                {new Date(test.live_date) > new Date() ? (
-                                  // Display "Coming Soon" if the current date is earlier than live_date
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                    Coming Soon
-                                  </div>
-                                ) : (
-                                  <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    resultData?.[test._id]?.status === "completed"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : resultData?.[test._id]?.status === "paused"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      :isEnrolled
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                      navigate('/sign-in')
-                                    }
-                                    else if (resultData?.[test._id]?.status === "completed") {
-                                      openNewWindow(`/result/${test._id}`);
-                                    } 
-                                    else if (resultData?.[test._id]?.status === "paused") {
-                                      // Pass last question index and selected options when resuming
-                                      openNewWindow(
-                                        `/mocktest/${test._id}`
-                                      );
-                                    }
-                                    else if (test.status === "true" || isEnrolled) {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } 
-                                    else {
-                                      handleTopicSelect(test.section[0], "prelims");
-                                    }
-                                  }}
-                                >
-                                  {resultData?.[test._id]?.status === "completed" 
-                                    ? "View Result"
-                                    : resultData?.[test._id]?.status === "paused"
-                                    ? "Resume"
-                                    : test.status === "true" 
-                                    ? "Take Test"
-                                     : isEnrolled ? (
-                                      "Take Test"
-                                    ) : (
-                                  
-                                   <div className="flex items-center justify-center font-semibold gap-1">
-                                        <IoMdLock />
-                                        Lock
-                                      </div>
-                                      
-                                    )
-                                  }
-                                </button>
-
-                                )}
+                                  {new Date(test.live_date) > new Date() ? (
+                                                          <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                                            Coming Soon
+                                                          </div>
+                                                        ) : (
+                                                          <button
+                                                          className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                                            resultData?.[test._id]?.status === "completed"
+                                                              ? "bg-green-500 text-white hover:bg-green-600"
+                                                              : resultData?.[test._id]?.status === "paused"
+                                                              ? "bg-green-500 text-white hover:bg-green-600"
+                                                              : (isEnrolled || !isPaidTest(test))
+                                                              ? "bg-green-500 text-white hover:bg-green-600"
+                                                              : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                                          }`}
+                                                          onClick={() => {
+                                                            if (!isSignedIn) {
+                                                              navigate('/sign-in');
+                                                              return;
+                                                            }
+                                                            
+                                                            if (resultData?.[test._id]?.status === "completed") {
+                                                              openNewWindow(`/result/${test._id}`);
+                                                            } 
+                                                            else if (resultData?.[test._id]?.status === "paused") {
+                                                              openNewWindow(`/mocktest/${test._id}`);
+                                                            } else if (isPaidTest(test) && !isEnrolled) {
+                                                              return;
+                                                            }
+                                                            else {
+                                                              openNewWindow(`/instruction/${test._id}`);
+                                                            }
+                                                          }}
+                                                          disabled={new Date(test.live_date) > new Date()}
+                                                        >
+                                                          {resultData?.[test._id]?.status === "completed" 
+                                                            ? "View Result"
+                                                            : resultData?.[test._id]?.status === "paused"
+                                                            ? "Resume"
+                                                            : (isEnrolled || !isPaidTest(test))
+                                                            ? "Take Test"
+                                                            : isPaidTest(test) ? (
+                                                              <div className="flex items-center justify-center font-semibold gap-1">
+                                                                <IoMdLock />
+                                                                Lock
+                                                              </div>
+                                                            ) : (
+                                                              "Take Test"
+                                                            )
+                                                          }
+                                                        </button>
+                                                        )}
                               </div>
                             </div>
                           </div>
@@ -823,43 +819,43 @@ console.log("ji".options)
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : resultData?.[test._id]?.status === "paused"
                                       ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
+                                      : (isEnrolled || !isPaidTest(test))
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                   onClick={() => {
                                     if (!isSignedIn) {
-                                      navigate('/sign-in')
+                                      navigate('/sign-in');
+                                      return;
                                     }
-                                    else if (resultData?.[test._id]?.status === "completed") {
+                                    
+                                    if (resultData?.[test._id]?.status === "completed") {
                                       openNewWindow(`/result/${test._id}`);
                                     } 
                                     else if (resultData?.[test._id]?.status === "paused") {
-                                      // Pass last question index and selected options when resuming
-                                      openNewWindow(
-                                        `/mocktest/${test._id}`
-                                      );
+                                      openNewWindow(`/mocktest/${test._id}`);
+                                    } else if (isPaidTest(test) && !isEnrolled) {
+                                      return;
                                     }
-                                    else if (test.status === "true" || isEnrolled) {
+                                    else {
                                       openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(test.section[0], "prelims");
                                     }
                                   }}
+                                  disabled={new Date(test.live_date) > new Date()}
                                 >
                                   {resultData?.[test._id]?.status === "completed" 
                                     ? "View Result"
                                     : resultData?.[test._id]?.status === "paused"
                                     ? "Resume"
-                                    : test.status === "true" 
+                                    : (isEnrolled || !isPaidTest(test))
                                     ? "Take Test"
-                                    : isEnrolled ? (
-                                      "Take Test"
-                                    ) : (
+                                    : isPaidTest(test) ? (
                                       <div className="flex items-center justify-center font-semibold gap-1">
                                         <IoMdLock />
                                         Lock
                                       </div>
+                                    ) : (
+                                      "Take Test"
                                     )
                                   }
                                 </button>
@@ -996,43 +992,43 @@ console.log("ji".options)
                                   ? "bg-green-500 text-white hover:bg-green-600"
                                   : resultData?.[test._id]?.status === "paused"
                                   ? "bg-green-500 text-white hover:bg-green-600"
-                                  : test.status === "true"
+                                  : (isEnrolled || !isPaidTest(test))
                                   ? "bg-green-500 text-white hover:bg-green-600"
                                   : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                               }`}
                               onClick={() => {
                                 if (!isSignedIn) {
-                                  navigate('/sign-in')
+                                  navigate('/sign-in');
+                                  return;
                                 }
-                                else if (resultData?.[test._id]?.status === "completed") {
+                                
+                                if (resultData?.[test._id]?.status === "completed") {
                                   openNewWindow(`/result/${test._id}`);
                                 } 
                                 else if (resultData?.[test._id]?.status === "paused") {
-                                  // Pass last question index and selected options when resuming
-                                  openNewWindow(
-                                    `/mocktest/${test._id}`
-                                  );
+                                  openNewWindow(`/mocktest/${test._id}`);
+                                } else if (isPaidTest(test) && !isEnrolled) {
+                                  return;
                                 }
-                                else if (test.status === "true" || isEnrolled) {
+                                else {
                                   openNewWindow(`/instruction/${test._id}`);
-                                } else {
-                                  handleTopicSelect(test.section[0], "prelims");
                                 }
                               }}
+                              disabled={new Date(test.live_date) > new Date()}
                             >
                               {resultData?.[test._id]?.status === "completed" 
                                 ? "View Result"
                                 : resultData?.[test._id]?.status === "paused"
                                 ? "Resume"
-                                : test.status === "true" 
+                                : (isEnrolled || !isPaidTest(test))
                                 ? "Take Test"
-                                : isEnrolled ? (
-                                  "Take Test"
-                                ) : (
+                                : isPaidTest(test) ? (
                                   <div className="flex items-center justify-center font-semibold gap-1">
                                     <IoMdLock />
                                     Lock
                                   </div>
+                                ) : (
+                                  "Take Test"
                                 )
                               }
                             </button>
@@ -1160,8 +1156,8 @@ console.log("ji".options)
                 </div>
 
                 {ad.length > 0 &&
-                  ad.map((item) => (
-                    <div className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300">
+                  ad.map((item,index) => (
+                    <div key={index} className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300">
                       <Link to={item.link_name}>
                         <img
                           src={item.photo}
