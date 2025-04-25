@@ -189,16 +189,23 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                                                                return;
                                                                                              }
                                                                                              
-                                                                                             if (resultData?.[test._id]?.status === "completed") {
-                                                                                               openNewWindow(`/result/${test._id}`);
-                                                                                             } 
-                                                                                             else if (resultData?.[test._id]?.status === "paused") {
-                                                                                               openNewWindow(`/mocktest/${test._id}`);
-                                                                                             } else if (isPaidTest(test) && !isEnrolled) {
+                                                                                              if (resultData?.[test._id]?.status === "completed") {
+                                                                                                openNewWindow(`/liveresult/${test._id}`);
+                                                                                            }
+                                                                                            else if (resultData?.[test._id]?.status === "paused") {
+                                                                                                // Pass last question index and selected options when resuming
+                                                                                                openNewWindow(
+                                                                                                    `/mocklivetest/${test._id}`
+                                                                                                );
+                                                                                            }
+                                                                                            else if (test.status === "true") {
+                                                                                                openNewWindow(`/instruct/${test._id}`);
+                                                                                            } 
+                                                                                             else if (isPaidTest(test) && !isEnrolled) {
                                                                                                return;
                                                                                              }
                                                                                              else {
-                                                                                               openNewWindow(`/instruction/${test._id}`);
+                                                                                               openNewWindow(`/instruct/${test._id}`);
                                                                                              }
                                                                                            }}
                                                                                            disabled={new Date(test.live_date) > new Date()}
