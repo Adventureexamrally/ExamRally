@@ -17,7 +17,7 @@ const Rally_pro = () => {
       async function run() {
         try {
             const response = await Api.get(`subscription/getall/sub`);
-            console.log(response.data);
+            console.log("welcodata",response.data);
       
             // Filter data based on subscriptionType
             const filtered = response.data.filter(sub => sub.subscriptionType.toLowerCase() === "rally pro".toLowerCase());

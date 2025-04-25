@@ -354,61 +354,7 @@ console.log("ji".options)
                           </button>
                         ))}
                     </div>
-                    {/* <div>
-                      {activeSection && (
-                        <div className="mt-3 bg-slate-50 py-2 px-2">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-                            {data?.exams?.map((test, idx) => {
-                              // If activeSection is "All" or matches the test's sub_menu, render the test
-                              if (
-                                test.topic_test?.sub_menu === activeSection
-                              ) {
-                                
-                                return (
-                                  <>
-                                    {
-                                         submenuTopics
-                                          .filter((topic) => topic.name === test.topic_test?.topic) // Only show matching topics
-                                          .map((topic) => (
-                                          <div key={idx} className="">
-                                            <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                                              <div className="card-body text-center flex flex-col justify-evenly">
-                                                <h5 className="card-title font-semibold text-">
-                                                  {topic.name}
-                                                </h5>
-                                                {/* Take Test / Lock Button 
-                                                <button
-                                                  className={`mt-3 py-2 px-4 rounded w-full transition ${test.status === "true"
-                                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                                    : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                                    }`}
-                                                  data-bs-toggle="modal"
-                                                  data-bs-target="#questionsModal"
-                                                  onClick={() => setCurrentTopic(topic.name)}
-                                                >
-                                                  {test.status === "true" ? (
-                                                    "view Question"
-                                                  ) : (
-                                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                                      <IoMdLock />
-                                                      Lock
-                                                    </div>
-                                                  )}
-                                                </button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        ))
-                                    }
-                                  </>
-                                );
-                              }
-                              return null; // Don't render if activeSection doesn't match
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div> */}
+             
                     <LiveTestCategorieTopics
                       data={data}
                       activeSection={activeSection}
@@ -418,9 +364,10 @@ console.log("ji".options)
                 )}
 
                 {catDetail?.sub_titles?.length > 0 &&
-                  catDetail?.sub_titles?.map((sub) => (
-                    <div className="flex flex-col gap-3 flex-wrap py-2 bg-gray-50 px-2 my-3 shadow-lg">
+                  catDetail?.sub_titles?.map((sub,index) => (
+                    <div key={index} className="flex flex-col gap-3 flex-wrap py-2 bg-gray-50 px-2 my-3 shadow-lg">
                       <h1
+               
                         className="my-2 p-3"
                         dangerouslySetInnerHTML={{ __html: sub.title }}
                       ></h1>

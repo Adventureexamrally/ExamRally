@@ -1298,7 +1298,12 @@ useEffect(() => {
                     <h1 className="modal-title fs-5 text-green-500" id="staticBackdropLabel">
                       Section Submit
                     </h1>
-
+                    <button
+              type="button"
+              className="btn-close"
+              aria-label="Close"
+              onClick={() => setShowModal(false)} // Manually hide the modal
+            ></button>
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -1563,16 +1568,17 @@ useEffect(() => {
 
   {/* Sidebar */}
 
-    <div className="md:flex hidden items-center">
-      <div 
-        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} 
-        onClick={toggleMenu2}
-      >
-        <FaChevronRight 
-          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} 
-        />
-      </div>
-    </div>
+  <div className="md:flex hidden items-center">
+  <div
+    className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer z-[9999]`}
+    onClick={toggleMenu2}
+  >
+    <FaChevronRight
+      className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absolute left-0 rotate-180' : ''}`}
+    />
+  </div>
+</div>
+
 
     <div
       className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300 md:-mt-10 border
