@@ -57,15 +57,14 @@ const PdfInstruction = () => {
     <div className="p-4">
       <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
         <h1 className="text-lg font-semibold text-white">Instruction</h1>
-        <select name="names" className="p-2 border rounded-md">
-          <option value="">Select Option</option>
-          <option value="English">English</option>
-          <option value="Hindi">Hindi</option>
-        </select>
+        
+     
+      
       </div>
-
+      <p className="text-red-500 fw-bold p-2">The Public Examinations (Prevention of Unfair Means) Act 2024 is in force. The provisions of the Act will be applicable to persons involved in use of unfair means. Accordingly, Candidates will be covered under the extent administrative provisions of the concerned Public Examination Authority. Candidates are advised to not take/give or attempt to take/give any unfair assistance or use or attempt to use any unfair means during the examinations.
+      </p>
 <div className="p-2">
-  <h1> Section : <strong> {examData?.exam_name}</strong> </h1>
+  <h1><strong> {examData?.exam_name}</strong> </h1>
 </div>
 
 
@@ -78,8 +77,8 @@ const PdfInstruction = () => {
       <th>S.No</th>
       <th>Section Exam Name</th>
       <th>No. of Questions</th>
-      <th>Section Time (Minutes)</th>
       <th>Mark</th>
+      <th>Section Time (Minutes)</th>
     </tr>
   </thead>
   <tbody>
@@ -88,8 +87,8 @@ const PdfInstruction = () => {
         <td>{index + 1}</td>
         <td>{section.name}</td>
         <td>{section.t_question}</td>
-        <td>{section.t_time}</td>
         <td>{section.t_mark}</td>
+        <td>{section.t_time} Min </td>
       </tr>
     ))}
   </tbody>
@@ -104,12 +103,11 @@ const PdfInstruction = () => {
       {
   examData?.time?.toLowerCase() === "composite" ? (
     <li>
-      Total duration of examination is <strong>{examData?.duration}</strong>. (20 minutes extra for every 60 minutes (1 hour) of the examination time for candidates with disability eligible for compensatory time).
+      Total duration of examination is <strong>{examData?.duration}</strong> Min. 
     </li>
   ) : (
-    <li>
-      No sectional time specified. Please check the schedule for section-specific durations.
-    </li>
+   <>
+   </>
   )
 }
 
