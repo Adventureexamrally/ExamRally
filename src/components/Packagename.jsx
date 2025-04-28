@@ -642,7 +642,7 @@ console.log("ji".options)
                                 {/* Test Info Section */}
                                 <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
+                                    <p className="font-medium">Quez</p>
                                     <p className="flex items-center gap-1">
                                       <BsQuestionSquare
                                         size={20}
@@ -670,7 +670,7 @@ console.log("ji".options)
                                         size={20}
                                         color="red"
                                       />
-                                      {test.duration}
+                                      {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
@@ -775,7 +775,7 @@ console.log("ji".options)
                                 {/* Test Info Section */}
                                 <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
+                                    <p className="font-medium">Quez</p>
                                     <p className="flex items-center gap-1">
                                       <BsQuestionSquare
                                         size={20}
@@ -801,7 +801,7 @@ console.log("ji".options)
                                         size={20}
                                         color="red"
                                       />
-                                      {test.duration}
+                                      {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
@@ -906,7 +906,7 @@ console.log("ji".options)
                                 {/* Test Info Section */}
                                 <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
+                                    <p className="font-medium">Quez</p>
                                     <p className="flex items-center gap-1">
                                       <BsQuestionSquare
                                         size={20}
@@ -932,7 +932,7 @@ console.log("ji".options)
                                         size={20}
                                         color="red"
                                       />
-                                      {test.duration}
+                                      {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
@@ -1177,3 +1177,4 @@ console.log("ji".options)
 };
 
 export default Packagename;
+ 

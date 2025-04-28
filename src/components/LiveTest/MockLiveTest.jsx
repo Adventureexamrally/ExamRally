@@ -20,6 +20,8 @@ const MockLiveTest= () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sectionTimes, setSectionTimes] = useState({});
+const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
 
   const { user } = useContext(UserContext);
 
@@ -275,6 +277,58 @@ useEffect(() => {
     }
   }, [currentSectionIndex]); // Runs when the user changes questions
 
+// 2. Update section time tracking useEffect - REPLACE THIS SECTION
+useEffect(() => {
+  const handleSectionTiming = () => {
+    const now = new Date();
+    const prevSectionIndex = currentSectionIndex - 1;
+
+    if (prevSectionIndex >= 0) {
+      const timeSpent = Math.floor(
+        (now - currentSectionStartTimeRef.current) / 1000
+      );
+      
+      setSectionTimes(prev => ({
+        ...prev,
+        [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent
+      }));
+    }
+
+    // Reset timer for new section
+    currentSectionStartTimeRef.current = new Date();
+  };
+
+  handleSectionTiming();
+}, [currentSectionIndex]);
+
+// 3. Add cleanup effect for final section timing - ADD THIS NEW EFFECT
+useEffect(() => {
+  return () => {
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
+  };
+}, [currentSectionIndex]);
+
+// 4. Update initial data load useEffect - MODIFY THIS EXISTING EFFECT
+useEffect(() => {
+  if (examData) {
+    const initialTimes = {};
+    examData.section.forEach((_, index) => {
+      initialTimes[index] = 0;
+    });
+    setSectionTimes(initialTimes);
+    currentSectionStartTimeRef.current = new Date(); // Initialize ref here
+  }
+}, [examData]);
+
+
   // API get method
 
   useEffect(() => {
@@ -344,7 +398,7 @@ useEffect(() => {
           })),
           score: res.data.score || 0,
           Attempted: res.data.Attempted || 0,
-          timeTaken: res.data.timeTaken || 60,
+          // timeTaken: res.data.timeTaken || 60,
           Accuracy: res.data.Accuracy || 0,
           takenAt: res.data.takenAt || new Date(),
           submittedAt: res.data.submittedAt || new Date(),
@@ -549,8 +603,19 @@ useEffect(() => {
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
     console.log("Handling section submission...");
+  // Save current section time before modal
+  const now = new Date();
+  const timeSpent = Math.floor(
+    (now - currentSectionStartTimeRef.current) / 1000
+  );
+  
+  setSectionTimes(prev => ({
+    ...prev,
+    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+  }));
 
-
+  // Reset timer for accuracy
+  currentSectionStartTimeRef.current = new Date();
     const currentSection = examData?.section[currentSectionIndex];
     console.log("Current Section:", currentSection);
 
@@ -651,7 +716,16 @@ useEffect(() => {
 
   const submitExam = () => {
     console.log("submitExam called");
-
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
+  console.log("Final times:", sectionTimes);
     if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
       console.error("Exam data or section not available");
       return;
@@ -854,8 +928,9 @@ useEffect(() => {
         visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
         notVisitedQuestions: sectionSummary.notVisitedQuestions,
         s_accuracy: secaccuracy,
-        skipped: skippedQuestions
-      };
+        skipped: skippedQuestions,
+  timeTaken: sectionTimes[sectionIndex] || 0, // Add section time      
+  };
     }).filter(Boolean);
 
     const totalStats = formattedSections.reduce((acc, section) => ({
@@ -902,7 +977,7 @@ useEffect(() => {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
-  }, [id,user?._id]);
+  }, [id]);
 
   
  
@@ -982,7 +1057,16 @@ useEffect(() => {
         currentSectionIndex
       };
       // localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-  
+    // Capture current time data before showing the dialog
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
@@ -1164,6 +1248,25 @@ useEffect(() => {
       setIsFullscreen(false);
     }
   };
+
+   // Sync state with actual fullscreen changes
+   useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // Safari
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange); // Firefox
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange); // IE/Edge
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, []);
 
   const [answeredCount, setAnsweredCount] = useState(0);
   const [notAnsweredCount, setNotAnsweredCount] = useState(0);
@@ -1443,9 +1546,9 @@ useEffect(() => {
 
         </svg>
       </button>
-      <div className="flex lg:flex md:row sm:row ">
+      <div className="flex ">
   {/* Question Panel */}
-  <div className={` ${closeSideBar ? 'col-lg-11 col-md-11' : 'col-lg-9 col-md-8'}`}>
+  <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
     {!isSubmitted ? (
       <>
         <div className="flex justify-between flex-col md:flex-row p-2 bg-gray-100 border-1 border-gray-300 font-extralight text-[14px]">
@@ -1476,19 +1579,14 @@ useEffect(() => {
         </div>
         
         {examData?.section[currentSectionIndex] ? (
-          <div className="row">
-            <div className="row p-0 ml-3">
+            <div className="flex flex-col md:flex-row p-0">
               {/* Left side for Common Data */}
               {examData.section[currentSectionIndex]?.questions?.[
                 selectedLanguage?.toLowerCase()
               ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                 <div 
-                className={`p-3 ${examData.section[currentSectionIndex]?.questions?.[
-                  selectedLanguage?.toLowerCase()
-              ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                  ? "col-lg-6 col-md-6"
-                  : "col-lg-12 col-md-12" // Make it full width when no common data
-                  }`}                  style={{ maxHeight: "430px", overflowY: "auto" }}
+                  className={`md:w-[50%] p-3 ${isFullscreen?'h-[560px]':'h-[450px]'}`} 
+                  style={{ overflowY: "auto" }}
                 >
                   <div
                     className="fw-bold text-wrap"
@@ -1506,11 +1604,16 @@ useEffect(() => {
 
               {/* Right side for Question */}
               <div 
-                className="col-lg-6 col-md-6 p-3" 
-                style={{ maxHeight: "420px", overflowY: "auto" }}
+                  className={`${isFullscreen?'h-[560px]':'h-[450px]'} mb-24 md:mb-14 p-3 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                     selectedLanguage?.toLowerCase()
+                     ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                      ? "md:w-[50%]"
+                        : "md:w-full" // Make it full width when no common data
+                          }`}                style={{  overflowY: "auto" }}
               >
+                <div>
                 <div
-                  className="fw-bold text-wrap"
+                  className="fw-bold text-wrap mb-2"
                   style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                   dangerouslySetInnerHTML={{
                     __html:
@@ -1539,7 +1642,7 @@ useEffect(() => {
                             console.log("Selected Option Index:", index);
                             handleOptionChange(index);
                           }}
-                        />
+                        />        &nbsp;&nbsp;
                         <label
                           htmlFor={`option-${index}`}
                           dangerouslySetInnerHTML={{
@@ -1552,9 +1655,20 @@ useEffect(() => {
                 ) : (
                   <p>No options available</p>
                 )}
+                </div>
+                    <div className="md:flex hidden items-center">
+      <div 
+        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} 
+        onClick={toggleMenu2}
+      >
+        <FaChevronRight 
+          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} 
+        />
+      </div>
+    </div>
               </div>
             </div>
-          </div>
+      
         ) : (
           <p>No section data available</p>
         )}
@@ -1568,24 +1682,13 @@ useEffect(() => {
 
   {/* Sidebar */}
 
-  <div className="md:flex hidden items-center">
-  <div
-    className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer z-[9999]`}
-    onClick={toggleMenu2}
-  >
-    <FaChevronRight
-      className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absolute left-0 rotate-180' : ''}`}
-    />
-  </div>
-</div>
-
 
     <div
-      className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300 md:-mt-10 border
-        ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0'}
-        fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
-      style={{ maxHeight: '490px', overflowY: 'auto' }}
+      className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+         ${isFullscreen?'h-[650px]':'h-[547px]'} fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
+      style={{  overflowY: 'auto' }}
     >
       {isMobileMenuOpen && (
         <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -1615,7 +1718,7 @@ useEffect(() => {
         
                   {/* Profile Information */}
                   <div>
-                    <h1 className=' text-white'>{user?.firstName +user?.lastName}</h1>
+                    <h1 className=' text-white text-wrap break-words'>{user?.firstName +user?.lastName}</h1>
                   </div>
                 </div>
         <h1 className=" text-center text-black bg-gray-100 p-2">
@@ -1674,7 +1777,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
+        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
           {examData?.section[currentSectionIndex]?.questions?.[
             selectedLanguage?.toLowerCase()
           ]?.map((_, index) => {
@@ -1720,37 +1823,42 @@ useEffect(() => {
 
   {/* Footer Buttons */ }
   <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">  
-  <div className="d-flex justify-content-between">
+  <div className="flex justify-between flex-col md:flex-row w-full">
+    <div className="flex justify-between  md:w-3/4 m-1">
       {/* Left side - Mark for Review and Clear Response */}
       <div className="d-flex">
         <button
           onClick={handleMarkForReview}
           className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
         >
-          Mark for Review
-        </button>
+      <span className="block md:hidden">Mark & Next</span>
+      <span className="hidden md:block">Mark for Review</span>        
+  </button>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <button
           onClick={handleClearResponse}
           className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
         >
-          Clear Response
+          <span className="block md:hidden">Clear</span>
+          <span className="hidden md:block">  Clear Response</span>   
         </button>
       </div>
-
-      {/* Right side - Save & Next and Submit Section */}
-      <div className="d-flex justify-content-end">
-        {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
+      {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
           <button
             onClick={handleNextClick}
             className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
           >
-            Save & Next
+            
+            <span className="block md:hidden">Save</span>
+            <span className="hidden md:block">  Save & Next</span>   
           </button>
         )}
-        &nbsp;&nbsp;&nbsp;&nbsp;
+      </div>
+      {/* Right side - Save & Next and Submit Section */}
+      <div className="flex justify-center md:w-[20%]">
+        <center>
         <button
-          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700 mt-2 md:mt-0 px-7"
           onClick={handleSubmitSection}
           data-bs-toggle="modal"
           data-bs-target="#staticBackdrop"
@@ -1759,6 +1867,7 @@ useEffect(() => {
             ? "Submit Test"
             : "Submit Section"}
         </button>
+        </center>
       </div>
 
     </div>

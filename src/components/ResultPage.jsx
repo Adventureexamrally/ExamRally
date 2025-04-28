@@ -11,7 +11,7 @@ import version from "../assets/images/shape.png";
 import answer from "../assets/images/information.png";
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
 import ResultAnimation from '../animationeffect/ResultAnimation';
 import { UserContext } from '../context/UserProvider';
 import Percentile from './Percentile';
@@ -525,9 +525,8 @@ const getComparisonStats = (sectionName) => {
     </button>
   ))}
 </div>
-      <div className="d-flex justify-content-center align-items-center p-4">
-      <div className="container">
-        <table className="table table-bordered table-striped table-responsive">
+      <div className="table-responsive">
+        <table className="table table-bordered table-striped ">
           <thead>
             <tr>
               <th>{" "}</th>
@@ -572,15 +571,13 @@ const getComparisonStats = (sectionName) => {
 
         </table>
       </div>
-      </div>
     </div>
     <div>
       <h1 className='font-semibold'>Time Management
       </h1>
    
-      <div className='d-flex justify-content-center align-items-center p-4'>
-      <div className="container">
-          <table className="table table-bordered table-striped table-responsive">
+      <div className="table-responsive">
+          <table className="table table-bordered table-striped ">
             <thead>
               <tr>
                 <th scope="col">Section</th>
@@ -645,34 +642,37 @@ const getComparisonStats = (sectionName) => {
 </tfoot>
           </table>
         </div>
-        </div>
     </div>
     <h1 className='font-semibold'>Line Graph</h1>
       
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-  <LineChart
-    width={900}
-    height={400}
-    data={chartData}
-    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-  >
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="name" />
-    <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
-    <Tooltip />
-    <Legend />
-    {section.map((sect, index) => (
-      <Line 
-        key={index}
-        type="monotone" 
-        dataKey={`section${index + 1}`} 
-        name={sect.name} 
-        stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
-        strokeWidth={2}
-      />
-    ))}
-  </LineChart>
+
+<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
+  <div style={{ width: '100%', maxWidth: '900px', height: '400px' }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart
+        data={chartData}
+        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
+        <Tooltip />
+        <Legend />
+        {section.map((sect, index) => (
+          <Line 
+            key={index}
+            type="monotone" 
+            dataKey={`section${index + 1}`} 
+            name={sect.name} 
+            stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
+            strokeWidth={2}
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
 </div>
+
       {/* Section buttons */}
       <h1 className='bg-blue-100 text-blue-600 p-2 h4 text-center fw-bold'>Scoring Blueprint</h1>
 

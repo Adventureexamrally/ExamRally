@@ -321,6 +321,16 @@ useEffect(() => {
     const toggleMenu2 = () => {
         setCloseSideBar(!closeSideBar);
     };
+
+    const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+      if (examData?.section?.[currentSectionIndex]?.questions) {
+        setReady(true);
+      }
+    }, [examData, currentSectionIndex]);
+
+
     return (
         <div className="p-1 mock-font ">
             <div>
@@ -333,7 +343,7 @@ useEffect(() => {
             </div>
 
             <div>
-            <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 border">
+            <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
             {examData?.section?.map((section, index) => {
         const sectionResults = resultsBySection[index] || {};
         return (
@@ -345,7 +355,7 @@ useEffect(() => {
                             : ''}`}
                     onClick={() => setCurrentSectionIndex(index)}
                 >
-                    {section.name}
+                     {section.name}
                     <div className="relative group ml-2 d-inline-block">
                         <FaInfoCircle className="cursor-pointer text-blue-400" />
                         <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
@@ -439,9 +449,9 @@ useEffect(() => {
 
                 </svg>
             </button>
-            <div className="flex lg:flex md:row sm:row">
+            <div className="flex">
                 {/* Question Panel */}
-                <div className={` ${closeSideBar ? 'col-lg-11 col-md-11' : 'col-lg-9 col-md-8'}`}>
+                <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
                 {!isSubmitted ? (
                         <>
                             <div className="d-flex  justify-between bg-gray-100 border-1 p-2 border-gray-300 font-extralight">
@@ -452,6 +462,12 @@ useEffect(() => {
 
 
                                 <div className="flex justify-center items-center ">
+                                <h3>
+                                    Question Time: 
+                                    {examData?.section[currentSectionIndex]?.questions?.[
+                                            selectedLanguage?.toLowerCase()
+                                        ]?.[clickedQuestionIndex - startingIndex]?.q_on_time }
+                                </h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                     <p>Re-Attempt   &nbsp;&nbsp;</p>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         {/* Hidden checkbox that will control the slider */}
@@ -473,18 +489,15 @@ useEffect(() => {
                                 </div>
                             </div>
                             {examData?.section[currentSectionIndex] ? (
-                                <div className="row">
-                                    <div className="row p-0 ml-3">
+                                    <div className="flex flex-col md:flex-row p-0">
                                         {/* Left side for Common Data */}
                                         {examData.section[currentSectionIndex]?.questions?.[
                                             selectedLanguage?.toLowerCase()
                                         ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                                 <div
-                                                    className="col-lg-6 col-md-6"
-                                                    style={{ maxHeight: "430px", overflowY: "auto" }}
+                                                className="md:w-[50%] p-3" 
+                                                style={{ maxHeight: "430px", overflowY: "auto" }}
                                                 >
-                                                    <h5>Common Data:</h5>
-
                                                     <div
                                                         className="fw-bold text-wrap"
                                                         style={{
@@ -504,23 +517,23 @@ useEffect(() => {
                                             )}
 
                                         {/* Right side for Question */}
-                                        <div
-                                            className={` ${examData.section[currentSectionIndex]?.questions?.[
-                                                selectedLanguage?.toLowerCase()
-                                            ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                                                ? "col-lg-6 col-md-6"
-                                                : "col-lg-12 col-md-12" // Make it full width when no common data
-                                                }`}
-                                            style={{ maxHeight: "380px", overflowY: "auto" }}
-                                        >  <style>
+                                        <div 
+                  className={`mb-24 md:mb-14 p-3 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                     selectedLanguage?.toLowerCase()
+                     ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                      ? "md:w-[50%]"
+                        : "md:w-full" // Make it full width when no common data
+                          }`}                style={{ maxHeight: "430px", overflowY: "auto" }}
+              > 
+                                        {/* <style>
                                         {`
-                                          /* Chrome, Safari, and Opera */
+                                          /* Chrome, Safari, and Opera 
                                           div::-webkit-scrollbar {
                                             display: none;
                                           }
                                         `}
-                                      </style>
-                                            <h5>Question:</h5>
+                                      </style> */}
+                                      <div>
 
                                             <div
                                                 className="fw-bold text-wrap "
@@ -535,8 +548,6 @@ useEffect(() => {
                                                         ]?.[clickedQuestionIndex - startingIndex]?.question || "No question available",
                                                 }}
                                             />
-
-                                            <h5>Options:</h5>
 
                                             {
   examData?.section[currentSectionIndex]?.questions?.[
@@ -553,7 +564,6 @@ useEffect(() => {
 
     // Determine styling based on view mode
     let optionStyle = {
-      backgroundColor: "#f3f4f6", // Default background color
       color: "black", // Default text color
       borderRadius: "0.5rem",
       margin: "0.5rem",
@@ -627,7 +637,7 @@ useEffect(() => {
             height: "1.2rem",
             cursor: (!isToggled || isClicked) ? "not-allowed" : "pointer"
           }}
-        />
+        /> &nbsp;&nbsp;
         <label
           htmlFor={`option-${index}`}
           dangerouslySetInnerHTML={{ __html: option || "No option available" }}
@@ -695,9 +705,18 @@ useEffect(() => {
                                         </div>
 
 
-
+                                        <div className="md:flex hidden items-center">
+                    <div
+                        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
+                        onClick={toggleMenu2}
+                    >
+                        <FaChevronRight
+                            className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
+                        />
+                    </div>
+                </div>
                                     </div>
-                                </div>
+                                    </div>
                             ) : (
                                 <p>No section data available</p>
                             )}
@@ -711,23 +730,14 @@ useEffect(() => {
                 </div>
 
                 {/* Sidebar */}
-                <div className="md:flex hidden items-center">
-                    <div
-                        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
-                        onClick={toggleMenu2}
-                    >
-                        <FaChevronRight
-                            className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
-                        />
-                    </div>
-                </div>
+
 
                 <div
-      className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300 border 
-        ${isMobileMenuOpen ? 'translate-x-0 w-3/4' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-full'}
-        fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
-      style={{ maxHeight: '490px', overflowY: 'auto' }}
+      className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+        fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[547px]`}
+      style={{  overflowY: 'auto' }}
     >
             {isMobileMenuOpen && (
                     <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -774,8 +784,8 @@ useEffect(() => {
 
 
 
-                        <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
-                            {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
+                        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+                        {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
                                 // Calculate the actual question number including previous sections
                                 const actualQuestionNumber = startingIndex + index + 1;
                                 const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
@@ -853,11 +863,11 @@ useEffect(() => {
                         <div className="mt-3 bg-gray-100">
                             <div className="container mt-3">
                                 <div className="row align-items-center">
-                                    <div className="col-md-6">
+                                    <div className="col-6">
                                         <div className="smanswerImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.correct}</div>
                                         <p>Correct</p>
                                     </div>
-                                    <div className="col-md-6">
+                                    <div className="col-6">
                                         <div className="smnotansImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.incorrect}</div>
                                         <p>Wrong</p>
                                     </div>
@@ -866,11 +876,11 @@ useEffect(() => {
 
                             <div className="container mt-3">
                                 <div className="row align-items-center">
-                                    <div className="col-md-6">
+                                    <div className="col-6">
                                         <div className="smnotVisitImg  text-black fw-bold flex align-items-center justify-content-center">{resultData?.unseen}</div>
                                         <p>Unseen</p>
                                     </div>
-                                    <div className="col-md-6">
+                                    <div className="col-6">
                                         <div className="smskipimg  text-white fw-bold flex align-items-center justify-content-center">{resultData.skipped}</div>
                                         <p>Skipped</p>
                                     </div>
