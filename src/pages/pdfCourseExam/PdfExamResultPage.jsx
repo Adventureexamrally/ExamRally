@@ -10,47 +10,138 @@ import version from "../../assets/images/shape.png";
 import answer from "../../assets/images/information.png";
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
 import Api from '../../service/Api';
 import { UserContext } from '../../context/UserProvider';
 import ResultAnimation from '../../animationeffect/ResultAnimation';
+import Percentile from '../../components/Percentile';
 
 const PdfExamResultPage= () => {
   const [resultData, setResultData] = useState(null);
   const { id } = useParams();
-  const [value, setValue] = useState(50);
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [sectionData, setSectionData] = useState([]);
   const [examData, setExamData] = useState(null);
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name,setShow_name] = useState("")
+const [alluserDetails,setAllUserDetails]=useState([])
+const [Rank,SetRank]=useState(0)
+const [percentile,setpercentile]=useState(0)
+const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
+
 
 
      const { user } = useContext(UserContext);
  console.log(user);
  
+ useEffect(() => {
+  if (!user?._id && id) return; // Don't run if user is not loaded yet
 
-  useEffect(() => {
-    if (!user?._id) return; // Don't run if user is not loaded yet
+  Api.get(`PDFresults/${user?._id}/${id}`)
+  .then(res => {
+      setResultData(res.data);
+      console.log(res.data);
+      if (res.data && res.data.section && Array.isArray(res.data.section)) {
+        setSectionData(res.data.section); // Store the section data
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching data:", error);
+    });
 
-    Api.get(`PDFresults/${user?._id}/${id}`)
-      .then(res => {
-        setResultData(res.data);
-        console.log(res.data);
-        if (res.data && res.data.section && Array.isArray(res.data.section)) {
-          setSectionData(res.data.section); // Store the section data
+  Api.get(`results/getresultByExam/${id}`)
+    .then(res => {
+      setAllUserDetails(res.data);
+      console.log(res.data);
+
+      if (user && res.data.length > 0) {
+        // Find the current user result
+        const currentUserResult = res.data.find(item => item.userId === user._id);
+        
+        if (currentUserResult) {
+          const myRank = res.data.findIndex(item => item.userId === user._id) + 1; // Rank of the user (1-based index)
+          SetRank(myRank)
+          const overallRank = res.data.length; // Total users in the exam
+          console.log(myRank, overallRank);
+          
+          // Calculate percentile using the given formula
+          const calculatedPercentile = (100 - ((myRank / overallRank) * 100)).toFixed(2);
+          console.log(calculatedPercentile);
+          
+          setpercentile(calculatedPercentile);
+
+          // Sectional Rank and Percentile
+         
         }
-        // Assuming 'percentile' exists in the response and it should be the initial value for the range slider
-        if (res.data && res.data.Percentile) {
-          setValue(res.data.Percentile);  // Set slider value based on percentile
-       
-     
-      }})
-      .catch(error => {
-        console.error("Error fetching data:", error);
-      });
-  }, [id, user]);
+      }
+      if (user && res.data.length > 0) {
+        const currentUserResult = res.data.find(item => item.userId === user._id);
+        const myRank = res.data.findIndex(item => item.userId === user._id) + 1;
+        SetRank(myRank);
+      
+        const overallRank = res.data.length;
+        const calculatedPercentile = (100 - ((myRank / overallRank) * 100)).toFixed(2);
+        setpercentile(calculatedPercentile);
+      
+        // Sectional Rank and Percentile Calculation
+        const sectionStats = [];
+      
+        if (currentUserResult?.section) {
+          currentUserResult.section.forEach((currentSection, sectionIndex) => {
+            const sectionName = currentSection.name;
+      
+            // Collect all scores for this section
+            const scoresForThisSection = res.data.map(result => {
+              const found = result.section.find(s => s.name === sectionName);
+              return {
+                userId: result.userId,
+                score: found?.s_score || 0,
+              };
+            });
+      
+            // Sort descending
+            const sortedScores = scoresForThisSection.sort((a, b) => b.score - a.score);
+      
+            // Find current user's rank in this section
+            const rank = sortedScores.findIndex(s => s.userId === user._id) + 1;
+            const percentile = (100 - ((rank / sortedScores.length) * 100)).toFixed(2);
+      
+            sectionStats.push({ name: sectionName, rank, percentile });
+          });
+        }
+      
+        // Append this info to your section data
+        const updatedSectionData = currentUserResult.section.map(section => {
+          const stat = sectionStats.find(s => s.name === section.name);
+          return {
+            ...section,
+            rank: stat?.rank || '-',
+            percentile: stat?.percentile || '-',
+          };
+        });
+      
+        setSectionData(updatedSectionData);
+      }
+      
+    })
+    .catch(error => {
+      console.error("Error fetching data:", error);
+    });
+
+    
+  if (!isDataFetched) {
+    Api.get(`exams/getExam/${id}`)
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data);
+          setIsDataFetched(true); 
+          setShow_name(res.data.show_name) // Mark that data is fetched
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }
+}, [id, user]);
 
   useEffect(() => {
     // Step 2: Set the default section (e.g., first section or any other logic you want)
@@ -58,25 +149,14 @@ const PdfExamResultPage= () => {
       const defaultSection = sectionData[0];
       setSelectedTopic(defaultSection.name);
       setSelectedBlueprint(defaultSection.s_blueprint);
+      
+    // 👇 Set default for comparison section
+    setSelectedComparisonSection(defaultSection.name);
     }
+    console.log(sectionData);
+    
   }, [sectionData]);
 
-
-useEffect(() => {
-  // Check if data has already been fetched
-  if (!isDataFetched) {
-    Api.get(`pdf-exams/getExam/${id}`)
-      .then((res) => {
-        if (res.data) {
-          setExamData(res.data);
-          setIsDataFetched(true); 
-          setShow_name(res.data.show_name) // Mark that data is fetched
-          console.error("valueee",res.data.show_name)
-        }
-      })
-      .catch((err) => console.error("Error fetching data:", err));
-  }
-}, [id]); 
 
   if (!resultData) {
     return <div>Loading...</div>;
@@ -97,6 +177,7 @@ useEffect(() => {
   let totalCorrectWrong=0;
   let totalSkipped=0;
   let totalAccuracy=0;
+  let totelmark=0
 
   section.forEach(sect => {
     overallScore += sect.s_score;
@@ -104,7 +185,7 @@ useEffect(() => {
     totalNotAnswered += sect.Not_Attempted;
     totalCorrect += sect.correct;
     totalWrong += sect.incorrect;
-    totalTimeTaken += sect.t_time;
+    totalTimeTaken += sect.timeTaken;
     totalVisited += sect.isVisited;
     totalNotVisited +=sect.NotVisited;
     totalCutOff += sect.cutoff_mark
@@ -112,6 +193,8 @@ useEffect(() => {
     totalCorrectWrong += totalQRE;
     totalSkipped += sect.skipped;
     totalAccuracy =  ((totalCorrect / totalAnswered) * 100).toFixed(2);
+    totelmark+=sect.t_mark
+
   });
 
   const chartData = [
@@ -169,11 +252,89 @@ useEffect(() => {
       console.log('No section found for name:', sectionName);
     }
   };
+// At the top of your component with other useState hooks
 
-  const handleSliderChange = (event) => {
-    setValue(event.target.value);
+
+
+console.log(alluserDetails);
+const getComparisonStats = (sectionName) => {
+  const you = resultData.section.find(sect => sect.name === sectionName);
+  
+  const sectionStats = {
+    you: {
+      score: you?.s_score || 0,
+      answered: you?.Attempted || 0,
+      notAnswered: you?.Not_Attempted || 0,
+      correct: you?.correct || 0,
+      wrong: you?.incorrect || 0,
+      time: you?.timeTaken || 0,
+      accuracy: you?.s_accuracy || 0,
+    },
+    average: {
+      score: 0,
+      answered: 0,
+      notAnswered: 0,
+      correct: 0,
+      wrong: 0,
+      time: 0,
+      accuracy: 0,
+    },
+    topper: {
+      score: 0,
+      answered: 0,
+      notAnswered: 0,
+      correct: 0,
+      wrong: 0,
+      time: 0,
+      accuracy: 0,
+    }
   };
 
+  const scores = [];
+
+  alluserDetails.forEach(userResult => {
+    const section = userResult.section?.find(sect => sect.name === sectionName);
+    if (section) {
+      scores.push(section);
+
+      sectionStats.average.score += section.s_score;
+      sectionStats.average.answered += section.Attempted;
+      sectionStats.average.notAnswered += section.Not_Attempted;
+      sectionStats.average.correct += section.correct;
+      sectionStats.average.wrong += section.incorrect;
+      sectionStats.average.time += section.timeTaken;
+      sectionStats.average.accuracy += section.s_accuracy;
+    }
+  });
+
+  const totalUsers = scores.length;
+
+  if (totalUsers > 0) {
+    sectionStats.average.score = (sectionStats.average.score / totalUsers).toFixed(2);
+    sectionStats.average.answered = Math.round(sectionStats.average.answered / totalUsers);
+    sectionStats.average.notAnswered = Math.round(sectionStats.average.notAnswered / totalUsers);
+    sectionStats.average.correct = Math.round(sectionStats.average.correct / totalUsers);
+    sectionStats.average.wrong = Math.round(sectionStats.average.wrong / totalUsers);
+    sectionStats.average.time = (sectionStats.average.time / totalUsers).toFixed(2);
+    sectionStats.average.accuracy = (sectionStats.average.accuracy / totalUsers).toFixed(2);
+
+    // Get Topper (max score)
+    const topper = scores.reduce((prev, current) => (prev.s_score > current.s_score ? prev : current));
+    console.log(topper);
+    
+    sectionStats.topper = {
+      score: topper?.s_score || 0,
+      answered: topper?.Attempted || 0,
+      notAnswered: topper?.Not_Attempted || 0,
+      correct: topper?.correct || 0,
+      wrong: topper?.incorrect || 0,
+      time: topper?.timeTaken || 0,
+      accuracy: topper?.s_accuracy || 0
+    };
+  }
+
+  return sectionStats;
+};
 
   return (
     <div className="container font my-4">
@@ -248,7 +409,7 @@ useEffect(() => {
     <img src={studying} alt="Unseen" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0 font-semibold">Percentile</p>
-      <p className="mb-0">{Accuracy}%</p>
+      <p className="mb-0">{percentile }%</p>
     </div>
   </div>
 
@@ -266,8 +427,9 @@ useEffect(() => {
     <img src={ambition} alt="Time Taken" style={{ height: "50px", marginRight: "10px" }} />
     <div>
       <p className="mb-0 font-semibold">Time Taken</p>
-      <p className="mb-0">{totalTimeTaken}</p>
-    </div>
+      <p className="mb-0">
+  {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s
+</p>    </div>
   </div>
 </div>
 
@@ -302,10 +464,14 @@ useEffect(() => {
                 <td>{sect.Not_Attempted}</td>
                 <td>{sect.correct}</td>
                 <td>{sect.incorrect}</td>
-                <td>{sect.t_time}</td>
-                <td>{sect.s_accuracy}%</td>
-                <td>1</td> {/* Rank placeholder */}
-                <td>90</td> {/* Percentile placeholder */}
+                <td>{Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s</td>
+                <td>
+  {typeof sect.s_accuracy === 'number'
+    ? `${sect.s_accuracy.toFixed(2)}%`
+    : 'N/A'}
+</td>
+                <td>{sect.rank}</td>
+                <td>{sect.percentile}%</td>
                 <td>{sect.isVisited}</td>
                 <td>{sect.NotVisited}</td>
                 <td>{sect.cutoff_mark}</td>
@@ -320,10 +486,10 @@ useEffect(() => {
                 <th>{totalNotAnswered}</th>
                 <th>{totalCorrect}</th>
                 <th>{totalWrong}</th>
-                <th>{totalTimeTaken}</th>
-                <th>{totalAccuracy}%</th>
-                <th>1</th>
-                <th>90</th>
+                <th>  {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s</th>
+                <th>{ totalAccuracy}</th>
+                <th>{Rank}</th>
+                <th>{percentile}</th>
                 <th>{totalVisited}</th>
                 <th>{totalNotVisited}</th>
                 <th>{totalCutOff}</th>
@@ -334,32 +500,33 @@ useEffect(() => {
       </div>
 
       
-
-      <div className="flex justify-end space-x-4">
-      <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-        Cutoff Cleared :5
-      </p>
-      <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-        Cutoff Missed :5
-      </p>
-      </div>
+      <div className="flex justify-end space-x-4 mt-4">
+  {overallScore >= totalCutOff ? (
+    <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
+      Cutoff Cleared : {overallScore} / {totalCutOff}
+    </p>
+  ) : (
+    <p className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-400">
+      Cutoff Not Reached : {overallScore} / {totalCutOff}
+    </p>
+  )}
+</div>
 <div>
       <h1 className='font-semibold'>Comparison With Toppers
       </h1>
-    <div className='mt-4'>
-      <button className="bg-green-500 text-white px-4 py-2  hover:bg-green-400">
-    Quantitative Aptitude
-  </button>
-  <button className=" px-4 py-2 ">
-    Reasoning Ability
-  </button>
-  <button className=" px-4 py-2 ">
-    English Learning
-  </button></div>
-      
-      <div className="d-flex justify-content-center align-items-center p-4">
-      <div className="container">
-        <table className="table table-bordered table-striped table-responsive">
+      <div className='mt-4 space-x-2'>
+  {sectionData.map((sect) => (
+    <button
+      key={sect.name}
+      onClick={() => setSelectedComparisonSection(sect.name)}
+      className={`px-4 py-2 rounded ${selectedComparisonSection === sect.name ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+    >
+      {sect.name}
+    </button>
+  ))}
+</div>
+      <div className="table-responsive">
+        <table className="table table-bordered table-striped ">
           <thead>
             <tr>
               <th>{" "}</th>
@@ -373,48 +540,44 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>You</td>
-              <td>100</td>
-              <td>10</td>
-              <td>90</td>
-              <td>5</td>
-              <td>5</td>
-              <td>10:00</td>
-              <td>90%</td>
-            </tr>
-            <tr>
-              <td>Average</td>
-              <td>100</td>
-              <td>10</td>
-              <td>90</td>
-              <td>5</td>
-              <td>5</td>
-              <td>10:00</td>
-              <td>90%</td>
-            </tr>
-            <tr>
-              <td>Topper</td>
-              <td>100</td>
-              <td>10</td>
-              <td>90</td>
-              <td>5</td>
-              <td>5</td>
-              <td>10:00</td>
-              <td>90%</td>
-            </tr>
-          </tbody>
+  {(() => {
+    const stats = getComparisonStats(selectedComparisonSection);
+    const rows = ['you', 'average', 'topper'];
+
+    return rows.map((label, idx) => {
+      const row = stats[label];
+      const labelText = label === 'you' ? 'You' : label.charAt(0).toUpperCase() + label.slice(1);
+
+      return (
+        <tr key={idx}>
+          <td>{labelText}</td>
+          <td>{row.score}</td>
+          <td>{row.answered}</td>
+          <td>{row.notAnswered}</td>
+          <td>{row.correct}</td>
+          <td>{row.wrong}</td>
+          <td>
+  {String(Math.floor(row.time / 60)).padStart(2, '0')}m {String(row.time % 60).padStart(2, '0')}s
+</td>          <td>
+  {typeof row.accuracy === "number"
+    ? `${row.accuracy.toFixed(2)}%`
+    : `${row.accuracy}%` }
+</td>
+        </tr>
+      );
+    });
+  })()}
+</tbody>
+
         </table>
-      </div>
       </div>
     </div>
     <div>
       <h1 className='font-semibold'>Time Management
       </h1>
    
-      <div className='d-flex justify-content-center align-items-center p-4'>
-      <div className="container">
-          <table className="table table-bordered table-striped table-responsive">
+      <div className="table-responsive">
+          <table className="table table-bordered table-striped ">
             <thead>
               <tr>
                 <th scope="col">Section</th>
@@ -427,59 +590,87 @@ useEffect(() => {
                 MarK </th>
               </tr>
             </thead>
-            <tbody>
-              {section.map((sect, index) => (
-                <tr key={index}>
-                  <th scope="row">{sect.name}</th>
-                  <td>{sect.Attempted}</td>
-                  <td>{sect.Not_Attempted}</td>
-                  <td>{sect.correct}</td>
-                  <td>{sect.incorrect}</td>
-                  <td>{}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th>Overall</th>
-              
-                <th>{totalAnswered}</th>
-                <th>{totalNotAnswered}</th>
-                <th>{totalCorrect}</th>
-                <th>{totalWrong}</th>  
-                <th>{totalCorrectWrong}</th>
-              </tr>
-            </tfoot>
+<tbody>
+  {section.map((sect, index) => {
+    const correctMarks = sect.correct * sect.plus_mark;
+    const wrongMarks = sect.incorrect * sect.minus_mark;
+    const notAnsweredMarks = 0; // usually 0
+    const attemptedMarks = correctMarks - wrongMarks;
+    
+    return (
+      <tr key={index}>
+        <th scope="row">{sect.name}</th>
+
+        {/* Answered / Marks */}
+        <td>
+          {sect.Attempted} / {attemptedMarks.toFixed(2)}
+        </td>
+
+        {/* Not Answered / Marks */}
+        <td>
+          {sect.Not_Attempted} / {notAnsweredMarks.toFixed(2)}
+        </td>
+
+        {/* Correct / Marks */}
+        <td>
+          {sect.correct} / {correctMarks.toFixed(2)}
+        </td>
+
+        {/* Wrong / Negative Marks */}
+        <td>
+          {sect.incorrect} / -{wrongMarks.toFixed(2)}
+        </td>
+
+        {/* Total Marks Scored / Negative Marks */}
+        <td>
+          {sect.s_score.toFixed(2)} / -{wrongMarks.toFixed(2)}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+<tfoot>
+  <tr>
+    <th>Overall</th>
+    <th>{totalAnswered} / {(totalCorrect * section[0]?.plus_mark - totalWrong * section[0]?.minus_mark).toFixed(2)}</th>
+    <th>{totalNotAnswered} / 0</th>
+    <th>{totalCorrect} / {(totalCorrect * section[0]?.plus_mark).toFixed(2)}</th>
+    <th>{totalWrong} / -{(totalWrong * section[0]?.minus_mark).toFixed(2)}</th>
+    <th>{overallScore.toFixed(2)} / -{(totalWrong * section[0]?.minus_mark).toFixed(2)}</th>
+  </tr>
+</tfoot>
           </table>
-        </div>
         </div>
     </div>
     <h1 className='font-semibold'>Line Graph</h1>
       
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-  <LineChart
-    width={900}
-    height={400}
-    data={chartData}
-    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-  >
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="name" />
-    <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
-    <Tooltip />
-    <Legend />
-    {section.map((sect, index) => (
-      <Line 
-        key={index}
-        type="monotone" 
-        dataKey={`section${index + 1}`} 
-        name={sect.name} 
-        stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
-        strokeWidth={2}
-      />
-    ))}
-  </LineChart>
-</div>
+      <div style={{ width: '100%', maxWidth: '900px', height: '400px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={chartData}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
+            <Tooltip />
+            <Legend />
+            {section.map((sect, index) => (
+              <Line 
+                key={index}
+                type="monotone" 
+                dataKey={`section${index + 1}`} 
+                name={sect.name} 
+                stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
+                strokeWidth={2}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
       {/* Section buttons */}
       <h1 className='bg-blue-100 text-blue-600 p-2 h4 text-center fw-bold'>Scoring Blueprint</h1>
 
@@ -524,52 +715,10 @@ useEffect(() => {
         </div>
       )}
 
+<div>
+  <Percentile alluserDetails={alluserDetails} overallScore={overallScore} initialPercentile={percentile} totelmark={totelmark}/>
+</div>
 
-     
-<div className='p-2'>
-        <label
-          htmlFor="default-range"
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          Percentile
-        </label>
-        <div className="relative">
-          <input
-            id="default-range"
-            type="range"
-            value={value}
-            min="0"
-            max="100"
-            step="5"
-            onChange={handleSliderChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 mt-8"
-            disabled
-          />
-          <span
-            className="absolute top-[-30px] left-1/2 transform -translate-x-1/2 bg-green-500  px-3 p-1 text-sm font-medium text-white"
-            style={{ left: `${(value / 100) * 100}%` }}
-          >
-             <p><strong>Percentile:</strong> {resultData?.Percentile || 'Loading...'}</p>
-             <p><strong>Score:</strong> {overallScore || 'Loading...'}</p>
-          </span>
-        </div>
-
-        <div className="relative">
-          <div className="flex justify-between text-xs">
-            {/* Custom marks (0, 5, 10, 15, ..., 100) */}
-            {[...Array(21)].map((_, index) => {
-              const markValue = index * 5;
-              return (
-                <div key={markValue} className="flex flex-col items-center">
-                  <div className="h-2 w-0.5 bg-gray-600 dark:bg-gray-300 mt-1" />
-                  <span>{markValue}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-      </div>
       <div>
         <ResultAnimation/>
       </div>

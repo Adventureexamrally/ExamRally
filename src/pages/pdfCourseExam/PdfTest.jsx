@@ -5,8 +5,10 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../../assets/logo/sample-logo.png';
 import Swal from 'sweetalert2'
 import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
-import Api from "../../service/Api";
 import { UserContext } from "../../context/UserProvider";
+import { Avatar } from '@mui/material';
+import Api from "../../service/Api";
+
 const Test = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -18,6 +20,8 @@ const Test = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sectionTimes, setSectionTimes] = useState({});
+const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
 
   const { user } = useContext(UserContext);
 
@@ -79,67 +83,65 @@ const Test = () => {
 
 
   // In the useEffect that fetches exam state
-  useEffect(() => {
-    if (user?._id && id) {
-      Api.get(`PDFresults/${user?._id}/${id}`)
-        .then(response => {
-          if (response.data) {
-            const state = response.data;
-            const initialOptions = Array(t_questions).fill(null);
-            let lastVisitedIndex = 0;
-            let visitedQuestionsList = [];
-            let markedForReviewList = [];
-            let absoluteIndexCounter = 0;
+useEffect(() => {
+  if (user?._id && id) {
+    Api.get(`PDFresults/${user?._id}/${id}`)
+    .then(response => {
+        if (response.data) {
+          const state = response.data;
+          const initialOptions = Array(t_questions).fill(null);
+          let lastVisitedIndex = 0;
+          let visitedQuestionsList = [];
+          let markedForReviewList = [];
+          let absoluteIndexCounter = 0;
 
-            if (state.section) {
-              state.section.forEach((section) => {
-                const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-                questions.forEach((question, questionIndex) => {
-                  const absoluteIndex = absoluteIndexCounter++;
+          if (state.section) {
+            state.section.forEach((section) => {
+              const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+              questions.forEach((question, questionIndex) => {
+                const absoluteIndex = absoluteIndexCounter++;
+                
+                // Set selected option if exists
+                if (question.selectedOption !== undefined && question.selectedOption !== null) {
+                  initialOptions[absoluteIndex] = question.selectedOption;
+                }
 
-                  // Set selected option if exists
-                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
-                    initialOptions[absoluteIndex] = question.selectedOption;
-                  }
+                // Track visited questions
+                if (question.isVisited === 1) {
+                  visitedQuestionsList.push(absoluteIndex);
+                  lastVisitedIndex = absoluteIndex; // Track most recently visited
+                }
 
-                  // Track visited questions
-                  if (question.isVisited === 1) {
-                    visitedQuestionsList.push(absoluteIndex);
-                    lastVisitedIndex = absoluteIndex; // Track most recently visited
-                  }
-
-                  // Track marked for review
-                  if (question.markforreview === 1 || question.ansmarkforrev === 1) {
-                    markedForReviewList.push(absoluteIndex);
-                  }
-                });
+                // Track marked for review
+                if (question.markforreview === 1 || question.ansmarkforrev === 1) {
+                  markedForReviewList.push(absoluteIndex);
+                }
               });
-            }
-
-            setSelectedOptions(initialOptions);
-            setVisitedQuestions(visitedQuestionsList);
-            setMarkedForReview(markedForReviewList);
-            setCurrentSectionIndex(state.currentSectionIndex || 0);
-
-            // // Show the last visited question, or first question if none visited
-            // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-            if (visitedQuestionsList.length > 0) {
-              setClickedQuestionIndex(visitedQuestionsList[0] || lastVisitedIndex); // First visited question
-            } else {
-              setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-              setVisitedQuestions([0]);  // Mark it as visited
-            }
+            });
           }
-        })
 
-        .catch(error => console.error('Error fetching exam state:', error));
-    }
-  }, [id, user?._id, t_questions, selectedLanguage]);
+          setSelectedOptions(initialOptions);
+          setVisitedQuestions(visitedQuestionsList);
+          setMarkedForReview(markedForReviewList);
+          setCurrentSectionIndex(state.currentSectionIndex || 0);
+          
+          // // Show the last visited question, or first question if none visited
+          // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
+          if (visitedQuestionsList.length > 0) {
+        setClickedQuestionIndex(visitedQuestionsList[0]  || lastVisitedIndex); // First visited question
+      } else {
+        setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+        setVisitedQuestions([0]);  // Mark it as visited
+      }
+        }
+      })
+      
+      .catch(error => console.error('Error fetching exam state:', error));
+  }
+}, [id, user?._id, t_questions, selectedLanguage]);  
 
 
-  const questionRef = useRef(null);
   const commonDataRef = useRef(null);
-  const sidebarRef = useRef(null);
 
   const toastId = useRef(null); // Keep track of toast ID
 
@@ -162,33 +164,17 @@ const Test = () => {
     };
 
     // Attach event listeners to all scrollable elements
-    const questionElement = questionRef.current;
     const commonDataElement = commonDataRef.current;
-    const sidebarElement = sidebarRef.current;
 
-    if (questionElement) {
-      questionElement.addEventListener('wheel', (e) => handleWheel(e, questionRef), { passive: false });
-    }
 
     if (commonDataElement) {
       commonDataElement.addEventListener('wheel', (e) => handleWheel(e, commonDataRef), { passive: false });
     }
 
-    if (sidebarElement) {
-      sidebarElement.addEventListener('wheel', (e) => handleWheel(e, sidebarRef), { passive: false });
-    }
 
     return () => {
-      if (questionElement) {
-        questionElement.removeEventListener('wheel', (e) => handleWheel(e, questionRef));
-      }
-
       if (commonDataElement) {
         commonDataElement.removeEventListener('wheel', (e) => handleWheel(e, commonDataRef));
-      }
-
-      if (sidebarElement) {
-        sidebarElement.removeEventListener('wheel', (e) => handleWheel(e, sidebarRef));
       }
     };
   }, []);
@@ -225,24 +211,24 @@ const Test = () => {
       setCurrentSectionIndex(state.currentSectionIndex);
     }
   }, [id]);
-
+  
   // Modify handleOptionChange to update database
   const handleOptionChange = async (index) => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
       updatedOptions[clickedQuestionIndex] = index;
-
+      
       // Update the database with the new selection
       Api.post(`PDFresults/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex
       });
-
+      
       return updatedOptions;
     });
-
-
+  
+   
 
 
     let mark = 0;
@@ -290,6 +276,58 @@ const Test = () => {
       setQuestionStartTime(new Date()); // Reset time for next question
     }
   }, [currentSectionIndex]); // Runs when the user changes questions
+
+// 2. Update section time tracking useEffect - REPLACE THIS SECTION
+useEffect(() => {
+  const handleSectionTiming = () => {
+    const now = new Date();
+    const prevSectionIndex = currentSectionIndex - 1;
+
+    if (prevSectionIndex >= 0) {
+      const timeSpent = Math.floor(
+        (now - currentSectionStartTimeRef.current) / 1000
+      );
+      
+      setSectionTimes(prev => ({
+        ...prev,
+        [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent
+      }));
+    }
+
+    // Reset timer for new section
+    currentSectionStartTimeRef.current = new Date();
+  };
+
+  handleSectionTiming();
+}, [currentSectionIndex]);
+
+// 3. Add cleanup effect for final section timing - ADD THIS NEW EFFECT
+useEffect(() => {
+  return () => {
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
+  };
+}, [currentSectionIndex]);
+
+// 4. Update initial data load useEffect - MODIFY THIS EXISTING EFFECT
+useEffect(() => {
+  if (examData) {
+    const initialTimes = {};
+    examData.section.forEach((_, index) => {
+      initialTimes[index] = 0;
+    });
+    setSectionTimes(initialTimes);
+    currentSectionStartTimeRef.current = new Date(); // Initialize ref here
+  }
+}, [examData]);
+
 
   // API get method
 
@@ -360,7 +398,7 @@ const Test = () => {
           })),
           score: res.data.score || 0,
           Attempted: res.data.Attempted || 0,
-          timeTaken: res.data.timeTaken || 60,
+          // timeTaken: res.data.timeTaken || 60,
           Accuracy: res.data.Accuracy || 0,
           takenAt: res.data.takenAt || new Date(),
           submittedAt: res.data.submittedAt || new Date(),
@@ -532,21 +570,21 @@ const Test = () => {
 
   useEffect(() => {
     console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
-
+  
     if (!id) return;
     const initialOptions = Array(totalQuestions).fill(null);
     setSelectedOptions(initialOptions);
   }, [id, totalQuestions]);
-
+  
   useEffect(() => {
     if (!id) return;
-
+  
     if (selectedOptions.length > 0) {
       const combinedData = selectedOptions.map((selectedOption, index) => ({
         questionNumber: index,
         selectedOption: selectedOption, // Could be null or the selected value
       }));
-
+  
       console.log('Saving selected options:', combinedData);
     }
   }, [selectedOptions, id]);
@@ -565,8 +603,19 @@ const Test = () => {
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
     console.log("Handling section submission...");
+  // Save current section time before modal
+  const now = new Date();
+  const timeSpent = Math.floor(
+    (now - currentSectionStartTimeRef.current) / 1000
+  );
+  
+  setSectionTimes(prev => ({
+    ...prev,
+    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+  }));
 
-
+  // Reset timer for accuracy
+  currentSectionStartTimeRef.current = new Date();
     const currentSection = examData?.section[currentSectionIndex];
     console.log("Current Section:", currentSection);
 
@@ -667,7 +716,16 @@ const Test = () => {
 
   const submitExam = () => {
     console.log("submitExam called");
-
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
+  console.log("Final times:", sectionTimes);
     if (!examData || !examData.section || !examData.section[currentSectionIndex]) {
       console.error("Exam data or section not available");
       return;
@@ -799,7 +857,7 @@ const Test = () => {
       const correctCount = sectionAnswersData.filter(q => q.correct === 1).length;
       const attemptedCount = sectionAnswersData.filter(q => q.selectedOption !== undefined).length;
       const incorrectCount = sectionAnswered - correctCount;
-      const sectionScore = (correctCount * 1) - (incorrectCount * 0.25);
+      const sectionScore = (correctCount*1)-(incorrectCount*0.25);
       const secaccuracy = sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
       console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
       const skippedQuestions = sectionVisited - sectionAnswered;
@@ -870,8 +928,9 @@ const Test = () => {
         visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
         notVisitedQuestions: sectionSummary.notVisitedQuestions,
         s_accuracy: secaccuracy,
-        skipped: skippedQuestions
-      };
+        skipped: skippedQuestions,
+  timeTaken: sectionTimes[sectionIndex] || 0, // Add section time      
+  };
     }).filter(Boolean);
 
     const totalStats = formattedSections.reduce((acc, section) => ({
@@ -920,8 +979,8 @@ const Test = () => {
       });
   }, [id]);
 
-
-
+  
+ 
 
   useEffect(() => {
     if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
@@ -984,7 +1043,7 @@ const Test = () => {
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
-  const handlePauseResume = () => {
+     const handlePauseResume = () => {
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
       setIsPaused(true);
@@ -997,7 +1056,16 @@ const Test = () => {
         currentSectionIndex
       };
       // localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-
+    // Capture current time data before showing the dialog
+    const now = new Date();
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    
+    setSectionTimes(prev => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+    }));
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
@@ -1015,15 +1083,13 @@ const Test = () => {
           container: 'swal-full-screen',
           popup: 'swal-popup-full-height',
         },
-      }).then(async (result) => {
+      }).then(async(result) => {
         if (result.isConfirmed) {
           setIsPaused(true);
-
+           
           await submitExam();
-          // Get active packages and find matching package
-          
-              navigate('/pdf-course');
-          
+          navigate('/pdf-course');
+
         } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -1032,7 +1098,7 @@ const Test = () => {
     }
   };
 
-
+  
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
   //   if (timeLeft <= 0) {
@@ -1170,6 +1236,25 @@ const Test = () => {
     }
   };
 
+     // Sync state with actual fullscreen changes
+     useEffect(() => {
+      const handleFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+      };
+  
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
+      document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // Safari
+      document.addEventListener("mozfullscreenchange", handleFullscreenChange); // Firefox
+      document.addEventListener("MSFullscreenChange", handleFullscreenChange); // IE/Edge
+  
+      return () => {
+        document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+        document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+      };
+    }, []);
+
   const [answeredCount, setAnsweredCount] = useState(0);
   const [notAnsweredCount, setNotAnsweredCount] = useState(0);
   const [notVisitedCount, setNotVisitedCount] = useState(0);
@@ -1228,16 +1313,16 @@ const Test = () => {
     let notVisited = 0;
     let markedForReviewCount = 0;
     let answeredAndMarked = 0;
-
+  
     const questions = section?.questions?.[selectedLanguage?.toLowerCase()];
-
+  
     questions?.forEach((_, index) => {
       const fullIndex = startingIndex + index;
-
+  
       const isAnswered = selectedOptions[fullIndex] !== null;
       const isVisited = visitedQuestions.includes(fullIndex);
       const isMarked = markedForReview.includes(fullIndex);
-
+  
       if (isMarked && isAnswered) {
         answeredAndMarked++;
       } else if (isMarked && !isAnswered) {
@@ -1250,7 +1335,7 @@ const Test = () => {
         notVisited++;
       }
     });
-
+  
     return {
       answered,
       notAnswered,
@@ -1263,7 +1348,7 @@ const Test = () => {
 
 
   return (
-    <div className="mock-font p-1">
+    <div className="mock-font " ref={commonDataRef}>
       <div>
         <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
 
@@ -1359,68 +1444,68 @@ const Test = () => {
 
 
 
-      <div className="d-flex justify-content-start align-items-center m-2 flex-wrap">
-        {examData?.section?.map((section, index) => {
-          // Calculate the starting index for this section
-          const startingIndex = examData.section
-            .slice(0, index)
-            .reduce((acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+      <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
+      {examData?.section?.map((section, index) => {
+    // Calculate the starting index for this section
+    const startingIndex = examData.section
+      .slice(0, index)
+      .reduce((acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
 
-          // Get counts using fixed starting index
-          const sectionCounts = getSectionCounts(
-            section,
-            selectedOptions,
-            visitedQuestions,
-            markedForReview,
-            selectedLanguage,
-            startingIndex
-          );
+    // Get counts using fixed starting index
+    const sectionCounts = getSectionCounts(
+      section,
+      selectedOptions,
+      visitedQuestions,
+      markedForReview,
+      selectedLanguage,
+      startingIndex
+    );
 
-          return (
-            <div key={index} className="m-1">
-              <h1
-                className={`h6 p-1 text-white border d-inline-flex align-items-center 
-            ${currentSectionIndex === index
-                    ? 'bg-blue-400 border-3 border-blue-500 fw-bold'
-                    : 'bg-gray-400'}`}
-              >
-                ✔ {section.name}
-                <div className="relative group ml-2 d-inline-block">
-                  <FaInfoCircle className="cursor-pointer text-white" />
-                  <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+    return (
+      <div key={index} >
+        <h1
+                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
+                      ${currentSectionIndex === index
+                          ? ' font-medium underline'
+                          : ''}`}
+        >
+           {section.name}
+          <div className="relative group ml-2 d-inline-block">
+            <FaInfoCircle className="cursor-pointer text-blue-400" />
+            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
   min-w-[220px]     w-fit md:max-w-xs md:w-max
   left-1/2 -translate-x-1/2
   ">
-                    <div className="mt-2 flex align-items-center">
-                      <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answered}</div>
-                      <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
-                    </div>
-                    <div className="mt-2 flex align-items-center">
-                      <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.notAnswered}</div>
-                      <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
-                    </div>
-                    <div className="mt-2 flex align-items-center">
-                      <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{sectionCounts.notVisited}</div>
-                      <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
-                    </div>
-                    <div className="mt-2 flex align-items-center">
-                      <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.markedForReviewCount}</div>
-                      <p className="ml-2 text-start text-lg-center">Marked for Review</p>
-                    </div>
-                    <div className="mt-2 flex align-items-center">
-                      <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answeredAndMarked}</div>
-                      <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
-                    </div>
-                  </div>
-                </div>
-              </h1>
+              <div className="mt-2 flex align-items-center">
+                <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answered}</div>
+                <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.notAnswered}</div>
+                <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{sectionCounts.notVisited}</div>
+                <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.markedForReviewCount}</div>
+                <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+              </div>
+              <div className="mt-2 flex align-items-center">
+                <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{sectionCounts.answeredAndMarked}</div>
+                <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
+              </div>
             </div>
-          );
-        })}
+          </div>
+        </h1>
       </div>
+    );
+  })}
+    </div>
 
-
-      {/* Mobile Hamburger Menu */}
+ 
+      {/* Mobile Hamburger Menu */ }
       < button
         onClick={toggleMenu}
         className="md:hidden text-black p-2"
@@ -1443,331 +1528,332 @@ const Test = () => {
 
         </svg>
       </button>
+      <div className="flex ">
+  {/* Question Panel */}
+  <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
+    {!isSubmitted ? (
+      <>
+        <div className="flex justify-between flex-col md:flex-row p-2 bg-gray-100 border-1 border-gray-300 font-extralight text-[14px]">
+          <h3>
+            Question No: {clickedQuestionIndex + 1}/{t_questions}
+          </h3>
+          <h1 className="flex flex-wrap md:flex-row">
+            <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white " >
+              Qn Time : {formatTime(questionTime)}
+            </span>
+            <span className="font-normal m-1">
+            &nbsp;&nbsp;&nbsp;&nbsp;<b>Marks : </b>&nbsp;&nbsp;&nbsp;&nbsp;
+            <span className="text-success">
+              +
+              {examData?.section && examData.section[currentSectionIndex]
+                ? examData.section[currentSectionIndex].plus_mark
+                : "No plus marks"}
+            </span>
+            &nbsp;<span className="text-gray-400">|</span>&nbsp;
+            <span className="text-danger">
+              -
+              {examData?.section && examData.section[currentSectionIndex]
+                ? examData.section[currentSectionIndex].minus_mark
+                : "No minus marks"}
+            </span>
+            </span>
+          </h1>
+        </div>
+        
+        {examData?.section[currentSectionIndex] ? (
+            <div className="flex flex-col md:flex-row p-0">
+              {/* Left side for Common Data */}
+              {examData.section[currentSectionIndex]?.questions?.[
+                selectedLanguage?.toLowerCase()
+              ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                <div 
+                  className={`md:w-[50%] p-3 ${isFullscreen?'h-[560px]':'h-[450px]'}`}
+                  style={{  overflowY: "auto" }}
+                >
+                  <div
+                    className="fw-bold text-wrap"
+                    style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        examData.section[currentSectionIndex]?.questions?.[
+                          selectedLanguage?.toLowerCase()
+                        ]?.[clickedQuestionIndex - startingIndex]?.common_data || 
+                        "No common data available",
+                    }}
+                  />
+                </div>
+              )}
 
-      <div className="row mb-24">
-        {/* Question Panel */}
-        <div className={`p-4 ${closeSideBar ? 'col-lg-12 col-md-12' : 'col-lg-9 col-md-8 '}`}>
+              {/* Right side for Question */}
+              <div 
+                  className={`${isFullscreen?'h-[560px]':'h-[450px]'} mb-24 md:mb-14 p-3 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                     selectedLanguage?.toLowerCase()
+                     ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                      ? "md:w-[50%]"
+                        : "md:w-full" // Make it full width when no common data
+                          }`}                style={{ overflowY: "auto" }}
+              >
+                <div>
+                <div
+                  className="fw-bold text-wrap mb-2"
+                  style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      examData.section[currentSectionIndex]?.questions?.[
+                        selectedLanguage?.toLowerCase()
+                      ]?.[clickedQuestionIndex - startingIndex]?.question || 
+                      "No question available",
+                  }}
+                />
 
-          {!isSubmitted ? (
-            <>
-              <div className="d-flex  justify-between">
-                <h3>
-                  Question No: {clickedQuestionIndex + 1}/
-                  {t_questions}
-                </h3>
-
-                <h1>
-                  {" "}
-                  <span className="border px-2 p-1">
-                    Qn Time:{formatTime(questionTime)}
-                  </span>
-                  &nbsp;Marks&nbsp;
-                  <span className="text-success">
-                    +
-                    {examData?.section && examData.section[currentSectionIndex]
-                      ? examData.section[currentSectionIndex].plus_mark
-                      : "No plus marks"}
-                  </span>
-                  &nbsp;
-                  <span className="text-danger">
-                    -
-                    {examData?.section && examData.section[currentSectionIndex]
-                      ? examData.section[currentSectionIndex].minus_mark
-                      : "No minus marks"}
-                  </span>
-                </h1>
-              </div>
-              {examData?.section[currentSectionIndex] ? (
-                <div className="row" >
-                  <div className="row">
-                    {/* Left side for Common Data */}
+                {examData.section[currentSectionIndex]?.questions?.[
+                  selectedLanguage?.toLowerCase()
+                ]?.[clickedQuestionIndex - startingIndex]?.options ? (
+                  <div>
                     {examData.section[currentSectionIndex]?.questions?.[
                       selectedLanguage?.toLowerCase()
-                    ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                        <div
-                          ref={commonDataRef}
-                          className="col-lg-6 col-md-6"
-                          style={{ maxHeight: "380px", overflowY: "auto" }}
-                        >
-
-                          <div
-                            className="fw-bold text-wrap"
-                            style={{
-                              whiteSpace: "normal",
-                              wordWrap: "break-word",
-                            }}
-                            dangerouslySetInnerHTML={{
-                              __html:
-                                examData.section[currentSectionIndex]
-                                  ?.questions?.[
-                                  selectedLanguage?.toLowerCase()
-                                ]?.[clickedQuestionIndex - startingIndex]
-                                  ?.common_data || "No common data available",
-                            }}
-                          />
-                        </div>
-                      )}
-
-                    {/* Right side for Question */}
-                    <div
-                      ref={questionRef}
-                      className="col-lg-6 col-md-6"
-                      style={{ maxHeight: "420px", overflowY: "auto" }}
-                    >
-                      <div
-                        className="fw-bold text-wrap"
-                        style={{
-                          whiteSpace: "normal",
-                          wordWrap: "break-word",
-                        }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.question || "No question available",
-                        }}
-                      />
-
-
-                      {examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.options ? (
-                        <div>
-                          {examData.section[currentSectionIndex]?.questions?.[
-                            selectedLanguage?.toLowerCase()
-                          ]?.[
-                            clickedQuestionIndex - startingIndex
-                          ]?.options.map((option, index) => (
-                            <div key={index}>
-                              <input
-                                type="radio"
-                                id={`option-${index}`}
-                                name="exam-option"
-                                value={index}
-                                checked={
-                                  selectedOptions[clickedQuestionIndex] ===
-                                  index
-                                }
-                                onChange={() => {
-                                  console.log("Selected Option Index:", index);
-                                  handleOptionChange(index);
-                                }}
-                              />
-
-                              <label
-                                htmlFor={`option-${index}`}
-                                dangerouslySetInnerHTML={{
-                                  __html: option || "No option available",
-                                }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No options available</p>
-                      )}
-                    </div>
+                    ]?.[clickedQuestionIndex - startingIndex]?.options.map((option, index) => (
+                      <div key={index}>
+                        <input
+                          type="radio"
+                          id={`option-${index}`}
+                          name="exam-option"
+                          value={index}
+                          checked={selectedOptions[clickedQuestionIndex] === index}
+                          onChange={() => {
+                            console.log("Selected Option Index:", index);
+                            handleOptionChange(index);
+                          }}
+                        />        &nbsp;&nbsp;
+                        <label
+                          htmlFor={`option-${index}`}
+                          dangerouslySetInnerHTML={{
+                            __html: option || "No option available",
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
-
+                ) : (
+                  <p>No options available</p>
+                )}
                 </div>
-              ) : (
-                <p>No section data available</p>
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <h1 className="display-6 text-success">Test Completed!</h1>
+                    <div className="md:flex hidden items-center">
+      <div 
+        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} 
+        onClick={toggleMenu2}
+      >
+        <FaChevronRight 
+          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} 
+        />
+      </div>
+    </div>
+              </div>
             </div>
-          )}
-        </div>
-        {/* Sidebar */}
-        <div className="col-9 col-md-4 col-lg-3 md:flex"  >
-          <div className="md:flex hidden items-center">
-            <div className={` fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`} onClick={toggleMenu2}>
-              <FaChevronRight className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`} />
-            </div>
-          </div>
+      
+        ) : (
+          <p>No section data available</p>
+        )}
+      </>
+    ) : (
+      <div className="text-center">
+        <h1 className="display-6 text-success">Test Completed!</h1>
+      </div>
+    )}
+  </div>
+
+  {/* Sidebar */}
 
 
-          <div
-            ref={sidebarRef}
-            className={`ml-5 mb-14 pb-14 bg-light transform transition-transform duration-300
-    ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-    ${closeSideBar ? 'md:translate-x-full md:w-0' : 'md:translate-x-0'}
-    fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
-            style={{
-              maxHeight: '450px',
-              overflowY: 'auto',
-            }}
+    <div
+      className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+        ${isFullscreen?'h-[650px]':'h-[547px]'} fixed top-14 right-0 z-40 md:static shadow-sm md:block `}
+      style={{  overflowY: 'auto' }}
+    >
+      {isMobileMenuOpen && (
+        <button onClick={toggleMenu} className="md:hidden text-black p-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            className="w-6 h-6"
           >
-
-            {isMobileMenuOpen &&
-              <button
-                onClick={toggleMenu}
-                className="md:hidden text-black p-2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  {/* // Close icon (X) when the menu is open */}
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-
-                </svg>
-              </button>
-            }
-            <div className="container mt-3">
-              <h1 className=" bg-blue-400 text-center text-white p-2 ">
-                Time Left:{formatTime(timeminus)}
-              </h1>
-              <center>
-                <button
-                  onClick={handlePauseResume}
-                  className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
-                    }`}
-                >Pause
-                  {isPaused}
-                </button>
-              </center>
-
-              <div className="container mt-3">
-                <div className="row align-items-center">
-                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{answeredCount}</div>
-                    <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      )}
+      
+      <div className="container">
+                <div className='w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400'>
+                  {/* Profile Image and Link */}
+                  <div>
+                      <Avatar alt={user?.firstName} src={user?.profilePicture} sx={{ width: 30, height: 30 }} />
                   </div>
-                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{notAnsweredCount}</div>
-                    <p className="ml-2 text-start text-lg-center mb-0">Not Answered </p>
+        
+                  {/* Profile Information */}
+                  <div>
+                    <h1 className=' text-white text-wrap break-words'>{user?.firstName +user?.lastName}</h1>
                   </div>
                 </div>
+        <h1 className=" text-center text-black bg-gray-100 p-2">
+          Time Left:{formatTime(timeminus)}
+        </h1>
+        <center>
+          <button
+            onClick={handlePauseResume}
+            className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
+              isPaused 
+                ? "bg-green-500 hover:bg-green-600 text-white" 
+                : "bg-red-500 hover:bg-red-600 text-white"
+            }`}
+          >
+            Pause
+          </button>
+        </center>
+
+        <div className="container mt-3">
+          <div className="row align-items-center">
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">
+                {answeredCount}
               </div>
-              <div className="container mb-3">
-                <div className="row">
-                  <div className=" mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{notVisitedCount}</div>
-                    <p className="ml-2 text-start text-lg-center mb-0">Not Visited </p>
-                  </div>
-                  <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                    <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{markedForReviewCount}</div>
-                    <p className="ml-2 text-start text-lg-center">Marked for Review</p>
-                  </div>
-                </div>
-                <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{answeredAndMarkedCount}</div>
-                  <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
-                </div>
-                {/* <div className="col-12 flex text-center mt-1">
-                <div className="smansmarkedImg"></div>
-                <p className="ml-2 mb-0">Answered & Marked for Review</p>
-              </div> */}
+              <p className="ml-2 text-start text-lg-center mb-0">Answered</p>
+            </div>
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">
+                {notAnsweredCount}
               </div>
-              <div className="d-flex flex-wrap gap-2 px-3 py-2 text-center">
-                {examData?.section[currentSectionIndex]?.questions?.[
-                  selectedLanguage?.toLowerCase()
-                ]?.map((_, index) => {
-                  const fullIndex = startingIndex + index; // Correct question index
-
-                  // Access the current section from the examData
-                  const currentSection = examData.section[currentSectionIndex];
-                  const timeFormatted = formatTime(timeLeft); // Format the remaining time for the current section
-
-                  // Set className based on question status
-                  let className = "";
-                  if (selectedOptions[fullIndex] !== null) {
-                    className = "answerImg";
-                    if (markedForReview.includes(fullIndex)) {
-                      className += " mdansmarkedImg";
-                    }
-                  } else if (visitedQuestions.includes(fullIndex)) {
-                    className = "notansImg"; // Visited but not answered
-                  } else {
-                    className = "notVisitImg"; // Not visited
-                  }
-
-                  // Mark for review
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " reviewed mdmarkedImg";
-                  }
-
-                  return (
-                    <div key={fullIndex}>
-                      {/* Show countdown timer */}
-
-                      {/* Question number with click functionality */}
-                      <span
-                        onClick={() => {
-                          console.log("Clicked question index:", fullIndex);
-                          setClickedQuestionIndex(fullIndex);
-                        }}
-                        className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                      >
-                        {fullIndex + 1}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <p className="ml-2 text-start text-lg-center mb-0">Not Answered</p>
             </div>
           </div>
         </div>
-      </div>
-
-
-      {/* Footer Buttons */}
-      <div className="fixed-bottom bg-white p-3">
-        <div className="d-flex justify-content-between border-8">
-          {/* Left side - Mark for Review and Clear Response */}
-          <div className="d-flex">
-            <button
-              onClick={handleMarkForReview}
-              className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
-            >
-              Mark for Review
-            </button>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <button
-              onClick={handleClearResponse}
-              className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
-            >
-              Clear Response
-            </button>
+        
+        <div className="container mb-3">
+          <div className="row">
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">
+                {notVisitedCount}
+              </div>
+              <p className="ml-2 text-start text-lg-center mb-0">Not Visited</p>
+            </div>
+            <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+              <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+                {markedForReviewCount}
+              </div>
+              <p className="ml-2 text-start text-lg-center">Marked for Review</p>
+            </div>
           </div>
-
-          {/* Right side - Save & Next and Submit Section */}
-          <div className="d-flex justify-content-end">
-            {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-              >
-                Save & Next
-              </button>
-            )}
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <button
-              className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-              onClick={handleSubmitSection}
-              data-bs-toggle="modal"
-              data-bs-target="#staticBackdrop"
-            >
-              {currentSectionIndex === examData?.section?.length - 1
-                ? "Submit Test"
-                : "Submit Section"}
-            </button>
+          <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+            <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+              {answeredAndMarkedCount}
+            </div>
+            <p className="ml-3 text-start text-lg-center mb-0">Answered & Marked for Review</p>
           </div>
+        </div>
 
+        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+          {examData?.section[currentSectionIndex]?.questions?.[
+            selectedLanguage?.toLowerCase()
+          ]?.map((_, index) => {
+            const fullIndex = startingIndex + index;
+            const currentSection = examData.section[currentSectionIndex];
+            const timeFormatted = formatTime(timeLeft);
+
+            let className = "";
+            if (selectedOptions[fullIndex] !== null) {
+              className = "answerImg";
+              if (markedForReview.includes(fullIndex)) {
+                className += " mdansmarkedImg";
+              }
+            } else if (visitedQuestions.includes(fullIndex)) {
+              className = "notansImg";
+            } else {
+              className = "notVisitImg";
+            }
+
+            if (markedForReview.includes(fullIndex)) {
+              className += " reviewed mdmarkedImg";
+            }
+
+            return (
+              <div key={fullIndex} >
+                <span
+                  onClick={() => {
+                    console.log("Clicked question index:", fullIndex);
+                    setClickedQuestionIndex(fullIndex);
+                  }}
+                  className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                >
+                  {fullIndex + 1}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
+    </div>
+
+</div>
+
+  {/* Footer Buttons */ }
+  <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">  
+  <div className="flex justify-between flex-col md:flex-row w-full">
+    <div className="flex justify-between  md:w-3/4 m-1">
+      {/* Left side - Mark for Review and Clear Response */}
+      <div className="d-flex">
+        <button
+          onClick={handleMarkForReview}
+          className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+        >
+      <span className="block md:hidden">Mark & Next</span>
+      <span className="hidden md:block">Mark for Review</span>        
+  </button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button
+          onClick={handleClearResponse}
+          className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+        >
+          <span className="block md:hidden">Clear</span>
+          <span className="hidden md:block">  Clear Response</span>   
+        </button>
+      </div>
+      {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.length > 0 && (
+          <button
+            onClick={handleNextClick}
+            className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+          >
+            
+            <span className="block md:hidden">Save</span>
+            <span className="hidden md:block">  Save & Next</span>   
+          </button>
+        )}
+      </div>
+      {/* Right side - Save & Next and Submit Section */}
+      <div className="flex justify-center md:w-[20%]">
+        <center>
+        <button
+          className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700 mt-2 md:mt-0 px-7"
+          onClick={handleSubmitSection}
+          data-bs-toggle="modal"
+          data-bs-target="#staticBackdrop"
+        >
+          {currentSectionIndex === examData?.section?.length - 1
+            ? "Submit Test"
+            : "Submit Section"}
+        </button>
+        </center>
+      </div>
+
+    </div>
+  </div>
     </div >
   );
 };

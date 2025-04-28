@@ -111,54 +111,57 @@ const NavBar = () => {
               Home
             </Link>
             <div
-              className="relative group"
-              onMouseEnter={() => setIsDropdownOpen(true)}
-              onMouseLeave={() => setIsDropdownOpen(false)}
-            >
-              <button
-                onClick={toggleDropdown}
-                className="flex items-center hover:text-blue-600 transition duration-300 text-white"
+  className="relative group"
+  onMouseEnter={() => setIsDropdownOpen(true)}
+  onMouseLeave={() => {
+    setIsDropdownOpen(false);
+    setActiveSubMenu(null);
+  }}
+>
+  <button
+    className="flex items-center hover:text-blue-600 transition duration-300 text-white"
+  >
+    Exams
+    {isDropdownOpen ? (
+      <FaChevronUp className="ml-2 text-sm" />
+    ) : (
+      <FaChevronDown className="ml-2 text-sm" />
+    )}
+  </button>
+
+  {isDropdownOpen && (
+    <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
+      <div
+        className="relative group"
+        onMouseEnter={() => setActiveSubMenu(0)}
+        onMouseLeave={() => setActiveSubMenu(null)}
+      >
+        <Link
+          to="/banking-&-insurance"
+          className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+        >
+          Banking & Insurance
+        </Link>
+
+        {activeSubMenu === 0 && (
+          <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48 z-50">
+            {packages.map((item, index) => (
+              <Link
+                key={index}
+                to={`/top-trending-exams/${item.link_name}`}
+                className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
               >
-                Exams
-                {isDropdownOpen ? (
-                  <FaChevronUp className="ml-2 text-sm" />
-                ) : (
-                  <FaChevronDown className="ml-2 text-sm" />
-                )}
-              </button>
-              {isDropdownOpen && (
-                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
-                  {["Banking & Insurance", "SSC", "Railway"].map(
-                    (item, index) => (
-                      <div key={index} className="relative group">
-                        <Link
-                          to={`/${item.toLowerCase().replace(/ /g, "-")}`}
-                          className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-                          onMouseEnter={() => handleSubMenu(index)}
-                          onMouseLeave={() => handleSubMenu(null)}
-                        >
-                          {item}
-                        </Link>
-                        {activeSubMenu === index && (
-                          <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48">
-                            {packages.map((item, index) => (
-                              <Link
-                                to={`/top-trending-exams/${item.link_name}`}
-                                className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-                              >
-                                {item.name}
-                              </Link>
-                            )
-                            )}
-                          </div>
-                        )}
-                        <hr className="border-t border-gray-300" />
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        )}
+        <hr className="border-t border-gray-300" />
+      </div>
+    </div>
+  )}
+</div>
+
             <Link
               to="/subscriptions"
               className="hover:text-blue-600 transition duration-300"

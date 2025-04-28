@@ -58,13 +58,11 @@ const Instruct = () => {
     <div className="p-4">
       <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
         <h1 className="text-lg font-semibold text-white">Instruction</h1>
-        <select name="names" className="p-2 border rounded-md">
-          <option value="">Select Option</option>
-          <option value="English">English</option>
-          <option value="Hindi">Hindi</option>
-        </select>
+        
+   
       </div>
-
+      <p className="text-red-500 fw-bold p-2">The Public Examinations (Prevention of Unfair Means) Act 2024 is in force. The provisions of the Act will be applicable to persons involved in use of unfair means. Accordingly, Candidates will be covered under the extent administrative provisions of the concerned Public Examination Authority. Candidates are advised to not take/give or attempt to take/give any unfair assistance or use or attempt to use any unfair means during the examinations.
+      </p>
 <div className="p-2">
   <h1> Section : <strong> {examData?.exam_name}</strong> </h1>
 </div>
@@ -90,7 +88,7 @@ const Instruct = () => {
         <td>{section.name}</td>
         <td>{section.t_question}</td>
         <td>{section.t_mark}</td>
-        <td>{section.t_time}</td>
+        <td>{section.t_time} Min </td>
       </tr>
     ))}
   </tbody>
@@ -105,12 +103,11 @@ const Instruct = () => {
       {
   examData?.time?.toLowerCase() === "composite" ? (
     <li>
-      Total duration of examination is <strong>{examData?.duration}</strong>. (20 minutes extra for every 60 minutes (1 hour) of the examination time for candidates with disability eligible for compensatory time).
+      Total duration of examination is <strong>{examData?.duration}</strong> Min.
     </li>
   ) : (
-    <li>
-      No sectional time specified. Please check the schedule for section-specific durations.
-    </li>
+ <>
+ </>
   )
 }
 
@@ -246,9 +243,9 @@ const Instruct = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-        <div className="float-right">
+        <div className="fixed bottom-1 right-4">
         <Link to={`/otherins/${id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600">
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
     Next
   </button>
 </Link>

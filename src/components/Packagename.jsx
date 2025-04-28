@@ -40,6 +40,9 @@ const Packagename = () => {
   const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
   const [seo, setSeo] = useState([]);
   const [ad, setAD] = useState([]);
+const [payment, setPayment] = useState("");
+  const [responseId, setResponseId] = useState("");
+  const [responseState, setResponseState] = useState([]);
 
   // Handle topic selection & set modal questions
   const handleTopicSelect = (section, testType) => {
@@ -60,35 +63,39 @@ const Packagename = () => {
     // Fetch package content
     Api.get(`packages/package-content/${id}`).then((res) => {
       console.log("Package Content:", res.data);
-      setData(res.data.data[0]);
-      setFaqs(res.data.data[0].faqs);
-    });
-  
-    // Fetch test result for each test
-    data?.exams?.forEach((test) => {
-      Api.get(`/results/${user?._id}/${test._id}`)
-        .then((res) => {
-          if (res.data?.status === "completed"
-            || res.data?.status === "paused"
-          ) {
-            setResultData((prev) => ({
-              ...prev,
-              [test._id]: {
-                ...res.data,
-                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-                selectedOptions: res.data.selectedOptions
+      const packageData = res.data.data[0];
+      setData(packageData);
+      setFaqs(packageData.faqs);
+  console.log("wednesday",packageData);
+      // Only fetch results if user ID is present
+      if (user?._id) {
+        packageData?.exams?.forEach((test) => {
+          Api.get(`/results/${user._id}/${test._id}`)
+            .then((res) => {
+              if (
+                res.data?.status === "completed" ||
+                res.data?.status === "paused"
+              ) {
+                setResultData((prev) => ({
+                  ...prev,
+                  [test._id]: {
+                    ...res.data,
+                    lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                    selectedOptions: res.data.selectedOptions,
+                  },
+                }));
               }
-            }));
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching result:", err);
+            })
+            .catch((err) => {
+              console.error("Error fetching result:", err);
+            });
         });
+      }
     });
   
     run();
-  }, [id, data?.exams]);
-
+  }, [id, user?._id]);
+  
 
   // Fetch test result
   // Api.get(`/results/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
@@ -198,6 +205,105 @@ const Packagename = () => {
     AOS.refresh();
   }, []);
   // console.log(data);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const status = true;
+  
+  useEffect(() => {
+    const enrolled = user?.enrolledCourses?.some(course =>
+      course?.courseId?.includes(data?._id)
+    );
+    setIsEnrolled(enrolled);
+  }, [user, data]);
+  
+  console.log("check", user?.enrolledCourses);
+  
+  // if (isEnrolled) {
+  //   console.log("Hii");
+  // } else if (status) {
+  //   console.log("bye");
+  // }
+  
+
+ const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      console.log(script.src);
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
+
+  const paymentmeth = async (discountedAmount) => {
+    console.log("Join Payment");
+    try {
+      console.log("Join Payment Inner");
+      const res = await Api.post("/orders/orders", {
+        amount: discountedAmount * 100,
+        currency: "INR",
+        receipt: `${user?.email}`, 
+      payment_capture: 1
+      });
+      console.log("data show that ", res.data);
+      console.log("Order response:", res.data);
+
+      // Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        alert(
+          "Failed to load Razorpay SDK. Please check your internet connection."
+        );
+        return;
+      }
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: discountedAmount * 100,
+        currency: "INR",
+        name: data?.name,
+        description: "Test Payment",
+        handler: function (response) {
+          setResponseId(response.razorpay_payment_id);
+        },
+        prefill: {
+          name: user?.firstName,
+          email: user?.email,
+        },
+        theme: {
+          color: "#F4C430",
+        },
+        notes: {
+          user_id: user?._id,
+          course_id: data?._id,
+          courseName: data?.categorys,
+        },
+      };
+console.log("ji".options)
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+      rzp.on("payment.failed", function (response) {
+        console.error("Payment failed", response.error);
+        alert("Payment failed. Please try again.");
+      });
+      console.log("ji".options)
+    } catch (error) {
+      console.error("Error during payment:", error);
+      alert(error.message);
+    }
+  };
+
+
+  const isPaidTest = (test) => {
+    return test?.result_type?.toLowerCase() === "paid";
+  };
+
   return (
     <>
       {loading ? (
@@ -536,7 +642,7 @@ const Packagename = () => {
                                 {/* Test Info Section */}
                                 <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
+                                    <p className="font-medium">Quez</p>
                                     <p className="flex items-center gap-1">
                                       <BsQuestionSquare
                                         size={20}
@@ -564,65 +670,65 @@ const Packagename = () => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.duration}
+                                      {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
                                 {/* Check if the current date is greater than or equal to live_date */}
-                                {new Date(test.live_date) > new Date() ? (
-                                  // Display "Coming Soon" if the current date is earlier than live_date
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                    Coming Soon
-                                  </div>
-                                ) : (
-                                  <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    resultData?.[test._id]?.status === "completed"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : resultData?.[test._id]?.status === "paused"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                      navigate('/sign-in')
-                                    }
-                                    else if (resultData?.[test._id]?.status === "completed") {
-                                      openNewWindow(`/result/${test._id}`);
-                                    } 
-                                    else if (resultData?.[test._id]?.status === "paused") {
-                                      // Pass last question index and selected options when resuming
-                                      openNewWindow(
-                                        `/mocktest/${test._id}`
-                                      );
-                                    }
-                                    else if (test.status === "true") {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(test.section[0], "prelims");
-                                    }
-                                  }}
-                                >
-                                  {resultData?.[test._id]?.status === "completed" 
-                                    ? "View Result"
-                                    : resultData?.[test._id]?.status === "paused"
-                                    ? "Resume"
-                                    : test.status === "true" 
-                                    ? "Take Test"
-                                    : (
-                                      <div className="flex items-center justify-center font-semibold gap-1">
-                                        <IoMdLock />
-                                        Lock
-                                      </div>
-                                    )
-                                  }
-                                </button>
-
-                                )}
+                                  {new Date(test.live_date) > new Date() ? (
+                                                          <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+                                                            Coming Soon
+                                                          </div>
+                                                        ) : (
+                                                          <button
+                                                          className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                                            resultData?.[test._id]?.status === "completed"
+                                                              ? "bg-green-500 text-white hover:bg-green-600"
+                                                              : resultData?.[test._id]?.status === "paused"
+                                                              ? "bg-green-500 text-white hover:bg-green-600"
+                                                              : (isEnrolled || !isPaidTest(test))
+                                                              ? "bg-green-500 text-white hover:bg-green-600"
+                                                              : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                                          }`}
+                                                          onClick={() => {
+                                                            if (!isSignedIn) {
+                                                              navigate('/sign-in');
+                                                              return;
+                                                            }
+                                                            
+                                                            if (resultData?.[test._id]?.status === "completed") {
+                                                              openNewWindow(`/result/${test._id}`);
+                                                            } 
+                                                            else if (resultData?.[test._id]?.status === "paused") {
+                                                              openNewWindow(`/mocktest/${test._id}`);
+                                                            } else if (isPaidTest(test) && !isEnrolled) {
+                                                              return;
+                                                            }
+                                                            else {
+                                                              openNewWindow(`/instruction/${test._id}`);
+                                                            }
+                                                          }}
+                                                          disabled={new Date(test.live_date) > new Date()}
+                                                        >
+                                                          {resultData?.[test._id]?.status === "completed" 
+                                                            ? "View Result"
+                                                            : resultData?.[test._id]?.status === "paused"
+                                                            ? "Resume"
+                                                            : (isEnrolled || !isPaidTest(test))
+                                                            ? "Take Test"
+                                                            : isPaidTest(test) ? (
+                                                              <div className="flex items-center justify-center font-semibold gap-1">
+                                                                <IoMdLock />
+                                                                Lock
+                                                              </div>
+                                                            ) : (
+                                                              "Take Test"
+                                                            )
+                                                          }
+                                                        </button>
+                                                        )}
                               </div>
                             </div>
                           </div>
@@ -669,7 +775,7 @@ const Packagename = () => {
                                 {/* Test Info Section */}
                                 <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
+                                    <p className="font-medium">Quez</p>
                                     <p className="flex items-center gap-1">
                                       <BsQuestionSquare
                                         size={20}
@@ -695,7 +801,7 @@ const Packagename = () => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.duration}
+                                      {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
@@ -713,41 +819,43 @@ const Packagename = () => {
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : resultData?.[test._id]?.status === "paused"
                                       ? "bg-green-500 text-white hover:bg-green-600"
-                                      : test.status === "true"
+                                      : (isEnrolled || !isPaidTest(test))
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                                   }`}
                                   onClick={() => {
                                     if (!isSignedIn) {
-                                      navigate('/sign-in')
+                                      navigate('/sign-in');
+                                      return;
                                     }
-                                    else if (resultData?.[test._id]?.status === "completed") {
+                                    
+                                    if (resultData?.[test._id]?.status === "completed") {
                                       openNewWindow(`/result/${test._id}`);
                                     } 
                                     else if (resultData?.[test._id]?.status === "paused") {
-                                      // Pass last question index and selected options when resuming
-                                      openNewWindow(
-                                        `/mocktest/${test._id}`
-                                      );
+                                      openNewWindow(`/mocktest/${test._id}`);
+                                    } else if (isPaidTest(test) && !isEnrolled) {
+                                      return;
                                     }
-                                    else if (test.status === "true") {
+                                    else {
                                       openNewWindow(`/instruction/${test._id}`);
-                                    } else {
-                                      handleTopicSelect(test.section[0], "prelims");
                                     }
                                   }}
+                                  disabled={new Date(test.live_date) > new Date()}
                                 >
                                   {resultData?.[test._id]?.status === "completed" 
                                     ? "View Result"
                                     : resultData?.[test._id]?.status === "paused"
                                     ? "Resume"
-                                    : test.status === "true" 
+                                    : (isEnrolled || !isPaidTest(test))
                                     ? "Take Test"
-                                    : (
+                                    : isPaidTest(test) ? (
                                       <div className="flex items-center justify-center font-semibold gap-1">
                                         <IoMdLock />
                                         Lock
                                       </div>
+                                    ) : (
+                                      "Take Test"
                                     )
                                   }
                                 </button>
@@ -798,7 +906,7 @@ const Packagename = () => {
                                 {/* Test Info Section */}
                                 <div className="flex justify-around items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
+                                    <p className="font-medium">Quez</p>
                                     <p className="flex items-center gap-1">
                                       <BsQuestionSquare
                                         size={20}
@@ -824,7 +932,7 @@ const Packagename = () => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.duration}
+                                      {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
@@ -884,41 +992,43 @@ const Packagename = () => {
                                   ? "bg-green-500 text-white hover:bg-green-600"
                                   : resultData?.[test._id]?.status === "paused"
                                   ? "bg-green-500 text-white hover:bg-green-600"
-                                  : test.status === "true"
+                                  : (isEnrolled || !isPaidTest(test))
                                   ? "bg-green-500 text-white hover:bg-green-600"
                                   : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
                               }`}
                               onClick={() => {
                                 if (!isSignedIn) {
-                                  navigate('/sign-in')
+                                  navigate('/sign-in');
+                                  return;
                                 }
-                                else if (resultData?.[test._id]?.status === "completed") {
+                                
+                                if (resultData?.[test._id]?.status === "completed") {
                                   openNewWindow(`/result/${test._id}`);
                                 } 
                                 else if (resultData?.[test._id]?.status === "paused") {
-                                  // Pass last question index and selected options when resuming
-                                  openNewWindow(
-                                    `/mocktest/${test._id}`
-                                  );
+                                  openNewWindow(`/mocktest/${test._id}`);
+                                } else if (isPaidTest(test) && !isEnrolled) {
+                                  return;
                                 }
-                                else if (test.status === "true") {
+                                else {
                                   openNewWindow(`/instruction/${test._id}`);
-                                } else {
-                                  handleTopicSelect(test.section[0], "prelims");
                                 }
                               }}
+                              disabled={new Date(test.live_date) > new Date()}
                             >
                               {resultData?.[test._id]?.status === "completed" 
                                 ? "View Result"
                                 : resultData?.[test._id]?.status === "paused"
                                 ? "Resume"
-                                : test.status === "true" 
+                                : (isEnrolled || !isPaidTest(test))
                                 ? "Take Test"
-                                : (
+                                : isPaidTest(test) ? (
                                   <div className="flex items-center justify-center font-semibold gap-1">
                                     <IoMdLock />
                                     Lock
                                   </div>
+                                ) : (
+                                  "Take Test"
                                 )
                               }
                             </button>
@@ -1029,19 +1139,25 @@ const Packagename = () => {
                       <del className="text-red-400 font">Original Price:</del>
                     </p>
                     <del className="bg-red-500 text-white rounded p-1 mb-2">
-                      Rs.1000
+                      {data.amount}
                     </del>
                     <p className="text-white font h5">Discounted Price:</p>
-                    <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
-                      Rs.999
+                    <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"  onClick={() => {
+    if (!isSignedIn) {
+      navigate('/sign-in');
+    } else {
+      paymentmeth(data.discountedAmount);
+    }
+  }} >
+                    {data.discountedAmount}
                     </button>
                     <p className="text-white font-bold">You Save Money: 1</p>
                   </div>
                 </div>
 
                 {ad.length > 0 &&
-                  ad.map((item) => (
-                    <div className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300">
+                  ad.map((item,index) => (
+                    <div key={index} className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300">
                       <Link to={item.link_name}>
                         <img
                           src={item.photo}
@@ -1061,3 +1177,4 @@ const Packagename = () => {
 };
 
 export default Packagename;
+ 

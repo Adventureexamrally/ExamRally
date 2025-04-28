@@ -1,74 +1,146 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Assuming you're using React Router for navigation
+import React, { useEffect, useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Api from '../service/Api';
+import { useUser } from '@clerk/clerk-react';
+import { UserContext } from '../context/UserProvider';
 
 const Packages = () => {
-        const [trending, setTrending] = useState([
-            {
-                title: "RRB PO & RRB Clerk Combo",
-                futures: [
-                    "Exact Exam Level Questions",
-                    "New pattern Questions",
-                    "Detailed Solutions",
-                    "24*7 Access",
-                    "All India Ranking"
-                ]
-            },
-            {
-                title: "RRB PO & RRB Clerk Combo",
-                futures: [
-                    "Exact Exam Level Questions",
-                    "New pattern Questions",
-                    "Detailed Solutions",
-                    "24*7 Access",
-                    "All India Ranking"
-                ]
-            },
-            {
-                title: "RRB PO & RRB Clerk Combo",
-                futures: [
-                    "Exact Exam Level Questions",
-                    "New pattern Questions",
-                    "Detailed Solutions",
-                    "24*7 Access",
-                    "All India Ranking"
-                ]
-            },
-            {
-                title: "RRB PO & RRB Clerk Combo",
-                futures: [
-                    "Exact Exam Level Questions",
-                    "New pattern Questions",
-                    "Detailed Solutions",
-                    "24*7 Access",
-                    "All India Ranking"
-                ]
-            },
-        ]);
-  return (
-    <div className='my-2 p-6 rounded-2xl shadow-xl bg-white'>
-        <h1 className='text-2xl m-3 font-semibold text-gray-800 text-center'>All Packages</h1>
-      
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
-        {trending.map((pkg, index) => (
-            <div key={index} className="group">
-                <div className="bg-gray-100 border border-blue-500 p-6 rounded-2xl hover:scale-105 hover:shadow-2xl transition-all duration-300">
-                    <h2 className="text-lg font-medium text-gray-700 mb-4">{pkg.title}</h2>
-                    <ul className="text-gray-600 space-y-2 mb-4">
-                        {pkg.futures.map((fu, i) => (
-                            <li key={i} className="flex items-center text-sm">
-                                <span className="mr-2">✔️</span>{fu}
-                            </li>
-                        ))}
-                    </ul>
-                    <button className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition-colors duration-300">
-                        Buy Now
-                    </button>
-                </div>
-            </div>
-        ))}
-    </div>
-</div>
-  )
-}
+  const navigate = useNavigate();
+  const { isSignedIn } = useUser();
+  const { user } = useContext(UserContext);
+  const [trending, setTrending] = useState([]);
 
-export default Packages
+  useEffect(() => {
+    Api.get('group-packages/get-all-active')
+      .then((res) => {
+        console.log('API response:', res.data);
+        setTrending(res.data.data || []);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch trending packages:', err);
+      });
+  }, []);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+ const paymentmeth = async (discountPrice, name, coursesIncluded) => {
+  try {
+    console.log('Initiating payment method...');
+    console.log('Received params:', { discountPrice, name, coursesIncluded });
+
+    const amountInPaise = discountPrice * 100;
+    console.log('Amount in paise:', amountInPaise);
+
+    const res = await Api.post('/orders/orders', {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: `${user?.email}`,
+      payment_capture: 1,
+    });
+
+    console.log('Order created successfully:', res.data);
+
+    const scriptLoaded = await loadRazorpayScript();
+    console.log('Razorpay script loaded:', scriptLoaded);
+
+    if (!scriptLoaded) {
+      alert('Failed to load Razorpay SDK. Please check your internet connection.');
+      console.warn('Razorpay SDK not loaded');
+      return;
+    }
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: amountInPaise,
+      currency: 'INR',
+      name: name,
+      description: 'Course Package Purchase',
+      handler: function (response) {
+        console.log('Payment successful:', response);
+      },
+      prefill: {
+        name: user?.firstName,
+        email: user?.email,
+      },
+      notes: {
+        user_id: user?._id,
+        course_id:  JSON.stringify(coursesIncluded), // 💡 Fix: Convert array to JSON string
+        courseName: name,
+      },
+      theme: {
+        color: '#F4C430',
+      },
+    };
+
+    console.log('Razorpay options configured:', options);
+
+    const rzp = new window.Razorpay(options);
+    console.log('Razorpay instance created');
+
+    rzp.open();
+    console.log('Razorpay checkout opened');
+
+    rzp.on('payment.failed', function (response) {
+      console.error('Payment failed:', response.error);
+      alert('Payment failed. Please try again.');
+    });
+
+  } catch (error) {
+    console.error('Error during payment:', error);
+    alert(error.message || 'An unexpected error occurred');
+  }
+};
+
+
+  return (
+    <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-semibold text-gray-800">Trending Packages</h1>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
+        {trending.map((pkg, index) => (
+          <div key={index} className="group">
+            <div className="bg-gray-100 border border-blue-500 p-6 rounded-2xl hover:scale-105 hover:shadow-2xl transition-all duration-300">
+              <h2 className="text-lg font-medium text-gray-700 mb-2">{pkg.name}</h2>
+              <p className="text-gray-600 text-sm mb-2">{pkg.image}</p>
+
+              <div className="text-center">
+                <p><del className="text-red-400">Original Price:</del></p>
+                <del className="bg-red-500 text-white rounded p-1 mb-2">Rs. {pkg.price}</del>
+                <p className="text-green-500 font h5">Discounted Price:</p>
+
+                <button
+                  className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"
+                  onClick={() => {
+                    if (!isSignedIn) {
+                      navigate('/sign-in');
+                    } else {
+                      paymentmeth(pkg.discountPrice, pkg.name, pkg.coursesIncluded);
+                    }
+                  }}
+                >
+                  Rs. {pkg.discountPrice}
+                </button>
+
+                <p className="text-green-500 font-bold">
+                  You Save: Rs. {pkg.price - pkg.discountPrice}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Packages;

@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import Api from "../../service/Api";
-
-
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from './../../context/UserProvider';
 const Rally_pro = () => {
       const [sub, setSub] = useState(null); // Set initial state to null to avoid undefined errors
-
+      const [responseId, setResponseId] = useState("");
     
       useEffect(() => {
         run();
       }, []);
     
 
+      const { user } = useContext(UserContext);
     
       async function run() {
         try {
             const response = await Api.get(`subscription/getall/sub`);
-            console.log(response.data);
+            console.log("welcodata",response.data);
       
             // Filter data based on subscriptionType
             const filtered = response.data.filter(sub => sub.subscriptionType.toLowerCase() === "rally pro".toLowerCase());
@@ -37,6 +39,90 @@ const Rally_pro = () => {
             setLoading(false);
           }, 500);
       }, []);
+
+
+
+  const navigate = useNavigate();
+  // Extracting the package content and exams information
+
+
+  const { isSignedIn } = useUser();
+      
+       const loadRazorpayScript = () => {
+          return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = "https://checkout.razorpay.com/v1/checkout.js";
+            console.log(script.src);
+            script.onload = () => {
+              resolve(true);
+            };
+            script.onerror = () => {
+              resolve(false);
+            };
+            document.body.appendChild(script);
+          });
+        };
+      
+        const paymentmeth = async (discountedAmount) => {
+          console.log("Join Payment");
+          try {
+            console.log("Join Payment Inner");
+            const res = await Api.post("/orders/orders", {
+              amount: discountedAmount * 100,
+              currency: "INR",
+              receipt: `${user?.email}`, 
+            payment_capture: 1
+            });
+            console.log("data show that ", res.data);
+            console.log("Order response:", res.data);
+      
+            // Load Razorpay script
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded) {
+              alert(
+                "Failed to load Razorpay SDK. Please check your internet connection."
+              );
+              return;
+            }
+            const options = {
+              key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+              amount: discountedAmount * 100,
+              currency: "INR",
+              name: sub?.subscriptionType,
+              description: "Test Payment",
+              handler: function (response) {
+                setResponseId(response.razorpay_payment_id);
+              },
+              prefill: {
+                name: user?.firstName,
+                email: user?.email,
+              },
+              theme: {
+                color: "#F4C430",
+              },
+              notes: {
+                user_id: user?._id,
+                course_id: sub?._id,
+                courseName: sub?.subscriptionType,
+              },
+            };
+      console.log("ji".options)
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+      
+            rzp.on("payment.failed", function (response) {
+              console.error("Payment failed", response.error);
+              alert("Payment failed. Please try again.");
+            });
+            console.log("ji".options)
+          } catch (error) {
+            console.error("Error during payment:", error);
+            alert(error.message);
+          }
+        };
+      
   return (
     <div className="container border border-black mt-2 rounded-lg">
     {loading ? (
@@ -89,7 +175,14 @@ const Rally_pro = () => {
                   ₹{sub.amount}
                 </del>
                 <p className="text-white font-bold h5 font">Discounted Price:</p>
-                <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full">
+                <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"  
+                onClick={() => {
+    if (!isSignedIn) {
+      navigate('/sign-in');
+    } else {
+      paymentmeth(sub.discountedAmount);
+    }
+  }}>
                   ₹{sub.discountedAmount}
                 </button>
               </div>
