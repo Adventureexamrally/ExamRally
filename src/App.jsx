@@ -46,6 +46,7 @@ import PdfTest from "./pages/pdfCourseExam/PdfTest";
 import PdfOtherInstruction from "./pages/pdfCourseExam/PdfOtherinstruction";
 import PdfExamSolution from "./pages/pdfCourseExam/PdfExamSolution";
 import PdfExamResultPage from "./pages/pdfCourseExam/PdfExamResultPage";
+import ScrollToTop from "./components/ScrollToTop";
 
 
 
@@ -127,7 +128,7 @@ function MainApp() {
           </div>
         </div>
       )}
-
+<ScrollToTop/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/sigin" element={<SignIn />} />

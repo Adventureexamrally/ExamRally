@@ -101,7 +101,7 @@ const Dashboard = () => {
 
 
       {/* Upcoming Exams */}
-      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white">
+      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="Top Trending Exams">
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
