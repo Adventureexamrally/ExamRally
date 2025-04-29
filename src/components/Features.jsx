@@ -8,6 +8,7 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
 import Api from "../service/Api";
+import { Link } from "react-router-dom";
 
 const features = [
   {
@@ -138,7 +139,15 @@ export default function Features() {
           </p>
         </div>
       </div>
-
+          <div className="text-blue-600 hover:underline flex justify-end mx-3 mt-5 font-semibold">
+            <a
+        href="https://www.youtube.com/@examrally_banking"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View More
+      </a>
+          </div>
       <div className="relative flex justify-center items-center w-full  py-4 rounded-lg mb-36">
       <div className="relative flex items-center w-[90%] justify-center">
         {/* Show full screen video on mobile */}

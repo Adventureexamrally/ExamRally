@@ -92,7 +92,8 @@ function Footer() {
           <h3 className="text-gray-900 font-semibold text-lg mb-4">Company</h3>
           <ul className="space-y-2 text-sm">
             {[
-              {text: 'All in One Subscription', path: '/subscriptions'},
+              {text: 'Home', path: '/'},
+              {text: 'All in One Subscription', path: 'rally-super-pro'},
               {text: 'Blog', path: '/blog'},
               {text: 'Privacy Policy', path: '/privacy-policy'},
               {text: 'Payment FAQs', path: '/payment-faqs'},
@@ -115,11 +116,10 @@ function Footer() {
           <h3 className="text-gray-900 font-semibold text-lg mb-4">Useful Links</h3>
           <ul className="space-y-2 text-sm">
             {[
-              {text: 'Live Tests', path: '/live-tests'},
               {text: 'Test Series', path: '/subscriptions'},
               {text: 'PDF Courses', path: '/pdf-course'},
               {text: 'Free PDFs', path: '/free-pdf'},
-              {text: 'Combo Packages', path: '/combo-packages'}
+              {text: 'Combo Packages', path: '/All-Packages'}
             ].map((item) => (
               <li key={item.text}>
                 <Link 
@@ -128,6 +128,18 @@ function Footer() {
                 >
                   {item.text}
                 </Link>
+              </li>
+            ))}
+                        {[
+              {text: 'Live Tests', path: '#live-tests'},
+              {text: 'Top Trending Exams', path: '#Top Trending Exams'},
+              {text: 'Trending Packages', path: '#Trending Packages'},
+            ].map((item) => (
+              <li key={item.text}>
+
+<a href={item.path} className="hover:text-green-600 transition">
+  {item.text}
+</a>
               </li>
             ))}
           </ul>

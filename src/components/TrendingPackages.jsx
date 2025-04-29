@@ -101,7 +101,7 @@ const TrendingPackages = () => {
 
 
   return (
-    <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
+    <div className="my-7 p-6 rounded-2xl shadow-xl bg-white" id='Trending Packages'>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold text-gray-800">Trending Packages</h1>
         <Link to='/All-Packages' className='text-blue-500 font-semibold hover:underline'>

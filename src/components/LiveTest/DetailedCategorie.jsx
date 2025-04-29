@@ -32,6 +32,8 @@ const DetailedCategorie = () => {
   const [payment, setPayment] = useState("");
   const [responseId, setResponseId] = useState("");
   const [responseState, setResponseState] = useState([]);
+    const [faqs, setFaqs] = useState([]);
+  
   console.log(link);
 
   useEffect(() => {
@@ -49,6 +51,7 @@ const DetailedCategorie = () => {
     try {
       const response = await Api.get(`topic-test/test/${link}`);
       console.log("livetest", response.data);
+      setFaqs(response.data.faqs)
       setData(response.data);
       setCatDetails(response.data.test_content);
       setSub(response.data.categorys);
@@ -163,6 +166,15 @@ console.log("ji".options)
 
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
+    const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
+    const handleAccordionToggle = (index) => {
+      // Toggle the active index (open/close the panel)
+      if (activeIndex === index) {
+        setActiveIndex(null); // Close the panel if it's already open
+      } else {
+        setActiveIndex(index); // Open the panel if it's not open
+      }
+    };
   return (
     <>
       {loading ? (
@@ -379,6 +391,53 @@ console.log("ji".options)
                     </div>
                   ))}
               </div>
+                            <h1 className="text-center fw-bold text-green-800 h4 font py-4 bg-green-200 my-4 rounded-sm">
+                              Frequently Asked Question
+                            </h1>
+              
+                            <div className="space-y-4">
+                              {faqs.length > 0 ? (
+                                faqs.map((faq, index) => (
+                                  <div
+                                    key={faq.id}
+                                    className="border rounded-lg overflow-hidden shadow-sm "
+                                  >
+                                    <button
+                                      className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${activeIndex === index
+                                          ? "bg-green-100 text-green-700"
+                                          : "hover:bg-gray-50"
+                                        }`}
+                                      onClick={() => handleAccordionToggle(index)}
+                                    >
+                                      <span
+                                        className="font-medium flex items-center "
+                                        dangerouslySetInnerHTML={{ __html: faq.question }}
+                                      />
+                                      <span className="text-lg">
+                                        {activeIndex === index ? (
+                                          <FaChevronUp />
+                                        ) : (
+                                          <FaChevronDown />
+                                        )}
+                                      </span>
+                                    </button>
+                                    <div
+                                      className={`transition-max-h duration-300 ease-in-out overflow-hidden ${activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
+                                        }`}
+                                    >
+                                      <p
+                                        className="text-gray-600"
+                                        dangerouslySetInnerHTML={{ __html: faq.answer }}
+                                      />
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-center py-6 text-gray-400">
+                                  Loading FAQs...
+                                </div>
+                              )}
+                            </div>
               <LiveTestcategorieModel
                 data={data}
                 topic={currentTopic}
