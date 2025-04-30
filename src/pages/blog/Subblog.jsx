@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Api from '../../service/Api';
+import { Helmet } from 'react-helmet';
 
 // const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
@@ -9,6 +10,7 @@ const Subblog = () => {
     const { link } = useParams();
     const [blogDetails, setBlogDetails] = useState([])
     const [blogAd, setBlogAd] = useState([]);
+  const [seo, setSeo] = useState([]);
 
 
     useEffect(() => {
@@ -21,14 +23,32 @@ const Subblog = () => {
             console.log(response.data);
             setBlogDetails(response.data);
 
-            const ad = await Api.get(`blog-Ad/getbypage/blog`);
+            const ad = await Api.get(`blog-Ad/getbypage/${link}`);
             setBlogAd(ad.data);
+
+            const response3 = await Api.get(`/get-Specific-page/${link}`);
+            setSeo(response3.data);
 
         } catch (error) {
             console.error("Error fetching data:", error);
         };
     }
     return (
+        <>
+              <Helmet>
+                {/* { seo.length > 0 && seo.map((seo)=>(
+                            <> */}
+                <title>{seo[0]?.seoData?.title}</title>
+                <meta name="description" content={seo[0]?.seoData?.description} />
+                <meta name="keywords" content={seo[0]?.seoData?.keywords} />
+                <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
+                <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
+                <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
+                {/* </>
+                        ))} */}
+        
+              </Helmet>
+       
         <div className='flex'>
             {blogDetails.map((blogDetails) => (
                 <>
@@ -87,6 +107,7 @@ const Subblog = () => {
                 </>
             ))}
         </div>
+        </>
     )
 }
 
