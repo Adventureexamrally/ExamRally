@@ -1,11 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Api from "../../service/Api";
 
 const OtherInstruct = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(""); // Default language
-  const navigate = useNavigate();
+    const [examData, setExamData] = useState(null);
+    const {id} = useParams()
 
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Check if data has already been fetched
+      Api.get(`exams/getExam/${id}`)
+        .then((res) => {
+          if (res.data) {
+            setExamData(res.data);
+            console.log("kl", res.data);
+          }
+        })
+        .catch((err) => console.error("Error fetching data:", err));
+  }, [id]); 
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
@@ -13,7 +28,6 @@ const OtherInstruct = () => {
   const handleLanguageChange = (event) => {
     setSelectedLanguage(event.target.value);
   };
-const {id} = useParams()
 const handleNextClick = () => {
   if (!selectedLanguage) {
     alert("Please select a language to proceed.");
@@ -23,7 +37,13 @@ const handleNextClick = () => {
     alert("Please accept the declaration to proceed.");
     return;
   }
-  navigate(`/mocklivetest/${id}`, { state: { language: selectedLanguage } });
+    // Transform selectedLanguage if bilingual
+    const finalLanguage = examData?.bilingual_status && 
+    (selectedLanguage === "Hindi" || selectedLanguage === "English")
+    ? "English"
+    : selectedLanguage;
+
+  navigate(`/mocklivetest/${id}`, { state: { language: finalLanguage } });
 };
 
   const handlePreviousClick = () => {
@@ -38,19 +58,30 @@ const handleNextClick = () => {
       <div className="bg-blue-300 p-3 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Other Important Instructions</h2>
       </div>
+
+
       {/* Language Selection */}
       <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 p-4">
   <p className="bg-blue-200 p-2 rounded mb-2">
-    Choose your default language:
+    Choose your default language: 
     <select
       className="ml-2 p-1 border rounded"
       value={selectedLanguage}
       onChange={handleLanguageChange}
     >
       <option value="">Select Language</option>
-      <option value="English">English</option>
-      <option value="Hindi">Hindi</option>
-      <option value="Tamil">Tamil</option>
+      {examData?.bilingual_status ? (
+    <>
+      {examData?.english_status && <option value="English">English</option>}
+      {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+    </>
+  ) : (
+    <>
+      {examData?.english_status && <option value="English">English</option>}
+      {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+      {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+    </>
+  )}
     </select>
   </p>
 
@@ -94,7 +125,6 @@ const handleNextClick = () => {
     </button>
   </div>
 </div>
-
     </div>
   );
 };

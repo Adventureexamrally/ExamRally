@@ -114,12 +114,21 @@ const TrendingPackages = () => {
           <div key={index} className="group">
             <div className="bg-gray-100 border border-blue-500 p-6 rounded-2xl hover:scale-105 hover:shadow-2xl transition-all duration-300">
               <h2 className="text-lg font-medium text-gray-700 mb-2">{pkg.name}</h2>
-              <p className="text-gray-600 text-sm mb-2">{pkg.image}</p>
-
+              {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
+    Aspect Ratio: 2:3 (portrait) */}
+                  {/* <img 
+  src={pkg.image} 
+  alt="pkg" 
+  style={{
+    width: '100%',
+    maxWidth: '400px',
+    aspectRatio: '2 / 3',
+    objectFit: 'cover'
+  }} /> */}
+              <img src={pkg.image} alt={pkg.name} />
               <div className="text-center">
-                <p><del className="text-red-400">Original Price:</del></p>
-                <del className="bg-red-500 text-white rounded p-1 mb-2">Rs. {pkg.price}</del>
-                <p className="text-green-500 font h5">Discounted Price:</p>
+              <del className=" text-green-700 font-semibold rounded px-3 py-1 inline-block mb-2">
+              Rs. {pkg.price}</del>
 
                 <button
                   className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"

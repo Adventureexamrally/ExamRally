@@ -1,11 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Api from "../../service/Api";
 
 const PdfOtherInstruction = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(""); // Default language
-  const navigate = useNavigate();
+    const [examData, setExamData] = useState(null);
+    const {id} = useParams()
 
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Check if data has already been fetched
+      Api.get(`exams/getExam/${id}`)
+        .then((res) => {
+          if (res.data) {
+            setExamData(res.data);
+            console.log("kl", res.data);
+          }
+        })
+        .catch((err) => console.error("Error fetching data:", err));
+  }, [id]); 
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
@@ -13,7 +28,6 @@ const PdfOtherInstruction = () => {
   const handleLanguageChange = (event) => {
     setSelectedLanguage(event.target.value);
   };
-const {id} = useParams()
 const handleNextClick = () => {
   if (!selectedLanguage) {
     alert("Please select a language to proceed.");
@@ -23,7 +37,13 @@ const handleNextClick = () => {
     alert("Please accept the declaration to proceed.");
     return;
   }
-  navigate(`/pdf/mocktest/${id}`, { state: { language: selectedLanguage } });
+    // Transform selectedLanguage if bilingual
+    const finalLanguage = examData?.bilingual_status && 
+    (selectedLanguage === "Hindi" || selectedLanguage === "English")
+    ? "English"
+    : selectedLanguage;
+
+  navigate(`/pdf/mocktest/${id}`, { state: { language: finalLanguage } });
 };
 
   const handlePreviousClick = () => {
@@ -50,9 +70,18 @@ const handleNextClick = () => {
       onChange={handleLanguageChange}
     >
       <option value="">Select Language</option>
-      <option value="English">English</option>
-      <option value="Hindi">Hindi</option>
-      <option value="Tamil">Tamil</option>
+      {examData?.bilingual_status ? (
+    <>
+      {examData?.english_status && <option value="English">English</option>}
+      {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+    </>
+  ) : (
+    <>
+      {examData?.english_status && <option value="English">English</option>}
+      {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+      {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+    </>
+  )}
     </select>
   </p>
 

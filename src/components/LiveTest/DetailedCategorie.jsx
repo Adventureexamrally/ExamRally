@@ -468,18 +468,25 @@ console.log("ji".options)
                   </span>
                 </div>
                 {/* <hr className="border-t border-gray-600" /> */}
-
-                <img src={data.featurePhoto} alt="" />
+              {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
+    Aspect Ratio: 2:3 (portrait) */}
+                  <img 
+  src={data.featurePhoto}
+  alt="ad" 
+  style={{
+    width: '100%',
+    maxWidth: '400px',
+    aspectRatio: '2 / 3',
+    objectFit: 'cover'
+  }} />
+                {/* <img src={data.featurePhoto} alt="" /> */}
                 <div className="text-center">
-                  <p>
-                    <del className="text-red-400 font">Original Price:</del>
-                  </p>
-                  <del className="bg-red-500 text-white rounded p-1 mb-2">
-                    Rs.{amount}
-                  </del>
-                  <p className="text-white font h5">Discounted Price:</p>
+                <del className="text-gray-100 rounded px-2 py-1 mb-2 drop-shadow">
+  Rs.{amount}
+</del>
+
                   <button
-  className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"
+  className="bg-green-500 text-gray-50 px-3 py-1 font-bold hover:bg-green-400 rounded-full"
   onClick={() => {
     if (!isSignedIn) {
       navigate('/sign-in');
@@ -493,7 +500,7 @@ console.log("ji".options)
 
             
                   <p className="text-white font-bold">
-                    You Save Money: {amount - discountedAmount}
+                    You Save Money: Rs. {amount - discountedAmount}
                   </p>
                 </div>
               </div>
