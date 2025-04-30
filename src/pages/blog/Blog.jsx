@@ -52,11 +52,11 @@ const Blog = () => {
     try {
       const response = await Api.get(`blogs/all?topic=${topicId}`);
       console.log(response);
-      
-      if(response.data?.length>0){
+
+      if (response.data?.length > 0) {
         setBlogData(response.data);
       }
-      else{
+      else {
         handleTopicSelect("")
       }
     } catch (error) {
@@ -122,7 +122,7 @@ const Blog = () => {
       </Helmet>
       <div className="flex">
         <div className={`mt-4 w-full ${blogAd.length > 0 ? "md:w-4/5" : "md:full "}`}>
-        <div className="relative py-2">
+          <div className="relative py-2">
             <div className="flex items-center justify-center mx-5">
               <button
                 onClick={scrollToPrevious}
@@ -143,20 +143,26 @@ const Blog = () => {
                 }}
               >
                 <span
-                  className="py-2 px-4 cursor-pointer rounded-sm bg-blue-950 text-white flex items-center whitespace-nowrap"
-                  onClick={() => handleTopicSelect("")}
+ className={`py-2 px-4 cursor-pointer rounded-full whitespace-nowrap flex items-center 
+  ${selectedTopic ? "bg-blue-950 text-white  hover:text-green-800" : "bg-green-600 text-white"} 
+  transition-colors duration-300`}                  onClick={() => handleTopicSelect("")}
                 >
                   All
                 </span>
-                {topics.map((title) => (
-                  <span
-                    key={title._id}
-                    className="py-2 px-4 cursor-pointer rounded-sm bg-blue-950 text-white flex items-center whitespace-nowrap"
-                    onClick={() => handleTopicSelect(title.topic)}
-                  >
-                    {title.topic}
-                  </span>
-                ))}
+                {topics.map((title) => {
+                  const isSelected = selectedTopic === title.topic;
+                  return (
+                    <span
+                      key={title._id}
+                      className={`py-2 px-4 cursor-pointer rounded-full whitespace-nowrap flex items-center 
+        ${isSelected ? "bg-green-600 text-white" : "bg-blue-950 text-white hover:text-green-800"} 
+        transition-colors duration-300`}
+                      onClick={() => handleTopicSelect(title.topic)}
+                    >
+                      {title.topic}
+                    </span>
+                  );
+                })}
               </div>
 
               <button
