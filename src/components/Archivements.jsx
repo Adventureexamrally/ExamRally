@@ -30,9 +30,10 @@ const Archivements = () => {
         </div>
         <Link
           to="/All-Archivers"
-          className="text-green-600 font-medium hover:text-green-800 transition-colors duration-200"
+          className="border-1 h-10 border-green-500 text-green-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600"
+
         >
-          View All →
+          View All 
         </Link>
       </div>
 
