@@ -333,6 +333,7 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if(user?._id){
       try {
         // Fetch the exam data from your API
         const res = await Api.get(`exams/getExam/${id}`);
@@ -423,6 +424,7 @@ useEffect(() => {
         console.error("Error occurred:", error.message);
         // Handle error (show error message, etc.)
       }
+    }
     };
 
     // Call the async function inside useEffect
@@ -968,6 +970,7 @@ useEffect(() => {
 
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
+    if(user?._id){
     Api.get(`results/${user?._id}/${id}`)
       .then(response => {
         // Set the fetched data to state
@@ -977,6 +980,7 @@ useEffect(() => {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
+    }
   }, [id]);
 
   
@@ -988,6 +992,7 @@ useEffect(() => {
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
 
     // API call with the necessary data
+    if(user?._id){
     Api.post(`results/${user?._id}/${id}`, {
       ExamId: `${id}`,
       section: formattedSections,
@@ -1006,7 +1011,7 @@ useEffect(() => {
       .catch((err) => {
         console.error("Error submitting marks:", err);
       });
-  }, [
+  }}, [
     examDataSubmission,  // Trigger whenever data to submit changes
     selectedOptions,     // Trigger when selected options change
     id,                  // Trigger when ID changes (if needed)
