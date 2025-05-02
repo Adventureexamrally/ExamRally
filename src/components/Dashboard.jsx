@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Banner from "./Banner";
 // import { RiRobotFill } from "react-icons/ri";
 import Api from "../service/Api";
@@ -14,7 +14,25 @@ const Dashboard = () => {
   const [packages, setPackages] = useState([]);
   console.log(packages);
 
+  const location = useLocation();
 
+  useEffect(() => {
+    const hash = location.hash;
+    if (hash) {
+      // Delay until components are mounted
+      const scrollToHash = () => {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      // Try scrolling multiple times in case the element renders late
+      setTimeout(scrollToHash, 100);  // Short delay
+      setTimeout(scrollToHash, 500);  // Medium delay
+      setTimeout(scrollToHash, 1000); // Final fallback
+    }
+  }, [location]);
   const fetchPakages = async () => {
     try {
       const response = await Api.get("/packages/get/active");
@@ -101,7 +119,7 @@ const Dashboard = () => {
 
 
       {/* Upcoming Exams */}
-      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="Top Trending Exams">
+      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="TopTrendingExams">
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
@@ -153,7 +171,9 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      <div id='TrendingPackages'>
       <TrendingPackages />
+      </div>
           <Archivements/>
     </div>
   );

@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/404/NotFound";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import NavBar from "./components/NavBar";
@@ -47,6 +47,8 @@ import PdfOtherInstruction from "./pages/pdfCourseExam/PdfOtherinstruction";
 import PdfExamSolution from "./pages/pdfCourseExam/PdfExamSolution";
 import PdfExamResultPage from "./pages/pdfCourseExam/PdfExamResultPage";
 import ScrollToTop from "./components/ScrollToTop";
+import ContactUs from "./components/ContactUs";
+import Coupon from "./pages/Coupon";
 
 
 
@@ -143,7 +145,8 @@ function MainApp() {
       
         <Route path="/otherinstruct/:id" element={<Otherinstruction />} />
         <Route path="/privacy-policy" element={<Privacy_Policy />} />
-        <Route path="/terms-condition" element={<Terms_Condition />} />
+        <Route path="/TermsConditions" element={<Terms_Condition />} />
+        {/* <Route path="/contactus" element={<ContactUs />} /> */}
 
         {/* Only render Test component without Header and Footer */}
         <Route path="/result/:id" element={<ResultPage />} />
