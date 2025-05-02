@@ -113,7 +113,7 @@ function Footer() {
 
         {/* Column 2: Company Links */}
         <div>
-          <h3 className="text-gray-900 font-semibold text-lg mb-4">Company</h3>
+          <h3 className="text-green font-semibold text-lg mb-4">Company</h3>
           <ul className="space-y-2 text-sm">
             {[
               {text: 'Home', path: '/'},
@@ -137,7 +137,7 @@ function Footer() {
 
         {/* Column 3: Useful Links */}
         <div>
-          <h3 className="text-gray-900 font-semibold text-lg mb-4">Useful Links</h3>
+          <h3 className="text-green font-semibold text-lg mb-4">Useful Links</h3>
           <ul className="space-y-2 text-sm">
             {[
               {text: 'Test Series', path: '/subscriptions'},
@@ -177,7 +177,7 @@ function Footer() {
 
         {/* Column 4: Contact Info */}
         <div>
-          <h3 className="text-gray-900 font-semibold text-lg mb-4">Get in Touch</h3>
+          <h3 className="text-green font-semibold text-lg mb-4">Get in Touch</h3>
           <address className="not-italic text-sm space-y-3">
             <div className="flex items-start">
               <MapPinIcon className="h-5 w-5 mt-0.5 mr-2 flex-shrink-0 text-green-600" />

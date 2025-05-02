@@ -104,7 +104,7 @@ const TrendingPackages = () => {
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white" >
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold text-gray-800">Trending Packages</h1>
-        <Link to='/All-Packages' className='text-blue-500 font-semibold hover:underline'>
+        <Link to='/All-Packages'  className="border-1 h-10 border-blue-500 text-blue-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600">
                     View More
                 </Link>
       </div>

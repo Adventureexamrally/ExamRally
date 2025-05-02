@@ -1,14 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from "../assets/logo/logo.png";
 import { Link } from 'react-router-dom';
 import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser  } from "@clerk/clerk-react";
 import CustomUserMenu from './CustomUserButton';
-
+import offer from '../assets/images/offer.png'
 
 
 const Header = () => {
 
   const {isSignedIn, user, isLoaded } = useUser();
+  const [currentTime, setCurrentTime] = useState("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString());
+    };
+
+    // Update time every second
+    const timeInterval = setInterval(updateTime, 1000);
+    updateTime(); // Set initial time immediately
+
+    // Cleanup the interval when component unmounts
+    return () => clearInterval(timeInterval);
+  }, []);
 
   // if (!user) {
   //   return <div>Loading user info...</div>;
@@ -39,6 +54,15 @@ const Header = () => {
             </button>
           </div>
         </div>
+        <div className='block'>
+  <img src={offer} className="h-14 blink" alt="Offer" />
+
+</div> 
+<div className='p-3 fw-bold'>
+<h1 className='text-green'>Summer Offer</h1>
+<p>{currentTime}</p>
+</div>
+
 
         {/* Login and Register Buttons */}
         <div className="hidden md:flex items-center space-x-4 flex-row">
@@ -55,7 +79,7 @@ const Header = () => {
             <Link to='/sign-up'>Register</Link>
           </button> */}
         
-
+        
          
           
            <Link to='https://t.me/examrally'> <i className="bi bi-telegram text-2xl" style={{color:"	#24A1DE"}}> </i>Join Telegram

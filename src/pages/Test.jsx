@@ -228,9 +228,6 @@ useEffect(() => {
       return updatedOptions;
     });
   
-   
-
-
     let mark = 0;
 
     // Check if the selected option matches the correct answer
@@ -262,7 +259,6 @@ useEffect(() => {
     }
   }, []);
 
-  // Update question time when user switches questions
   useEffect(() => {
     if (questionStartTime) {
       const now = new Date();
@@ -333,6 +329,7 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if(user?._id){
       try {
         // Fetch the exam data from your API
         const res = await Api.get(`exams/getExam/${id}`);
@@ -423,6 +420,7 @@ useEffect(() => {
         console.error("Error occurred:", error.message);
         // Handle error (show error message, etc.)
       }
+    }
     };
 
     // Call the async function inside useEffect
@@ -928,8 +926,8 @@ useEffect(() => {
         visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
         notVisitedQuestions: sectionSummary.notVisitedQuestions,
         s_accuracy: secaccuracy,
-        skipped: skippedQuestions,
-  timeTaken: sectionTimes[sectionIndex] || 0, // Add section time      
+        skipped: skippedQuestions, 
+        timeTaken: sectionTimes[sectionIndex] || 0,
   };
     }).filter(Boolean);
 
@@ -968,6 +966,7 @@ useEffect(() => {
 
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
+    if(user?._id){
     Api.get(`results/${user?._id}/${id}`)
       .then(response => {
         // Set the fetched data to state
@@ -977,36 +976,98 @@ useEffect(() => {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
+    }
   }, [id]);
 
   
- 
+  // Using useEffect to trigger submitExam when needed
+  const [timeminus, settimeminus] = useState(0);
+  // const [isPaused, setIsPaused] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
+  const [resultData, setResultData] = useState(null);
+  const [timeTakenFromDB, settimeTakenFromDB] = useState();
+
 
   useEffect(() => {
-    if (!examDataSubmission) return; // Prevent running if there's no new data to submit.
-
+    // Get total section time in seconds
+    const totalSectionTime = examData?.section[currentSectionIndex]?.t_time * 60;
+    
+    // Get time taken from resultData
+    const timeTake = resultData?.section[currentSectionIndex]?.timeTaken || 0;
+    settimeTakenFromDB(timeTake)
+    console.log("Time taken from DB:", timeTake);
+    
+    // If there's time taken in DB, subtract it from total time
+    const remainingTime = timeTake > 0 
+      ? totalSectionTime - timeTake 
+      : totalSectionTime;
+      
+    // Set the remaining time
+    settimeminus(remainingTime);
+  
+  }, [examData, currentSectionIndex, resultData]);
+  useEffect(() => {
+    if (!examDataSubmission) return;
+  
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
 
+    const totalTimeInSeconds = examData?.section[currentSectionIndex]?.t_time * 60;
+    const actualTimeTaken = totalTimeInSeconds - timeminus;
+  
+    // Get previously saved time from DB
+    // const previousTimeTakenFromDB = resultData?.section[currentSectionIndex]?.timeTaken || 0;
+    // console.log("d", previousTimeTakenFromDB);
+    
+  
+    // Decide what time to save based on pause/completed
+    const finalTimeTaken = isPaused 
+      ?  actualTimeTaken : (timeTakenFromDB + actualTimeTaken);  // Only save what was spent before pausing
+// Add on top of already saved time if resuming/completing
+  
+    const updatedSections = formattedSections.map((section, idx) => {
+      if (idx === currentSectionIndex) {
+        return {
+          ...section,
+          timeTaken: finalTimeTaken,
+        };
+      }
+      return section;
+    });
+  
+
+
     // API call with the necessary data
+    if(user?._id){
+
     Api.post(`results/${user?._id}/${id}`, {
       ExamId: `${id}`,
-      section: formattedSections,
-      // Now this will work since formattedSections is part of examDataSubmission
-      score: totalScore,           // totalScore is also included
+      section: updatedSections,
+      score: totalScore,
       totalTime: formattedTotalTime,
       timeTakenInSeconds: timeTakenInSeconds,
       takenAt: examStartTime,
       submittedAt: endTime,
       status: isPaused ? "paused" : "completed", 
+      sectionTimes: sectionTimes,
     })
       .then((res) => {
-        console.log("Response Data-sample:", res.data);
-
+        console.log("Submitted:", res.data);
       })
       .catch((err) => {
-        console.error("Error submitting marks:", err);
+        console.error("Error submitting:", err);
       });
-  }, [
+
+  
+  }, [examDataSubmission, 
+    selectedOptions, 
+    id, 
+    currentSectionIndex, 
+    sectionTimes, 
+    timeminus, 
+    examData, 
+    isPaused]);
+
+  }}, [
     examDataSubmission,  // Trigger whenever data to submit changes
     selectedOptions,     // Trigger when selected options change
     id,                  // Trigger when ID changes (if needed)
@@ -1028,6 +1089,22 @@ useEffect(() => {
 
 
 
+ 
+  
+    useEffect(() => {
+      if (!user?._id || !id) return;
+    
+      Api.get(`results/${user?._id}/${id}`)
+        .then(response => {
+          setResultData(response.data);
+          console.log("Result Data:", response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching result data:', error);
+        });
+    }, [user?._id, id]);
+  
+
 
   useEffect(() => {
     if (timeminus > 0 && !isPaused) {
@@ -1043,6 +1120,7 @@ useEffect(() => {
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]); // Runs whenever timeminus changes
+  
      const handlePauseResume = () => {
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
@@ -1801,6 +1879,7 @@ useEffect(() => {
                   onClick={() => {
                     console.log("Clicked question index:", fullIndex);
                     setClickedQuestionIndex(fullIndex);
+                    setQuestionTime(0);
                   }}
                   className={`fw-bold flex align-items-center justify-content-center ${className}`}
                 >

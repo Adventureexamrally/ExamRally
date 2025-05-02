@@ -123,7 +123,8 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
-          <Link to="#" className="text-blue-600 hover:underline">
+          <Link to="#"  className="border-1 h-10 border-blue-500 text-blue-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600"
+          >
             View More
           </Link>
         </div>
