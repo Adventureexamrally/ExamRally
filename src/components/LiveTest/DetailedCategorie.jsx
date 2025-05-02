@@ -446,7 +446,7 @@ console.log("ji".options)
             </div>
 
             {/* advertiswment part */}
-            <div className="m-3 w-full md:w-1/5 ">
+            <div className="md:m-3 w-full md:w-1/5 ">
               <div
                 className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner "
                 style={{

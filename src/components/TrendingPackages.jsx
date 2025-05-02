@@ -101,7 +101,7 @@ const TrendingPackages = () => {
 
 
   return (
-    <div className="my-7 p-6 rounded-2xl shadow-xl bg-white" id='Trending Packages'>
+    <div className="my-7 p-6 rounded-2xl shadow-xl bg-white" >
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold text-gray-800">Trending Packages</h1>
         <Link to='/All-Packages'  className="border-1 h-10 border-blue-500 text-blue-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600">
@@ -116,7 +116,7 @@ const TrendingPackages = () => {
               <h2 className="text-lg font-medium text-gray-700 mb-2">{pkg.name}</h2>
               {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
     Aspect Ratio: 2:3 (portrait) */}
-                  {/* <img 
+                  <img 
   src={pkg.image} 
   alt="pkg" 
   style={{
@@ -124,8 +124,8 @@ const TrendingPackages = () => {
     maxWidth: '400px',
     aspectRatio: '2 / 3',
     objectFit: 'cover'
-  }} /> */}
-              <img src={pkg.image} alt={pkg.name} />
+  }} />
+              {/* <img src={pkg.image} alt={pkg.name} /> */}
               <div className="text-center">
               <del className=" text-green-700 font-semibold rounded px-3 py-1 inline-block mb-2">
               Rs. {pkg.price}</del>
