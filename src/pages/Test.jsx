@@ -1006,6 +1006,7 @@ useEffect(() => {
     settimeminus(remainingTime);
   
   }, [examData, currentSectionIndex, resultData]);
+
   useEffect(() => {
     if (!examDataSubmission) return;
   
@@ -1056,9 +1057,9 @@ useEffect(() => {
       .catch((err) => {
         console.error("Error submitting:", err);
       });
-
-  
-  }, [examDataSubmission, 
+    
+    }
+    },[examDataSubmission, 
     selectedOptions, 
     id, 
     currentSectionIndex, 
@@ -1067,17 +1068,11 @@ useEffect(() => {
     examData, 
     isPaused]);
 
-  }}, [
-    examDataSubmission,  // Trigger whenever data to submit changes
-    selectedOptions,     // Trigger when selected options change
-    id,                  // Trigger when ID changes (if needed)
-  ]);
+    
+  
 
 
-  // Using useEffect to trigger submitExam when needed
-  const [timeminus, settimeminus] = useState(0);
-  // const [isPaused, setIsPaused] = useState(false);
-  const [pauseCount, setPauseCount] = useState(0);
+
 
 
   useEffect(() => {
