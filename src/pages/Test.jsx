@@ -329,6 +329,7 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if(user?._id){
       try {
         // Fetch the exam data from your API
         const res = await Api.get(`exams/getExam/${id}`);
@@ -419,6 +420,7 @@ useEffect(() => {
         console.error("Error occurred:", error.message);
         // Handle error (show error message, etc.)
       }
+    }
     };
 
     // Call the async function inside useEffect
@@ -964,6 +966,7 @@ useEffect(() => {
 
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
+    if(user?._id){
     Api.get(`results/${user?._id}/${id}`)
       .then(response => {
         // Set the fetched data to state
@@ -973,6 +976,7 @@ useEffect(() => {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
+    }
   }, [id]);
 
   
@@ -1006,6 +1010,7 @@ useEffect(() => {
     if (!examDataSubmission) return;
   
     const { formattedSections, totalScore, formattedTotalTime, timeTakenInSeconds, endTime } = examDataSubmission;
+
     const totalTimeInSeconds = examData?.section[currentSectionIndex]?.t_time * 60;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
   
@@ -1029,6 +1034,11 @@ useEffect(() => {
       return section;
     });
   
+
+
+    // API call with the necessary data
+    if(user?._id){
+
     Api.post(`results/${user?._id}/${id}`, {
       ExamId: `${id}`,
       section: updatedSections,
@@ -1046,6 +1056,7 @@ useEffect(() => {
       .catch((err) => {
         console.error("Error submitting:", err);
       });
+
   
   }, [examDataSubmission, 
     selectedOptions, 
@@ -1055,6 +1066,27 @@ useEffect(() => {
     timeminus, 
     examData, 
     isPaused]);
+
+  }}, [
+    examDataSubmission,  // Trigger whenever data to submit changes
+    selectedOptions,     // Trigger when selected options change
+    id,                  // Trigger when ID changes (if needed)
+  ]);
+
+
+  // Using useEffect to trigger submitExam when needed
+  const [timeminus, settimeminus] = useState(0);
+  // const [isPaused, setIsPaused] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
+
+
+  useEffect(() => {
+    const sectionTimeInSeconds = examData?.section[currentSectionIndex]?.t_time * 60; // Convert minutes to seconds
+    settimeminus(sectionTimeInSeconds); // Reset time when the section changes
+  }, [examData, currentSectionIndex]);
+
+
+
 
 
  
