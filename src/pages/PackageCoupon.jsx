@@ -1,21 +1,29 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
 import { UserContext } from '../context/UserProvider';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
-const Coupon = ({ data, setshowmodel }) => {
+const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(data.discountedAmount || 1998);
+  const [finalPrice, setFinalPrice] = useState(pkg.discountPrice);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
+  const [accessDuration, setAccessDuration] = useState('');
+
+  // Calculate access duration based on package validity
+  useEffect(() => {
+    if (pkg.duration) {
+      setAccessDuration(`${pkg.duration} Days`);
+    }
+  }, [pkg.validityDays]);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -26,6 +34,7 @@ const Coupon = ({ data, setshowmodel }) => {
       document.body.appendChild(script);
     });
   };
+
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
       setMessage({ text: 'Please enter a coupon code', type: 'error' });
@@ -35,90 +44,99 @@ const Coupon = ({ data, setshowmodel }) => {
     try {
       setIsProcessing(true);
       
-      const res = await Api.post('/coupons/validate', { couponCode: couponCode.trim().toUpperCase() });
+      const res = await Api.post('/coupons/validate', { 
+        couponCode: couponCode.trim().toUpperCase(),
+        currentDate: new Date().toISOString()
+      });
   
       if (res.data.valid) {
-        const baseAmount = Number(data.discountedAmount) || 0;
+        const baseAmount = Number(pkg.discountPrice);
         const discount = (baseAmount * res.data.discountPercent) / 100;
         const newTotal = baseAmount - discount;
+        
+        setDiscountPercent(res.data.discountPercent);
         setFinalPrice(newTotal.toFixed(2));
         setMessage({ 
           text: `Coupon applied: ${res.data.discountPercent}% OFF`, 
           type: 'success' 
         });
       } else {
-        // This block probably never hits since invalid cases trigger catch
         setMessage({ 
           text: res.data.message || 'Invalid coupon code', 
           type: 'error' 
         });
       }
-  
     } catch (err) {
-      // This block handles invalid/inactive/expired coupons
       const errMsg = err.response?.data?.message || 'Error validating coupon';
       setMessage({ text: errMsg, type: 'error' });
   
-      // Reset any previously applied discount if current coupon is rejected
+      // Reset discount if coupon validation fails
       setDiscountPercent(0);
-      setFinalPrice(data.discountedAmount);
+      setFinalPrice(pkg.discountPrice);
     } finally {
       setIsProcessing(false);
     }
   };
-  
 
-  const paymentmeth = async (amountToPay) => {
+  const handlePayment = async () => {
     try {
       setIsProcessing(true);
-      const res = await Api.post('/orders/orders', {
-        amount: Math.round(amountToPay * 100), // must be integer in paise
+      
+      const amountInPaise = Math.round(finalPrice * 100);
+      const orderData = {
+        amount: amountInPaise,
         currency: 'INR',
-        receipt: `${user?.email}`,
+        receipt: user?.email || 'package-purchase',
         payment_capture: 1,
-      });
+        notes: {
+          package_id: pkg._id,
+          package_name: pkg.name,
+          courses: JSON.stringify(pkg.coursesIncluded),
+          coupon_code: discountPercent > 0 ? couponCode : null,
+          discount_percent: discountPercent
+        }
+      };
 
+      const orderResponse = await Api.post('/orders/orders', orderData);
+      
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
-        alert('Failed to load Razorpay SDK. Check your connection.');
-        return;
+        throw new Error('Failed to load Razorpay SDK');
       }
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: amountToPay * 100,
+        amount: orderResponse.data.amount,
         currency: 'INR',
-        name: data?.name,
-        description: 'Course Payment',
+        name: pkg.name,
+        description: `Package purchase: ${pkg.name}`,
+        order_id: orderResponse.data.id,
         handler: function (response) {
-          console.log('Payment Success:', response);
-          alert('Payment Successful! ID: ' + response.razorpay_payment_id);
-          setshowmodel(false);
+          console.log('Payment success:', response);
+          alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+          setShowModal(false);
         },
         prefill: {
-          name: user?.firstName,
-          email: user?.email,
-        },
-        notes: {
-          user_id: user?._id,
-          course_id: data?._id,
-          courseName: data?.categorys,
+          name: user?.firstName || '',
+          email: user?.email || '',
+          contact: user?.phoneNumber || ''
         },
         theme: {
-          color: '#2E7D32',
-        },
+            color: '#2E7D32',
+          },
       };
 
       const rzp = new window.Razorpay(options);
       rzp.open();
 
       rzp.on('payment.failed', function (response) {
-        console.error('Payment failed', response.error);
-        alert('Payment failed. Please try again.');
+        console.error('Payment failed:', response.error);
+        alert(`Payment failed: ${response.error.description}`);
       });
+
     } catch (error) {
-      console.error('Error during payment:', error);
-      alert(error.message || 'Payment failed');
+      console.error('Payment error:', error);
+      alert(error.response?.data?.message || error.message || 'Payment processing failed');
     } finally {
       setIsProcessing(false);
     }
@@ -127,30 +145,31 @@ const Coupon = ({ data, setshowmodel }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="relative">
+      <div className="relative">
           <div className="absolute top-4 right-4">
             <button 
-              onClick={() => setshowmodel(false)}
+              onClick={() => setShowModal(false)}
               className="p-1 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <XMarkIcon className="h-6 w-6 text-gray-100 hover:text-gray-500" />
+              <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-gray-700" />
             </button>
           </div>
           
           <div className="bg-gradient-to-r from-green-600 to-green-800 p-6 text-white">
-            <h2 className="text-2xl font-bold">{data?.name ?data?.name :data?.categorys}</h2>
+            <h2 className="text-2xl font-bold">{pkg?.name}</h2>
+            <p className="opacity-90">Get access to {pkg?.coursesIncluded?.length || 0} courses</p>
           </div>
         </div>
 
         <div className="p-6 overflow-y-auto flex-grow">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <p className="text-gray-600">Access</p>
-              <p className="font-medium">{data?.expiryDays} Days</p>
+              <p className="text-gray-600">Access Period</p>
+              <p className="font-medium">{accessDuration}</p>
             </div>
             <div className="text-right">
               <p className="text-gray-600">Original Price</p>
-              <p className="text-lg font-bold line-through">₹{data.amount}</p>
+              <p className="text-lg font-bold line-through">₹{pkg.price}</p>
             </div>
           </div>
 
@@ -158,10 +177,10 @@ const Coupon = ({ data, setshowmodel }) => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-bold text-green-800">Special Offer</p>
-                <p className="text-green-700">₹{data.discountedAmount}</p>
+                <p className="text-green-700">₹{pkg.discountPrice}</p>
               </div>
               <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                {Math.round((1 - data.discountedAmount/data.amount) * 100)}% OFF
+                {Math.round((1 - pkg.discountPrice/pkg.price) * 100)}% OFF
               </span>
             </div>
           </div>
@@ -211,8 +230,9 @@ const Coupon = ({ data, setshowmodel }) => {
             </div>
           )}
 
-          <div className=" border-green-100 pt-4">
-            <div className="flex justify-between items-center mb-4">
+
+<div className=" border-green-100 pt-4">
+<div className="flex justify-between items-center mb-4">
               <p className="text-gray-700">Total Amount</p>
               <div className="text-right">
                 {discountPercent > 0 && (
@@ -226,8 +246,11 @@ const Coupon = ({ data, setshowmodel }) => {
 
             <button
               onClick={() => {
-                if (!isSignedIn) navigate('/sign-in');
-                else paymentmeth(finalPrice);
+                if (!isSignedIn) {
+                  navigate('/sign-in');
+                } else {
+                  handlePayment();
+                }
               }}
               disabled={isProcessing}
               className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -245,4 +268,4 @@ const Coupon = ({ data, setshowmodel }) => {
   );
 };
 
-export default Coupon;
+export default PackageCoupon;

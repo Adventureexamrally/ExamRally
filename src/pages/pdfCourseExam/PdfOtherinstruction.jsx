@@ -12,7 +12,7 @@ const PdfOtherInstruction = () => {
   const navigate = useNavigate();
   useEffect(() => {
     // Check if data has already been fetched
-      Api.get(`exams/getExam/${id}`)
+      Api.get(`pdf-exams/getExam/${id}`)
         .then((res) => {
           if (res.data) {
             setExamData(res.data);
