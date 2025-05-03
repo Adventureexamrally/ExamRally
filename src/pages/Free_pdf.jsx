@@ -1,234 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
+import AOS from "aos";
+import { useContext } from 'react';
+import { UserContext } from '../context/UserProvider';
 
 const Free_pdf = () => {
   const [seo, setSeo] = useState([])
   const [ad, setAD] = useState([])
-
-  const [selectedTopic, setSelectedTopic] = useState(null);
-
-
-
-
-  const data = [
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Quantitative Aptitude for Beginners"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Advanced Quantitative Aptitude Techniques"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Mastering Time and Work Problems in Quantitative Aptitude"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Understanding Number Series in Quantitative Aptitude"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Speed and Distance Tricks for Quantitative Aptitude"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Profit and Loss: Quick Methods"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Algebra Simplified for Competitive Exams"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Percentage and Ratio Mastery"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Probability: Key Concepts and Formulas"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Quantitative Aptitude for Bank Exams"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Basic Reasoning Ability Skills"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Logical Reasoning for Competitive Exams"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Syllogism Simplified for Competitive Exams"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Blood Relations and Direction Sense Tips"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Verbal Reasoning Puzzles"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Non-Verbal Reasoning: A Complete Guide"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Seating Arrangement and Puzzle Solving"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Analogy and Classification Techniques"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Critical Thinking for Reasoning Ability"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Reasoning Ability for Government Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Basic English Grammar for Competitive Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Advanced Vocabulary for English Proficiency"
-    },
-    {
-      "topic": "English",
-      "title": "English Comprehension: Tips and Tricks"
-    },
-    {
-      "topic": "English",
-      "title": "Sentence Improvement for English Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Common English Idioms and Phrases"
-    },
-    {
-      "topic": "English",
-      "title": "English Tenses Explained"
-    },
-    {
-      "topic": "English",
-      "title": "Cloze Test Preparation for English"
-    },
-    {
-      "topic": "English",
-      "title": "English for Bank Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Antonyms and Synonyms Mastery"
-    },
-    {
-      "topic": "English",
-      "title": "English Language Skills for Competitive Exams"
-    },
-    {
-      "topic": "Computer",
-      "title": "Introduction to Computers for Competitive Exams"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Basics for Beginners"
-    },
-    {
-      "topic": "Computer",
-      "title": "Understanding Operating Systems"
-    },
-    {
-      "topic": "Computer",
-      "title": "Microsoft Office: MS Word, Excel, PowerPoint"
-    },
-    {
-      "topic": "Computer",
-      "title": "Internet Basics and Networking"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Security and Basics of Cyber Security"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Memory and Storage Devices"
-    },
-    {
-      "topic": "Computer",
-      "title": "Basic Programming and Algorithms"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Applications in Competitive Exams"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Knowledge for Government Exams"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Indian History: Key Events and Dates"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Geography: Capitals, Rivers, and Mountains"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Famous Landmarks of the World"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Important Days and Events in India"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Famous Personalities in Indian History"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Culture and Heritage of India"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Science and Technology for Static GK"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Important Government Schemes and Policies"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Awards and Honors in India"
-    },
-    {
-      "topic": "Static GK",
-      "title": "World Geography: Countries and Capitals"
-    }
-  ]
-
-
-  // Extract unique topics from the data
-  const uniqueTopics = [...new Set(data.map(pdf => pdf.topic))];
-
-  // Function to handle topic click
-  const handleTopicClick = (topic) => {
-    if (selectedTopic === topic) {
-      setSelectedTopic(null); // Toggle visibility
-    } else {
-      setSelectedTopic(topic);
-    }
-  };
+  const [pdfs, setPdfs] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const { user } = useContext(UserContext);
+  const [responseId, setResponseId] = useState(null);
+  const navigate = useNavigate();
+  const topics = [
+    "Quantitative Aptitude",
+    "Reasoning Ability",
+    "English Language",
+    "Insurance Awareness",
+    "Banking Awareness",
+    "Static GK",
+    "Current Affairs",
+    "Computer Awareness"
+  ];
   useEffect(() => {
-    run()
+    run();
+    fetchPdfs();
   }, []);
   async function run() {
     const response2 = await Api.get(`/get-Specific-page/free-pdf`);
@@ -238,8 +36,114 @@ const Free_pdf = () => {
     const response3 = await Api.get(`/blog-Ad/getbypage/free-pdf`);
     setAD(response3.data)
   }
+  async function fetchPdfs() {
+    try {
+      const response = await Api.get('/FreePdf/getallpdf');
+      setPdfs(response.data);
+      console.log("ll", response.data);
+    } catch (error) {
+      console.error('Error fetching PDFs:', error);
+    }
+  }
 
+  const filteredPdfs = selectedTopic
+    ? pdfs.filter(pdf => pdf.Topic === selectedTopic)
+    : pdfs;
   console.log(seo);
+
+
+   useEffect(() => {
+      AOS.init({
+        duration: 2000,
+      });
+      AOS.refresh();
+    }, []);
+    // console.log(data);
+    const [isEnrolled, setIsEnrolled] = useState(false);
+    const status = true;
+    
+    useEffect(() => {
+      const enrolled = user?.enrolledPdfs?.some(pdf =>
+        pdf?.pdfId?.includes(pdfs?._id)
+      );
+      setIsEnrolled(enrolled);
+    }, [user, pdfs]);
+    
+    console.log("check", user?.enrolledCourses);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      console.log(script.src);
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
+
+  const paymentmeth = async (pdf) => {
+    try {
+      console.log("in")
+      const res = await Api.post("/orders/orders", {
+        amount: pdf.amount * 100,
+        currency: "INR",
+        receipt: `${user?.email}`,
+        payment_capture: 1
+      });
+
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        alert("Failed to load Razorpay SDK. Please check your internet connection.");
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: pdf.amount * 100,
+        currency: "INR",
+        name: pdf.type,
+        description: pdf.Title,
+        handler: function (response) {
+          setResponseId(response.razorpay_payment_id);
+        },
+        prefill: {
+          name: user?.firstName,
+          email: user?.email,
+        },
+        theme: {
+          color: "#F4C430",
+        },
+        notes: {
+          user_id: user?._id,
+          pdf_id: pdf._id,
+          pdfTitle: pdf.Title,
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+      rzp.on("payment.failed", function (response) {
+        console.error("Payment failed", response.error);
+        alert("Payment failed. Please try again.");
+      });
+      console.log("ji".options)
+    } catch (error) {
+      console.error("Error during payment:", error);
+      alert(error.message);
+    }
+  };
+
+  const isPaidTest = (test) => {
+    return test?.result_type?.toLowerCase() === "paid";
+  };
 
   return (
     <>
@@ -258,33 +162,67 @@ const Free_pdf = () => {
       </Helmet>
       <h2 className="text-2xl m-2 font-bold text-center text-green-600">FREE PDF</h2>
 
-      <div className="flex container">
-        <div className={`flex m-2 w-full ${ad.length > 0 ? "md:w-4/5" : "md:full "}`}>
-          <div>
-            {uniqueTopics.map((topic) => (
-              <div
-                key={topic}
-                className="m-2 cursor-pointer text-xl font-bold p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-400"
-                onClick={() => handleTopicClick(topic)}
+      <div className="flex container mx-auto p-4">
+        {/* Topics Sidebar */}
+        <div className="w-1/4 pr-4">
+          <div className="bg-white shadow-md rounded-lg  sticky top-10">
+            {topics.map((topic, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedTopic(topic)}
+                className={` w-full text-left px-4 py-2 hover:bg-[#7382CC] ${selectedTopic === topic ? 'bg-[#131656] text-white' : ''
+                  }`}
               >
-                <h1>{topic}</h1>
-              </div>
+                {topic}
+              </button>
             ))}
           </div>
-
-          {/* Topic Titles */}
-          <div className="flex flex-wrap justify-evenly w-full">
-            {data
-              .filter((pdf) => !selectedTopic||pdf.topic === selectedTopic)
-              .map((pdf, index) => (
-                <div key={index} className="m-2 shadow-md p-4 border rounded-lg bg-white w-full md:w-1/4">
-                  <img src="" alt="not found" width={200} height={100} className="mx-auto mb-3" />
-                  <h2 className="text-lg text-center">{pdf.title}</h2>
-                </div>
-              ))}
-          </div>
-
         </div>
+
+        {/* PDF Grid */}
+        <div className="w-3/4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPdfs.map((pdf, index) => (
+            <div key={index} className="bg-white p-4 rounded-lg shadow-md">
+              <div className="aspect-w-3 aspect-h-1 mb-2">
+                <h3 className="text-lg font-semibold mb-2">{pdf.Title}</h3>
+                <img
+                  src={pdf.PdfThubnail}
+                  alt={pdf.Title}
+                  className="w-full h-48 object-cover rounded-md"
+                />
+              </div>
+              {(isEnrolled || pdf.type === "free") ? (
+                <Link
+                  to={pdf.pdf}
+                  className="block w-full text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                >
+                  Download PDF
+                </Link>
+              ) : responseId ? (
+                <Link
+                  to={pdf.pdf}
+                  className="block w-full text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                >
+                  Download PDF
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/sign-in');
+                    } else {
+                      paymentmeth(pdf);
+                    }
+                  }}
+                  className="block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                >
+                  Buy Now ₹{pdf.amount}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
 
         {ad.length > 0 &&
           <div className="w-1/5 hidden md:block">

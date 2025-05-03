@@ -12,6 +12,7 @@ import Archivements from "./Archivements";
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
   const [packages, setPackages] = useState([]);
+  const [scrollLinks, setScrollLinks] = useState([]); 
   console.log(packages);
 
 
@@ -24,9 +25,17 @@ const Dashboard = () => {
       console.error(error);
     }
   };
-
+  const fetchScrollLinks = async () => {
+    try {
+      const response = await Api.get("/linkscroll");
+      setScrollLinks(response.data);
+    } catch (error) {
+      console.error("Error fetching scroll links:", error);
+    }
+  };
   useEffect(() => {
     fetchPakages();
+    fetchScrollLinks(); 
   }, []);
 
   // const [scrollPosition, setScrollPosition] = useState(0);
@@ -76,18 +85,15 @@ const Dashboard = () => {
       {/* Trending Links */}
       <div className="mb-1 overflow-hidden">
         <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
-          <Link to="#" className="hover:underline">
-            Clerk Notification
-          </Link>
-          <Link to="#" className="hover:underline">
-            SBI JA Previous Year Cut-off
-          </Link>
-          <Link to="#" className="hover:underline">
-            Descriptive Writing Mock Test
-          </Link>
-          <Link to="#" className="hover:underline">
-            Current Affairs
-          </Link>
+          {scrollLinks?.map((link, index) => (
+            <Link 
+              key={index}
+              to={link.linkUrl} 
+              className="hover:underline"
+            >
+              {link.linkName}
+            </Link>
+          ))}
         </div>
       </div>
       {/* 
