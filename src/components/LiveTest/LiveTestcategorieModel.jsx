@@ -105,9 +105,14 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
                                     {data?.exams?.map((test, idx) => {
                                         // If activeSection is "All" or matches the test's sub_menu, render the test
+                                        console.log(test.topic_test?.sub_menu, activeSection);
+                                        
                                         if (
-                                            test.topic_test?.topic === topic
-                                        ) {
+                                          test.topic_test?.topic === topic &&
+                                          (activeSection === 'All' || test.topic_test?.sub_menu === activeSection)
+                                          
+                                        )
+                                         {
                                             return (
                                                 <div key={idx} className="">
                                                     <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
@@ -167,67 +172,57 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                                 </div>
                                                             </div>
                                                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                                            {new Date(test.live_date) > new Date() ? (
-                                                                // Display "Coming Soon" if the current date is earlier than live_date
-                                                                <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                                                    Coming Soon
-                                                                </div>
-                                                            ) : (
-                                                                        <button
-                                                                                           className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                                                                             resultData?.[test._id]?.status === "completed"
-                                                                                               ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                               : resultData?.[test._id]?.status === "paused"
-                                                                                               ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                               : (isEnrolled || !isPaidTest(test))
-                                                                                               ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                               : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                                                                           }`}
-                                                                                           onClick={() => {
-                                                                                             if (!isSignedIn) {
-                                                                                               navigate('/sign-in');
-                                                                                               return;
-                                                                                             }
-                                                                                             
-                                                                                              if (resultData?.[test._id]?.status === "completed") {
-                                                                                                openNewWindow(`/liveresult/${test._id}`);
-                                                                                            }
-                                                                                            else if (resultData?.[test._id]?.status === "paused") {
-                                                                                                // Pass last question index and selected options when resuming
-                                                                                                openNewWindow(
-                                                                                                    `/mocklivetest/${test._id}`
-                                                                                                );
-                                                                                            }
-                                                                                            else if (test.status === "true") {
-                                                                                                openNewWindow(`/instruct/${test._id}`);
-                                                                                            } 
-                                                                                             else if (isPaidTest(test) && !isEnrolled) {
-                                                                                               return;
-                                                                                             }
-                                                                                             else {
-                                                                                               openNewWindow(`/instruct/${test._id}`);
-                                                                                             }
-                                                                                           }}
-                                                                                           disabled={new Date(test.live_date) > new Date()}
-                                                                                         >
-                                                                                           {resultData?.[test._id]?.status === "completed" 
-                                                                                             ? "View Result"
-                                                                                             : resultData?.[test._id]?.status === "paused"
-                                                                                             ? "Resume"
-                                                                                             : (isEnrolled || !isPaidTest(test))
-                                                                                             ? "Take Test"
-                                                                                             : isPaidTest(test) ? (
-                                                                                               <div className="flex items-center justify-center font-semibold gap-1">
-                                                                                                 <IoMdLock />
-                                                                                                 Lock
-                                                                                               </div>
-                                                                                             ) : (
-                                                                                               "Take Test"
-                                                                                             )
-                                                                                           }
-                                                                                         </button>
+                                                                                                                    {!isEnrolled && isPaidTest(test) || !isEnrolled && new Date(test.live_date) > new Date() ? (
+                                                          // 🔒 Locked if user not enrolled AND (test is paid OR not live)
+                                                          <button
+                                                            className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                                            disabled
+                                                          >
+                                                            <div className="flex items-center justify-center font-semibold gap-1">
+                                                              <IoMdLock />
+                                                              Locked
+                                                            </div>
+                                                          </button>
+                                                        ) : isEnrolled && new Date(test.live_date) > new Date() ? (
+                                                          // 🚧 Coming Soon if enrolled but test not live yet
+                                                          <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                                            Coming Soon
+                                                          </div>
+                                                        ) : (
+                                                          // ✅ User is enrolled and test is live → show proper action
+                                                          <button
+                                                            className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                                              resultData?.[test._id]?.status === "completed"
+                                                                ? "bg-green-500 text-white hover:bg-green-600"
+                                                                : resultData?.[test._id]?.status === "paused"
+                                                                ? "bg-green-500 text-white hover:bg-green-600"
+                                                                : "bg-green-500 text-white hover:bg-green-600"
+                                                            }`}
+                                                            onClick={() => {
+                                                              if (!isSignedIn) {
+                                                                const backdrop = document.querySelector('.modal-backdrop');
+                                                                if (backdrop) backdrop.remove();
+                                                                navigate('/sign-in');
+                                                                return;
+                                                              }
 
-                                                            )}
+                                                              if (resultData?.[test._id]?.status === "completed") {
+                                                                openNewWindow(`/liveresult/${test._id}`);
+                                                              } else if (resultData?.[test._id]?.status === "paused") {
+                                                                openNewWindow(`/mocklivetest/${test._id}`);
+                                                              } else {
+                                                                openNewWindow(`/instruct/${test._id}`);
+                                                              }
+                                                            }}
+                                                          >
+                                                            {resultData?.[test._id]?.status === "completed"
+                                                              ? "View Result"
+                                                              : resultData?.[test._id]?.status === "paused"
+                                                              ? "Resume"
+                                                              : "Take Test"}
+                                                          </button>
+                                                        )}
+
                                                         </div>
                                                     </div>
                                                 </div>

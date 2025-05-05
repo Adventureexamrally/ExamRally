@@ -162,6 +162,12 @@ const handlePackageSelect = (pkg) => {
             </div>
           </div>
         ))}
+              {showModal && selectedPackage && (
+                    <PackageCoupon 
+                      pkg={selectedPackage} 
+                      setShowModal={setShowModal}
+                    />
+                  )}
       </div>
       
     </div>
