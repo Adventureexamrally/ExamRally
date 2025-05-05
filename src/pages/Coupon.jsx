@@ -41,7 +41,7 @@ const Coupon = ({ data, setshowmodel }) => {
         const baseAmount = Number(data.discountedAmount) || 0;
         const discount = (baseAmount * res.data.discountPercent) / 100;
         const newTotal = baseAmount - discount;
-        setFinalPrice(newTotal.toFixed(2));
+        setFinalPrice(Math.round(newTotal));
         setMessage({ 
           text: `Coupon applied: ${res.data.discountPercent}% OFF`, 
           type: 'success' 
@@ -86,7 +86,7 @@ const Coupon = ({ data, setshowmodel }) => {
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: amountToPay * 100,
+        amount: Math.round(amountToPay * 100),
         currency: 'INR',
         name: data?.name,
         description: 'Course Payment',
