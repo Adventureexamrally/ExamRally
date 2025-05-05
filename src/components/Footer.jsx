@@ -16,12 +16,19 @@ import {
   FaTelegramPlane,
 } from "react-icons/fa";
 import Api from '../service/Api';
+import { Telegram, YouTube } from '@mui/icons-material';
 function Footer() {
       const [contactInfo, setContactInfo] = useState({
-          address: '',
-          email: '',
-          phone: '',
-          whatsapp: '',
+        address: "",
+        email: "",
+        phone: "",
+        whatsapp: "",
+        facebook: "",
+        instagram: "",
+        twitter: "",
+        youtube: "",
+        linkedin: "",
+        telegram: "",
         });
       
         useEffect(() => {
@@ -59,7 +66,7 @@ function Footer() {
             {/* Social media icons would go here */}
             <div className="flex space-x-4 mt-6">
   <a
-    href="https://facebook.com/yourpage"
+    href={contactInfo.facebook}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -67,7 +74,7 @@ function Footer() {
     <FaFacebookF size={20} />
   </a>
   <a
-    href="https://instagram.com/yourprofile"
+    href={contactInfo.instagram}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -75,7 +82,7 @@ function Footer() {
     <FaInstagram size={20} />
   </a>
   <a
-    href="https://twitter.com/yourhandle"
+    href={contactInfo.twitter}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -83,7 +90,7 @@ function Footer() {
     <FaTwitter size={20} />
   </a>
   <a
-    href="https://youtube.com/yourchannel"
+    href={contactInfo.youtube}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -91,7 +98,7 @@ function Footer() {
     <FaYoutube size={20} />
   </a>
   <a
-    href="https://linkedin.com/in/yourprofile"
+    href={contactInfo.linkedin}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -99,7 +106,7 @@ function Footer() {
     <FaLinkedinIn size={20} />
   </a>
   <a
-    href="https://t.me/yourchannel"
+    href={contactInfo.telegram}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"

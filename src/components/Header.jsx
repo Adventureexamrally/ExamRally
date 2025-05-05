@@ -33,10 +33,12 @@ const Header = () => {
     <header className="bg-white shadow-md">
       {/* <p>{user.firstName}</p> */}
       <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <img src={logo} alt="Brand Logo" className="h-10" />
-        </div>
+{/* Logo */}
+<div className="flex items-center space-x-3">
+  <Link to="/">
+    <img src={logo} alt="Brand Logo" className="h-10 cursor-pointer" />
+  </Link>
+</div>
 
         {/* Search Bar */}
         <div className="flex-1 max-w-md mx-auto">
