@@ -495,8 +495,8 @@ useEffect(() => {
                                             selectedLanguage?.toLowerCase()
                                         ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                                 <div
-                                                className="md:w-[50%] p-3" 
-                                                style={{ maxHeight: "430px", overflowY: "auto" }}
+                                                className="md:w-[50%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]" 
+                                                style={{  overflowY: "auto" }}
                                                 >
                                                     <div
                                                         className="fw-bold text-wrap"
@@ -518,12 +518,13 @@ useEffect(() => {
 
                                         {/* Right side for Question */}
                                         <div 
-                  className={`mb-24 md:mb-14 p-3 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                     selectedLanguage?.toLowerCase()
+                  className={`mb-24 md:mb-0 p-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                    selectedLanguage?.toLowerCase()
                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
                       ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                          }`}                style={{ maxHeight: "430px", overflowY: "auto" }}
+                          }
+                          `}                style={{overflowY: "auto" }}
               > 
                                         {/* <style>
                                         {`
@@ -693,7 +694,7 @@ useEffect(() => {
                                                         ) : (
                                                             <p>No explanation available</p>
                                                         )}
-                                                        <div className="text-center">
+                                                        <div className="text-center pb-10">
                                                             <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" className="bg-green-500 p-1 px-2 text-white text-decoration-underline">
                                                                 Review
                                                             </a>
@@ -733,10 +734,10 @@ useEffect(() => {
 
 
                 <div
-      className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+      className={` pb-7 h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh] bg-light transform transition-transform duration-300 md:-mt-10 border
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
-        fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[547px]`}
+        fixed top-14 right-0 z-40 md:static shadow-sm md:block `}
       style={{  overflowY: 'auto' }}
     >
             {isMobileMenuOpen && (

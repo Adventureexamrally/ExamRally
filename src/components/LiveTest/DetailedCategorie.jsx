@@ -15,6 +15,7 @@ import axios from "axios";
 
 import { useUser } from "@clerk/clerk-react";
 import { UserContext } from "../../context/UserProvider";
+import Coupon from "../../pages/Coupon";
 
 const DetailedCategorie = () => {
   const [catDetail, setCatDetails] = useState([]);
@@ -33,6 +34,7 @@ const DetailedCategorie = () => {
   const [responseId, setResponseId] = useState("");
   const [responseState, setResponseState] = useState([]);
     const [faqs, setFaqs] = useState([]);
+    const [showmodel,setshowmodel]=useState(false)
   
   console.log(link);
 
@@ -89,80 +91,80 @@ const DetailedCategorie = () => {
     }
   };
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      console.log(script.src);
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
+//   const loadRazorpayScript = () => {
+//     return new Promise((resolve) => {
+//       const script = document.createElement("script");
+//       script.src = "https://checkout.razorpay.com/v1/checkout.js";
+//       console.log(script.src);
+//       script.onload = () => {
+//         resolve(true);
+//       };
+//       script.onerror = () => {
+//         resolve(false);
+//       };
+//       document.body.appendChild(script);
+//     });
+//   };
 
-  const paymentmeth = async (discountedAmount) => {
-    console.log("Join Payment");
-    try {
-      console.log("Join Payment Inner");
-      const res = await Api.post("/orders/orders", {
-        amount: discountedAmount * 100,
-        currency: "INR",
-        receipt: `${user?.email}`, 
-      payment_capture: 1
-      });
-      console.log("data show that ", res.data);
-      console.log("Order response:", res.data);
+//   const paymentmeth = async (discountedAmount) => {
+//     console.log("Join Payment");
+//     try {
+//       console.log("Join Payment Inner");
+//       const res = await Api.post("/orders/orders", {
+//         amount: discountedAmount * 100,
+//         currency: "INR",
+//         receipt: `${user?.email}`, 
+//       payment_capture: 1
+//       });
+//       console.log("data show that ", res.data);
+//       console.log("Order response:", res.data);
 
-      // Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        alert(
-          "Failed to load Razorpay SDK. Please check your internet connection."
-        );
-        return;
-      }
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: discountedAmount * 100,
-        currency: "INR",
-        name: sub,
-        description: "Test Payment",
-        handler: function (response) {
-          setResponseId(response.razorpay_payment_id);
-        },
-        prefill: {
-          name: user?.firstName,
-          email: user?.email,
-        },
-        theme: {
-          color: "#F4C430",
-        },
-        notes: {
-          user_id: user?._id,
-          course_id: data?._id,
-          courseName: data?.categorys,
-        },
-      };
-console.log("ji".options)
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+//       // Load Razorpay script
+//       const scriptLoaded = await loadRazorpayScript();
+//       if (!scriptLoaded) {
+//         alert(
+//           "Failed to load Razorpay SDK. Please check your internet connection."
+//         );
+//         return;
+//       }
+//       const options = {
+//         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+//         amount: discountedAmount * 100,
+//         currency: "INR",
+//         name: sub,
+//         description: "Test Payment",
+//         handler: function (response) {
+//           setResponseId(response.razorpay_payment_id);
+//         },
+//         prefill: {
+//           name: user?.firstName,
+//           email: user?.email,
+//         },
+//         theme: {
+//           color: "#F4C430",
+//         },
+//         notes: {
+//           user_id: user?._id,
+//           course_id: data?._id,
+//           courseName: data?.categorys,
+//         },
+//       };
+// console.log("ji".options)
+//       const paymentObject = new window.Razorpay(options);
+//       paymentObject.open();
+//       const rzp = new window.Razorpay(options);
+//       rzp.open();
 
-      rzp.on("payment.failed", function (response) {
-        console.error("Payment failed", response.error);
-        alert("Payment failed. Please try again.");
-      });
-      console.log("ji".options)
-    } catch (error) {
-      console.error("Error during payment:", error);
-      alert(error.message);
-    }
-  };
+//       rzp.on("payment.failed", function (response) {
+//         console.error("Payment failed", response.error);
+//         alert("Payment failed. Please try again.");
+//       });
+//       console.log("ji".options)
+//     } catch (error) {
+//       console.error("Error during payment:", error);
+//       alert(error.message);
+//     }
+//   };
 
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
@@ -446,7 +448,7 @@ console.log("ji".options)
             </div>
 
             {/* advertiswment part */}
-            <div className="m-3 w-full md:w-1/5 ">
+            <div className="md:m-3 w-full md:w-1/5 ">
               <div
                 className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner "
                 style={{
@@ -468,24 +470,31 @@ console.log("ji".options)
                   </span>
                 </div>
                 {/* <hr className="border-t border-gray-600" /> */}
+              {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
+    Aspect Ratio: 2:3 (portrait) */}
+                  <img 
+  src={data.featurePhoto}
+  alt="ad" 
+  style={{
+    width: '100%',
+    maxWidth: '400px',
+    aspectRatio: '2 / 3',
+    objectFit: 'cover'
+  }} />
+                {/* <img src={data.featurePhoto} alt="" /> */}
+                <div className="text-center mt-2">
+                <del className="text-gray-100 rounded px-2 py-1 mb-2 drop-shadow">
+  Rs.{amount}
+</del>
 
-                <img src={data.featurePhoto} alt="" />
-                <div className="text-center">
-                  <p>
-                    <del className="text-red-400 font">Original Price:</del>
-                  </p>
-                  <del className="bg-red-500 text-white rounded p-1 mb-2">
-                    Rs.{amount}
-                  </del>
-                  <p className="text-white font h5">Discounted Price:</p>
                   <button
-  className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"
+  className="bg-green-500 text-gray-50 px-3 py-1 font-bold hover:bg-green-400 rounded-full"
   onClick={() => {
     if (!isSignedIn) {
       navigate('/sign-in');
-    } else {
-      paymentmeth(discountedAmount);
-    }
+    }    else {
+      setshowmodel(true)
+      }
   }}
 >
   Rs.{discountedAmount}
@@ -493,8 +502,10 @@ console.log("ji".options)
 
             
                   <p className="text-white font-bold">
-                    You Save Money: {amount - discountedAmount}
+                    You Save Money: Rs. {amount - discountedAmount}
                   </p>
+                  {showmodel && <Coupon data={data} setshowmodel={setshowmodel}/>}
+
                 </div>
               </div>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import logo from "../assets/logo/logo.png";
 import { Link } from 'react-router-dom';
 import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser  } from "@clerk/clerk-react";
+import CustomUserMenu from './CustomUserButton';
 import offer from '../assets/images/offer.png'
 
 
@@ -32,10 +33,12 @@ const Header = () => {
     <header className="bg-white shadow-md">
       {/* <p>{user.firstName}</p> */}
       <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <img src={logo} alt="Brand Logo" className="h-10" />
-        </div>
+{/* Logo */}
+<div className="flex items-center space-x-3">
+  <Link to="/">
+    <img src={logo} alt="Brand Logo" className="h-10 cursor-pointer" />
+  </Link>
+</div>
 
         {/* Search Bar */}
         <div className="flex-1 max-w-md mx-auto">
@@ -83,12 +86,13 @@ const Header = () => {
           
            <Link to='https://t.me/examrally'> <i className="bi bi-telegram text-2xl" style={{color:"	#24A1DE"}}> </i>Join Telegram
            </Link>
-           <p>{!user ? "":user.firstName}</p>
+           {/* <p>{!user ? "":user.firstName}</p> */}
           <SignedOut>
             <SignInButton />
           </SignedOut>
           <SignedIn>
-            <UserButton />
+            {/* <UserButton /> */}
+            <CustomUserMenu />
           </SignedIn>
          
           </div>

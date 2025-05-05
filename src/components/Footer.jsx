@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   MapPinIcon,
   EnvelopeIcon,
@@ -6,7 +6,7 @@ import {
   ChatBubbleBottomCenterTextIcon 
 } from '@heroicons/react/24/outline';
 import logo from "../assets/logo/bg-logo.png";
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FaFacebookF,
   FaInstagram,
@@ -15,7 +15,38 @@ import {
   FaLinkedinIn,
   FaTelegramPlane,
 } from "react-icons/fa";
+import Api from '../service/Api';
+import { Telegram, YouTube } from '@mui/icons-material';
 function Footer() {
+      const [contactInfo, setContactInfo] = useState({
+        address: "",
+        email: "",
+        phone: "",
+        whatsapp: "",
+        facebook: "",
+        instagram: "",
+        twitter: "",
+        youtube: "",
+        linkedin: "",
+        telegram: "",
+        });
+      
+        useEffect(() => {
+          const fetchContactInfo = async () => {
+            try {
+              const res = await Api.get('site-documents');
+              setContactInfo(res.data.contact || {});
+            } catch (error) {
+              console.error('Failed to load contact info:', error);
+            }
+          };
+      
+          fetchContactInfo();
+        }, []);
+
+        const navigate = useNavigate(); // Hook to navigate programmatically
+        const location = useLocation(); // Hook to get the current location (path + hash)
+
     return (
       <>
       <div>
@@ -35,7 +66,7 @@ function Footer() {
             {/* Social media icons would go here */}
             <div className="flex space-x-4 mt-6">
   <a
-    href="https://facebook.com/yourpage"
+    href={contactInfo.facebook}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -43,7 +74,7 @@ function Footer() {
     <FaFacebookF size={20} />
   </a>
   <a
-    href="https://instagram.com/yourprofile"
+    href={contactInfo.instagram}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -51,7 +82,7 @@ function Footer() {
     <FaInstagram size={20} />
   </a>
   <a
-    href="https://twitter.com/yourhandle"
+    href={contactInfo.twitter}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -59,7 +90,7 @@ function Footer() {
     <FaTwitter size={20} />
   </a>
   <a
-    href="https://youtube.com/yourchannel"
+    href={contactInfo.youtube}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -67,7 +98,7 @@ function Footer() {
     <FaYoutube size={20} />
   </a>
   <a
-    href="https://linkedin.com/in/yourprofile"
+    href={contactInfo.linkedin}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -75,7 +106,7 @@ function Footer() {
     <FaLinkedinIn size={20} />
   </a>
   <a
-    href="https://t.me/yourchannel"
+    href={contactInfo.telegram}
     target="_blank"
     rel="noopener noreferrer"
     className="text-green-500 hover:text-green-600 transition"
@@ -96,8 +127,8 @@ function Footer() {
               {text: 'All in One Subscription', path: 'rally-super-pro'},
               {text: 'Blog', path: '/blog'},
               {text: 'Privacy Policy', path: '/privacy-policy'},
-              {text: 'Payment FAQs', path: '/payment-faqs'},
-              {text: 'Contact Us', path: '/contact'}
+              {text: 'Terms and Conditions', path: '/TermsConditions'},
+              {text: 'Contact Us', path: '/contactus'}
             ].map((item) => (
               <li key={item.text}>
                 <Link 
@@ -131,15 +162,21 @@ function Footer() {
               </li>
             ))}
                         {[
-              {text: 'Live Tests', path: '#live-tests'},
-              {text: 'Top Trending Exams', path: '#Top Trending Exams'},
-              {text: 'Trending Packages', path: '#Trending Packages'},
+              {text: 'Live Tests', path: '/#live-tests'},
+              {text: 'Top Trending Exams', path: '/#TopTrendingExams'},
+              {text: 'Trending Packages', path: '/#TrendingPackages'},
             ].map((item) => (
               <li key={item.text}>
 
-<a href={item.path} className="hover:text-green-600 transition">
+{/* <a href={item.path} className="hover:text-green-600 transition">
   {item.text}
-</a>
+</a> */}
+<button
+              onClick={() => navigate(`${item.path}`)}
+              className="hover:text-green-600 transition"
+            >
+              {item.text}
+            </button>
               </li>
             ))}
           </ul>
@@ -151,20 +188,28 @@ function Footer() {
           <address className="not-italic text-sm space-y-3">
             <div className="flex items-start">
               <MapPinIcon className="h-5 w-5 mt-0.5 mr-2 flex-shrink-0 text-green-600" />
-              <span>123 Exam Street, Knowledge City, India - 560001</span>
+              <span>{contactInfo.address}</span>
             </div>
             <div className="flex items-center">
               <EnvelopeIcon className="h-5 w-5 mr-2 text-green-600" />
-              <a href="mailto:support@examrally.com" className="hover:text-green-600 transition">support@examrally.com</a>
-            </div>
+              <a href={`mailto:${contactInfo.email}`} className="text-gray-700 hover:underline">
+                    {contactInfo.email}
+                  </a>            </div>
             <div className="flex items-center">
               <PhoneIcon className="h-5 w-5 mr-2 text-green-600" />
-              <a href="tel:+918588835848" className="hover:text-green-600 transition">+91 12345 12345</a>
-            </div>
+              <a href={`tel:${contactInfo.phone}`} className="text-gray-700 hover:underline">
+                    {contactInfo.phone}
+                  </a>            </div>
             <div className="flex items-center">
               <ChatBubbleBottomCenterTextIcon className="h-5 w-5 mr-2 text-green-600" />
-              <span>WhatsApp: 12345 12345</span>
-            </div>
+              <a
+                    href={`https://wa.me/${contactInfo.whatsapp.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-700 hover:underline"
+                  >
+                    {contactInfo.whatsapp}
+                  </a>            </div>
           </address>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
 import { Avatar } from "@mui/material";
 import User from "./User";
 import Api from "../service/Api";
+import CustomUserMenu from "./CustomUserButton";
 
 
 const NavBar = () => {
@@ -111,56 +112,56 @@ const NavBar = () => {
               Home
             </Link>
             <div
-  className="relative group"
-  onMouseEnter={() => setIsDropdownOpen(true)}
-  onMouseLeave={() => {
-    setIsDropdownOpen(false);
-    setActiveSubMenu(null);
-  }}
->
-  <button
-    className="flex items-center hover:text-blue-600 transition duration-300 text-white"
-  >
-    Exams
-    {isDropdownOpen ? (
-      <FaChevronUp className="ml-2 text-sm" />
-    ) : (
-      <FaChevronDown className="ml-2 text-sm" />
-    )}
-  </button>
-
-  {isDropdownOpen && (
-    <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
-      <div
-        className="relative group"
-        onMouseEnter={() => setActiveSubMenu(0)}
-        onMouseLeave={() => setActiveSubMenu(null)}
-      >
-        <Link
-          to="/banking-&-insurance"
-          className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-        >
-          Banking & Insurance
-        </Link>
-
-        {activeSubMenu === 0 && (
-          <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48 z-50">
-            {packages.map((item, index) => (
-              <Link
-                key={index}
-                to={`/top-trending-exams/${item.link_name}`}
-                className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+              className="relative group"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => {
+                setIsDropdownOpen(false);
+                setActiveSubMenu(null);
+              }}
+            >
+              <button
+                className="flex items-center hover:text-blue-600 transition duration-300 text-white"
               >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        )}
-        <hr className="border-t border-gray-300" />
-      </div>
-    </div>
-  )}
-</div>
+                Exams
+                {isDropdownOpen ? (
+                  <FaChevronUp className="ml-2 text-sm" />
+                ) : (
+                  <FaChevronDown className="ml-2 text-sm" />
+                )}
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
+                  <div
+                    className="relative group"
+                    onMouseEnter={() => setActiveSubMenu(0)}
+                    onMouseLeave={() => setActiveSubMenu(null)}
+                  >
+                    <Link
+                      to="/banking-&-insurance"
+                      className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                    >
+                      Banking & Insurance
+                    </Link>
+
+                    {activeSubMenu === 0 && (
+                      <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48 z-50">
+                        {packages.map((item, index) => (
+                          <Link
+                            key={index}
+                            to={`/top-trending-exams/${item.link_name}`}
+                            className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                    <hr className="border-t border-gray-300" />
+                  </div>
+                </div>
+              )}
+            </div>
 
             <Link
               to="/subscriptions"
@@ -223,7 +224,7 @@ const NavBar = () => {
             Get App
           </button>
           {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
-          <User />
+          {/* <User /> */}
 
           {/* Mobile Hamburger Menu */}
           <button onClick={toggleMenu} className="md:hidden text-black">
@@ -262,12 +263,57 @@ const NavBar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/exams"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+            <div
+              className="relative group"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => {
+                setIsDropdownOpen(false);
+                setActiveSubMenu(null);
+              }}
             >
-              Exams
-            </Link>
+              <button
+                className="flex px-4 py-2 w-full hover:bg-blue-700 hover:text-white transition duration-300"
+              >
+                Exams
+                {isDropdownOpen ? (
+                  <FaChevronUp className="ml-2 mt-2 text-sm" />
+                ) : (
+                  <FaChevronDown className="ml-2 mt-2 text-sm" />
+                )}
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
+                  <div
+                    className="relative group"
+                    onMouseEnter={() => setActiveSubMenu(0)}
+                    onMouseLeave={() => setActiveSubMenu(null)}
+                  >
+                    <Link
+                      to="/banking-&-insurance"
+                      className="block px-4 py-2 w-full text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                    >
+                      Banking & Insurance
+                    </Link>
+
+                    {activeSubMenu === 0 && (
+                      <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48 z-50">
+                        {packages.map((item, index) => (
+                          <Link
+                            key={index}
+                            to={`/top-trending-exams/${item.link_name}`}
+                            className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                    <hr className="border-t border-gray-300" />
+                  </div>
+                </div>
+              )}
+            </div>
             <Link
               to="/subscriptions"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
@@ -275,10 +321,10 @@ const NavBar = () => {
               Test Series
             </Link>
             <Link
-              to="/combo"
+              to="/All-Packages"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Free Mock Test
+              Packages
             </Link>
             <Link
               to="/free-pdf"
@@ -287,23 +333,36 @@ const NavBar = () => {
               Free PDF
             </Link>
             <Link
-              to="/livebatch"
+              to="/pdf-course"
+              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+            >
+              PDF Course
+            </Link>
+            <Link
+              to="/blog"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
               Blogs
             </Link>
             <Link
-              to="/interviews"
+              to="/rally-pro"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
               Rally Pro
             </Link>
             <Link
-              to="/materials"
+              to="/rally-super-pro"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
-              Rally Lifetime
+              Rally Super Pro
             </Link>
+            <Link
+              to="/video-course"
+              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+            >
+              Video Course
+            </Link>
+
             {/* <Link
               to="/blogs"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
@@ -325,14 +384,17 @@ const NavBar = () => {
             >
               Register
             </button> */}
+
               <SignedOut>
                 <SignInButton />
               </SignedOut>
               <SignedIn>
-                <UserButton />
+                {/* <UserButton /> */}
+                <CustomUserMenu />
               </SignedIn>
               <p>{!user ? "" : user.firstName}</p>
-              <p className=''>  Join Telegram</p>
+              <Link to='https://t.me/examrally'> <i className="bi bi-telegram text-2xl" style={{ color: "	#24A1DE" }}> </i>Join Telegram </Link>
+
             </div>
           </div>
         )}
