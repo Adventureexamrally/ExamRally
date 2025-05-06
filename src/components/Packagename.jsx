@@ -1093,7 +1093,7 @@ const [payment, setPayment] = useState("");
     width: '100%',
     maxWidth: '400px',
     aspectRatio: '2 / 3',
-    objectFit: 'cover'
+    objectFit: 'contain'
   }} />
 
                   {/* <img src={data.featurePhoto} alt="" /> */}

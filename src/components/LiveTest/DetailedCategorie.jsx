@@ -479,7 +479,7 @@ const DetailedCategorie = () => {
     width: '100%',
     maxWidth: '400px',
     aspectRatio: '2 / 3',
-    objectFit: 'cover'
+    objectFit: 'contain'
   }} />
                 {/* <img src={data.featurePhoto} alt="" /> */}
                 <div className="text-center mt-2">

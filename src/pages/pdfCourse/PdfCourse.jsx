@@ -20,6 +20,7 @@ const PdfCourse = () => {
     const [resultData, setResultData] = useState(null);
     const [AllExamsName, setAllExamsName] = useState([]);
     const [selectedExam, setSelectedExam] = useState('');
+    const [pdfSubscription, setPdfSubscription] = useState(null);
 
     const { user } = useContext(UserContext);
     console.log(user)
@@ -197,6 +198,31 @@ const PdfCourse = () => {
         );
     };
 
+    
+    useEffect(() => {
+        const fetchSubscription = async () => {
+          try {
+            const res = await Api.get(`/pdf-subscriptions/${user._id}`); // assume your backend supports this
+            setPdfSubscription(res.data);
+          } catch (err) {
+            console.error("Failed to fetch PDF subscription:", err);
+          }
+        };
+      
+        if (user?._id) {
+          fetchSubscription();
+        }
+      }, [user]);
+      
+      const hasActiveSubscription = () => {
+    if (!pdfSubscription) return false;
+  
+    const now = new Date();
+    const expiry = new Date(pdfSubscription.expiryDate);
+  
+    return expiry > now;
+  };
+  
     return (
         <>
             <Helmet>
@@ -470,54 +496,67 @@ const PdfCourse = () => {
                                                                         Take Test
                                                                     </button> */}
                                                                     {/* Check if the current date is greater than or equal to live_date */}
-                                                                    {new Date(pdf.exams[0]?.live_date) > new Date() ? (
-                                                                        // Display "Coming Soon" if the current date is earlier than live_date
-                                                                        <div className=" text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                                                            Coming Soon
-                                                                        </div>
-                                                                    ) : (
-                                                                        <button
-                                                                            className={` flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors${resultData?.[pdf.exams[0]?._id]?.status === "completed"
-                                                                                ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                : resultData?.[pdf.exams[0]?._id]?.status === "paused"
-                                                                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                    : pdf.exams[0]?.status === "true"
-                                                                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                                                                        : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                                                                }`}
-                                                                            onClick={() => {
-                                                                                if (!isSignedIn) {
-                                                                                    navigate('/sign-in')
-                                                                                }
-                                                                                else if (resultData?.[pdf.exams[0]?._id]?.status === "completed") {
-                                                                                    openNewWindow(`/pdf/result/${pdf.exams[0]._id}`);
-                                                                                }
-                                                                                else if (resultData?.[pdf.exams[0]?._id]?.status === "paused") {
-                                                                                    // Pass last question index and selected options when resuming
-                                                                                    openNewWindow(
-                                                                                        `/pdf/mocktest/${pdf.exams[0]?._id}`
-                                                                                    );
-                                                                                }
-                                                                                else if (pdf.exams[0]?.status === "true") {
-                                                                                    openNewWindow(`/pdf/instruction/${pdf.exams[0]?._id}`);
-                                                                                }
-                                                                            }}
-                                                                        >
-                                                                            {resultData?.[pdf.exams[0]?._id]?.status === "completed"
-                                                                                ? "View Result"
-                                                                                : resultData?.[pdf.exams[0]?._id]?.status === "paused"
-                                                                                    ? "Resume"
-                                                                                    : pdf.exams[0]?.status === "true"
-                                                                                        ? "Take Test"
-                                                                                        : (
-                                                                                            <div className="flex items-center justify-center font-semibold gap-1">
-                                                                                                <IoMdLock />
-                                                                                                Lock
-                                                                                            </div>
-                                                                                        )
-                                                                            }
-                                                                        </button>
-                                                                    )}
+                                                                                                                                    {(() => {
+                                                                // 🔒 LOCKED: If content is paid & user has no subscription
+                                                                if (pdf.exams[0]?.result_type === "paid" && !hasActiveSubscription()) {
+                                                                    return (
+                                                                    <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded">
+                                                                        <IoMdLock /> Locked
+                                                                    </div>
+                                                                    );
+                                                                }
+
+                                                                // 🔒 LOCKED: Even if content is free, if live date is in the future, show "Locked"
+                                                                if (!hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > new Date()) {
+                                                                    return (
+                                                                    <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded">
+                                                                        <IoMdLock /> Locked
+                                                                    </div>
+                                                                    );
+                                                                }
+
+                                                                // ⏳ COMING SOON: Only if subscribed AND live date is in future
+                                                                if (hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > new Date()) {
+                                                                    return (
+                                                                    <div className="flex-1 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                                                        Coming Soon
+                                                                    </div>
+                                                                    );
+                                                                }
+
+                                                                // ✅ AVAILABLE: Show action button (Take Test / Resume / View Result)
+                                                                return (
+                                                                    <button
+                                                                    className={`flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                                                                        resultData?.[pdf.exams[0]?._id]?.status === "completed"
+                                                                        ? "bg-green-500"
+                                                                        : resultData?.[pdf.exams[0]?._id]?.status === "paused"
+                                                                        ? "bg-green-500"
+                                                                        : "bg-green-500"
+                                                                    }`}
+                                                                    onClick={() => {
+                                                                        if (!isSignedIn) {
+                                                                        navigate("/sign-in");
+                                                                        } else if (resultData?.[pdf.exams[0]?._id]?.status === "completed") {
+                                                                        openNewWindow(`/pdf/result/${pdf.exams[0]._id}`);
+                                                                        } else if (resultData?.[pdf.exams[0]?._id]?.status === "paused") {
+                                                                        openNewWindow(`/pdf/mocktest/${pdf.exams[0]._id}`);
+                                                                        } else {
+                                                                        openNewWindow(`/pdf/instruction/${pdf.exams[0]._id}`);
+                                                                        }
+                                                                    }}
+                                                                    >
+                                                                    {resultData?.[pdf.exams[0]?._id]?.status === "completed"
+                                                                        ? "View Result"
+                                                                        : resultData?.[pdf.exams[0]?._id]?.status === "paused"
+                                                                        ? "Resume"
+                                                                        : "Take Test"}
+                                                                    </button>
+                                                                );
+                                                                })()}
+
+
+
                                                                 </div>
                                                             </div>
                                                         );
