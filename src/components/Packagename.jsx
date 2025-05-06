@@ -678,59 +678,57 @@ const [payment, setPayment] = useState("");
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
-                                {/* Check if the current date is greater than or equal to live_date */}
-                                  {new Date(test.live_date) > new Date() ? (
-                                                          <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                                            Coming Soon
+                                                                  {/* Check if the current date is greater than or equal to live_date */}
+
+                                                      {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
+                                                        // 🔒 Locked: Not enrolled + (paid or not live)
+                                                        <button
+                                                          className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                                          disabled
+                                                        >
+                                                          <div className="flex items-center justify-center font-semibold gap-1">
+                                                            <IoMdLock />
+                                                            Locked
                                                           </div>
-                                                        ) : (
-                                                          <button
+                                                        </button>
+                                                      ) : isEnrolled && new Date(test.live_date) > new Date() ? (
+                                                        // 🚧 Coming Soon: Enrolled, but test not yet live
+                                                        <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                                          Coming Soon
+                                                        </div>
+                                                      ) : (
+                                                        // ✅ Actionable: Enrolled and test is live
+                                                        <button
                                                           className={`mt-3 py-2 px-4 rounded w-full transition ${
                                                             resultData?.[test._id]?.status === "completed"
                                                               ? "bg-green-500 text-white hover:bg-green-600"
                                                               : resultData?.[test._id]?.status === "paused"
                                                               ? "bg-green-500 text-white hover:bg-green-600"
-                                                              : (isEnrolled || !isPaidTest(test))
-                                                              ? "bg-green-500 text-white hover:bg-green-600"
-                                                              : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                                                              : "bg-green-500 text-white hover:bg-green-600"
                                                           }`}
                                                           onClick={() => {
                                                             if (!isSignedIn) {
                                                               navigate('/sign-in');
                                                               return;
                                                             }
-                                                            
+
                                                             if (resultData?.[test._id]?.status === "completed") {
                                                               openNewWindow(`/result/${test._id}`);
-                                                            } 
-                                                            else if (resultData?.[test._id]?.status === "paused") {
+                                                            } else if (resultData?.[test._id]?.status === "paused") {
                                                               openNewWindow(`/mocktest/${test._id}`);
-                                                            } else if (isPaidTest(test) && !isEnrolled) {
-                                                              return;
-                                                            }
-                                                            else {
+                                                            } else {
                                                               openNewWindow(`/instruction/${test._id}`);
                                                             }
                                                           }}
-                                                          disabled={new Date(test.live_date) > new Date()}
                                                         >
-                                                          {resultData?.[test._id]?.status === "completed" 
+                                                          {resultData?.[test._id]?.status === "completed"
                                                             ? "View Result"
                                                             : resultData?.[test._id]?.status === "paused"
                                                             ? "Resume"
-                                                            : (isEnrolled || !isPaidTest(test))
-                                                            ? "Take Test"
-                                                            : isPaidTest(test) ? (
-                                                              <div className="flex items-center justify-center font-semibold gap-1">
-                                                                <IoMdLock />
-                                                                Lock
-                                                              </div>
-                                                            ) : (
-                                                              "Take Test"
-                                                            )
-                                                          }
-                                                        </button>
-                                                        )}
+                                                            : "Take Test"}
+                                    </button>
+                                  )}
+
                               </div>
                             </div>
                           </div>
@@ -809,59 +807,55 @@ const [payment, setPayment] = useState("");
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Check if the current date is greater than or equal to live_date */}
-                                {new Date(test.live_date) > new Date() ? (
-                                  // Display "Coming Soon" if the current date is earlier than live_date
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
+
+                                {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
+                                  // 🔒 Locked: Not enrolled + (paid or not live)
+                                  <button
+                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                    disabled
+                                  >
+                                    <div className="flex items-center justify-center font-semibold gap-1">
+                                      <IoMdLock />
+                                      Locked
+                                    </div>
+                                  </button>
+                                ) : isEnrolled && new Date(test.live_date) > new Date() ? (
+                                  // 🚧 Coming Soon: Enrolled, but test not yet live
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
                                     Coming Soon
                                   </div>
                                 ) : (
+                                  // ✅ Actionable: Enrolled and test is live
                                   <button
-                                  className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                    resultData?.[test._id]?.status === "completed"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : resultData?.[test._id]?.status === "paused"
+                                          ? "bg-green-500 text-white hover:bg-green-600"
+                                          : "bg-green-500 text-white hover:bg-green-600"
+                                      }`}
+                                    onClick={() => {
+                                      if (!isSignedIn) {
+                                        navigate('/sign-in');
+                                        return;
+                                      }
+
+                                      if (resultData?.[test._id]?.status === "completed") {
+                                        openNewWindow(`/result/${test._id}`);
+                                      } else if (resultData?.[test._id]?.status === "paused") {
+                                        openNewWindow(`/mocktest/${test._id}`);
+                                      } else {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      }
+                                    }}
+                                  >
+                                    {resultData?.[test._id]?.status === "completed"
+                                      ? "View Result"
                                       : resultData?.[test._id]?.status === "paused"
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : (isEnrolled || !isPaidTest(test))
-                                      ? "bg-green-500 text-white hover:bg-green-600"
-                                      : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                  }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                      navigate('/sign-in');
-                                      return;
-                                    }
-                                    
-                                    if (resultData?.[test._id]?.status === "completed") {
-                                      openNewWindow(`/result/${test._id}`);
-                                    } 
-                                    else if (resultData?.[test._id]?.status === "paused") {
-                                      openNewWindow(`/mocktest/${test._id}`);
-                                    } else if (isPaidTest(test) && !isEnrolled) {
-                                      return;
-                                    }
-                                    else {
-                                      openNewWindow(`/instruction/${test._id}`);
-                                    }
-                                  }}
-                                  disabled={new Date(test.live_date) > new Date()}
-                                >
-                                  {resultData?.[test._id]?.status === "completed" 
-                                    ? "View Result"
-                                    : resultData?.[test._id]?.status === "paused"
-                                    ? "Resume"
-                                    : (isEnrolled || !isPaidTest(test))
-                                    ? "Take Test"
-                                    : isPaidTest(test) ? (
-                                      <div className="flex items-center justify-center font-semibold gap-1">
-                                        <IoMdLock />
-                                        Lock
-                                      </div>
-                                    ) : (
-                                      "Take Test"
-                                    )
-                                  }
-                                </button>
+                                        ? "Resume"
+                                        : "Take Test"}
+                                  </button>
                                 )}
+
                               </div>
                             </div>
                           </div>
@@ -938,103 +932,60 @@ const [payment, setPayment] = useState("");
                                     </p>
                                   </div>
                                 </div>
-                                <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Check if the current date is greater than or equal to live_date */}
-                                {new Date(test.live_date) > new Date() ? (
-                                  // Display "Coming Soon" if the current date is earlier than live_date
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                    Coming Soon
-                                  </div>
-                                ) : (
-                                  <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : test.status === "true"
-                                          ? "bg-green-500 text-white hover:bg-green-600"
-                                          : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                                      }`}
-                                    onClick={() => {
-                                      if (!isSignedIn) {
-                                        navigate('/sign-in')
-                                      }
-                                      else if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}`);
-                                      } else if (test.status === "true") {
-                                        openNewWindow(`/instruction/${test._id}`);
-                                      } else {
-                                        handleTopicSelect(test.section[0], "prelims");
-                                      }
-                                    }}
-                                  >
-                                    {resultData?.[test._id]?.status === "completed" ? (
-                                      "View Result"
-                                    ) : test.status === "true" ? (
-                                      "Take Test"
-                                    ) : (
-                                      <div className="flex items-center justify-center font-semibold gap-1">
-                                        <IoMdLock />
-                                        Lock
-                                      </div>
-                                    )}
-                                  </button>
-                                )}
+
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                            {/* Check if the current date is greater than or equal to live_date */}
-                            {new Date(test.live_date) > new Date() ? (
-                              // Display "Coming Soon" if the current date is earlier than live_date
-                              <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded">
-                                Coming Soon
-                              </div>
-                            ) : (
-                              <button
-                              className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                resultData?.[test._id]?.status === "completed"
-                                  ? "bg-green-500 text-white hover:bg-green-600"
-                                  : resultData?.[test._id]?.status === "paused"
-                                  ? "bg-green-500 text-white hover:bg-green-600"
-                                  : (isEnrolled || !isPaidTest(test))
-                                  ? "bg-green-500 text-white hover:bg-green-600"
-                                  : "border-2 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                              }`}
-                              onClick={() => {
-                                if (!isSignedIn) {
-                                  navigate('/sign-in');
-                                  return;
-                                }
-                                
-                                if (resultData?.[test._id]?.status === "completed") {
-                                  openNewWindow(`/result/${test._id}`);
-                                } 
-                                else if (resultData?.[test._id]?.status === "paused") {
-                                  openNewWindow(`/mocktest/${test._id}`);
-                                } else if (isPaidTest(test) && !isEnrolled) {
-                                  return;
-                                }
-                                else {
-                                  openNewWindow(`/instruction/${test._id}`);
-                                }
-                              }}
-                              disabled={new Date(test.live_date) > new Date()}
-                            >
-                              {resultData?.[test._id]?.status === "completed" 
-                                ? "View Result"
-                                : resultData?.[test._id]?.status === "paused"
-                                ? "Resume"
-                                : (isEnrolled || !isPaidTest(test))
-                                ? "Take Test"
-                                : isPaidTest(test) ? (
-                                  <div className="flex items-center justify-center font-semibold gap-1">
-                                    <IoMdLock />
-                                    Lock
+                                {/* Check if the current date is greater than or equal to live_date */}
+
+                                {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
+                                  // 🔒 Locked: Not enrolled + (paid or not live)
+                                  <button
+                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                    disabled
+                                  >
+                                    <div className="flex items-center justify-center font-semibold gap-1">
+                                      <IoMdLock />
+                                      Locked
+                                    </div>
+                                  </button>
+                                ) : isEnrolled && new Date(test.live_date) > new Date() ? (
+                                  // 🚧 Coming Soon: Enrolled, but test not yet live
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                    Coming Soon
                                   </div>
                                 ) : (
-                                  "Take Test"
-                                )
-                              }
-                            </button>
-                            )}
+                                  // ✅ Actionable: Enrolled and test is live
+                                  <button
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : resultData?.[test._id]?.status === "paused"
+                                          ? "bg-green-500 text-white hover:bg-green-600"
+                                          : "bg-green-500 text-white hover:bg-green-600"
+                                      }`}
+                                    onClick={() => {
+                                      if (!isSignedIn) {
+                                        navigate('/sign-in');
+                                        return;
+                                      }
+
+                                      if (resultData?.[test._id]?.status === "completed") {
+                                        openNewWindow(`/result/${test._id}`);
+                                      } else if (resultData?.[test._id]?.status === "paused") {
+                                        openNewWindow(`/mocktest/${test._id}`);
+                                      } else {
+                                        openNewWindow(`/instruction/${test._id}`);
+                                      }
+                                    }}
+                                  >
+                                    {resultData?.[test._id]?.status === "completed"
+                                      ? "View Result"
+                                      : resultData?.[test._id]?.status === "paused"
+                                        ? "Resume"
+                                        : "Take Test"}
+                                  </button>
+                                )}
+
                           </div>
                         )
                     )}

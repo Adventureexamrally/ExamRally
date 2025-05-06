@@ -55,7 +55,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
         const newTotal = baseAmount - discount;
         
         setDiscountPercent(res.data.discountPercent);
-        setFinalPrice(newTotal.toFixed(2));
+        setFinalPrice(Math.round(newTotal));
         setMessage({ 
           text: `Coupon applied: ${res.data.discountPercent}% OFF`, 
           type: 'success' 
