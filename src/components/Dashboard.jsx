@@ -129,10 +129,7 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
-          <Link to="#"  className="border-1 h-10 border-blue-500 text-blue-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600"
-          >
-            View More
-          </Link>
+        
         </div>
 
         {/* Carousel Container */}
@@ -155,7 +152,7 @@ const Dashboard = () => {
                   <Link to={`/top-trending-exams/${exam.link_name}`} className="text-sm font-medium text-gray-700">
                     <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
                       <img
-                        src={`${IMG_URL}${exam.photo}`}
+                        src={exam.photo}
                         alt={exam.name}
                         className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
                       />

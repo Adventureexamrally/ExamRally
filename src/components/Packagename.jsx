@@ -713,11 +713,11 @@ const [payment, setPayment] = useState("");
                                                             }
 
                                                             if (resultData?.[test._id]?.status === "completed") {
-                                                              openNewWindow(`/result/${test._id}`);
+                                                             navigate(`/result/${test._id}`);
                                                             } else if (resultData?.[test._id]?.status === "paused") {
-                                                              openNewWindow(`/mocktest/${test._id}`);
+                                                              navigate(`/mocktest/${test._id}`);
                                                             } else {
-                                                              openNewWindow(`/instruction/${test._id}`);
+                                                              navigate(`/instruction/${test._id}`);
                                                             }
                                                           }}
                                                         >
