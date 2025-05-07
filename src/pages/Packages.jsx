@@ -131,7 +131,7 @@ const handlePackageSelect = (pkg) => {
     width: '100%',
     maxWidth: '300px',  // or whatever width you need
     aspectRatio: '1 / 1',
-    objectFit: 'cover',
+    objectFit: 'contain',
     height: 'auto'
   }} 
 />
