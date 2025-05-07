@@ -23,7 +23,12 @@ const Mocksolution = () => {
 
     const [check, setCheck] = useState(null)
     const [show_name, setShow_name] = useState("")
+    const [exam_name, setExam_name] = useState("")
+    const [test_type, setTest_type] = useState("")
+    const [test_name, setTest_name] = useState("")
+    const [description, setDescription] = useState("")
     const [t_questions, sett_questions] = useState("")
+    const [showReportForm, setShowReportForm] = useState(false);
     const { id } = useParams();
     const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
@@ -51,9 +56,14 @@ const Mocksolution = () => {
                 .then((res) => {
                     if (res.data) {
                         setExamData(res.data);
+                        console.log("dd", res.data)
                         setIsDataFetched(true);
-                        setShow_name(res.data.show_name) // Mark that data is fetched
-                        console.error("valueee", res.data.show_name)
+                        setShow_name(res.data.show_name);
+                        setExam_name(res.data.exam_name);
+                        setTest_type(res.data.test_type);
+                        setTest_name(res.data.test_name);
+                        setDescription(res.data.description);
+
                         sett_questions(res.data.t_questions)
                         console.error("kl", res.data.t_question);
                     }
@@ -124,52 +134,52 @@ const Mocksolution = () => {
         unseen: []
     });
 
-// Change the initial state to store all sections' data
-const [resultsBySection, setResultsBySection] = useState([]);
+    // Change the initial state to store all sections' data
+    const [resultsBySection, setResultsBySection] = useState([]);
 
-// Update the useEffect that fetches results
-useEffect(() => {
-    if (!user?._id) return;
+    // Update the useEffect that fetches results
+    useEffect(() => {
+        if (!user?._id) return;
 
-    Api.get(`results/${user?._id}/${id}`)
-        .then((res) => {
-            if (res.data) {
-                setExamData(res.data);
-                // Store results for all sections
-                setResultsBySection(res.data.section.map(section => ({
-                    correct: section.correct,
-                    incorrect: section.incorrect,
-                    skipped: section.skipped,
-                    Attempted: section.Attempted,
-                    Not_Attempted: section.Not_Attempted,
-                    s_score: section.s_score,
-                    unseen: section.NotVisited
-                })));
-                
-                // Also set current section's data
-                const currentSectionData = res.data.section[currentSectionIndex];
-                if (currentSectionData) {
-                    setResultData({
-                        correct: currentSectionData.correct,
-                        incorrect: currentSectionData.incorrect,
-                        skipped: currentSectionData.skipped,
-                        Attempted: currentSectionData.Attempted,
-                        Not_Attempted: currentSectionData.Not_Attempted,
-                        s_score: currentSectionData.s_score,
-                        unseen: currentSectionData.NotVisited
-                    });
+        Api.get(`results/${user?._id}/${id}`)
+            .then((res) => {
+                if (res.data) {
+                    setExamData(res.data);
+                    // Store results for all sections
+                    setResultsBySection(res.data.section.map(section => ({
+                        correct: section.correct,
+                        incorrect: section.incorrect,
+                        skipped: section.skipped,
+                        Attempted: section.Attempted,
+                        Not_Attempted: section.Not_Attempted,
+                        s_score: section.s_score,
+                        unseen: section.NotVisited
+                    })));
+
+                    // Also set current section's data
+                    const currentSectionData = res.data.section[currentSectionIndex];
+                    if (currentSectionData) {
+                        setResultData({
+                            correct: currentSectionData.correct,
+                            incorrect: currentSectionData.incorrect,
+                            skipped: currentSectionData.skipped,
+                            Attempted: currentSectionData.Attempted,
+                            Not_Attempted: currentSectionData.Not_Attempted,
+                            s_score: currentSectionData.s_score,
+                            unseen: currentSectionData.NotVisited
+                        });
+                    }
                 }
-            }
-        })
-        .catch((err) => console.error("Error fetching data:", err));
-}, [id, user]);
+            })
+            .catch((err) => console.error("Error fetching data:", err));
+    }, [id, user]);
 
-// Update this when section changes
-useEffect(() => {
-    if (resultsBySection[currentSectionIndex]) {
-        setResultData(resultsBySection[currentSectionIndex]);
-    }
-}, [currentSectionIndex, resultsBySection]);
+    // Update this when section changes
+    useEffect(() => {
+        if (resultsBySection[currentSectionIndex]) {
+            setResultData(resultsBySection[currentSectionIndex]);
+        }
+    }, [currentSectionIndex, resultsBySection]);
 
 
 
@@ -325,10 +335,65 @@ useEffect(() => {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-      if (examData?.section?.[currentSectionIndex]?.questions) {
-        setReady(true);
-      }
+        if (examData?.section?.[currentSectionIndex]?.questions) {
+            setReady(true);
+        }
     }, [examData, currentSectionIndex]);
+
+
+    const reasons = [
+        "Incorrect Question",
+        "Incorrect Answer",
+        "Incorrect Solution",
+        "Incorrect Options",
+        "Incomplete Question",
+        "Incomplete Solution",
+        "Translation Error",
+        "others",
+    ];
+
+    const [selectedReasons, setSelectedReasons] = useState([]);
+    const [comment, setComment] = useState("");
+
+    const handleCheckboxChange = (reason) => {
+        if (selectedReasons.includes(reason)) {
+            setSelectedReasons(selectedReasons.filter((r) => r !== reason));
+        } else {
+            setSelectedReasons([...selectedReasons, reason]);
+        }
+    };
+
+    const handleSubmit = async () => {
+        const payload = {
+            userId: user?._id,
+            examId: id,
+            userName: user?.firstName,
+            emailId: user?.email,
+            examName: exam_name,
+            testType: test_type,
+            testName: test_name,
+            Description: description,
+            sectionId: examData?.section[currentSectionIndex]?._id,
+            sectionName: examData?.section[currentSectionIndex]?.name,
+            questionId: examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?._id,
+            questionIndex: clickedQuestionIndex,
+            reasons: selectedReasons,
+            comment: selectedReasons.includes("others") ? comment : "",
+        };
+
+        try {
+            await Api.post("reports/report-question", payload);
+            alert("Report submitted!");
+            setSelectedReasons([]);
+            setComment("");
+            console.log("dd", payload);
+
+        } catch (error) {
+            console.error(error);
+            alert("Submission failed.");
+        }
+    };
+
     return (
         <div className="p-1 mock-font ">
             <div>
@@ -341,55 +406,55 @@ useEffect(() => {
             </div>
 
             <div>
-            <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
-            {examData?.section?.map((section, index) => {
-        const sectionResults = resultsBySection[index] || {};
-        return (
-            <h1 key={index}>
-                <h1
-                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
+                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
+                    {examData?.section?.map((section, index) => {
+                        const sectionResults = resultsBySection[index] || {};
+                        return (
+                            <h1 key={index}>
+                                <h1
+                                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
                         ${currentSectionIndex === index
-                            ? ' font-medium underline'
-                            : ''}`}
-                    onClick={() => setCurrentSectionIndex(index)}
-                >
-                     {section.name}
-                    <div className="relative group ml-2 d-inline-block">
-                        <FaInfoCircle className="cursor-pointer text-blue-400" />
-                        <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+                                            ? ' font-medium underline'
+                                            : ''}`}
+                                    onClick={() => setCurrentSectionIndex(index)}
+                                >
+                                    {section.name}
+                                    <div className="relative group ml-2 d-inline-block">
+                                        <FaInfoCircle className="cursor-pointer text-blue-400" />
+                                        <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
                             min-w-[220px] w-fit md:max-w-xs md:w-max
                             left-1/2 -translate-x-1/2">
-                            <div className="mt-2 flex align-items-center">
-                                <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                    {sectionResults.correct || 0}
-                                </div>
-                                <p>Correct</p>
-                            </div>
-                            <div className="mt-2 flex align-items-center">
-                                <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                    {sectionResults.incorrect || 0}
-                                </div>
-                                <p>Wrong</p>
-                            </div>
-                            <div className="mt-2 flex align-items-center">
-                                <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
-                                    {sectionResults.unseen || 0}
-                                </div>
-                                <p>Unseen</p>
-                            </div>
-                            <div className="mt-2 flex align-items-center">
-                                <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                    {sectionResults.skipped || 0}
-                                </div>
-                                <p>Skipped</p>
-                            </div>
-                        </div>
-                    </div>
-                </h1>    
-            </h1>
-        );
-    })}
-</div>
+                                            <div className="mt-2 flex align-items-center">
+                                                <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                    {sectionResults.correct || 0}
+                                                </div>
+                                                <p>Correct</p>
+                                            </div>
+                                            <div className="mt-2 flex align-items-center">
+                                                <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                    {sectionResults.incorrect || 0}
+                                                </div>
+                                                <p>Wrong</p>
+                                            </div>
+                                            <div className="mt-2 flex align-items-center">
+                                                <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
+                                                    {sectionResults.unseen || 0}
+                                                </div>
+                                                <p>Unseen</p>
+                                            </div>
+                                            <div className="mt-2 flex align-items-center">
+                                                <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                    {sectionResults.skipped || 0}
+                                                </div>
+                                                <p>Skipped</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h1>
+                            </h1>
+                        );
+                    })}
+                </div>
 
 
 
@@ -450,7 +515,7 @@ useEffect(() => {
             <div className="flex">
                 {/* Question Panel */}
                 <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
-                {!isSubmitted ? (
+                    {!isSubmitted ? (
                         <>
                             <div className="d-flex  justify-between bg-gray-100 border-1 p-2 border-gray-300 font-extralight">
                                 <h3>
@@ -460,12 +525,12 @@ useEffect(() => {
 
 
                                 <div className="flex justify-center items-center ">
-                                <h3>
-                                    Question Time: 
-                                    {examData?.section[currentSectionIndex]?.questions?.[
+                                    <h3>
+                                        Question Time:
+                                        {examData?.section[currentSectionIndex]?.questions?.[
                                             selectedLanguage?.toLowerCase()
-                                        ]?.[clickedQuestionIndex - startingIndex]?.q_on_time }
-                                </h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        ]?.[clickedQuestionIndex - startingIndex]?.q_on_time}
+                                    </h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                     <p>Re-Attempt   &nbsp;&nbsp;</p>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         {/* Hidden checkbox that will control the slider */}
@@ -487,42 +552,42 @@ useEffect(() => {
                                 </div>
                             </div>
                             {examData?.section[currentSectionIndex] ? (
-                                    <div className="flex flex-col md:flex-row p-0">
-                                        {/* Left side for Common Data */}
-                                        {examData.section[currentSectionIndex]?.questions?.[
-                                            selectedLanguage?.toLowerCase()
-                                        ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                                                <div
-                                                className="md:w-[50%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]" 
+                                <div className="flex flex-col md:flex-row p-0">
+                                    {/* Left side for Common Data */}
+                                    {examData.section[currentSectionIndex]?.questions?.[
+                                        selectedLanguage?.toLowerCase()
+                                    ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                                            <div
+                                                className="md:w-[50%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]"
                                                 style={{ overflowY: "auto" }}
-                                                >
-                                                    <div
-                                                        className="fw-bold text-wrap"
-                                                        style={{
-                                                            whiteSpace: "normal",
-                                                            wordWrap: "break-word",
-                                                        }}
-                                                        dangerouslySetInnerHTML={{
-                                                            __html:
-                                                                examData.section[currentSectionIndex]
-                                                                    ?.questions?.[
-                                                                    selectedLanguage?.toLowerCase()
-                                                                ]?.[clickedQuestionIndex - startingIndex]
-                                                                    ?.common_data || "No common data available",
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
+                                            >
+                                                <div
+                                                    className="fw-bold text-wrap"
+                                                    style={{
+                                                        whiteSpace: "normal",
+                                                        wordWrap: "break-word",
+                                                    }}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html:
+                                                            examData.section[currentSectionIndex]
+                                                                ?.questions?.[
+                                                                selectedLanguage?.toLowerCase()
+                                                            ]?.[clickedQuestionIndex - startingIndex]
+                                                                ?.common_data || "No common data available",
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
 
-                                        {/* Right side for Question */}
-                                        <div 
-                  className={`mb-24 md:mb-0 p-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                     selectedLanguage?.toLowerCase()
-                     ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                      ? "md:w-[50%]"
-                        : "md:w-full" // Make it full width when no common data
-                          }`}                style={{ overflowY: "auto" }}
-              > 
+                                    {/* Right side for Question */}
+                                    <div
+                                        className={`mb-24 md:mb-0 p-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                                            selectedLanguage?.toLowerCase()
+                                        ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                                            ? "md:w-[50%]"
+                                            : "md:w-full" // Make it full width when no common data
+                                            }`} style={{ overflowY: "auto" }}
+                                    >
                                         {/* <style>
                                         {`
                                           /* Chrome, Safari, and Opera 
@@ -531,7 +596,7 @@ useEffect(() => {
                                           }
                                         `}
                                       </style> */}
-                                      <div>
+                                        <div>
 
                                             <div
                                                 className="fw-bold text-wrap "
@@ -548,103 +613,103 @@ useEffect(() => {
                                             />
 
                                             {
-  examData?.section[currentSectionIndex]?.questions?.[
-    selectedLanguage?.toLowerCase()
-  ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
-    const question = examData.section[currentSectionIndex]?.questions?.[
-      selectedLanguage?.toLowerCase()
-    ]?.[clickedQuestionIndex - startingIndex];
-    
-    const selectedOption = question?.selectedOption;
-    const answer = question?.answer;
-    const isSelected = selectedOption === index;
-    const isCorrect = answer === index;
+                                                examData?.section[currentSectionIndex]?.questions?.[
+                                                    selectedLanguage?.toLowerCase()
+                                                ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
+                                                    const question = examData.section[currentSectionIndex]?.questions?.[
+                                                        selectedLanguage?.toLowerCase()
+                                                    ]?.[clickedQuestionIndex - startingIndex];
 
-    // Determine styling based on view mode
-    let optionStyle = {
-      color: "black", // Default text color
-      borderRadius: "0.5rem",
-      margin: "0.5rem",
-      padding: "0.5rem",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem"
-    };
-    
-    if (!isToggled) {
-      // RESULTS VIEW MODE - show correct/incorrect answers
-      if (isCorrect) {
-        // Correct answer (green background)
-        optionStyle = { 
-          ...optionStyle,
-          backgroundColor: "#4CAF50", // Green
-          color: "white"
-        };
-      } else if (isSelected && !isCorrect) {
-        // User's incorrect selection (red background)
-        optionStyle = { 
-          ...optionStyle,
-          backgroundColor: "#F44336", // Red
-          color: "white"
-        };
-      }
-    } else {
-      // RE-ATTEMPT MODE - use your existing logic
-      if (check === index && !isCorrect) {
-        optionStyle = { 
-          ...optionStyle,
-          backgroundColor: "#F44336", // Red
-          color: "white"
-        };
-      }
-      if (check && isCorrect) {
-        optionStyle = { 
-          ...optionStyle,
-          backgroundColor: "#4CAF50", // Green
-          color: "white"
-        };
-      }
-    }
+                                                    const selectedOption = question?.selectedOption;
+                                                    const answer = question?.answer;
+                                                    const isSelected = selectedOption === index;
+                                                    const isCorrect = answer === index;
 
-    return (
-      <div
-        key={index}
-        style={optionStyle}
-        className="rounded-lg m-2 p-1"
-      >
-        <input
-          type="radio"
-          id={`option-${index}`}
-          name="exam-option"
-          value={index}
-          checked={isToggled ? check === index : isSelected}
-          onChange={(e) => {
-            if (isToggled) {
-              setCheck(Number(e.target.value));
-              setIsClicked(true);
-              setSelectedOptions(prev => ({
-                ...prev,
-                [clickedQuestionIndex]: Number(e.target.value)
-              }));
-            }
-          }}
-          disabled={!isToggled || isClicked}
-          style={{
-            accentColor: "#3B82F6", // Blue color for radio button
-            width: "1.2rem",
-            height: "1.2rem",
-            cursor: (!isToggled || isClicked) ? "not-allowed" : "pointer"
-          }}
-        /> &nbsp;&nbsp;
-        <label
-          htmlFor={`option-${index}`}
-          dangerouslySetInnerHTML={{ __html: option || "No option available" }}
-          style={{ cursor: "pointer" }}
-        />
-      </div>
-    );
-  })
-}
+                                                    // Determine styling based on view mode
+                                                    let optionStyle = {
+                                                        color: "black", // Default text color
+                                                        borderRadius: "0.5rem",
+                                                        margin: "0.5rem",
+                                                        padding: "0.5rem",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "0.5rem"
+                                                    };
+
+                                                    if (!isToggled) {
+                                                        // RESULTS VIEW MODE - show correct/incorrect answers
+                                                        if (isCorrect) {
+                                                            // Correct answer (green background)
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#4CAF50", // Green
+                                                                color: "white"
+                                                            };
+                                                        } else if (isSelected && !isCorrect) {
+                                                            // User's incorrect selection (red background)
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#F44336", // Red
+                                                                color: "white"
+                                                            };
+                                                        }
+                                                    } else {
+                                                        // RE-ATTEMPT MODE - use your existing logic
+                                                        if (check === index && !isCorrect) {
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#F44336", // Red
+                                                                color: "white"
+                                                            };
+                                                        }
+                                                        if (check && isCorrect) {
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#4CAF50", // Green
+                                                                color: "white"
+                                                            };
+                                                        }
+                                                    }
+
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            style={optionStyle}
+                                                            className="rounded-lg m-2 p-1"
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                id={`option-${index}`}
+                                                                name="exam-option"
+                                                                value={index}
+                                                                checked={isToggled ? check === index : isSelected}
+                                                                onChange={(e) => {
+                                                                    if (isToggled) {
+                                                                        setCheck(Number(e.target.value));
+                                                                        setIsClicked(true);
+                                                                        setSelectedOptions(prev => ({
+                                                                            ...prev,
+                                                                            [clickedQuestionIndex]: Number(e.target.value)
+                                                                        }));
+                                                                    }
+                                                                }}
+                                                                disabled={!isToggled || isClicked}
+                                                                style={{
+                                                                    accentColor: "#3B82F6", // Blue color for radio button
+                                                                    width: "1.2rem",
+                                                                    height: "1.2rem",
+                                                                    cursor: (!isToggled || isClicked) ? "not-allowed" : "pointer"
+                                                                }}
+                                                            /> &nbsp;&nbsp;
+                                                            <label
+                                                                htmlFor={`option-${index}`}
+                                                                dangerouslySetInnerHTML={{ __html: option || "No option available" }}
+                                                                style={{ cursor: "pointer" }}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })
+                                            }
                                             {check != null && examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
                                                 <>
                                                     <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
@@ -691,11 +756,72 @@ useEffect(() => {
                                                         ) : (
                                                             <p>No explanation available</p>
                                                         )}
+
                                                         <div className="text-center pb-10">
-                                                            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" className="bg-green-500 p-1 px-2 text-white text-decoration-underline">
-                                                                Review
-                                                            </a>
+                                                            <button
+                                                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                                                                onClick={() => setShowReportForm(true)}
+                                                            >
+                                                                Report
+                                                            </button>
                                                         </div>
+                                                        {showReportForm && (
+                                                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                                                <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                                                                    <div className="flex justify-between items-center mb-4">
+                                                                        <h2 className="text-xl font-semibold text-center flex-1">Question Report</h2>
+                                                                        <button
+                                                                            onClick={() => setShowReportForm(false)}
+                                                                            className="text-gray-500 hover:text-gray-700"
+                                                                        >
+                                                                            ✕
+                                                                        </button>
+                                                                    </div>
+                                                                    <p className="mb-2">Choose the options</p>
+                                                                    <div className="space-y-2">
+                                                                        {reasons.map((reason) => (
+                                                                            <div key={reason}>
+                                                                                <label className="flex items-center">
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        className="mr-2"
+                                                                                        checked={selectedReasons.includes(reason)}
+                                                                                        onChange={() => handleCheckboxChange(reason)}
+                                                                                    />
+                                                                                    {reason}
+                                                                                </label>
+                                                                                {reason === "others" && selectedReasons.includes("others") && (
+                                                                                    <textarea
+                                                                                        className="mt-2 w-full border border-gray-300 rounded px-2 py-1"
+                                                                                        placeholder="Enter your comment"
+                                                                                        value={comment}
+                                                                                        onChange={(e) => setComment(e.target.value)}
+                                                                                    />
+                                                                                )}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="flex justify-center mt-6 gap-4">
+                                                                        <button
+                                                                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                                                            onClick={() => {
+                                                                                handleSubmit();
+                                                                                setShowReportForm(false);
+                                                                            }}
+                                                                        >
+                                                                            Report Question
+                                                                        </button>
+                                                                        <button
+                                                                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                                                            onClick={() => setShowReportForm(false)}
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
 
                                                     </>
                                                 )}
@@ -704,17 +830,17 @@ useEffect(() => {
 
 
                                         <div className="md:flex hidden items-center">
-                    <div
-                        className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
-                        onClick={toggleMenu2}
-                    >
-                        <FaChevronRight
-                            className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
-                        />
-                    </div>
-                </div>
+                                            <div
+                                                className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
+                                                onClick={toggleMenu2}
+                                            >
+                                                <FaChevronRight
+                                                    className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    </div>
+                                </div>
                             ) : (
                                 <p>No section data available</p>
                             )}
@@ -731,30 +857,30 @@ useEffect(() => {
 
 
                 <div
-      className={` pb-7 h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh] bg-light transform transition-transform duration-300 md:-mt-10 border
+                    className={` pb-7 h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh] bg-light transform transition-transform duration-300 md:-mt-10 border
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
         fixed top-14 right-0 z-40 md:static shadow-sm md:block `}
-      style={{  overflowY: 'auto' }}
-    >
-            {isMobileMenuOpen && (
-                    <button onClick={toggleMenu} className="md:hidden text-black p-2">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            className="w-6 h-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
-                )}
+                    style={{ overflowY: 'auto' }}
+                >
+                    {isMobileMenuOpen && (
+                        <button onClick={toggleMenu} className="md:hidden text-black p-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                className="w-6 h-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    )}
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
@@ -783,7 +909,7 @@ useEffect(() => {
 
 
                         <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-                        {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
+                            {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
                                 // Calculate the actual question number including previous sections
                                 const actualQuestionNumber = startingIndex + index + 1;
                                 const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];

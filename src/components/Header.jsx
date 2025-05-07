@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser  } from "@clerk/clerk-react";
 import CustomUserMenu from './CustomUserButton';
 import offer from '../assets/images/offer.png'
+import Api from '../service/Api';
 
 
 const Header = () => {
@@ -11,19 +12,52 @@ const Header = () => {
   const {isSignedIn, user, isLoaded } = useUser();
   const [currentTime, setCurrentTime] = useState("");
 
+  const [offer, setOffer] = useState(null);
+  const [countdown, setCountdown] = useState("");
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString());
+    const fetchOffer = async () => {
+      try {
+        const response = await Api.get('offers');
+        setOffer(response.data[0]); // Directly use response.data instead of calling .json()
+        console.log("Offer data:", response.data[0]);
+      } catch (error) {
+        console.error('Error fetching offer:', error);
+      }
+    };
+    fetchOffer();
+  }, []);
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (offer) {
+        const end = new Date(offer.endDateTime);
+        const start = new Date(offer.startDateTime);
+        const now = new Date();
+         // Check if current time is before start time
+         if (now < start) {
+          setCountdown("");
+          return;
+        }
+
+        // Check if current time is past end time
+        if (now > end) {
+          setCountdown("");
+          setOffer(null);
+          return;
+        }
+
+        const timeDiff = end - now;
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      }
     };
 
-    // Update time every second
-    const timeInterval = setInterval(updateTime, 1000);
-    updateTime(); // Set initial time immediately
-
-    // Cleanup the interval when component unmounts
-    return () => clearInterval(timeInterval);
-  }, []);
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(countdownInterval);
+  }, [offer]);
 
   // if (!user) {
   //   return <div>Loading user info...</div>;
@@ -56,14 +90,19 @@ const Header = () => {
             </button>
           </div>
         </div>
-        <div className='block'>
-  <img src={offer} className="h-14 blink" alt="Offer" />
+        {offer && new Date() >= new Date(offer.startDateTime) && (
+          <Link to={offer.offerLink} className="flex items-center cursor-pointer">
+            <div className='block'>
+              <img src={offer.imageUrl} className="h-14 blink" alt={offer.offerName} />
+            </div>
+            <div className='p-3 fw-bold'>
+              <h1 className='text-green text-lg ml-4'>{offer.offerName}</h1>
+              <p className=' text-white bg-orange-600 text-sm p-[3px] rounded-[5px]' >End in : {countdown}</p>
+            </div>
+          </Link>
+        )}
 
-</div> 
-<div className='p-3 fw-bold'>
-<h1 className='text-green'>Summer Offer</h1>
-<p>{currentTime}</p>
-</div>
+
 
 
         {/* Login and Register Buttons */}

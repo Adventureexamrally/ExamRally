@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import {  Link } from "react-router-dom";
 import Banner from "./Banner";
 // import { RiRobotFill } from "react-icons/ri";
 import Api from "../service/Api";
@@ -12,28 +12,10 @@ import Archivements from "./Archivements";
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
   const [packages, setPackages] = useState([]);
-  const [scrollLinks, setScrollLinks] = useState([]); 
+  const [scrollLinks, setScrollLinks] = useState([]);
   console.log(packages);
 
-  const location = useLocation();
 
-  useEffect(() => {
-    const hash = location.hash;
-    if (hash) {
-      // Delay until components are mounted
-      const scrollToHash = () => {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      };
-
-      // Try scrolling multiple times in case the element renders late
-      setTimeout(scrollToHash, 100);  // Short delay
-      setTimeout(scrollToHash, 500);  // Medium delay
-      setTimeout(scrollToHash, 1000); // Final fallback
-    }
-  }, [location]);
   const fetchPakages = async () => {
     try {
       const response = await Api.get("/packages/get/active");
@@ -45,15 +27,24 @@ const Dashboard = () => {
   };
   const fetchScrollLinks = async () => {
     try {
-      const response = await Api.get("/linkscroll");
-      setScrollLinks(response.data);
+      const response = await Api.get("/links/all");
+      if (response.status === 200) {
+        // The response.data will contain documents with links array
+        const allLinks = response.data.reduce((acc, entry) => {
+          // Combine all links from each entry
+          return acc.concat(entry.links);
+        }, []);
+        setScrollLinks(allLinks);
+        console.log("Links data:", allLinks);
+      }
     } catch (error) {
-      console.error("Error fetching scroll links:", error);
+      console.error("Error fetching scroll links:", error.response?.data || error.message);
+      setScrollLinks([]);
     }
   };
   useEffect(() => {
     fetchPakages();
-    fetchScrollLinks(); 
+    fetchScrollLinks();
   }, []);
 
   // const [scrollPosition, setScrollPosition] = useState(0);
@@ -102,34 +93,36 @@ const Dashboard = () => {
     <div className="bg-gray-100 min-h-screen p-2">
       {/* Trending Links */}
       <div className="mb-1 overflow-hidden">
-        <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
+     
+      <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
           {scrollLinks?.map((link, index) => (
-            <Link 
+            <Link
               key={index}
-              to={link.linkUrl} 
-              className="hover:underline"
+              to={link.linkUrl}
+                className="text-lg font-bold text-[#131656] hover:underline  flex items-center"
             >
               {link.linkName}
+              {index < scrollLinks.length - 1 && <span className="ml-4">|</span>}
             </Link>
           ))}
         </div>
-      </div>
+    </div>
       {/* 
       <div className="h-[30vh] w-full overflow-hidden rounded mb-4">
         <Banner />
       </div> */}
 
-      {/* Main Content */}
+  {/* Main Content */ }
 
-      <LiveTest />
+  <LiveTest />
 
 
-      {/* Upcoming Exams */}
-      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="TopTrendingExams">
+  {/* Upcoming Exams */ }
+      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="Top Trending Exams">
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
-        
+
         </div>
 
         {/* Carousel Container */}
@@ -175,11 +168,9 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      <div id='TrendingPackages'>
       <TrendingPackages />
-      </div>
           <Archivements/>
-    </div>
+    </div >
   );
 };
 
