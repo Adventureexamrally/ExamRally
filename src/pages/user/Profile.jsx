@@ -94,8 +94,10 @@ const Profile = () => {
 
           {/* Conditional rendering if no user details exist */}
           {!userDetails.firstName && !isEditing ? (
-            <div className="text-gray-500">
-              No user details found. Click 'Edit Details' to add information.
+            <div className="flex items-center justify-center">
+             <div className="spinner-border text-green-500 " role="status">
+  <span className="visually-hidden">Loading...</span>
+</div>
             </div>
           ) : (
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">

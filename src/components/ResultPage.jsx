@@ -415,12 +415,13 @@ const getComparisonStats = (sectionName) => {
 
   {/* Accuracy */}
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={target} alt="Accuracy" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Accuracy</p>
-      <p className="mb-0">{totalAccuracy}%</p>
-    </div>
+  <img src={target} alt="Accuracy" style={{ height: "50px", marginRight: "10px" }} />
+  <div>
+    <p className="mb-0 font-semibold">Accuracy</p>
+    <p className="mb-0">{isNaN(totalAccuracy) ? 0 : totalAccuracy}%</p>
   </div>
+</div>
+
 
   {/* Time Taken */}
   <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
@@ -487,7 +488,7 @@ const getComparisonStats = (sectionName) => {
                 <th>{totalCorrect}</th>
                 <th>{totalWrong}</th>
                 <th>  {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s</th>
-                <th>{ totalAccuracy}</th>
+                <th>{isNaN(totalAccuracy) ? 0 : totalAccuracy}</th>
                 <th>{Rank}</th>
                 <th>{percentile}</th>
                 <th>{totalVisited}</th>
