@@ -44,6 +44,8 @@ useEffect(() => {
     setActiveLink('refer-and-earn');
   } else if (path.includes('active-devices-browser')) {
     setActiveLink('active-devices-browser');
+  } else if (path.includes('error-report')) {
+    setActiveLink('error-report');  
   } else {
     setActiveLink('profile');
   }
@@ -162,6 +164,16 @@ const { user } = useContext(UserContext);
             <FaLaptop className="m-1" /> Active Devices & Browser
             <span className={`absolute bottom-0 left-0 w-0 h-[2px] bg-green-500 transition-all ${activeLink === 'active-devices-browser' ? 'border-1 border-green-500  w-60' : 'group-hover:w-full'} `}></span>
           </Link>
+
+           <Link
+            to="/profile/error-report"
+            onClick={() => handleLinkClick('error-report')}
+            className={`px-4 grid grid-cols-[50px,auto] py-2 text-left border-1 hover:border-green-500 relative w-full group ${activeLink === 'error-report' ? 'text-green-500 border-green-500' : 'text-black hover:text-green-500'}`}
+          >
+            <FaLaptop className="m-1" /> ErrorReport
+            <span className={`absolute bottom-0 left-0 w-0 h-[2px] bg-green-500 transition-all ${activeLink === 'error-report' ? 'border-1 border-green-500  w-60' : 'group-hover:w-full'} `}></span>
+          </Link>
+          
         </div>
       </div>
 
