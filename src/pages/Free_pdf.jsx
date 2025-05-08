@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
 import AOS from "aos";
-import { useContext } from 'react';
 import { UserContext } from '../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import Coupon from './Coupon';
