@@ -53,7 +53,7 @@ const PdfCourseHome = () => {
       </div>
 
       {/* Course Options */}
-      <div className="flex justify-center flex-col md:flex-row items-center mb-16 gap-6">
+      <div className="flex justify-center flex-col md:flex-row items-stretch mb-16 gap-6">
         <Link
           to={'/pdf-course/Prelims'}
           className="group flex flex-col items-center p-8 cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 w-full max-w-sm border-4 border-green-50 hover:border-green-200"
