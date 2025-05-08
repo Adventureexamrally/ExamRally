@@ -49,6 +49,7 @@ import PdfExamResultPage from "./pages/pdfCourseExam/PdfExamResultPage";
 import ScrollToTop from "./components/ScrollToTop";
 import ContactUs from "./components/ContactUs";
 import Coupon from "./pages/Coupon";
+import ErrorReport from "./pages/user/ErrorReport";
 
 
 
@@ -182,6 +183,7 @@ function MainApp() {
           <Route path="order-history" element={<OrderHIstory />} />
           <Route path="refer-and-earn" element={<ReferAndEarn />} />
           <Route path="active-devices-browser" element={<ActiveDevicesBrowser />} />
+          <Route path="error-report" element={<ErrorReport />} />
         </Route>
 
         <Route path="/All-Packages" element={<Packages />} />
