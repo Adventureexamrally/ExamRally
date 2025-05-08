@@ -1016,8 +1016,8 @@ const Mocksolution = () => {
             </div>
 
             {/* Footer Buttons */}
-            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
-                <div className="d-flex justify-content-around">
+            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
+                <div className="d-flex justify-content-around w-[85%]">
                     {/* Previous Button */}
                     <button
                         className="border-4 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
