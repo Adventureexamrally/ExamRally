@@ -397,7 +397,7 @@ const DetailedCategorie = () => {
                               Frequently Asked Question
                             </h1>
               
-                            <div className="space-y-4">
+                            <div className="space-y-4 mb-4">
                               {faqs.length > 0 ? (
                                 faqs.map((faq, index) => (
                                   <div
@@ -450,21 +450,11 @@ const DetailedCategorie = () => {
             {/* advertiswment part */}
             <div className="md:m-3 w-full md:w-1/5 ">
               <div
-                className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-inner "
-                style={{
-                  backgroundImage: `
-
-                    radial-gradient(at 88% 40%, rgb(11, 204, 75) 0px, transparent 85%),
-                    radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
-                    radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
-                    radial-gradient(at 0% 64%, rgb(11, 153, 41) 0px, transparent 85%),
-                    radial-gradient(at 41% 94%, rgb(34, 214, 109) 0px, transparent 85%),
-                    radial-gradient(at 100% 99%, rgb(10, 202, 74) 0px, transparent 85%)
-                  `,
-                }}
+                className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-md border-2"
+              
               >
-                <div className="absolute inset-0 z-[-10] border-2 border-white rounded-xl"></div>
-                <div className="text-white flex justify-between">
+                <div className="absolute inset-0 z-[-10] rounded-xl "></div>
+                <div className=" flex justify-between">
                   <span className="text-xl font-semibold font mb-3">
                     Features
                   </span>
@@ -483,7 +473,7 @@ const DetailedCategorie = () => {
   }} />
                 {/* <img src={data.featurePhoto} alt="" /> */}
                 <div className="text-center mt-2">
-                <del className="text-gray-100 rounded px-2 py-1 mb-2 drop-shadow">
+                <del className=" rounded px-2 py-1 mb-2 drop-shadow">
   Rs.{amount}
 </del>
 
@@ -501,7 +491,7 @@ const DetailedCategorie = () => {
 </button>
 
             
-                  <p className="text-white font-bold">
+                  <p className="font-bold">
                     You Save Money: Rs. {amount - discountedAmount}
                   </p>
                   {showmodel && <Coupon data={data} setshowmodel={setshowmodel}/>}

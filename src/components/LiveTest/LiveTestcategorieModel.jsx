@@ -67,15 +67,20 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
 
    const [isEnrolled, setIsEnrolled] = useState(false);
     const status = true;
-    
-    useEffect(() => {
-        console.log("user", user);
-      const enrolled = user?.enrolledCourses?.some(course =>
-        course?.courseId?.includes(data?._id)
-      );
-      setIsEnrolled(enrolled);
-      console.log("enlolled", enrolled);
-    }, [user, data,isEnrolled]);
+  useEffect(() => {
+    const enrolled = user?.enrolledCourses?.some(course => {
+      // Ensure expiryDate is a valid Date object
+      const expireDate = new Date(course?.expiryDate);
+  
+      // Check if expiryDate is valid and in the future
+      const isNotExpired = !isNaN(expireDate) && expireDate > new Date();
+  
+      // Check if user is enrolled in the course and if it's not expired
+      return course?.courseId?.includes(data?._id) && isNotExpired;
+    });
+  
+    setIsEnrolled(enrolled);
+  }, [user, data]);
     
     console.log("check", user?.enrolledCourses);
     
