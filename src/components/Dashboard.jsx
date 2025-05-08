@@ -99,7 +99,7 @@ const Dashboard = () => {
             <Link
               key={index}
               to={link.linkUrl}
-                className="text-lg font-bold text-[#131656] hover:underline  flex items-center"
+                className="text-md font-bold text-[#131656] hover:underline  flex items-center"
             >
               {link.linkName}
               {index < scrollLinks.length - 1 && <span className="ml-4">|</span>}

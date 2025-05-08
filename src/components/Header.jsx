@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import logo from "../assets/logo/logo.png";
 import { Link } from 'react-router-dom';
-import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp,useUser  } from "@clerk/clerk-react";
+import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp, useUser } from "@clerk/clerk-react";
 import CustomUserMenu from './CustomUserButton';
 import offer from '../assets/images/offer.png'
 import Api from '../service/Api';
@@ -9,7 +9,7 @@ import Api from '../service/Api';
 
 const Header = () => {
 
-  const {isSignedIn, user, isLoaded } = useUser();
+  const { isSignedIn, user, isLoaded } = useUser();
   const [currentTime, setCurrentTime] = useState("");
 
   const [offer, setOffer] = useState(null);
@@ -33,8 +33,8 @@ const Header = () => {
         const end = new Date(offer.endDateTime);
         const start = new Date(offer.startDateTime);
         const now = new Date();
-         // Check if current time is before start time
-         if (now < start) {
+        // Check if current time is before start time
+        if (now < start) {
           setCountdown("");
           return;
         }
@@ -65,82 +65,69 @@ const Header = () => {
   // console.log(user)
   return (
     <header className="bg-white shadow-md">
-      {/* <p>{user.firstName}</p> */}
-      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
-{/* Logo */}
-<div className="flex items-center space-x-3">
-  <Link to="/">
-    <img src={logo} alt="Brand Logo" className="h-10 cursor-pointer" />
-  </Link>
-</div>
-
-        {/* Search Bar */}
-        <div className="flex-1 max-w-md mx-auto">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full py-2 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-800 text-white px-4 py-1 rounded-lg"
-            >
-              Search
-            </button>
-          </div>
+    <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-around">
+      
+      {/* Left: Logo */}
+      <div className="flex items-center space-x-3">
+        <Link to="/">
+          <img src={logo} alt="Brand Logo" className="h-10 cursor-pointer" />
+        </Link>
+      </div>
+  
+      {/* Center: Search bar (hidden on small screens) */}
+      <div className="flex-1 max-w-md mx-auto hidden lg:block ">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full py-2 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="button"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-800 text-white px-4 py-1 rounded-lg"
+          >
+            Search
+          </button>
         </div>
+      </div>
+  
+      {/* Offer and Telegram/Sign-in */}
+      <div className="flex items-center space-x-4">
+        {/* Offer display */}
         {offer && new Date() >= new Date(offer.startDateTime) && (
-          <Link to={offer.offerLink} className="flex items-center cursor-pointer">
-            <div className='block'>
-              <img src={offer.imageUrl} className="h-14 blink" alt={offer.offerName} />
-            </div>
-            <div className='p-3 fw-bold'>
-              <h1 className='text-green text-lg ml-4'>{offer.offerName}</h1>
-              <p className=' text-white bg-orange-600 text-sm p-[3px] rounded-[5px]' >End in : {countdown}</p>
+          <Link to={offer.offerLink} className="flex flex-col md:flex-row items-center lg:space-x-2">
+            <img
+              src={offer.imageUrl}
+              className="h-14 w-20 object-contain blink"
+              alt={offer.offerName}
+            />
+            <div className="text-center lg:text-left">
+              <h1 className="text-green text-sm lg:text-lg font-semibold">{offer.offerName}</h1>
+              <p className="text-white bg-orange-600 text-xs lg:text-sm px-2 py-1 rounded">
+                End in: {countdown}
+              </p>
             </div>
           </Link>
         )}
-
-
-
-
-        {/* Login and Register Buttons */}
-        <div className="hidden md:flex items-center space-x-4 flex-row">
-          {/* <button
-            type="button"
-            className="px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition"
-          >
-            <Link to='/sigin'>Login</Link>
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-          >
-            <Link to='/sign-up'>Register</Link>
-          </button> */}
-        
-        
-         
-          
-           <Link to='https://t.me/examrally'> <i className="bi bi-telegram text-2xl" style={{color:"	#24A1DE"}}> </i>Join Telegram
-           </Link>
-           {/* <p>{!user ? "":user.firstName}</p> */}
+  
+        {/* Right Side Items: Telegram and Signin - hidden on small screens */}
+        <div className="hidden lg:flex items-center space-x-3">
+          <Link to="https://t.me/examrally" className="flex items-center space-x-1 text-[#24A1DE]">
+            <i className="bi bi-telegram text-2xl"></i>
+            <span>Join Telegram</span>
+          </Link>
+  
           <SignedOut>
             <SignInButton />
           </SignedOut>
           <SignedIn>
-            {/* <UserButton /> */}
             <CustomUserMenu />
           </SignedIn>
-         
-          </div>
-
-        
-         
-  
+        </div>
       </div>
-    </header>
+    </div>
+  </header>
+  
   );
 };
 
