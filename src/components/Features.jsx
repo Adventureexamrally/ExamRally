@@ -142,15 +142,14 @@ export default function Features() {
           <div className=" flex justify-between mx-3 mt-5 font-semibold">
           <h1 className="md:text-2xl font-bold text-gray-900 m-2 leading-snug">Youtube videos</h1>
 
-            <a
-        href="https://www.youtube.com/@examrally_banking"
-        target="_blank"
-        rel="noopener noreferrer"
+            <Link
+        to="https://www.youtube.com/@examrally_banking"
+
         className="border-1 h-10 border-green-500 text-green-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600"
 
       >
         View More
-      </a>
+      </Link>
           </div>
       <div className="relative flex justify-center items-center w-full  py-4 rounded-lg mb-36">
       <div className="relative flex items-center w-[90%] justify-center">

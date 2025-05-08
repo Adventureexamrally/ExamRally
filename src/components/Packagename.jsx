@@ -223,7 +223,7 @@ const [payment, setPayment] = useState("");
     });
   
     setIsEnrolled(enrolled);
-  }, [user, data]);
+  }, [user, data,isEnrolled]);
   
   
   console.log("check", user?.enrolledCourses);
@@ -717,7 +717,7 @@ const [payment, setPayment] = useState("");
                                                           }`}
                                                           onClick={() => {
                                                             if (!isSignedIn) {
-                                                              navigate('/sign-in');
+                                                              openNewWindow('/sign-in');
                                                               return;
                                                             }
 

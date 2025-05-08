@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import {  Link } from "react-router-dom";
 import Banner from "./Banner";
 // import { RiRobotFill } from "react-icons/ri";
 import Api from "../service/Api";
@@ -12,27 +12,10 @@ import Archivements from "./Archivements";
 const Dashboard = () => {
   const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
   const [packages, setPackages] = useState([]);
+  const [scrollLinks, setScrollLinks] = useState([]);
   console.log(packages);
 
-  const location = useLocation();
 
-  useEffect(() => {
-    const hash = location.hash;
-    if (hash) {
-      // Delay until components are mounted
-      const scrollToHash = () => {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      };
-
-      // Try scrolling multiple times in case the element renders late
-      setTimeout(scrollToHash, 100);  // Short delay
-      setTimeout(scrollToHash, 500);  // Medium delay
-      setTimeout(scrollToHash, 1000); // Final fallback
-    }
-  }, [location]);
   const fetchPakages = async () => {
     try {
       const response = await Api.get("/packages/get/active");
@@ -42,9 +25,26 @@ const Dashboard = () => {
       console.error(error);
     }
   };
-
+  const fetchScrollLinks = async () => {
+    try {
+      const response = await Api.get("/links/all");
+      if (response.status === 200) {
+        // The response.data will contain documents with links array
+        const allLinks = response.data.reduce((acc, entry) => {
+          // Combine all links from each entry
+          return acc.concat(entry.links);
+        }, []);
+        setScrollLinks(allLinks);
+        console.log("Links data:", allLinks);
+      }
+    } catch (error) {
+      console.error("Error fetching scroll links:", error.response?.data || error.message);
+      setScrollLinks([]);
+    }
+  };
   useEffect(() => {
     fetchPakages();
+    fetchScrollLinks();
   }, []);
 
   // const [scrollPosition, setScrollPosition] = useState(0);
@@ -93,40 +93,36 @@ const Dashboard = () => {
     <div className="bg-gray-100 min-h-screen p-2">
       {/* Trending Links */}
       <div className="mb-1 overflow-hidden">
-        <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
-          <Link to="#" className="hover:underline">
-            Clerk Notification
-          </Link>
-          <Link to="#" className="hover:underline">
-            SBI JA Previous Year Cut-off
-          </Link>
-          <Link to="#" className="hover:underline">
-            Descriptive Writing Mock Test
-          </Link>
-          <Link to="#" className="hover:underline">
-            Current Affairs
-          </Link>
+     
+      <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
+          {scrollLinks?.map((link, index) => (
+            <Link
+              key={index}
+              to={link.linkUrl}
+                className="text-md font-bold text-[#131656] hover:underline  flex items-center"
+            >
+              {link.linkName}
+              {index < scrollLinks.length - 1 && <span className="ml-4">|</span>}
+            </Link>
+          ))}
         </div>
-      </div>
+    </div>
       {/* 
       <div className="h-[30vh] w-full overflow-hidden rounded mb-4">
         <Banner />
       </div> */}
 
-      {/* Main Content */}
+  {/* Main Content */ }
 
-      <LiveTest />
+  <LiveTest />
 
 
-      {/* Upcoming Exams */}
-      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="TopTrendingExams">
+  {/* Upcoming Exams */ }
+      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="Top Trending Exams">
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-lg">Top Trending Exams</h3>
-          <Link to="#"  className="border-1 h-10 border-blue-500 text-blue-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600"
-          >
-            View More
-          </Link>
+
         </div>
 
         {/* Carousel Container */}
@@ -149,7 +145,7 @@ const Dashboard = () => {
                   <Link to={`/top-trending-exams/${exam.link_name}`} className="text-sm font-medium text-gray-700">
                     <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
                       <img
-                        src={`${IMG_URL}${exam.photo}`}
+                        src={exam.photo}
                         alt={exam.name}
                         className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
                       />
@@ -172,11 +168,9 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      <div id='TrendingPackages'>
       <TrendingPackages />
-      </div>
           <Archivements/>
-    </div>
+    </div >
   );
 };
 

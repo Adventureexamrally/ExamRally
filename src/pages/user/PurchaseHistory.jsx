@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import DashBoard from './DashBoard'
 import Api from '../../service/Api';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from "@clerk/clerk-react";
+import { useUser,useAuth } from "@clerk/clerk-react";
 import { UserContext } from '../../context/UserProvider';
 
 const PurchaseHistory = () => {
@@ -13,7 +13,7 @@ const PurchaseHistory = () => {
   
     const { user } = useContext(UserContext);
 
-    
+  console.warn(useAuth)
 
 
   return (

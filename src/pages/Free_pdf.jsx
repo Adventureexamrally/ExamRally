@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
+
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
 import AOS from "aos";
@@ -11,16 +12,19 @@ import Coupon from './Coupon';
 const Free_pdf = () => {
   const [seo, setSeo] = useState([])
   const [ad, setAD] = useState([])
+
   const [pdfs, setPdfs] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState('');
   const { user } = useContext(UserContext);
   const [responseId, setResponseId] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [selectedpdf, setSelectedPackage] = useState(null);
 
   const navigate = useNavigate();
   const topics = [
+
     "Quantitative Aptitude",
     "Reasoning Ability",
     "English Language",
@@ -29,6 +33,7 @@ const Free_pdf = () => {
     "Static GK",
     "Current Affairs",
     "Computer Awareness"
+
   ];
   useEffect(() => {
     run();
@@ -58,6 +63,7 @@ const Free_pdf = () => {
     ? pdfs.filter(pdf => pdf.Topic === selectedTopic)
     : pdfs;
   console.log(seo);
+
 
 
   useEffect(() => {
@@ -185,36 +191,35 @@ const Free_pdf = () => {
   return (
     <>
       <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
         <title>{seo[0]?.seoData?.title}</title>
         <meta name="description" content={seo[0]?.seoData?.description} />
         <meta name="keywords" content={seo[0]?.seoData?.keywords} />
         <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
         <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
         <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                ))} */}
-
       </Helmet>
-      <h2 className="text-2xl m-2 font-bold text-center text-green-600">FREE PDF</h2>
+
 
       <div className="flex container mx-auto p-4">
         {/* Topics Sidebar */}
         <div className="w-1/4 pr-4">
           <div className="bg-white shadow-md rounded-lg  sticky top-10">
+
             {topics.map((topic, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedTopic(topic)}
+
                 className={` w-full text-left px-4 py-2 hover:bg-[#7382CC] ${selectedTopic === topic ? 'bg-[#131656] text-white' : ''
                   }`}
+
               >
                 {topic}
               </button>
             ))}
           </div>
         </div>
+
 
         {/* PDF Grid */}
         <div className="w-3/4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -274,13 +279,28 @@ const Free_pdf = () => {
                     <img src={item.photo} alt="Not Found" className='rounded-md' /></Link >
                 </div>
               ))}
+
             </div>
+          ))}
+        </div>
+
+        {/* Ads */}
+        {ad.length > 0 && (
+          <div className="hidden lg:block w-1/5 ml-4">
+            {ad.map((item, index) => (
+              <div key={index} className='m-4 hover:scale-105 transition-transform duration-300'>
+                <Link to={item.link_name}>
+                  <img src={item.photo} alt="Ad" className='rounded-md' />
+                </Link>
+              </div>
+            ))}
           </div>
-        }
-      </div >
+        )}
+      </div>
     </>
   );
 };
 
 
 export default Free_pdf;
+
