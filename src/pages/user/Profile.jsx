@@ -113,7 +113,8 @@ const Profile = () => {
                   placeholder="Enter First Name"
                   onChange={handleInputChange}
                   required
-                  disabled={!isEditing}
+                  // disabled={!isEditing}
+                  disabled
                   className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -130,7 +131,9 @@ const Profile = () => {
                   placeholder="Enter Last Name"
                   onChange={handleInputChange}
                   required
-                  disabled={!isEditing}
+                  // disabled={!isEditing}
+                  disabled
+
                   className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -147,7 +150,9 @@ const Profile = () => {
                   onChange={handleInputChange}
                   placeholder="Enter Email id"
                   required
-                  disabled={!isEditing}
+                  // disabled={!isEditing}
+                  disabled
+
                   className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>

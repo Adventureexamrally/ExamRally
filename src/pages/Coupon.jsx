@@ -12,8 +12,9 @@ const Coupon = ({ data, setshowmodel }) => {
 
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(data.discountedAmount || 1998);
-  const [message, setMessage] = useState({ text: '', type: '' });
+  const [finalPrice, setFinalPrice] = useState(
+    data?.discountedAmount || data?.amount || 1998
+  );  const [message, setMessage] = useState({ text: '', type: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
 
@@ -38,7 +39,7 @@ const Coupon = ({ data, setshowmodel }) => {
       const res = await Api.post('/coupons/validate', { couponCode: couponCode.trim().toUpperCase() });
   
       if (res.data.valid) {
-        const baseAmount = Number(data.discountedAmount) || 0;
+        const baseAmount = Number(data.discountedAmount)||Number(data.amount)  || 0;
         const discount = (baseAmount * res.data.discountPercent) / 100;
         const newTotal = baseAmount - discount;
         setFinalPrice(Math.round(newTotal));
@@ -61,7 +62,7 @@ const Coupon = ({ data, setshowmodel }) => {
   
       // Reset any previously applied discount if current coupon is rejected
       setDiscountPercent(0);
-      setFinalPrice(data.discountedAmount);
+      setFinalPrice(data.discountedAmount || data?.amount);
     } finally {
       setIsProcessing(false);
     }
@@ -69,13 +70,25 @@ const Coupon = ({ data, setshowmodel }) => {
   
 
   const paymentmeth = async (amountToPay) => {
+    if (!user?._id) {
+      alert('User is not authenticated. Please log in.');
+      return; // Exit early if no user ID is available
+    }
     try {
       setIsProcessing(true);
+      console.log('User ID:', user?._id);
+      console.log('User Email:', user?.email);
+
       const res = await Api.post('/orders/orders', {
-        amount: Math.round(amountToPay * 100), // must be integer in paise
+        amount: Math.round(amountToPay * 100),  // in paise
         currency: 'INR',
         receipt: `${user?.email}`,
         payment_capture: 1,
+        userId: user?._id,
+        courseId: data?._id,
+        courseName: data?.name || data?.Title || data?.categorys || "Course Name",
+        email: user?.email,
+        phoneNumber: user?.phoneNumber,
       });
 
       const scriptLoaded = await loadRazorpayScript();
@@ -89,12 +102,24 @@ const Coupon = ({ data, setshowmodel }) => {
         amount: Math.round(amountToPay * 100),
         currency: 'INR',
         name: data?.name,
-        description: 'Course Payment',
-        handler: function (response) {
-          console.log('Payment Success:', response);
-          alert('Payment Successful! ID: ' + response.razorpay_payment_id);
-          setshowmodel(false);
+        description: 'Course Payment', 
+        handler: async function (response) {
+          const res = await Api.post('/orders/verify-payment', {
+            userId: user._id,
+            courseId: data._id,
+            courseName: data?.name || data?.Title || data?.categorys || "Course Name",
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+            signature: response.razorpay_signature,
+            amount: finalPrice,
+            expiryDays: data.expiryDays, // ✅ Send expiryDays from client
+          });
+          console.log(res)
+        
+            alert("Payment successful!");
+            setshowmodel(false);
         },
+        
         prefill: {
           name: user?.firstName,
           email: user?.email,
@@ -102,7 +127,7 @@ const Coupon = ({ data, setshowmodel }) => {
         notes: {
           user_id: user?._id,
           course_id: data?._id,
-          courseName: data?.categorys,
+          courseName: data?.categorys || data?.Title || data?.name,
         },
         theme: {
           color: '#2E7D32',
@@ -112,10 +137,35 @@ const Coupon = ({ data, setshowmodel }) => {
       const rzp = new window.Razorpay(options);
       rzp.open();
 
-      rzp.on('payment.failed', function (response) {
-        console.error('Payment failed', response.error);
-        alert('Payment failed. Please try again.');
+      rzp.on('payment.failed', async function (response) {
+
+        console.error('Payment failed:', response.error.metadata);
+ 
+      
+        try {
+          const errorData = response.error || {};
+          const meta = errorData.metadata || {};
+          
+          console.log(errorData);
+          
+          await Api.post('/orders/payment-failed', {
+            userId: user?._id,
+            courseId: data?._id,
+            orderId: meta.order_id,
+            paymentId:errorData.metadata.payment_id || null,
+            reason: errorData.description || errorData.reason || 'Unknown error',
+            method: 'razorpay',
+          });
+          
+      
+          alert("Payment failed. Please try again.");
+        } catch (err) {
+          console.error("Failed to report payment failure:", err);
+          alert("Payment failed and could not be logged.");
+        }
       });
+      
+      
     } catch (error) {
       console.error('Error during payment:', error);
       alert(error.message || 'Payment failed');
@@ -138,7 +188,7 @@ const Coupon = ({ data, setshowmodel }) => {
           </div>
           
           <div className="bg-gradient-to-r from-green-600 to-green-800 p-6 text-white">
-            <h2 className="text-2xl font-bold">{data?.name ?data?.name :data?.categorys}</h2>
+            <h2 className="text-2xl font-bold">{data?.name ||data?.Title ||data?.categorys}</h2>
           </div>
         </div>
 
@@ -150,10 +200,13 @@ const Coupon = ({ data, setshowmodel }) => {
             </div>
             <div className="text-right">
               <p className="text-gray-600">Original Price</p>
+              {data.discountedAmount?
               <p className="text-lg font-bold line-through">₹{data.amount}</p>
+              :              <p className="text-lg font-bold ">₹{data.amount}</p>
+              }
             </div>
           </div>
-
+{data.discountedAmount&&
           <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
             <div className="flex justify-between items-center">
               <div>
@@ -165,7 +218,7 @@ const Coupon = ({ data, setshowmodel }) => {
               </span>
             </div>
           </div>
-
+}
           {/* Coupon Toggle Section */}
           <div className="mb-4 border-b pb-2 border-green-100">
             <button

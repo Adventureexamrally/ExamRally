@@ -71,15 +71,27 @@ const PdfCoupon = ({ data, setshowmodel }) => {
   
 
   const paymentmeth = async (amountToPay) => {
+    if (!user?._id) {
+      alert('User is not authenticated. Please log in.');
+      return; // Exit early if no user ID is available
+    }
     try {
       setIsProcessing(true);
-      const res = await Api.post('/orders/orders', {
-        amount: Math.round(amountToPay * 100), // must be integer in paise
-        currency: 'INR',
-        receipt: `${user?.email}`,
-        payment_capture: 1,
-      });
-
+       console.log('User ID:', user?._id);
+            console.log('User Email:', user?.email);
+      
+            const res = await Api.post('/orders/orders', {
+              amount: Math.round(amountToPay * 100),  // in paise
+              currency: 'INR',
+              receipt: `${user?.email}`,
+              payment_capture: 1,
+              userId: user?._id,
+              courseId: data?.months,
+              courseName: "Pdf Course",
+              email: user?.email,
+              phoneNumber: user?.phoneNumber,
+            });
+      
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         alert('Failed to load Razorpay SDK. Check your connection.');
@@ -92,12 +104,22 @@ const PdfCoupon = ({ data, setshowmodel }) => {
         currency: 'INR',
         name: data?.name,
         description: 'Course Payment',
-        handler:async function (response) {
-          console.log('Payment Success:', response);
-          alert('Payment Successful! ID: ' + response.razorpay_payment_id);
-          setshowmodel(false);
+        handler: async function (response) {
+          
           // Call your backend to save the subscription
   try {
+    const res1 = await Api.post('/orders/verify-payment', {
+      userId: user._id,
+      courseId: data?.months,
+      courseName: "PDF Course",
+      paymentId: response.razorpay_payment_id,
+      orderId: response.razorpay_order_id,
+      signature: response.razorpay_signature,
+      amount: finalPrice,
+      expiryDays: data.expiryDays, // ✅ Send expiryDays from client
+    });
+    console.log(res1)
+
     const res = await Api.post('/pdf-subscriptions', {
       userId: user._id, // From your UserContext
       plan: {
@@ -108,8 +130,10 @@ const PdfCoupon = ({ data, setshowmodel }) => {
       },
       paymentId: response.razorpay_payment_id,
     });
-    setshowmodel(false);
-  } catch (err) {
+    console.log('Payment Success:', response);
+
+    alert("Payment successful!");
+    setshowmodel(false);  } catch (err) {
     console.error('Failed to save subscription:', err);
     alert('Payment was successful, but subscription could not be saved.');
   }
@@ -130,9 +154,32 @@ const PdfCoupon = ({ data, setshowmodel }) => {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-      rzp.on('payment.failed', function (response) {
-        console.error('Payment failed', response.error);
-        alert('Payment failed. Please try again.');
+      rzp.on('payment.failed', async function (response) {
+
+        console.error('Payment failed:', response.error.metadata);
+ 
+      
+        try {
+          const errorData = response.error || {};
+          const meta = errorData.metadata || {};
+          
+          console.log(errorData);
+          
+          await Api.post('/orders/payment-failed', {
+            userId: user?._id,
+            courseId: data?.months,
+            orderId: meta.order_id,
+            paymentId:errorData.metadata.payment_id || null,
+            reason: errorData.description || errorData.reason || 'Unknown error',
+            method: 'razorpay',
+          });
+          
+      
+          alert("Payment failed. Please try again.");
+        } catch (err) {
+          console.error("Failed to report payment failure:", err);
+          alert("Payment failed and could not be logged.");
+        }
       });
     } catch (error) {
       console.error('Error during payment:', error);

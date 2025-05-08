@@ -9,9 +9,9 @@ import Api from "../service/Api";
 import { useState } from "react";
 
 
-// window.addEventListener('contextmenu', function (e) {
-//   e.preventDefault();
-// });
+window.addEventListener('contextmenu', function (e) {
+  e.preventDefault();
+});
 
 // Prevent F12, Ctrl+R, Ctrl+Shift+R, and Ctrl+Shift+I key presses
 window.addEventListener('keydown', function (e) {

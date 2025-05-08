@@ -79,15 +79,23 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
   };
 
   const handlePayment = async () => {
+    if (!user?._id) {
+      alert('User is not authenticated. Please log in.');
+      return; // Exit early if no user ID is available
+    }
     try {
       setIsProcessing(true);
       
-      const amountInPaise = Math.round(finalPrice * 100);
-      const orderData = {
-        amount: amountInPaise,
+   const res = await Api.post('/orders/orders', {
+        amount: Math.round(finalPrice * 100),  // in paise
         currency: 'INR',
-        receipt: user?.email || 'package-purchase',
+        receipt: `${user?.email}` || 'package-purchase',
         payment_capture: 1,
+        userId: user?._id,
+        courseId: JSON.stringify(pkg.coursesIncluded),
+        courseName: pkg?.name || "Course Name",
+        email: user?.email,
+        phoneNumber: user?.phoneNumber,
         notes: {
           package_id: pkg._id,
           package_name: pkg.name,
@@ -95,9 +103,8 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           coupon_code: discountPercent > 0 ? couponCode : null,
           discount_percent: discountPercent
         }
-      };
+      });
 
-      const orderResponse = await Api.post('/orders/orders', orderData);
       
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
@@ -106,16 +113,27 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderResponse.data.amount,
+        amount: Math.round(finalPrice * 100),
         currency: 'INR',
         name: pkg.name,
         description: `Package purchase: ${pkg.name}`,
-        order_id: orderResponse.data.id,
-        handler: function (response) {
-          console.log('Payment success:', response);
-          alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-          setShowModal(false);
+        handler: async function (response) {
+          const res = await Api.post('/orders/verify-payment', {
+            userId: user._id,
+            courseId: JSON.stringify(pkg.coursesIncluded),
+            courseName: pkg.name|| "Course Name",
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+            signature: response.razorpay_signature,
+            amount: finalPrice,
+            expiryDays: pkg.duration, // ✅ Send expiryDays from client
+          });
+          console.log(res)
+        
+            alert("Payment successful!");
+            setShowModal(false);
         },
+        
         prefill: {
           name: user?.firstName || '',
           email: user?.email || '',
@@ -129,9 +147,32 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       const rzp = new window.Razorpay(options);
       rzp.open();
 
-      rzp.on('payment.failed', function (response) {
-        console.error('Payment failed:', response.error);
-        alert(`Payment failed: ${response.error.description}`);
+      rzp.on('payment.failed', async function (response) {
+
+        console.error('Payment failed:', response.error.metadata);
+ 
+      
+        try {
+          const errorData = response.error || {};
+          const meta = errorData.metadata || {};
+          
+          console.log(errorData);
+          
+          await Api.post('/orders/payment-failed', {
+            userId: user?._id,
+            courseId: JSON.stringify(pkg.coursesIncluded),
+            orderId: meta.order_id,
+            paymentId:errorData.metadata.payment_id || null,
+            reason: errorData.description || errorData.reason || 'Unknown error',
+            method: 'razorpay',
+          });
+          
+      
+          alert("Payment failed. Please try again.");
+        } catch (err) {
+          console.error("Failed to report payment failure:", err);
+          alert("Payment failed and could not be logged.");
+        }
       });
 
     } catch (error) {

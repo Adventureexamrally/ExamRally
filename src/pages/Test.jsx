@@ -618,7 +618,7 @@ const Test = () => {
 
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
-    updateSectionTime();
+  
     console.log("Handling section submission...");
     setIsPaused(true); // Pause the timer
     // Save current section time before modal
@@ -700,7 +700,7 @@ const Test = () => {
       console.log("Updated Section Summary Data:", newData);
       return newData;
     });
-
+    updateSectionTime();
     // Display modal
     setShowModal(true);
     console.log("Modal shown:", showModal);
@@ -799,7 +799,7 @@ const Test = () => {
 
     console.log("Previous time taken for section:", previousTimeTaken);
 
-    const finalTimeTaken = actualTimeTaken;
+    const finalTimeTaken = actualTimeTaken ; 
 
     console.log("Final time taken for section:", finalTimeTaken);
     console.warn(formattedSections)
@@ -888,6 +888,7 @@ const Test = () => {
     navigate(`/result/${id}`);
   };
   const submitExam = () => {
+    updateSectionTime()
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -970,7 +971,7 @@ const Test = () => {
         notVisitedQuestions.length > 0 ? notVisitedQuestions[0] : null,
     };
 
-    setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
+    // setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
 
     const reviewedQuestions = markedForReview.filter(
       (index) =>
@@ -1160,10 +1161,17 @@ const Test = () => {
           notVisitedQuestions: sectionSummary.notVisitedQuestions,
           s_accuracy: secaccuracy,
           skipped: skippedQuestions,
-          timeTaken:
-            resultData?.section?.[sectionIndex]?.timeTaken ??
-            sectionTimes?.[sectionIndex] ??
-            0,
+          timeTaken: (() => {
+            const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
+            const time2 = sectionTimes?.[sectionIndex];
+        
+            if (typeof time1 === 'number' && typeof time2 === 'number') {
+              return time1 + time2;
+            }
+        
+            return time1 ?? time2 ?? 0;
+          })()
+      
         };
       })
       .filter(Boolean);
