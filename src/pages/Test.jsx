@@ -1835,7 +1835,7 @@ console.warn(currentState)
                       className={`md:w-[50%] p-3   ${
                         isFullscreen ? "h-[560px]" : "h-[450px]"
                       } `}
-                      style={{ overflowY: "auto" }}
+                      style={{ overflowY: 'scroll' }}
                     >
                       <div
                         className="text-wrap"
@@ -1862,7 +1862,7 @@ console.warn(currentState)
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
                     }`}
-                    style={{ overflowY: "auto" }}
+                    style={{ overflowY:'scroll'}}
                   >
                     <div>
                       <div

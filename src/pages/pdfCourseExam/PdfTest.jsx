@@ -1799,7 +1799,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
       : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
     }`
                   } 
-                  style={{ overflowY: "auto" }}
+                  style={{ overflowY: 'scroll'}}
                 >
                       <div
                         className="fw-bold text-wrap"
@@ -1824,7 +1824,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
                       ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                          }`}                style={{  overflowY: "auto" }}
+                          }`}                style={{  overflowY:'scroll' }}
               >
                     <div>
                       <div
