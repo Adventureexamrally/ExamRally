@@ -1832,11 +1832,14 @@ console.warn(currentState)
                     selectedLanguage?.toLowerCase()
                   ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                     <div
-                      className={`md:w-[50%] p-3   ${
-                        isFullscreen ? "h-[560px]" : "h-[450px]"
-                      } `}
-                      style={{ overflowY: 'scroll' }}
-                    >
+                    className={`md:w-[50%] p-3  pb-5
+                  ${isFullscreen
+                        ? 'h-[80vh] md:h-[80vh]'
+                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      }`
+                    }
+                    style={{ overflowY: 'scroll' }}
+                  >
                       <div
                         className="text-wrap"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
@@ -1853,16 +1856,15 @@ console.warn(currentState)
 
                   {/* Right side for Question */}
                   <div
-                    className={`${
-                      isFullscreen ? "h-[560px]" : "h-[450px]"
-                    } mb-24 md:mb-14 p-3 flex flex-col md:flex-row justify-between ${
-                      examData.section[currentSectionIndex]?.questions?.[
+                    className={`  ${isFullscreen
+                      ? 'h-[80vh] md:h-[80vh]'
+                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                    }`}
-                    style={{ overflowY:'scroll'}}
+                      }`} style={{ overflowY: 'scroll' }}
                   >
                     <div>
                       <div
@@ -1946,16 +1948,13 @@ console.warn(currentState)
 
         <div
           className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
-        ${isMobileMenuOpen ? "translate-x-0  w-3/4 " : "translate-x-full "}
-        ${
-          closeSideBar
-            ? "md:translate-x-full md:w-0 border-0"
-            : "md:translate-x-0 md:w-1/4"
-        }
-       ${
-         isFullscreen ? "h-[650px]" : "h-[547px]"
-       } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[530px]`}
-          style={{ overflowY: "auto" }}
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+      ${isFullscreen
+              ? 'h-[87vh] md:h-[87vh]'
+              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
+            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+          style={{ overflowY: 'auto' }}
         >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
