@@ -215,7 +215,7 @@ const [payment, setPayment] = useState("");
       course?.courseId?.includes(data?._id)
     );
     setIsEnrolled(enrolled);
-  }, [user, data]);
+  }, [user, data,isEnrolled]);
   
   console.log("check", user?.enrolledCourses);
   
@@ -708,16 +708,16 @@ const [payment, setPayment] = useState("");
                                                           }`}
                                                           onClick={() => {
                                                             if (!isSignedIn) {
-                                                              navigate('/sign-in');
+                                                              openNewWindow('/sign-in');
                                                               return;
                                                             }
 
                                                             if (resultData?.[test._id]?.status === "completed") {
-                                                             navigate(`/result/${test._id}`);
+                                                              openNewWindow(`/result/${test._id}`);
                                                             } else if (resultData?.[test._id]?.status === "paused") {
-                                                              navigate(`/mocktest/${test._id}`);
+                                                              openNewWindow(`/mocktest/${test._id}`);
                                                             } else {
-                                                              navigate(`/instruction/${test._id}`);
+                                                              openNewWindow(`/instruction/${test._id}`);
                                                             }
                                                           }}
                                                         >
