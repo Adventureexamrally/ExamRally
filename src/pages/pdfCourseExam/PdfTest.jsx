@@ -1793,13 +1793,13 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                 selectedLanguage?.toLowerCase()
               ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                 <div 
-                  className={`md:w-[50%] p-3  pb-5
+                  className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
                       ${isFullscreen 
       ? 'h-[80vh] md:h-[80vh]' 
       : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
     }`
                   } 
-                  style={{ overflowY: 'scroll'}}
+                  style={{ overflowY: 'auto'}}
                 >
                       <div
                         className="fw-bold text-wrap"
@@ -1824,7 +1824,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
                       ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                          }`}                style={{  overflowY:'scroll' }}
+                          }`}                style={{  overflowY:'auto' }}
               >
                     <div>
                       <div

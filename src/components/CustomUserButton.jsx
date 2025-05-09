@@ -55,9 +55,7 @@ const CustomUserMenu = () => {
             alt="User avatar" 
             className="h-9 w-9 rounded-full border-2 border-white hover:border-blue-100 transition-all duration-200"
           />
-          <FaChevronDown 
-            className={`absolute -bottom-1 -right-1 text-xs bg-white rounded-full p-0.5 text-gray-500 transition-transform duration-200 ${open ? 'transform rotate-180' : ''}`}
-          />
+      
         </div>
       </button>
 

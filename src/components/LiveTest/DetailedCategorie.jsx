@@ -450,12 +450,12 @@ const DetailedCategorie = () => {
             {/* advertiswment part */}
             <div className="md:m-3 w-full md:w-1/5 ">
               <div
-                className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-md border-2"
+                className="relative flex flex-col w-full bg-cover rounded-xl shadow-md border-2"
               
               >
-                <div className="absolute inset-0 z-[-10] rounded-xl "></div>
-                <div className=" flex justify-between">
-                  <span className="text-xl font-semibold font mb-3">
+                <div className="absolute inset-0 z-[-10] border-2 rounded-xl "></div>
+                <div className=" flex justify-center">
+                  <span className="text-xl font-semibold font  p-2">
                     Features
                   </span>
                 </div>
@@ -472,7 +472,7 @@ const DetailedCategorie = () => {
     objectFit: 'contain'
   }} />
                 {/* <img src={data.featurePhoto} alt="" /> */}
-                <div className="text-center mt-2">
+                <div className="text-center mt-1 p-2">
                 <del className=" rounded px-2 py-1 mb-2 drop-shadow">
   Rs.{amount}
 </del>
