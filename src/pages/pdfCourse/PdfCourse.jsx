@@ -21,6 +21,11 @@ const PdfCourse = () => {
     const [AllExamsName, setAllExamsName] = useState([]);
     const [selectedExam, setSelectedExam] = useState('');
     const [pdfSubscription, setPdfSubscription] = useState(null);
+const [openScheduleId, setOpenScheduleId] = useState(null);
+
+const toggleSchedule = (id) => {
+  setOpenScheduleId((prevId) => (prevId === id ? null : id));
+};
 
     const { user } = useContext(UserContext);
     console.log(user)
@@ -475,9 +480,26 @@ const PdfCourse = () => {
                                                                 </div>
 
                                                                 {/* Schedule */}
-                                                                <div className="text-center text-sm text-gray-700 mb-4 px-2">
-                                                                    <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
-                                                                </div>
+                                                                    {openScheduleId !== pdf._id && (
+                                                                    <div className="text-center text-sm text-gray-700 mb-4 px-2">
+                                                                        <button
+                                                                        onClick={() => toggleSchedule(pdf._id)}
+                                                                        className="mt-2 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+                                                                        >
+                                                                        Show Schedule
+                                                                        </button>
+                                                                    </div>
+                                                                    )}
+
+                                                                    {openScheduleId === pdf._id && (
+                                                                    <div className="text-sm text-gray-700 mb-4 px-2">
+                                                                        <div className="mt-2 bg-purple-50 p-3 rounded shadow-inner border border-purple-200">
+                                                                        <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
+                                                                        </div>
+                                                                    </div>
+                                                                    )}
+
+
 
                                                                 {/* Action Buttons */}
                                                                 <div className="flex justify-between space-x-2">

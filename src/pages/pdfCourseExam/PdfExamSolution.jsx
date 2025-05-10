@@ -537,7 +537,7 @@ useEffect(() => {
                                       <div>
 
                                             <div
-                                                className="fw-bold text-wrap "
+                                                className=" text-wrap "
                                                 style={{
                                                     whiteSpace: "normal",
                                                     wordWrap: "break-word",
@@ -652,7 +652,7 @@ useEffect(() => {
                                                 <>
                                                     <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
                                                     <div
-                                                        className="fw-bold text-wrap"
+                                                        className=" text-wrap"
                                                         style={{
                                                             whiteSpace: "normal",
                                                             wordWrap: "break-word",
@@ -908,7 +908,7 @@ useEffect(() => {
                 <div className="d-flex justify-content-around">
                     {/* Previous Button */}
                     <button
-                        className="border-4 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                        className="border-4 px-1 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
                         onClick={handlePreviousClick} // Ensure this function is defined to handle the logic for going to the previous question
                         disabled={clickedQuestionIndex === startingIndex} // Disable if it's the first question
                     >
@@ -919,7 +919,7 @@ useEffect(() => {
 
                     <button
                         onClick={handleNextClick}
-                        className="border-4 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                        className="border-4 px-5 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
                     >
                         Next
                     </button>
