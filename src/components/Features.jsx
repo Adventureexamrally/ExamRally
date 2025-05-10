@@ -140,7 +140,7 @@ export default function Features() {
         </div>
       </div>
           <div className=" flex justify-between mx-3 mt-5 font-semibold">
-          <h1 className="md:text-2xl font-bold text-gray-900 m-2 leading-snug">Youtube videos</h1>
+          <h1 className="md:text-2xl font-bold  m-2 leading-snug text-green-500">YOUTUBE VIDEOS</h1>
 
             <Link
         to="https://www.youtube.com/@examrally_banking"
@@ -173,16 +173,16 @@ export default function Features() {
                   title="Current Video"
                   allowFullScreen
                 />
-                 <h1 className="p font p-3 bg-green-300 text-center rounded m-2">{youtubeVideos[currentIndex ]?.description}</h1>
+                 <h1 className="p-2 h5 font  rounded ">{youtubeVideos[currentIndex ]?.description}</h1>
               </div>
             ) : (
               <>
                 {/* Previous Video (Left) */}
                 <div
-                  className="relative  scale-90 transition-transform duration-300 mx-2"
+                  className="relative  z-10 transition-transform duration-300 mx-2"
                   style={{
-                    width: `${customWidth * 0.8}px`,
-                    height: `${customHeight * 0.8}px`,
+                    width: `${customWidth}px`,
+                    height: `${customHeight}px`,
                   }}
                 >
                   {/* <h1 className="h5 font">{youtubeVideos[prevIndex]?.title}</h1> */}
@@ -192,7 +192,7 @@ export default function Features() {
                     title="Previous Video"
                     allowFullScreen
                   />
-                 <h1 className="p font p-3 bg-green-300 text-center rounded m-5">{youtubeVideos[prevIndex]?.description}</h1>
+                 <h1 className="p-2 h5 font  rounded ">{youtubeVideos[prevIndex]?.description}</h1>
                 </div>
 
                 {/* Current Video (Center) */}
@@ -210,17 +210,16 @@ export default function Features() {
                     title="Current Video"
                     allowFullScreen
                   />
-                  <h1 className="p font p-3 bg-green-500 text-center text-white rounded m-4">{youtubeVideos[currentIndex]?.description}</h1>
+                  <h1 className="p-2 h5 font  rounded ">{youtubeVideos[currentIndex]?.description}</h1>
                 </div>
 
                 {/* Next Video (Right) */}
                 <div
-                  className="relative  scale-90 transition-transform duration-300 mx-2"
-                  style={{
-                    width: `${customWidth * 0.8}px`,
-                    height: `${customHeight * 0.8}px`,
-                  }}
-                >
+                 className="relative z-10 transition-transform duration-300 mx-2"
+                 style={{
+                   width: `${customWidth}px`,
+                   height: `${customHeight}px`,
+                 }}>
                   {/* <h1 className="h5 font">{youtubeVideos[nextIndex]?.title}</h1> */}
                   <iframe
                     className="w-full h-full rounded-lg shadow-lg"
@@ -228,7 +227,7 @@ export default function Features() {
                     title="Next Video"
                     allowFullScreen
                   />
-                 <h1 className="p font p-3 bg-green-300 text-center rounded m-5">{youtubeVideos[nextIndex]?.description}</h1>
+                 <h1 className="p-2 h5 font  rounded ">{youtubeVideos[nextIndex]?.description}</h1>
                 </div>
               </>
             )}

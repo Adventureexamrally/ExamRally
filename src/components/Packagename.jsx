@@ -692,7 +692,7 @@ const [payment, setPayment] = useState("");
                                                       {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
                                                         // 🔒 Locked: Not enrolled + (paid or not live)
                                                         <button
-                                                          className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                                          className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
                                                           disabled
                                                         >
                                                           <div className="flex items-center justify-center font-semibold gap-1">
@@ -820,7 +820,7 @@ const [payment, setPayment] = useState("");
                                 {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
                                   // 🔒 Locked: Not enrolled + (paid or not live)
                                   <button
-                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
                                     disabled
                                   >
                                     <div className="flex items-center justify-center font-semibold gap-1">
@@ -950,7 +950,7 @@ const [payment, setPayment] = useState("");
                                 {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
                                   // 🔒 Locked: Not enrolled + (paid or not live)
                                   <button
-                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
                                     disabled
                                   >
                                     <div className="flex items-center justify-center font-semibold gap-1">

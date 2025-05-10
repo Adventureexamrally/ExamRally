@@ -829,7 +829,18 @@ const LiveSolution = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <p>No section data available</p>
+                                <div
+                                className="d-flex justify-content-center align-items-center"
+                                style={{ height: '100vh' }} // Full viewport height
+                              >
+                                <div
+                                  className="spinner-border text-primary"
+                                  role="status"
+                                  style={{ width: '3rem', height: '3rem' }}
+                                >
+                                  <span className="visually-hidden">Loading...</span>
+                                </div>
+                              </div>
                             )}
                         </>
                     ) : (
