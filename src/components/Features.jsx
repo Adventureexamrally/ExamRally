@@ -140,7 +140,7 @@ export default function Features() {
         </div>
       </div>
           <div className=" flex justify-between mx-3 mt-5 font-semibold">
-          <h1 className="md:text-2xl font-bold  m-2 leading-snug text-green-500">YOUTUBE VIDEOS</h1>
+          <h1 className="md:text-2xl font-bold  m-2 leading-snug text-green-500">Youtube Videos</h1>
 
             <Link
         to="https://www.youtube.com/@examrally_banking"

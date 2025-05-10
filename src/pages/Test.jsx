@@ -459,6 +459,7 @@ const Test = () => {
     });
   };
 
+
   const handleMarkForReview = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
@@ -1888,9 +1889,10 @@ console.warn(currentState)
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
-                            <div key={index}>
+                            <div key={index} className="p-1 rounded-lg m-2 ">
                               <input
                                 type="radio"
+                                className="p-5"
                                 id={`option-${index}`}
                                 name="exam-option"
                                 value={index}
@@ -1902,6 +1904,12 @@ console.warn(currentState)
                                   console.log("Selected Option Index:", index);
                                   handleOptionChange(index);
                                 }}
+                                  style={{
+                                                                    accentColor: "#3B82F6", // Blue color for radio button
+                                                                    width: "1.2rem",
+                                                                    height: "1.2rem",
+                                                                    
+                                                                }}
                               />{" "}
                               &nbsp;&nbsp;
                               <label
@@ -2084,8 +2092,11 @@ console.warn(currentState)
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
+                  }if (selectedOptions[fullIndex] == null) {
+                    className="notansImg";
                   }
-                } else if (visitedQuestions.includes(fullIndex)) {
+                }
+                 else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
                 } else {
                   className = "notVisitImg";
