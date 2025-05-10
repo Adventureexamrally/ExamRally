@@ -75,7 +75,7 @@
   
  */
 
- table {
+ /* table {
   border-collapse: collapse;
   width: 80%;
   margin: 20px auto;
@@ -99,5 +99,34 @@ table tr:nth-child(even) {
 
 table tr:hover {
   background-color: #c6f7d2;
+} */
+
+/* TinyMCE Content Styles */
+.tinymce-content {
+  line-height: 1.6; /* Default fallback */
 }
 
+.tinymce-content p {
+  margin-bottom: 1em;
+}
+
+.tinymce-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.tinymce-content th, 
+.tinymce-content td {
+  padding: 0.75em;
+  border: 1px solid #ddd;
+}
+
+/* Preserve all inline styles from TinyMCE */
+.tinymce-content *[style] {
+  all: inherit;
+}
+
+.tinymce-content *[style*="line-height"] {
+  line-height: inherit !important;
+}
