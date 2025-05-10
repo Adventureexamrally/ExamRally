@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { MdLeaderboard } from 'react-icons/md';
 
 const Percentile = ({ alluserDetails, overallScore, initialPercentile ,totelmark}) => {
     const [value, setValue] = useState(0);
@@ -55,8 +56,10 @@ const Percentile = ({ alluserDetails, overallScore, initialPercentile ,totelmark
     const tooltipPosition = (value / maxMarks) * 100;
 
     return (
-        <div className='p-2'>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+        <div className='rounded-lg shadow-md p-6 mb-8 border '>
+            <label className="flex mb-2 text-xl font-bold text-blue-700 dark:text-white">
+                <MdLeaderboard size={25}  style={{ marginRight: "10px" }} />
+
                 Percentile Calculator
             </label>
             <div className="relative">

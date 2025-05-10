@@ -1077,9 +1077,9 @@ const [payment, setPayment] = useState("");
                 <div
                   className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-md border-2 " 
                 >
-                  <div className="absolute inset-0 z-[-10] border-2  rounded-xl"></div>
-                  <div className="flex justify-between">
-                    <span className="text-xl font-semibold font mb-3">
+                  <div className="absolute inset-0 z-[-10] border-2 rounded-xl"></div>
+                  <div className="flex justify-center">
+                    <span className="text-xl font-semibold font p-2">
                       Features
                     </span>
                   </div>

@@ -1,20 +1,32 @@
 import { useContext, useEffect, useState } from 'react';
-import checklist from "../../assets/images/test.png";
-import ambition from "../../assets/images/waste.png";
-import mark from "../../assets/images/check-mark.png";
-import score from "../../assets/images/score.png";
-import target from "../../assets/images/target.png";
-import resilience from "../../assets/images/resilience.png";
-import studying from "../../assets/images/progressive.png";
-import version from "../../assets/images/shape.png";
-import answer from "../../assets/images/information.png";
+import Api from '../../service/Api';
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
-import Api from '../../service/Api';
-import { UserContext } from '../../context/UserProvider';
 import ResultAnimation from '../../animationeffect/ResultAnimation';
+import { UserContext } from '../../context/UserProvider';
 import Percentile from '../../components/Percentile';
+import { 
+  FaCheckCircle, 
+  FaTimesCircle, 
+  FaChartLine, 
+  FaBullseye, 
+  FaClipboardCheck,
+  FaUser,
+  FaUsers,
+  FaTrophy,
+  FaClock,
+  FaBook,
+  FaTable
+} from 'react-icons/fa';
+import { 
+  MdQuestionAnswer, 
+  MdOutlineSkipNext,
+  MdScore,
+  MdCompare
+} from "react-icons/md";
+import { AiOutlineClockCircle } from "react-icons/ai";
+import { GiRank3 } from "react-icons/gi";
 
 const PdfExamResultPage= () => {
   const [resultData, setResultData] = useState(null);
@@ -39,7 +51,7 @@ const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
   if (!user?._id && id) return; // Don't run if user is not loaded yet
 
   Api.get(`PDFresults/${user?._id}/${id}`)
-  .then(res => {
+    .then(res => {
       setResultData(res.data);
       console.log(res.data);
       if (res.data && res.data.section && Array.isArray(res.data.section)) {
@@ -336,389 +348,455 @@ const getComparisonStats = (sectionName) => {
   return sectionStats;
 };
 
+
+  if (!resultData) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container font my-4">
-      <div className="d-flex justify-content-between">
-      <h5 className='h4 text-green-600'>{show_name}</h5>
-        <div className="flex justify-center my-4">
+    <div className="container mx-auto px-4 py-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h1 className="text-2xl font-bold text-green-700 mb-4 md:mb-0">{show_name}</h1>
       <Link to={`/pdf/mocksolution/${id}`}>
-  <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-    View Solution
-  </button>
-</Link>
+          <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center">
+            <FaClipboardCheck className="mr-2" />
+            View Solution
+          </button>
+        </Link>
       </div>
-      </div>
 
-      <div className="row d-flex justify-content-center align-items-start">
-  {/* Mark Scored */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={checklist} alt="Score" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Mark Scored</p>
-      <p className="mb-0">{overallScore}</p>
-    </div>
-  </div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Mark Scored */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+              <MdScore size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Mark Scored</p>
+              <p className="text-xl font-bold">{overallScore}</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Attempted */}
-  {/* <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={ambition} alt="Attempted" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0">Attempted</p>
-      <p className="mb-0">{Attempted}</p>
-    </div>
-  </div> */}
+        {/* Answered */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+              <MdQuestionAnswer size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Answered</p>
+              <p className="text-xl font-bold">{totalAnswered}</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Answered */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={answer} alt="Answered" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Answered</p>
-      <p className="mb-0">{totalAnswered}</p>
-    </div>
-  </div>
+        {/* Correct */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-emerald-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-emerald-100 text-emerald-600 mr-4">
+              <FaCheckCircle size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Correct</p>
+              <p className="text-xl font-bold">{totalCorrect}</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Correct */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={mark} alt="Correct" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Correct</p>
-      {totalCorrect}
-    </div>
-  </div>
+        {/* Wrong */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+              <FaTimesCircle size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Wrong</p>
+              <p className="text-xl font-bold">{totalWrong}</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Wrong */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={version} alt="Incorrect" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Wrong</p>
-      {totalWrong}
-    </div>
-  </div>
+        {/* Skipped */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+              <MdOutlineSkipNext size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Skipped</p>
+              <p className="text-xl font-bold">{totalSkipped}</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Skipped */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={resilience} alt="Skipped" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Skipped</p>
-      {totalSkipped}
-    </div>
-  </div>
+        {/* Percentile */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+              <GiRank3 size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Percentile</p>
+              <p className="text-xl font-bold">{percentile}%</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Percentile */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={studying} alt="Unseen" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Percentile</p>
-      <p className="mb-0">{percentile }%</p>
-    </div>
-  </div>
+        {/* Accuracy */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-indigo-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-indigo-100 text-indigo-600 mr-4">
+              <FaBullseye size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Accuracy</p>
+              <p className="text-xl font-bold">{isNaN(totalAccuracy) ? 0 : totalAccuracy}%</p>
+            </div>
+          </div>
+        </div>
 
-  {/* Accuracy */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={target} alt="Accuracy" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Accuracy</p>
-      <p className="mb-0">{totalAccuracy}%</p>
-    </div>
-  </div>
-
-  {/* Time Taken */}
-  <div className="col-lg-3 col-md-4 col-sm-6 flex-item shadow-md rounded mb-3 d-flex justify-content-start align-items-center p-3">
-    <img src={ambition} alt="Time Taken" style={{ height: "50px", marginRight: "10px" }} />
-    <div>
-      <p className="mb-0 font-semibold">Time Taken</p>
-      <p className="mb-0">
-  {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s
-</p>    </div>
-  </div>
-</div>
-
-      {/* Section Summary */}
-      <div>
-        <h1>Sectional Summary</h1>
-        <div className="table-responsive">
-          <table className="table">
-            <thead>
-              <tr>
-                <th scope="col">Section Name</th>
-                <th scope="col">Score</th>
-                <th scope="col">Answered</th>
-                <th scope="col">Not Answered</th>
-                <th scope="col">Correct</th>
-                <th scope="col">Wrong</th>
-                <th scope="col">Time Taken</th>
-                <th scope="col">Accuracy</th>
-                <th scope="col">Rank</th>
-                <th scope="col">Percentile</th>
-                <th scope="col">Visited</th>
-                <th scope="col">Not Visited</th>
-                <th scope="col">Cutoff</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sectionData.map((sect, index) => (
-                <tr key={index}>
-                <th scope="row">{sect.name}</th>
-                <td>{sect.s_score}</td>
-                <td>{sect.Attempted}</td>
-                <td>{sect.Not_Attempted}</td>
-                <td>{sect.correct}</td>
-                <td>{sect.incorrect}</td>
-                <td>{Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s</td>
-                <td>
-  {typeof sect.s_accuracy === 'number'
-    ? `${sect.s_accuracy.toFixed(2)}%`
-    : 'N/A'}
-</td>
-                <td>{sect.rank}</td>
-                <td>{sect.percentile}%</td>
-                <td>{sect.isVisited}</td>
-                <td>{sect.NotVisited}</td>
-                <td>{sect.cutoff_mark}</td>
-              </tr>
-              ))}
-            </tbody>
-            <tfoot>
-            <tr>
-                <th>Overall</th>
-                <th>{overallScore}</th>
-                <th>{totalAnswered}</th>
-                <th>{totalNotAnswered}</th>
-                <th>{totalCorrect}</th>
-                <th>{totalWrong}</th>
-                <th>  {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s</th>
-                <th>{ totalAccuracy}</th>
-                <th>{Rank}</th>
-                <th>{percentile}</th>
-                <th>{totalVisited}</th>
-                <th>{totalNotVisited}</th>
-                <th>{totalCutOff}</th>
-              </tr>
-            </tfoot>
-          </table>
+        {/* Time Taken */}
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-cyan-500">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-cyan-100 text-cyan-600 mr-4">
+              <AiOutlineClockCircle size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Time Taken</p>
+              <p className="text-xl font-bold">
+                {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      
-      <div className="flex justify-end space-x-4 mt-4">
-  {overallScore >= totalCutOff ? (
-    <p className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-      Cutoff Cleared : {overallScore} / {totalCutOff}
-    </p>
-  ) : (
-    <p className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-400">
-      Cutoff Not Reached : {overallScore} / {totalCutOff}
-    </p>
-  )}
-</div>
-<div>
-      <h1 className='font-semibold'>Comparison With Toppers
-      </h1>
-      <div className='mt-4 space-x-2'>
-  {sectionData.map((sect) => (
-    <button
-      key={sect.name}
-      onClick={() => setSelectedComparisonSection(sect.name)}
-      className={`px-4 py-2 rounded ${selectedComparisonSection === sect.name ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
-    >
-      {sect.name}
-    </button>
-  ))}
-</div>
-      <div className="table-responsive">
-        <table className="table table-bordered table-striped ">
-          <thead>
-            <tr>
-              <th>{" "}</th>
-              <th>Score</th>
-              <th>Answered</th>
-              <th>Not answered</th>
-              <th>Correct</th>
-              <th>Wrong</th>
-              <th>Time</th>
-              <th>Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-  {(() => {
-    const stats = getComparisonStats(selectedComparisonSection);
-    const rows = ['you', 'average', 'topper'];
-
-    return rows.map((label, idx) => {
-      const row = stats[label];
-      const labelText = label === 'you' ? 'You' : label.charAt(0).toUpperCase() + label.slice(1);
-
-      return (
-        <tr key={idx}>
-          <td>{labelText}</td>
-          <td>{row.score}</td>
-          <td>{row.answered}</td>
-          <td>{row.notAnswered}</td>
-          <td>{row.correct}</td>
-          <td>{row.wrong}</td>
-          <td>
-  {String(Math.floor(row.time / 60)).padStart(2, '0')}m {String(row.time % 60).padStart(2, '0')}s
-</td>          <td>
-  {typeof row.accuracy === "number"
-    ? `${row.accuracy.toFixed(2)}%`
-    : `${row.accuracy}%` }
-</td>
-        </tr>
-      );
-    });
-  })()}
-</tbody>
-
-        </table>
+      {/* Cutoff Status */}
+      <div className="mb-8">
+        {overallScore >= totalCutOff ? (
+          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
+            <div className="flex items-center">
+              <FaCheckCircle className="mr-2" />
+              <p className="font-medium">Cutoff Cleared: {overallScore} / {totalCutOff}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+            <div className="flex items-center">
+              <FaTimesCircle className="mr-2" />
+              <p className="font-medium">Cutoff Not Reached: {overallScore} / {totalCutOff}</p>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-    <div>
-      <h1 className='font-semibold'>Time Management
-      </h1>
-   
-      <div className="table-responsive">
-          <table className="table table-bordered table-striped ">
-            <thead>
-              <tr>
-                <th scope="col">Section</th>
-               
-                <th scope="col">Answered/Marks</th>
-                <th scope="col">Not Answered/Marks</th>
-                <th scope="col">Correct/Marks</th>
-                <th scope="col">Wrong/-ve Marks</th>
-                <th scope='col'>Total Mark Scored / Negative 
-                MarK </th>
-              </tr>
-            </thead>
-<tbody>
-  {section.map((sect, index) => {
-    const correctMarks = sect.correct * sect.plus_mark;
-    const wrongMarks = sect.incorrect * sect.minus_mark;
-    const notAnsweredMarks = 0; // usually 0
-    const attemptedMarks = correctMarks - wrongMarks;
-    
-    return (
-      <tr key={index}>
-        <th scope="row">{sect.name}</th>
 
-        {/* Answered / Marks */}
-        <td>
-          {sect.Attempted} / {attemptedMarks.toFixed(2)}
-        </td>
+      {/* Section Summary */}
+<div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-blue-100">
+  <div className="flex items-center mb-6">
+    <FaTable className="text-blue-600 mr-2" />
+    <h2 className="text-xl font-bold text-blue-800">Sectional Summary</h2>
+  </div>
+  <div className="overflow-x-auto">
+    <table className="min-w-full divide-y divide-blue-200">
+      <thead className="bg-blue-50">
+        <tr>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Section Name</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Score</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Answered</th>
+            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Not Answered</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Correct</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Wrong</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Time Taken</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Accuracy</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Rank</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Percentile</th>
+                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Visited</th>
+                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Not Visited</th>
+                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Cutoff</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-blue-100">
+        {sectionData.map((sect, index) => (
+          <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{sect.name}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.s_score}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+              {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+              {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td></tr>
+        ))}
+        <tr className="">
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">Overall</td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{overallScore}</td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalAnswered}</td>
+           <th className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalNotAnswered}</th>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalCorrect}</td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalWrong}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">
+            {Math.floor(totalTimeTaken / 60)}m {totalTimeTaken % 60}s
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{isNaN(totalAccuracy) ? 0 : totalAccuracy}%</td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{Rank}</td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{percentile}%</td>
+          <th className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalVisited}</th>
+          <th className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalNotVisited}</th>
+          <th className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{totalCutOff}</th>
 
-        {/* Not Answered / Marks */}
-        <td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+      {/* Comparison Section */}
+<div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-purple-100">
+  <div className="flex items-center mb-6">
+    <MdCompare className="text-purple-600 mr-2" />
+    <h2 className="text-xl font-bold text-purple-800">Comparison With Toppers</h2>
+  </div>
+  
+  <div className="flex flex-wrap gap-2 mb-6">
+    {sectionData.map((sect) => (
+      <button
+        key={sect.name}
+        onClick={() => setSelectedComparisonSection(sect.name)}
+        className={`px-4 py-2 rounded-md transition ${selectedComparisonSection === sect.name 
+          ? 'bg-purple-600 text-white' 
+          : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+      >
+        {sect.name}
+      </button>
+    ))}
+  </div>
+  
+  <div className="overflow-x-auto">
+    <table className="min-w-full divide-y divide-purple-200">
+      <thead className="bg-purple-50">
+        <tr>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Category</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Score</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Answered</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Not answered</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Correct</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Wrong</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Time</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Accuracy</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-purple-100">
+        {(() => {
+          const stats = getComparisonStats(selectedComparisonSection);
+          return [
+            { label: 'You', icon: <FaUser className="text-purple-600" />, ...stats.you },
+            { label: 'Average', icon: <FaUsers className="text-purple-500" />, ...stats.average },
+            { label: 'Topper', icon: <FaTrophy className="text-yellow-500" />, ...stats.topper }
+          ].map((row, idx) => (
+            <tr key={idx} className={idx % 2 === 0 ? 'bg-white hover:bg-purple-50' : 'bg-purple-50 hover:bg-purple-100'}>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 mr-2">
+                    {row.icon}
+                  </div>
+                  <div className="text-sm font-medium text-purple-900">{row.label}</div>
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">{isNaN(row.score) ? 0 : row.score}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">{isNaN(row.answered) ? 0 : row.answered}</td>
+               <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">{isNaN(row.notAnswered) ? 0 :row.notAnswered}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">{isNaN(row.correct) ? 0 : row.correct}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">{isNaN(row.wrong) ? 0 : row.wrong}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">
+                {isNaN(row.time)
+                  ? "0"
+                  : `${String(Math.floor(row.time / 60)).padStart(2, '0')}m ${String(row.time % 60).padStart(2, '0')}s`}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800">
+{!isNaN(Number(row.accuracy)) && row.accuracy !== null
+  ? `${Number(row.accuracy).toFixed(2)}%`
+  : "0.00%"}
+
+              </td>
+            </tr>
+          ));
+        })()}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+      {/* Time Management */}
+<div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-green-100">
+  <div className="flex items-center mb-6">
+    <FaClock className="text-green-600 mr-2" />
+    <h2 className="text-xl font-bold text-green-800">Time Management</h2>
+  </div>
+  <div className="overflow-x-auto">
+    <table className="min-w-full divide-y divide-green-200">
+      <thead className="bg-green-50">
+        <tr>
+          <th scope="col" className="px-6 py-3 text-left text-md font-medium text-green-700  tracking-wider">Section</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Answered/Marks</th>
+                          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Not Answered/Marks</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Correct/Marks</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Wrong/-ve Marks</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Total Mark Scored / Negative MarK</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-green-100">
+        {section.map((sect, index) => {
+          const correctMarks = sect.correct * sect.plus_mark;
+          const wrongMarks = sect.incorrect * sect.minus_mark;
+              const notAnsweredMarks = 0; // usually 0
+          const attemptedMarks = correctMarks - wrongMarks;
+          
+          return (
+            <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{sect.name}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                {sect.Attempted} / {(sect.Attempted * section[0]?.plus_mark).toFixed(0)}
+              </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
           {sect.Not_Attempted} / {notAnsweredMarks.toFixed(2)}
         </td>
 
-        {/* Correct / Marks */}
-        <td>
-          {sect.correct} / {correctMarks.toFixed(2)}
-        </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                {sect.correct} / {correctMarks.toFixed(2)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                {sect.incorrect} / -{wrongMarks.toFixed(2)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                {sect.s_score.toFixed(2)} / -{wrongMarks.toFixed(2)}
+              </td>
+            </tr>
+          );
+        })}
+        <tr className="">
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">Overall</td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">
+            {totalAnswered} / {(totalAnswered * section[0]?.plus_mark).toFixed(0)}
+          </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">
+                {totalNotAnswered} / 0
+              </td>
 
-        {/* Wrong / Negative Marks */}
-        <td>
-          {sect.incorrect} / -{wrongMarks.toFixed(2)}
-        </td>
-
-        {/* Total Marks Scored / Negative Marks */}
-        <td>
-          {sect.s_score.toFixed(2)} / -{wrongMarks.toFixed(2)}
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
-
-<tfoot>
-  <tr>
-    <th>Overall</th>
-    <th>{totalAnswered} / {(totalCorrect * section[0]?.plus_mark - totalWrong * section[0]?.minus_mark).toFixed(2)}</th>
-    <th>{totalNotAnswered} / 0</th>
-    <th>{totalCorrect} / {(totalCorrect * section[0]?.plus_mark).toFixed(2)}</th>
-    <th>{totalWrong} / -{(totalWrong * section[0]?.minus_mark).toFixed(2)}</th>
-    <th>{overallScore.toFixed(2)} / -{(totalWrong * section[0]?.minus_mark).toFixed(2)}</th>
-  </tr>
-</tfoot>
-          </table>
-        </div>
-    </div>
-    <h1 className='font-semibold'>Line Graph</h1>
-      
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-      <div style={{ width: '100%', maxWidth: '900px', height: '400px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
-            <Tooltip />
-            <Legend />
-            {section.map((sect, index) => (
-              <Line 
-                key={index}
-                type="monotone" 
-                dataKey={`section${index + 1}`} 
-                name={sect.name} 
-                stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
-                strokeWidth={2}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-      {/* Section buttons */}
-      <h1 className='bg-blue-100 text-blue-600 p-2 h4 text-center fw-bold'>Scoring Blueprint</h1>
-
-      <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 mt-2">
-
-
-        {sectionData.map((sect, index) => (
-          <div key={index} className="flex-shrink-0">
-            <button
-              type="button"
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md w-full md:w-auto"
-              onClick={() => handleSectionClick(sect.name)}
-            >
-              {sect.name}
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Blueprint */}
-      {selectedBlueprint && (
-        <div className="m-2">
-          <h2 className='mb-2 fw-bold'>Blueprint for {selectedTopic} :-</h2>
-          <table className="table table-bordered table-striped table-responsive">
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Topic</th>
-                <th>Time Taken (Min*)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedBlueprint.map((item, index) => (
-                <tr key={item._id}>
-                  <td>{item.subject}</td>
-                  <td>{item.topic}</td>
-                  <td>{item.tak_time}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-<div>
-  <Percentile alluserDetails={alluserDetails} overallScore={overallScore} initialPercentile={percentile} totelmark={totelmark}/>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">
+            {totalCorrect} / {(totalCorrect * section[0]?.plus_mark).toFixed(2)}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">
+            {totalWrong} / -{(totalWrong * section[0]?.minus_mark).toFixed(2)}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">
+            {overallScore.toFixed(2)} / -{(totalWrong * section[0]?.minus_mark).toFixed(2)}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
+      {/* Performance Graph */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="flex items-center mb-6">
+          <FaChartLine className="text-blue-500 mr-2" />
+          <h2 className="text-xl font-bold text-gray-800">Performance Analysis</h2>
+        </div>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
+              <Tooltip />
+              <Legend />
+              {section.map((sect, index) => (
+                <Line 
+                  key={index}
+                  type="monotone" 
+                  dataKey={`section${index + 1}`} 
+                  name={sect.name} 
+                  stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
+                  strokeWidth={2}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Scoring Blueprint */}
+<div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-indigo-100">
+  <div className="flex items-center mb-6">
+    <FaBook className="text-indigo-600 mr-2" />
+    <h2 className="text-xl font-bold text-indigo-800">Scoring Blueprint</h2>
+  </div>
+  
+  <div className="flex flex-wrap gap-2 mb-6">
+    {sectionData.map((sect, index) => (
+      <button
+        key={index}
+        onClick={() => handleSectionClick(sect.name)}
+        className={`px-4 py-2 rounded-md transition ${selectedTopic === sect.name 
+          ? 'bg-indigo-600 text-white' 
+          : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
+      >
+        {sect.name}
+      </button>
+    ))}
+  </div>
+  
+  {selectedBlueprint && (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-indigo-200">
+        <thead className="bg-indigo-50">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Subject</th>
+            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Topic</th>
+            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Time Taken (Min*)</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-indigo-100">
+          {selectedBlueprint.map((item, index) => (
+            <tr key={item._id} className={index % 2 === 0 ? 'bg-white hover:bg-indigo-50' : 'bg-indigo-50 hover:bg-indigo-100'}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-800">{item.subject}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-800">{item.topic}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-800">{item.tak_time}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
+
+      {/* Percentile Analysis */}
+      <div className="mb-8">
+        <Percentile alluserDetails={alluserDetails} overallScore={overallScore} initialPercentile={percentile} totelmark={totelmark}/>
+      </div>
+
+      {/* Result Animation */}
       <div>
         <ResultAnimation/>
       </div>
