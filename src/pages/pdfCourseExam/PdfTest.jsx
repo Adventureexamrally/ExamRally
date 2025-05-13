@@ -871,7 +871,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
     toast.success("Test Completed! Moving to result.");
     await submitExam();
     await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-    navigate(`/pdf/result/${id}`);
+    navigate(`/pdf/result/${id}/${user?._id}`);
   };
 
   const submitExam = () => {

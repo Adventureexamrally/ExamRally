@@ -212,11 +212,11 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                               }
 
                                                               if (resultData?.[test._id]?.status === "completed") {
-                                                                openNewWindow(`/liveresult/${test._id}`);
+                                                                openNewWindow(`/liveresult/${test._id}/${user?._id}`);
                                                               } else if (resultData?.[test._id]?.status === "paused") {
-                                                                openNewWindow(`/mocklivetest/${test._id}`);
+                                                                openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
                                                               } else {
-                                                                openNewWindow(`/instruct/${test._id}`);
+                                                                openNewWindow(`/instruct/${test._id}/${user?._id}`);
                                                               }
                                                             }}
                                                           >

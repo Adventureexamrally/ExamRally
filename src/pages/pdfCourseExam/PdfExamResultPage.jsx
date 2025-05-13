@@ -362,7 +362,7 @@ const getComparisonStats = (sectionName) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-2xl font-bold text-green-700 mb-4 md:mb-0">{show_name}</h1>
-      <Link to={`/pdf/mocksolution/${id}`}>
+      <Link to={`/pdf/mocksolution/${id}/${user?._id}`}>
           <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center">
             <FaClipboardCheck className="mr-2" />
             View Solution
@@ -508,19 +508,19 @@ const getComparisonStats = (sectionName) => {
     <table className="min-w-full divide-y divide-blue-200">
       <thead className="bg-blue-50">
         <tr>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Section Name</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Score</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Answered</th>
-            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Not Answered</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Correct</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Wrong</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Time Taken</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Accuracy</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Rank</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Percentile</th>
-                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Visited</th>
-                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Not Visited</th>
-                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Cutoff</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Section Name</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Score</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Answered</th>
+             <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Not Answered</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Correct</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Wrong</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Time Taken</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Accuracy</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Rank</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Percentile</th>
+                 <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Visited</th>
+                 <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Not Visited</th>
+                 <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-blue-700  tracking-wider">Cutoff</th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-blue-100">
@@ -592,14 +592,14 @@ const getComparisonStats = (sectionName) => {
     <table className="min-w-full divide-y divide-purple-200">
       <thead className="bg-purple-50">
         <tr>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Category</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Score</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Answered</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Not answered</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Correct</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Wrong</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Time</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-purple-700  tracking-wider">Accuracy</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Category</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Score</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Answered</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Not answered</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Correct</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Wrong</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Time</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-purple-700  tracking-wider">Accuracy</th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-purple-100">
@@ -654,11 +654,11 @@ const getComparisonStats = (sectionName) => {
       <thead className="bg-green-50">
         <tr>
           <th scope="col" className="px-6 py-3 text-left text-md font-medium text-green-700  tracking-wider">Section</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Answered/Marks</th>
-                          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Not Answered/Marks</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Correct/Marks</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Wrong/-ve Marks</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-green-700  tracking-wider">Total Mark Scored / Negative MarK</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-green-700  tracking-wider">Answered/Marks</th>
+                           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-green-700  tracking-wider">Not Answered/Marks</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-green-700  tracking-wider">Correct/Marks</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-green-700  tracking-wider">Wrong/-ve Marks</th>
+           <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-green-700  tracking-wider">Total Mark Scored / Negative MarK</th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-green-100">
@@ -772,9 +772,9 @@ const getComparisonStats = (sectionName) => {
       <table className="min-w-full divide-y divide-indigo-200">
         <thead className="bg-indigo-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Order of Selection</th>
-            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Topic</th>
-            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Time Taken (Min*)</th>
+             <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-indigo-700  tracking-wider">Order of Selection</th>
+             <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-indigo-700  tracking-wider">Topic</th>
+             <th scope="col" className="px-6 py-3 text-left text-sm font-medium fw-bold  text-indigo-700  tracking-wider">Time Taken (Min*)</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-indigo-100">

@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
 import { UserContext } from '../context/UserProvider';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { toast, ToastContainer } from 'react-toastify';
 
 const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
+    const { refreshUser } = useContext(UserContext);
+  
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
@@ -129,9 +132,11 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             expiryDays: pkg.duration, // ✅ Send expiryDays from client
           });
           console.log(res)
-        
-            alert("Payment successful!");
+                 await refreshUser()
+                 toast.success("Payment successful! ");
+                 setInterval(() => {
             setShowModal(false);
+                 }, 2000);
         },
         
         prefill: {
@@ -150,7 +155,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       rzp.on('payment.failed', async function (response) {
 
         console.error('Payment failed:', response.error.metadata);
- 
+ toast.error("Payment failed. Please try again.");
       
         try {
           const errorData = response.error || {};
@@ -168,10 +173,10 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           });
           
       
-          alert("Payment failed. Please try again.");
+          // alert("Payment failed. Please try again.");
         } catch (err) {
           console.error("Failed to report payment failure:", err);
-          alert("Payment failed and could not be logged.");
+          toast.error("Payment failed and could not be logged.");
         }
       });
 
@@ -185,6 +190,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
+      <ToastContainer />
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
       <div className="relative">
           <div className="absolute top-4 right-4">

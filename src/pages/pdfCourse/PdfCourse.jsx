@@ -560,11 +560,11 @@ const toggleSchedule = (id) => {
                                                                         if (!isSignedIn) {
                                                                         navigate("/sign-in");
                                                                         } else if (resultData?.[pdf.exams[0]?._id]?.status === "completed") {
-                                                                        openNewWindow(`/pdf/result/${pdf.exams[0]._id}`);
+                                                                        openNewWindow(`/pdf/result/${pdf.exams[0]._id}/${user?._id}`);
                                                                         } else if (resultData?.[pdf.exams[0]?._id]?.status === "paused") {
-                                                                        openNewWindow(`/pdf/mocktest/${pdf.exams[0]._id}`);
+                                                                        openNewWindow(`/pdf/mocktest/${pdf.exams[0]._id}/${user?._id}`);
                                                                         } else {
-                                                                        openNewWindow(`/pdf/instruction/${pdf.exams[0]._id}`);
+                                                                        openNewWindow(`/pdf/instruction/${pdf.exams[0]._id}/${user?._id}`);
                                                                         }
                                                                     }}
                                                                     >

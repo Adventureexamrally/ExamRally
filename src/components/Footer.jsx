@@ -128,7 +128,7 @@ function Footer() {
               {text: 'Blog', path: '/blog'},
               {text: 'Privacy Policy', path: '/privacy-policy'},
               {text: 'Terms and Conditions', path: '/TermsConditions'},
-              {text: 'Contact Us', path: '/contactus'}
+              // {text: 'Contact Us', path: '/contactus'}
             ].map((item) => (
               <li key={item.text}>
                 <Link 
@@ -148,7 +148,7 @@ function Footer() {
           <ul className="space-y-2 text-sm">
             {[
               {text: 'Test Series', path: '/subscriptions'},
-              {text: 'PDF Courses', path: '/pdf-course'},
+              // {text: 'PDF Courses', path: '/pdf-course'},
               {text: 'Free PDFs', path: '/free-pdf'},
               {text: 'Combo Packages', path: '/All-Packages'}
             ].map((item) => (
