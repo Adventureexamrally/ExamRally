@@ -772,7 +772,7 @@ const getComparisonStats = (sectionName) => {
       <table className="min-w-full divide-y divide-indigo-200">
         <thead className="bg-indigo-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Subject</th>
+            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Order of Selection</th>
             <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Topic</th>
             <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-indigo-700  tracking-wider">Time Taken (Min*)</th>
           </tr>

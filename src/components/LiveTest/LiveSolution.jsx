@@ -551,7 +551,7 @@ const LiveSolution = () => {
                                                 style={{ overflowY: "auto" }}
                                             >
                                                 <div
-                                                    className="fw-bold text-wrap"
+                                                    className="text-wrap"
                                                     style={{
                                                         whiteSpace: "normal",
                                                         wordWrap: "break-word",
@@ -829,7 +829,18 @@ const LiveSolution = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <p>No section data available</p>
+                                <div
+                                className="d-flex justify-content-center align-items-center"
+                                style={{ height: '100vh' }} // Full viewport height
+                              >
+                                <div
+                                  className="spinner-border text-primary"
+                                  role="status"
+                                  style={{ width: '3rem', height: '3rem' }}
+                                >
+                                  <span className="visually-hidden">Loading...</span>
+                                </div>
+                              </div>
                             )}
                         </>
                     ) : (
@@ -888,10 +899,7 @@ const LiveSolution = () => {
                             <h1>InCorrect</h1>
                             <h1>{resultData?.incorrect}</h1>
                         </div>
-                        <div className="d-flex justify-content-between p-1">
-                            <h1>You</h1>
-                            <h1>67</h1>
-                        </div>
+                        
 
 
 
@@ -953,7 +961,8 @@ const LiveSolution = () => {
                                                     setVisitedQuestions(prev => [...prev, startingIndex + index]);
                                                 }
 
-
+setCheck(null);
+        setIsClicked(false);
 
                                             }}
                                             className={`fw-bold flex align-items-center justify-content-center ${className}`}
@@ -1003,8 +1012,8 @@ const LiveSolution = () => {
             </div>
 
             {/* Footer Buttons */}
-            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
-                <div className="d-flex justify-content-around">
+          <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
+                <div className="d-flex justify-content-around w-[85%]">
                     {/* Previous Button */}
                     <button
                         className="border-4 px-1 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"

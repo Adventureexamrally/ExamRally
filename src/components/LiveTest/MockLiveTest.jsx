@@ -1813,7 +1813,7 @@ const MockLiveTest = () => {
                         style={{ overflowY: 'auto' }}
                       >
                         <div
-                          className="fw-bold text-wrap"
+                          className="text-wrap"
                           style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                           dangerouslySetInnerHTML={{
                             __html:
@@ -1839,7 +1839,7 @@ const MockLiveTest = () => {
                   >
                     <div>
                       <div
-                        className="fw-bold text-wrap mb-2"
+                        className="text-wrap mb-2"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                         dangerouslySetInnerHTML={{
                           __html:
@@ -1859,7 +1859,7 @@ const MockLiveTest = () => {
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
-                            <div key={index}>
+                            <div key={index} className="p-1 rounded-lg m-2 ">
                               <input
                                 type="radio"
                                 id={`option-${index}`}
@@ -1873,6 +1873,12 @@ const MockLiveTest = () => {
                                   console.log("Selected Option Index:", index);
                                   handleOptionChange(index);
                                 }}
+                                 style={{
+                                                                     // Blue color for radio button
+                                                                    width: "1.2rem",
+                                                                    height: "1.2rem",
+                                                                    
+                                                                }}
                               />{" "}
                               &nbsp;&nbsp;
                               <label
@@ -1903,7 +1909,18 @@ const MockLiveTest = () => {
                   </div>
                 </div>
               ) : (
-                <p>No section data available</p>
+                <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-primary"
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
               )}
             </>
           ) : (
@@ -2042,6 +2059,8 @@ const MockLiveTest = () => {
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
+                  }if (selectedOptions[fullIndex] == null) {
+                    className="notansImg";
                   }
                 } else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
@@ -2081,7 +2100,7 @@ const MockLiveTest = () => {
             <div className="d-flex">
               <button
                 onClick={handleMarkForReview}
-                className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
               >
                 <span className="block md:hidden">Mark & Next</span>
                 <span className="hidden md:block">Mark for Review</span>
@@ -2089,7 +2108,7 @@ const MockLiveTest = () => {
               &nbsp;&nbsp;&nbsp;&nbsp;
               <button
                 onClick={handleClearResponse}
-                className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
               >
                 <span className="block md:hidden">Clear</span>
                 <span className="hidden md:block"> Clear Response</span>
@@ -2100,7 +2119,7 @@ const MockLiveTest = () => {
             ]?.length > 0 && (
                 <button
                   onClick={handleNextClick}
-                  className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
+                  className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
                 >
                   <span className="block md:hidden">Save</span>
                   <span className="hidden md:block"> Save & Next</span>

@@ -459,6 +459,7 @@ const Test = () => {
     });
   };
 
+
   const handleMarkForReview = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
@@ -1888,9 +1889,10 @@ console.warn(currentState)
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
-                            <div key={index}>
+                            <div key={index} className="p-1 rounded-lg m-2 ">
                               <input
                                 type="radio"
+                                className="p-5"
                                 id={`option-${index}`}
                                 name="exam-option"
                                 value={index}
@@ -1902,6 +1904,12 @@ console.warn(currentState)
                                   console.log("Selected Option Index:", index);
                                   handleOptionChange(index);
                                 }}
+                                  style={{
+                                                                    accentColor: "#3B82F6", // Blue color for radio button
+                                                                    width: "1.2rem",
+                                                                    height: "1.2rem",
+                                                                    
+                                                                }}
                               />{" "}
                               &nbsp;&nbsp;
                               <label
@@ -1934,7 +1942,19 @@ console.warn(currentState)
                   </div>
                 </div>
               ) : (
-                <p>No section data available</p>
+                <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-primary"
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              
               )}
             </>
           ) : (
@@ -2072,8 +2092,11 @@ console.warn(currentState)
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
+                  }if (selectedOptions[fullIndex] == null) {
+                    className="notansImg";
                   }
-                } else if (visitedQuestions.includes(fullIndex)) {
+                }
+                 else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
                 } else {
                   className = "notVisitImg";

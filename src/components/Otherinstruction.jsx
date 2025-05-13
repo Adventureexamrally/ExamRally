@@ -52,7 +52,6 @@ const handleNextClick = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold">New Test Create That</h1>
 
       {/* Instruction Header */}
       <div className="bg-blue-300 p-3 flex justify-between items-center">

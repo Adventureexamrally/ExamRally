@@ -5,7 +5,7 @@ import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp, useUser 
 import CustomUserMenu from './CustomUserButton';
 import offer from '../assets/images/offer.png'
 import Api from '../service/Api';
-
+import { motion } from 'framer-motion';
 
 const Header = () => {
 
@@ -102,11 +102,31 @@ const Header = () => {
               alt={offer.offerName}
             />
             <div className="text-center lg:text-left">
-              <h1 className="text-green text-sm lg:text-lg font-semibold">{offer.offerName}</h1>
-              <p className="text-white bg-orange-600 text-xs lg:text-sm px-2 py-1 rounded">
-                End in: {countdown}
-              </p>
+              <h1 className="text-green text-sm lg:text-lg font-semibold">{offer.offerName}
+              <motion.span
+  animate={{ 
+    rotate: [0, 15, -15, 0],
+    scale: [1, 1.2, 1.2, 1]
+  }}
+  transition={{
+    repeat: Infinity,
+    repeatType: "loop",
+    duration: 1.,
+    ease: "easeInOut",
+    times: [0, 0.25, 0.75, 1]
+  }}
+  className="ml-2 text-blue-400 inline-block text-xl origin-center"
+>
+  ✨
+</motion.span>
+                                    </h1>
+              <div className="bg-gradient-to-r from-purple-500 to-amber-600 p-0.5 rounded-lg animate-gradient-x">
+  <p className="text-white bg-[#3e15d6] text-xs lg:text-sm px-3 py-1 rounded-[0.25rem] font-semibold text-center">
+    ⚡ Finishing Soon: {countdown}
+  </p>
+</div>
             </div>
+           
           </Link>
         )}
   
