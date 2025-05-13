@@ -722,11 +722,11 @@ const [payment, setPayment] = useState("");
                                                             }
 
                                                             if (resultData?.[test._id]?.status === "completed") {
-                                                              openNewWindow(`/result/${test._id}`);
+                                                              openNewWindow(`/result/${test._id}/${user?._id}`);
                                                             } else if (resultData?.[test._id]?.status === "paused") {
-                                                              openNewWindow(`/mocktest/${test._id}`);
+                                                              openNewWindow(`/mocktest/${test._id}/${user?._id}`);
                                                             } else {
-                                                              openNewWindow(`/instruction/${test._id}`);
+                                                              openNewWindow(`/instruction/${test._id}/${user?._id}`);
                                                             }
                                                           }}
                                                         >
@@ -849,11 +849,11 @@ const [payment, setPayment] = useState("");
                                       }
 
                                       if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}`);
+                                        openNewWindow(`/result/${test._id}/${user?._id}`);
                                       } else if (resultData?.[test._id]?.status === "paused") {
-                                        openNewWindow(`/mocktest/${test._id}`);
+                                        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
                                       } else {
-                                        openNewWindow(`/instruction/${test._id}`);
+                                        openNewWindow(`/instruction/${test._id}/${user?._id}`);
                                       }
                                     }}
                                   >
@@ -979,11 +979,11 @@ const [payment, setPayment] = useState("");
                                       }
 
                                       if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}`);
+                                        openNewWindow(`/result/${test._id}/${user?._id}`);
                                       } else if (resultData?.[test._id]?.status === "paused") {
-                                        openNewWindow(`/mocktest/${test._id}`);
+                                        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
                                       } else {
-                                        openNewWindow(`/instruction/${test._id}`);
+                                        openNewWindow(`/instruction/${test._id}/${user?._id}`);
                                       }
                                     }}
                                   >

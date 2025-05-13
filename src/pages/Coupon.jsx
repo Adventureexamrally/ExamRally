@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
 import { UserContext } from '../context/UserProvider';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Coupon = ({ data, setshowmodel }) => {
   const { isSignedIn } = useUser();
@@ -118,8 +119,10 @@ const Coupon = ({ data, setshowmodel }) => {
           });
           console.log(res)
          await refreshUser()
-            alert("Payment successful!");
+         toast.success('Payment successful!');
+          setTimeout(() => {
             setshowmodel(false);
+          }, 2000);
         },
         
         prefill: {
@@ -142,7 +145,7 @@ const Coupon = ({ data, setshowmodel }) => {
       rzp.on('payment.failed', async function (response) {
 
         console.error('Payment failed:', response.error.metadata);
- 
+        toast.error('Payment failed. Please try again.');
       
         try {
           const errorData = response.error || {};
@@ -160,10 +163,10 @@ const Coupon = ({ data, setshowmodel }) => {
           });
           
       
-          alert("Payment failed. Please try again.");
+          // alert("Payment failed. Please try again.");
         } catch (err) {
           console.error("Failed to report payment failure:", err);
-          alert("Payment failed and could not be logged.");
+          toast.error("Payment failed and could not be logged.");
         }
       });
       
@@ -178,6 +181,7 @@ const Coupon = ({ data, setshowmodel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
+      <ToastContainer/>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
         <div className="relative">
           <div className="absolute top-4 right-4">

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Api from "../../service/Api";
+import { UserContext } from "../../context/UserProvider";
 
 const PdfOtherInstruction = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -8,6 +9,7 @@ const PdfOtherInstruction = () => {
     const [examData, setExamData] = useState(null);
     const {id} = useParams()
 
+  const { user } = useContext(UserContext);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -43,11 +45,11 @@ const handleNextClick = () => {
     ? "English"
     : selectedLanguage;
 
-  navigate(`/pdf/mocktest/${id}`, { state: { language: finalLanguage } });
+  navigate(`/pdf/mocktest/${id}/${user?._id}`, { state: { language: finalLanguage } });
 };
 
   const handlePreviousClick = () => {
-    navigate(`/pdf/instruction/${id}`);
+    navigate(`/pdf/instruction/${id}/${user?._id}`);
   };
 
   return (

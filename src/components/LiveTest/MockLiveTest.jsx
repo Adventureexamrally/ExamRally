@@ -871,7 +871,7 @@ const MockLiveTest = () => {
     toast.success("Test Completed! Moving to result.");
     await submitExam();
     await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-    navigate(`/liveresult/${id}`);
+    navigate(`/liveresult/${id}/${user?._id}`);
   };
 
   const submitExam = () => {
@@ -1348,7 +1348,7 @@ const MockLiveTest = () => {
         toast.success("Test Completed! Moving to result.");
         await submitExam();
         await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-        navigate(`/liveresult/${id}`);
+        navigate(`/liveresult/${id}/${user?._id}`);
       }
     }
   };

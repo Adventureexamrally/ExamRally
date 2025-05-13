@@ -362,7 +362,7 @@ const getComparisonStats = (sectionName) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-2xl font-bold text-green-700 mb-4 md:mb-0">{show_name}</h1>
-      <Link to={`/pdf/mocksolution/${id}`}>
+      <Link to={`/pdf/mocksolution/${id}/${user?._id}`}>
           <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center">
             <FaClipboardCheck className="mr-2" />
             View Solution
