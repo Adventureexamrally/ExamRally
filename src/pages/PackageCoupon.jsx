@@ -8,6 +8,8 @@ import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/o
 const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
+    const { refreshUser } = useContext(UserContext);
+  
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
@@ -129,7 +131,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             expiryDays: pkg.duration, // ✅ Send expiryDays from client
           });
           console.log(res)
-        
+                 await refreshUser()
             alert("Payment successful!");
             setShowModal(false);
         },

@@ -9,9 +9,6 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const { isSignedIn, user: clerkUser, isLoaded } = useUser(); // get Clerk user
 
-  useEffect(() => {
-    // Only run once Clerk has loaded and user is signed in
-    if (!isLoaded || !isSignedIn) return;
 
     const fetchUserDetails = async () => {
       try {
@@ -26,11 +23,13 @@ export const UserProvider = ({ children }) => {
         console.error("Error fetching user details:", err);
       }
     };
-
+  useEffect(() => {
+    // Only run once Clerk has loaded and user is signed in
+    if (!isLoaded || !isSignedIn) return;
     fetchUserDetails();
   }, [isLoaded, isSignedIn, clerkUser]);
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, refreshUser: fetchUserDetails }}>
       {children}
     </UserContext.Provider>
   );

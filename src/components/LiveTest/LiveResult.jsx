@@ -361,7 +361,7 @@ const getComparisonStats = (sectionName) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-2xl font-bold text-green-700 mb-4 md:mb-0">{show_name}</h1>
       <Link to={`/livesolution/${id}`}>
-          <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center">
+          <button className="bg-green-600 hover:bg-green-700 text-white fw-bold  font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center">
             <FaClipboardCheck className="mr-2" />
             View Solution
           </button>
@@ -506,25 +506,25 @@ const getComparisonStats = (sectionName) => {
     <table className="min-w-full divide-y divide-blue-200">
       <thead className="bg-blue-50">
         <tr>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Section Name</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Score</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Answered</th>
-            <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Not Answered</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Correct</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Wrong</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Time Taken</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Accuracy</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Rank</th>
-          <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Percentile</th>
-                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Visited</th>
-                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Not Visited</th>
-                <th scope="col" className="px-6 py-3 text-left text-sm font-medium text-blue-700  tracking-wider">Cutoff</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Section Name</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Score</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Answered</th>
+            <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Not Answered</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Correct</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Wrong</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Time Taken</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Accuracy</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Rank</th>
+          <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Percentile</th>
+                <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Visited</th>
+                <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Not Visited</th>
+                <th scope="col" className="px-6 py-3 text-left text-sm fw-bold  font-medium text-blue-700  tracking-wider">Cutoff</th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-blue-100">
         {sectionData.map((sect, index) => (
           <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{sect.name}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm fw-bold  font-medium text-blue-900">{sect.name}</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.s_score}</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>

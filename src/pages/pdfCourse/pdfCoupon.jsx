@@ -8,6 +8,8 @@ import Api from '../../service/Api';
 const PdfCoupon = ({ data, setshowmodel }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
+      const { refreshUser } = useContext(UserContext);
+  
   const navigate = useNavigate();
 
   console.log(data);
@@ -131,9 +133,10 @@ const PdfCoupon = ({ data, setshowmodel }) => {
       paymentId: response.razorpay_payment_id,
     });
     console.log('Payment Success:', response);
-
+         await refreshUser()
     alert("Payment successful!");
-    setshowmodel(false);  } catch (err) {
+    setshowmodel(false);  
+  } catch (err) {
     console.error('Failed to save subscription:', err);
     alert('Payment was successful, but subscription could not be saved.');
   }
