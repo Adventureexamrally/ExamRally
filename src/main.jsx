@@ -1,3 +1,8 @@
+//if you want to show the console logs you need to comment the below 3 lines
+  console.log = () => {};
+  console.warn = () => {};
+  console.error = () => {};
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
