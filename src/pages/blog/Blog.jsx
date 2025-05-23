@@ -1,292 +1,255 @@
 import React, { useEffect, useState } from "react";
-// import axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Import the icons
+import { FaChevronLeft, FaChevronRight, FaFire, FaClock, FaCalendarAlt } from "react-icons/fa";
 import Api from "../../service/Api";
-
-
-// const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Blog = () => {
   const [trendingblog, setTrendingBlog] = useState(null);
   const [blogData, setBlogData] = useState(null);
   const [topics, setTopics] = useState([]);
-  const [selectedTopic, setSelectedTopic] = useState(""); // Track selected topic
+  const [selectedTopic, setSelectedTopic] = useState("");
   const [seo, setSeo] = useState([]);
   const [blogAd, setBlogAd] = useState([]);
-
-  useEffect(() => {
-    run();
-  }, []);
-
-  const navigate = useNavigate();
-  async function run() {
-    try {
-      const topics = await Api.get(`blogs/topics`);
-      setTopics(topics.data);
-
-      const response = await Api.get(`blogs/all?trending=true`);
-      console.log(response.data);
-      setTrendingBlog(response.data);
-
-      const response2 = await Api.get(`blogs/all`);
-      setBlogData(response2.data);
-
-      const response3 = await Api.get(`/get-Specific-page/blog`);
-      setSeo(response3.data);
-
-      const ad = await Api.get(`blog-Ad/getbypage/blog`);
-      setBlogAd(ad.data)
-      // console.log(topics.data);
-
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  }
-
-  const handleTopicSelect = async (topicId) => {
-    setSelectedTopic(topicId);
-
-    // Fetch blogs by topic
-    try {
-      const response = await Api.get(`blogs/all?topic=${topicId}`);
-      console.log(response);
-
-      if (response.data?.length > 0) {
-        setBlogData(response.data);
-      }
-      else {
-        handleTopicSelect("")
-      }
-    } catch (error) {
-      console.error("Error fetching blogs by topic:", error);
-    }
-  };
-
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate data fetching
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  }, []);
-
+  const navigate = useNavigate();
 
   const carouselRef = React.useRef(null);
   const [isAtStart, setIsAtStart] = useState(true);
   const [isAtEnd, setIsAtEnd] = useState(false);
 
   useEffect(() => {
+    async function run() {
+      try {
+        const topics = await Api.get(`blogs/topics`);
+        setTopics(topics.data);
+
+        const response = await Api.get(`blogs/all?trending=true`);
+        setTrendingBlog(response.data);
+
+        const response2 = await Api.get(`blogs/all`);
+        setBlogData(response2.data);
+
+        const response3 = await Api.get(`/get-Specific-page/blog`);
+        setSeo(response3.data);
+
+        const ad = await Api.get(`blog-Ad/getbypage/blog`);
+        setBlogAd(ad.data);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    }
+
+    run();
+
     const handleScroll = () => {
       if (carouselRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        const { scrollLeft, scrollWidth, clientWidth,scrollRight } = carouselRef.current;
         setIsAtStart(scrollLeft === 0);
         setIsAtEnd(scrollLeft === scrollWidth - clientWidth);
       }
     };
 
     const carousel = carouselRef.current;
-    carousel.addEventListener("scroll", handleScroll);
+    carousel?.addEventListener("scroll", handleScroll);
+
+    // Initial scroll check
+    handleScroll();
+
     return () => {
-      carousel.removeEventListener("scroll", handleScroll);
+      carousel?.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  const scrollToNext = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: 150, behavior: "smooth" });
+  const handleTopicSelect = async (topicId) => {
+    setSelectedTopic(topicId);
+    try {
+      const response = await Api.get(`blogs/all?topic=${topicId}`);
+      if (response.data?.length > 0) {
+        setBlogData(response.data);
+      } else {
+        handleTopicSelect("");
+      }
+    } catch (error) {
+      console.error("Error fetching blogs by topic:", error);
     }
   };
 
-  const scrollToPrevious = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: -150, behavior: "smooth" });
-    }
+  const scrollToNext = () => {
+    carouselRef.current?.scrollBy({ left: 150, behavior: "smooth" });
+    setIsAtStart(false);
   };
+
+  const scrollToPrevious = () => {
+    carouselRef.current?.scrollBy({ left: -150, behavior: "smooth" });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
+  // Blog card component for consistent styling
+  const BlogCard = ({ blog }) => (
+    <div
+      onClick={() => navigate(`/blogdetails/${blog.link}`)}
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full flex flex-col"
+    >
+      {blog.photo && (
+        <div className="w-full h-48 overflow-hidden">
+          <img
+            src={blog.photo}
+            alt={blog.title}
+            className="w-full h-full object-contain bg-gray-100 p-2 group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+      )}
+      <div className="p-4 flex-1 flex flex-col">
+        <h3
+          className="text-lg font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300"
+          dangerouslySetInnerHTML={{ __html: blog.title }}
+        />
+        <p
+          className="text-gray-600 mb-3 text-sm flex-1 line-clamp-2"
+          dangerouslySetInnerHTML={{ __html: blog.shortDescription }}
+        />
+        <div className="flex items-center text-xs text-gray-500 mt-auto">
+          <FaCalendarAlt className="mr-1" />
+          <span>{new Date(blog.updatedAt).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          })}</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
         <title>{seo[0]?.seoData?.title}</title>
         <meta name="description" content={seo[0]?.seoData?.description} />
         <meta name="keywords" content={seo[0]?.seoData?.keywords} />
         <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
         <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
         <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                ))} */}
-
       </Helmet>
-      <div className="flex">
-        <div className={`mt-4 w-full ${blogAd.length > 0 ? "md:w-4/5" : "md:full "}`}>
-          <div className="relative py-2">
-            <div className="flex items-center justify-center mx-5">
+
+      <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen">
+        <div className={`w-full ${blogAd.length > 0 ? "md:w-4/5" : "md:w-full"} p-4 md:p-8`}>
+          {/* Topics Carousel */}
+          <div className="relative mb-12">
+            <div className="flex items-center justify-center">
               <button
                 onClick={scrollToPrevious}
-                className={`absolute left-0 z-10 text-blue-950 p-2 rounded-full ${isAtStart ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`absolute left-0 z-10 p-2 rounded-full bg-white shadow-md ${isAtStart ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"} transition-all`}
                 disabled={isAtStart}
               >
-                <FaChevronLeft className="w-5 h-5" />
+                <FaChevronLeft className="w-5 h-5 text-green-700" />
               </button>
 
               <div
                 ref={carouselRef}
-                className="flex overflow-x-auto gap-4 pb-2 scroll-smooth w-full"
+                className="flex overflow-x-auto gap-4 pb-4 scroll-smooth w-full px-8"
                 style={{
                   scrollBehavior: "smooth",
                   scrollSnapType: "x mandatory",
-                  scrollbarWidth: "none", // Hide scrollbar for Firefox
-                  msOverflowStyle: "none", // Hide scrollbar for IE
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
                 }}
               >
                 <span
- className={`py-2 px-4 cursor-pointer rounded-full whitespace-nowrap flex items-center 
-  ${selectedTopic ? "bg-blue-950 text-white  hover:text-green-800" : "bg-green-600 text-white"} 
-  transition-colors duration-300`}                  onClick={() => handleTopicSelect("")}
+                  className={`py-2 px-6 cursor-pointer rounded-full whitespace-nowrap flex items-center shadow-sm transition-all duration-300 ${
+                    !selectedTopic 
+                      ? "bg-gradient-to-r from-green-600 to-green-800 text-white font-medium" 
+                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                  }`}
+                  onClick={() => handleTopicSelect("")}
                 >
-                  All
+                  All Topics
                 </span>
-                {topics.map((title) => {
-                  const isSelected = selectedTopic === title.topic;
-                  return (
-                    <span
-                      key={title._id}
-                      className={`py-2 px-4 cursor-pointer rounded-full whitespace-nowrap flex items-center 
-        ${isSelected ? "bg-green-600 text-white" : "bg-blue-950 text-white hover:text-green-800"} 
-        transition-colors duration-300`}
-                      onClick={() => handleTopicSelect(title.topic)}
-                    >
-                      {title.topic}
-                    </span>
-                  );
-                })}
+                {topics.map((title) => (
+                  <span
+                    key={title._id}
+                    className={`py-2 px-6 cursor-pointer rounded-full whitespace-nowrap flex items-center shadow-sm transition-all duration-300 ${
+                      selectedTopic === title.topic
+                        ? "bg-gradient-to-r from-green-600 to-green-800 text-white font-medium"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                    }`}
+                    onClick={() => handleTopicSelect(title.topic)}
+                  >
+                    {title.topic}
+                  </span>
+                ))}
               </div>
 
               <button
                 onClick={scrollToNext}
-                className={`absolute right-0 z-10 text-blue-950 p-2 rounded-full ${isAtEnd ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`absolute right-0 z-10 p-2 rounded-full bg-white shadow-md ${isAtEnd ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"} transition-all`}
                 disabled={isAtEnd}
               >
-                <FaChevronRight className="w-5 h-5" />
+                <FaChevronRight className="w-5 h-5 text-green-700" />
               </button>
             </div>
           </div>
-          <div className=" h4 bg-green-200  p-1 m-1 ">Trending Articles</div>
-          {/* <div class="border-b-2 border-gray-300 w-[200px] mt-2 mx-20"></div> */}
-          <div className="container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-10 mb-10">
-            {trendingblog &&
-              trendingblog.map((blog, index) => (
-                <div
-                  onClick={() => navigate(`/blogdetails/${blog.link}`)}
-                  className="cursor-pointer flex  px-4 py-8 text-green-700  p-3 mb-8 transition-transform transform hover:scale-105 w-full  md:w-[100%] mx-2"
-                >
-                  <div
-                    className={`grid ${blog.photo
-                      ? "grid-cols-1 md:grid-cols-[150px,2fr] lg:grid-cols-[150px,2fr]"
-                      : "grid-cols-1"
-                      } gap-4 items-center`}
-                  >
-                    <div>
-                      {/* <h1 className='text-4xl text-gray-200  font-sans font-bold m-2'>0{index + 1}</h1> */}
-                      {blog.photo && (
-                        <img
-                          src={blog.photo}
-                          alt="no photo"
-                          className="w-full object-cover"
-                        />
-                      )}
-                    </div>
-                    <div key={blog.id} className="ml-11">
-                      <h2
-                        className="text-xl font-semibold mb-4"
-                        dangerouslySetInnerHTML={{ __html: blog.title }}
-                      />
-                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-500 text-sm">
-                          {" "}
-                          <i className="bi bi-bell-fill"></i>{" "}
-                          {new Date(blog.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-          <div>
-            <div className=" h4 bg-green-200  p-1 m-1 ">Recent Articles</div>
-            {/* <div class="border-b-2 border-gray-300 w-[200px] mt-2 mx-20"></div> */}
 
-            <div className="container rounded-lg mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-              {blogData &&
-                blogData.map((blog, index) => (
-                  <div
-                    onClick={() => navigate(`/blogdetails/${blog.link}`)}
-                    key={blog.id}
-                    className="ml-1 p-3 cursor-pointer "
-                  >
-                    <div
-                      className={`grid ${blog.photo
-                        ? "grid-cols-1 md:grid-cols-[150px,2fr] lg:grid-cols-[150px,2fr]"
-                        : "grid-cols-1"
-                        } gap-4 items-center`}
-                    >
-                      <div>
-                        {/* <h1 className='text-4xl text-gray-200  font-sans font-bold m-2'>0{index + 1}</h1> */}
-                        {blog.photo && (
-                          <img
-                            src={blog.photo}
-                            alt="no photo"
-                            className="w-full object-cover max-h-48"
-                          />
-                        )}
-                      </div>
-                      {/* <Link to={blog.link}> */}
-                      <div>
-                        <h2
-                          className="text-xl font-semibold my-1 text-green-700  m-1"
-                          dangerouslySetInnerHTML={{ __html: blog.title }}
-                        />
-                        <p
-                          className="text-xs font-semibold text-gray-700 m-2"
-                          dangerouslySetInnerHTML={{
-                            __html: blog.shortDescription,
-                          }}
-                        />
-                        <div className="flex items-center space-x-2 m-2">
-                          <span className="text-gray-500 text-sm">
-                            {" "}
-                            <i className="bi bi-bell-fill"></i>{" "}
-                            {new Date(blog.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        {/* </Link> */}
-                      </div>
-                    </div>
-                    <hr />
-                  </div>
-                ))}
+          {/* Trending Articles Section */}
+          <section className="mb-16">
+            <div className="flex items-center mb-6">
+              <FaFire className="text-red-500 mr-2 text-xl" />
+              <h2 className="text-2xl font-bold text-gray-800">Trending Articles</h2>
+              <div className="ml-4 flex-1 h-px bg-gradient-to-r from-green-400 to-transparent"></div>
             </div>
-          </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {trendingblog?.map((blog) => (
+                <BlogCard key={blog._id} blog={blog} />
+              ))}
+            </div>
+          </section>
+
+          {/* Recent Articles Section */}
+          <section>
+            <div className="flex items-center mb-6">
+              <FaClock className="text-blue-500 mr-2 text-xl" />
+              <h2 className="text-2xl font-bold text-gray-800">Recent Articles</h2>
+              <div className="ml-4 flex-1 h-px bg-gradient-to-r from-blue-400 to-transparent"></div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {blogData?.map((blog) => (
+                <BlogCard key={blog._id} blog={blog} />
+              ))}
+            </div>
+          </section>
         </div>
-        {blogAd.length > 0 &&
-          <div className="w-1/5 hidden md:block">
-            <div>
 
+        {/* Sidebar Ads */}
+        {blogAd.length > 0 && (
+          <div className="w-full md:w-1/5 p-4 md:sticky md:top-0 md:h-screen md:overflow-y-auto">
+            <div className="space-y-6">
               {blogAd.map((item) => (
-                <div className='m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300'>
+                <div key={item._id} className="hover:scale-[1.02] hover:shadow-lg transition-all duration-300">
                   <Link to={item.link_name}>
-                    <img src={item.photo} alt="Not Found" className='rounded-md' /></Link >
+                    <img 
+                      src={item.photo} 
+                      alt="Advertisement" 
+                      className="rounded-lg w-full object-cover shadow-md" 
+                    />
+                  </Link>
                 </div>
               ))}
             </div>
           </div>
-        }
+        )}
       </div>
-
     </>
   );
 };

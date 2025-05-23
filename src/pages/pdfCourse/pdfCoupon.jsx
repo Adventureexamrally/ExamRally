@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { UserContext } from '../../context/UserProvider';
 import Api from '../../service/Api';
+import { toast, ToastContainer } from 'react-toastify';
 
 const PdfCoupon = ({ data, setshowmodel }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
+      const { refreshUser } = useContext(UserContext);
+  
   const navigate = useNavigate();
 
   console.log(data);
@@ -131,9 +134,12 @@ const PdfCoupon = ({ data, setshowmodel }) => {
       paymentId: response.razorpay_payment_id,
     });
     console.log('Payment Success:', response);
-
-    alert("Payment successful!");
-    setshowmodel(false);  } catch (err) {
+         await refreshUser();
+         toast.success('Payment successful!');
+         setInterval(() => {
+           setshowmodel(false);  
+         }, 2000);
+  } catch (err) {
     console.error('Failed to save subscription:', err);
     alert('Payment was successful, but subscription could not be saved.');
   }
@@ -158,7 +164,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
 
         console.error('Payment failed:', response.error.metadata);
  
-      
+      toast.error('Payment failed. Please try again.');
         try {
           const errorData = response.error || {};
           const meta = errorData.metadata || {};
@@ -175,10 +181,10 @@ const PdfCoupon = ({ data, setshowmodel }) => {
           });
           
       
-          alert("Payment failed. Please try again.");
+          // alert("Payment failed. Please try again.");
         } catch (err) {
           console.error("Failed to report payment failure:", err);
-          alert("Payment failed and could not be logged.");
+          toast.error("Payment failed and could not be logged.");
         }
       });
     } catch (error) {
@@ -191,6 +197,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
+      <ToastContainer />
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
         <div className="relative">
           <div className="absolute top-4 right-4">

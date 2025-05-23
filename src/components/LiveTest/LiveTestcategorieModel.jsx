@@ -180,7 +180,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                                                                                     {!isEnrolled && isPaidTest(test) || !isEnrolled && new Date(test.live_date) > new Date() ? (
                                                           // 🔒 Locked if user not enrolled AND (test is paid OR not live)
                                                           <button
-                                                            className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 opacity-50 cursor-not-allowed"
+                                                            className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
                                                             disabled
                                                           >
                                                             <div className="flex items-center justify-center font-semibold gap-1">
@@ -212,11 +212,11 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                               }
 
                                                               if (resultData?.[test._id]?.status === "completed") {
-                                                                openNewWindow(`/liveresult/${test._id}`);
+                                                                openNewWindow(`/liveresult/${test._id}/${user?._id}`);
                                                               } else if (resultData?.[test._id]?.status === "paused") {
-                                                                openNewWindow(`/mocklivetest/${test._id}`);
+                                                                openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
                                                               } else {
-                                                                openNewWindow(`/instruct/${test._id}`);
+                                                                openNewWindow(`/instruct/${test._id}/${user?._id}`);
                                                               }
                                                             }}
                                                           >

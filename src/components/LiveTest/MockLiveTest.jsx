@@ -9,7 +9,7 @@ import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
 import { Avatar } from '@mui/material';
 
-const MockLiveTest= () => {
+const MockLiveTest = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
@@ -21,7 +21,7 @@ const MockLiveTest= () => {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sectionTimes, setSectionTimes] = useState({});
-const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
+  const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
 
   const { user } = useContext(UserContext);
 
@@ -94,7 +94,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
           if (response.data) {
             const state = response.data;
             setGetresult(state)
-            console.error("hello",state);
+            console.error("hello", state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
@@ -133,12 +133,12 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
 
             // // Show the last visited question, or first question if none visited
             // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-        //     if (visitedQuestionsList.length > 0) {
-        //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-        // } else {
-        //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-        //   setVisitedQuestions([0]);  // Mark it as visited
-        // }
+            //     if (visitedQuestionsList.length > 0) {
+            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
+            // } else {
+            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+            //   setVisitedQuestions([0]);  // Mark it as visited
+            // }
           }
         })
 
@@ -158,14 +158,14 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
       // Only show toast if no toast is currently active
       if (!toast.isActive(toastId.current)) {
         toastId.current = toast.info("Scrolling with the mouse wheel is disabled. Use the scrollbar instead.", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: false,
-            theme: "colored",
-          }
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          theme: "colored",
+        }
         );
       }
     };
@@ -294,7 +294,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
           (now - currentSectionStartTimeRef.current) / 1000
         );
 
-      setSectionTimes(prev => ({
+        setSectionTimes(prev => ({
           ...prev,
           [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent,
         }));
@@ -422,7 +422,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
           setSelectedOptions(initialOptions);
 
           // Now post the transformed data to your '/results' endpoint
-        const postResponse = await Api.post(`/results/${user?._id}/${id}`, transformedData);
+          const postResponse = await Api.post(`/results/${user?._id}/${id}`, transformedData);
           console.log("Data posted successfully:", postResponse);
         } catch (error) {
           console.error("Error occurred:", error.message);
@@ -463,7 +463,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
       examData &&
       examData.section[currentSectionIndex] &&
       examData.section[currentSectionIndex].questions?.[
-        selectedLanguage?.toLowerCase()
+      selectedLanguage?.toLowerCase()
       ]
     ) {
       const totalQuestions =
@@ -779,8 +779,8 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
       examData?.section[currentSectionIndex]?.t_time * 60 || 0;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
     const timeTakenInSecondsUpdated =
-    (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
-  
+      (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
+
     const previousTimeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
     console.log("currentSectionIndex:", currentSectionIndex);
@@ -865,13 +865,13 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]);
-  
+
   const handleTimerEnd = async () => {
     handleSubmitSection();
     toast.success("Test Completed! Moving to result.");
     await submitExam();
     await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-    navigate(`/liveresult/${id}`);
+    navigate(`/liveresult/${id}/${user?._id}`);
   };
 
   const submitExam = () => {
@@ -1148,9 +1148,9 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
           s_accuracy: secaccuracy,
           skipped: skippedQuestions,
           timeTaken:
-          resultData?.section?.[sectionIndex]?.timeTaken ??
-          sectionTimes?.[sectionIndex] ??
-          0,
+            resultData?.section?.[sectionIndex]?.timeTaken ??
+            sectionTimes?.[sectionIndex] ??
+            0,
         };
       })
       .filter(Boolean);
@@ -1348,7 +1348,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
         toast.success("Test Completed! Moving to result.");
         await submitExam();
         await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-        navigate(`/liveresult/${id}`);
+        navigate(`/liveresult/${id}/${user?._id}`);
       }
     }
   };
@@ -1596,11 +1596,11 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                       Section Submit
                     </h1>
                     <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={() => setShowModal(false)} // Manually hide the modal
-            ></button>
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setShowModal(false)} // Manually hide the modal
+                    ></button>
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -1682,11 +1682,10 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
             <div key={index}>
               <h1
                 className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                      ${
-                        currentSectionIndex === index
-                          ? " font-medium underline"
-                          : ""
-                      }`}
+                      ${currentSectionIndex === index
+                    ? " font-medium underline"
+                    : ""
+                  }`}
               >
                 {section.name}
                 <div className="relative group ml-2 d-inline-block">
@@ -1782,7 +1781,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                     <span className="text-success">
                       +
                       {examData?.section &&
-                      examData.section[currentSectionIndex]
+                        examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].plus_mark
                         : "No plus marks"}
                     </span>
@@ -1790,7 +1789,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                     <span className="text-danger">
                       -
                       {examData?.section &&
-                      examData.section[currentSectionIndex]
+                        examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].minus_mark
                         : "No minus marks"}
                     </span>
@@ -1800,47 +1799,47 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
 
               {examData?.section[currentSectionIndex] ? (
                 <div className="flex flex-col md:flex-row p-0">
-{/* Left side for Common Data */}
-{examData.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                <div 
-                  className={`md:w-[50%] p-3  pb-5
-                      ${isFullscreen 
-      ? 'h-[80vh] md:h-[80vh]' 
-      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-    }`
-                  } 
-                  style={{ overflowY: "auto" }}
-                >
+                  {/* Left side for Common Data */}
+                  {examData.section[currentSectionIndex]?.questions?.[
+                    selectedLanguage?.toLowerCase()
+                  ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                       <div
-                        className="fw-bold text-wrap"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.common_data || "No common data available",
-                        }}
-                      />
-                    </div>
-                  )}
-{/* Right side for Question */}
-<div 
-                  className={`  ${isFullscreen 
-      ? 'h-[80vh] md:h-[80vh]' 
-      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-    } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                     selectedLanguage?.toLowerCase()
-                     ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                      ? "md:w-[50%]"
+                        className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                      ${isFullscreen
+                            ? 'h-[80vh] md:h-[80vh]'
+                            : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                          }`
+                        }
+                        style={{ overflowY: 'auto' }}
+                      >
+                        <div
+                          className="text-wrap"
+                          style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              examData.section[currentSectionIndex]?.questions?.[
+                                selectedLanguage?.toLowerCase()
+                              ]?.[clickedQuestionIndex - startingIndex]
+                                ?.common_data || "No common data available",
+                          }}
+                        />
+                      </div>
+                    )}
+                  {/* Right side for Question */}
+                  <div
+                    className={`  ${isFullscreen
+                      ? 'h-[80vh] md:h-[80vh]'
+                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                        selectedLanguage?.toLowerCase()
+                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                        ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                          }`}                style={{  overflowY: "auto" }}
-              >
+                      }`} style={{ overflowY: 'auto' }}
+                  >
                     <div>
                       <div
-                        className="fw-bold text-wrap mb-2"
+                        className="text-wrap mb-2"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                         dangerouslySetInnerHTML={{
                           __html:
@@ -1860,7 +1859,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
-                            <div key={index}>
+                            <div key={index} className="p-1 rounded-lg m-2 ">
                               <input
                                 type="radio"
                                 id={`option-${index}`}
@@ -1874,6 +1873,12 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                                   console.log("Selected Option Index:", index);
                                   handleOptionChange(index);
                                 }}
+                                 style={{
+                                                                     // Blue color for radio button
+                                                                    width: "1.2rem",
+                                                                    height: "1.2rem",
+                                                                    
+                                                                }}
                               />{" "}
                               &nbsp;&nbsp;
                               <label
@@ -1891,22 +1896,31 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                     </div>
                     <div className="md:flex hidden items-center">
                       <div
-                        className={`fixed top-1/2 ${
-                          closeSideBar ? "right-0" : ""
-                        } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
+                        className={`fixed top-1/2 ${closeSideBar ? "right-0" : ""
+                          } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
                         onClick={toggleMenu2}
                       >
                         <FaChevronRight
-                          className={`w-2 h-5 text-white transition-transform duration-300 ${
-                            closeSideBar ? "absalute left-0 rotate-180" : ""
-                          }`}
+                          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? "absalute left-0 rotate-180" : ""
+                            }`}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <p>No section data available</p>
+                <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-primary"
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
               )}
             </>
           ) : (
@@ -1917,19 +1931,19 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
         </div>
 
         {/* Sidebar */}
-{/* Sidebar */}
+        {/* Sidebar */}
 
 
-<div
-      className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+        <div
+          className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
-      ${isFullscreen 
-      ? 'h-[87vh] md:h-[87vh]' 
-      : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-    } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-      style={{  overflowY: 'auto' }}
-    >
+      ${isFullscreen
+              ? 'h-[87vh] md:h-[87vh]'
+              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
+            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+          style={{ overflowY: 'auto' }}
+        >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
               <svg
@@ -1973,11 +1987,10 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
             <center>
               <button
                 onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
-                  isPaused
+                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused
                     ? "bg-green-500 hover:bg-green-600 text-white"
                     : "bg-red-500 hover:bg-red-600 text-white"
-                }`}
+                  }`}
               >
                 Pause
               </button>
@@ -2046,6 +2059,8 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
+                  }if (selectedOptions[fullIndex] == null) {
+                    className="notansImg";
                   }
                 } else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
@@ -2085,7 +2100,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
             <div className="d-flex">
               <button
                 onClick={handleMarkForReview}
-                className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
               >
                 <span className="block md:hidden">Mark & Next</span>
                 <span className="hidden md:block">Mark for Review</span>
@@ -2093,7 +2108,7 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
               &nbsp;&nbsp;&nbsp;&nbsp;
               <button
                 onClick={handleClearResponse}
-                className="btn bg-blue-300 fw-bold hover:bg-blue-200 text-sm md:text-lg"
+                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
               >
                 <span className="block md:hidden">Clear</span>
                 <span className="hidden md:block"> Clear Response</span>
@@ -2102,14 +2117,14 @@ const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with 
             {examData?.section?.[currentSectionIndex]?.questions?.[
               selectedLanguage?.toLowerCase()
             ]?.length > 0 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700"
-              >
-                <span className="block md:hidden">Save</span>
-                <span className="hidden md:block"> Save & Next</span>
-              </button>
-            )}
+                <button
+                  onClick={handleNextClick}
+                  className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
+                >
+                  <span className="block md:hidden">Save</span>
+                  <span className="hidden md:block"> Save & Next</span>
+                </button>
+              )}
           </div>
           {/* Right side - Save & Next and Submit Section */}
           <div className="flex justify-center md:w-[20%]">

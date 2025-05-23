@@ -50,6 +50,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ContactUs from "./components/ContactUs";
 import Coupon from "./pages/Coupon";
 import ErrorReport from "./pages/user/ErrorReport";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 
@@ -133,6 +134,22 @@ function MainApp() {
       )}
 <ScrollToTop/>
       <Routes>
+        <Route element={<ProtectedRoute />}> 
+              <Route path="/mocktest/:id/:userId" element={<Test />} />
+              <Route path="/instruction/:id/:userId" element={<Instruction />} />
+              <Route path="/otherinstruct/:id/:userId" element={<Otherinstruction />} />
+             <Route path='/mocksolution/:id/:userId' element={<Mocksolution />} />
+              <Route path="/result/:id/:userId" element={<ResultPage />} />
+                <Route path="/resultanalysis/:userId" element={<Resultanalysis />} />
+
+{/*  live test routes */}
+
+              <Route path="/mocklivetest/:id/:userId" element={<MockLiveTest />} />
+              <Route path="/instruct/:id/:userId" element={<Instruct/>} />
+              <Route path="/otherins/:id/:userId" element={<OtherInstruct/>} />
+              <Route path="/liveresult/:id/:userId" element={<LiveResult />} />
+              <Route path='/livesolution/:id/:userId' element={<LiveSolution />} />
+        </Route>
         <Route path="/" element={<Home />} />
         <Route path="/sigin" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
@@ -141,20 +158,15 @@ function MainApp() {
         <Route path="/rally-pro" element={<Rally_pro />} />
         <Route path="/rally-super-pro" element={<Rallysuper_Pro />} />
         <Route path="/top-trending-exams/:id" element={<Packagename />} />
-        <Route path="/mocktest/:id" element={<Test />} />
-        <Route path="/instruction/:id" element={<Instruction />} />
-      
-        <Route path="/otherinstruct/:id" element={<Otherinstruction />} />
+        
         <Route path="/privacy-policy" element={<Privacy_Policy />} />
         <Route path="/TermsConditions" element={<Terms_Condition />} />
         {/* <Route path="/contactus" element={<ContactUs />} /> */}
 
         {/* Only render Test component without Header and Footer */}
-        <Route path="/result/:id" element={<ResultPage />} />
+        
         {/* Catch-all route for non-existent pages */}
-        <Route path="/resultanalysis" element={<Resultanalysis />} />
 
-        <Route path='/mocksolution/:id' element={<Mocksolution />} />
 
         <Route path="/blog" element={<Blog />} />
         <Route path="/blogdetails/:link" element={<Subblog />} />
@@ -164,16 +176,16 @@ function MainApp() {
         <Route path="/pdf-course/:level" element={<PdfCourse />} />
 
         <Route path="/video-course" element={<VideoCourse />} />
-        <Route path="/pdf">
-          <Route path="instruction/:id" element={<PdfInstruction />} />
-          <Route path="mocktest/:id" element={<PdfTest />} />
-          <Route path="otherinstruct/:id" element={<PdfOtherInstruction />} />
+        <Route path="/pdf" element={<ProtectedRoute />}>
+          <Route path="instruction/:id/:userId" element={<PdfInstruction />} />
+          <Route path="mocktest/:id/:userId" element={<PdfTest />} />
+          <Route path="otherinstruct/:id/:userId" element={<PdfOtherInstruction />} />
           {/* Only render Test component without Header and Footer */}
-          <Route path="result/:id" element={<PdfExamResultPage />} />
+          <Route path="result/:id/:userId" element={<PdfExamResultPage />} />
           {/* Catch-all route for non-existent pages */}
           {/* <Route path="/resultanalysis" element={<Resultanalysis />} /> */}
 
-          <Route path='mocksolution/:id' element={<PdfExamSolution />} />
+          <Route path='mocksolution/:id/:userId' element={<PdfExamSolution />} />
         </Route>
 
         <Route path="profile">
@@ -189,13 +201,6 @@ function MainApp() {
         <Route path="/All-Packages" element={<Packages />} />
         <Route path="/All-Archivers" element={<AllArch />} />
 
-{/*  live test routes */}
-
-        <Route path="/mocklivetest/:id" element={<MockLiveTest />} />
-        <Route path="/instruct/:id" element={<Instruct/>} />
-        <Route path="/otherins/:id" element={<OtherInstruct/>} />
-        <Route path="/liveresult/:id" element={<LiveResult />} />
-        <Route path='/livesolution/:id' element={<LiveSolution />} />
 
 
 

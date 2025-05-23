@@ -4,14 +4,15 @@ import notvisit from "../assets/images/notvisit.png";
 import notans from "../assets/images/notans.png";
 import notandmaeked from "../assets/images/notansMarked.png";
 import { Link, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import Api from "../service/Api";
 import { useState } from "react";
+import { UserContext } from "../context/UserProvider";
 
 
-window.addEventListener('contextmenu', function (e) {
-  e.preventDefault();
-});
+// window.addEventListener('contextmenu', function (e) {
+//   e.preventDefault();
+// });
 
 // Prevent F12, Ctrl+R, Ctrl+Shift+R, and Ctrl+Shift+I key presses
 window.addEventListener('keydown', function (e) {
@@ -40,6 +41,7 @@ const images = [
 const Instruction = () => {
   const [examData, setExamData] = useState(null);
   const {id}=useParams()
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     // Fetch exam data based on the id
@@ -244,7 +246,7 @@ const Instruction = () => {
           </li>
         </ul>
         <div className="fixed bottom-1 right-4">
-        <Link to={`/otherinstruct/${id}`}>
+        <Link to={`/otherinstruct/${id}/${user?._id}`}>
   <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
     Next
   </button>

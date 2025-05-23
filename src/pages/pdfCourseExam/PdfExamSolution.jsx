@@ -495,11 +495,11 @@ useEffect(() => {
                                             selectedLanguage?.toLowerCase()
                                         ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                                 <div
-                                                className="md:w-[50%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]" 
+                                                className="md:w-[50%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300" 
                                                 style={{  overflowY: "auto" }}
                                                 >
                                                     <div
-                                                        className="fw-bold text-wrap"
+                                                        className="text-wrap"
                                                         style={{
                                                             whiteSpace: "normal",
                                                             wordWrap: "break-word",
@@ -537,7 +537,7 @@ useEffect(() => {
                                       <div>
 
                                             <div
-                                                className="fw-bold text-wrap "
+                                                className=" text-wrap "
                                                 style={{
                                                     whiteSpace: "normal",
                                                     wordWrap: "break-word",
@@ -652,7 +652,7 @@ useEffect(() => {
                                                 <>
                                                     <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
                                                     <div
-                                                        className="fw-bold text-wrap"
+                                                        className=" text-wrap"
                                                         style={{
                                                             whiteSpace: "normal",
                                                             wordWrap: "break-word",
@@ -719,7 +719,18 @@ useEffect(() => {
                                     </div>
                                     </div>
                             ) : (
-                                <p>No section data available</p>
+                                <div
+                                className="d-flex justify-content-center align-items-center"
+                                style={{ height: '100vh' }} // Full viewport height
+                              >
+                                <div
+                                  className="spinner-border text-primary"
+                                  role="status"
+                                  style={{ width: '3rem', height: '3rem' }}
+                                >
+                                  <span className="visually-hidden">Loading...</span>
+                                </div>
+                              </div>
                             )}
                         </>
                     ) : (
@@ -741,7 +752,10 @@ useEffect(() => {
       style={{  overflowY: 'auto' }}
     >
             {isMobileMenuOpen && (
-                    <button onClick={toggleMenu} className="md:hidden text-black p-2">
+                    <button onClick={<div className="d-flex justify-content-between p-1">
+                            <h1>You</h1>
+                            <h1>67</h1>
+                        </div>} className="md:hidden text-black p-2">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -778,10 +792,7 @@ useEffect(() => {
                             <h1>InCorrect</h1>
                             <h1>{resultData?.incorrect}</h1>
                         </div>
-                        <div className="d-flex justify-content-between p-1">
-                            <h1>You</h1>
-                            <h1>67</h1>
-                        </div>
+                        
 
 
 
@@ -843,7 +854,8 @@ useEffect(() => {
                                                     setVisitedQuestions(prev => [...prev, startingIndex + index]);
                                                 }
 
-
+setCheck(null);
+        setIsClicked(false);
 
                                             }}
                                             className={`fw-bold flex align-items-center justify-content-center ${className}`}
@@ -893,11 +905,11 @@ useEffect(() => {
             </div>
 
             {/* Footer Buttons */}
-            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
-                <div className="d-flex justify-content-around">
+            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
+                <div className="d-flex justify-content-around w-[85%]">
                     {/* Previous Button */}
                     <button
-                        className="border-4 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                        className="border-4 px-1 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
                         onClick={handlePreviousClick} // Ensure this function is defined to handle the logic for going to the previous question
                         disabled={clickedQuestionIndex === startingIndex} // Disable if it's the first question
                     >
@@ -908,7 +920,7 @@ useEffect(() => {
 
                     <button
                         onClick={handleNextClick}
-                        className="border-4 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                        className="border-4 px-5 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
                     >
                         Next
                     </button>

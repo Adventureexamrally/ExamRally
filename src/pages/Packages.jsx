@@ -120,7 +120,7 @@ const handlePackageSelect = (pkg) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
         {trending.map((pkg, index) => (
           <div key={index} className="group">
-            <div className="bg-gray-100 border border-blue-500 p-6 rounded-2xl hover:scale-105 hover:shadow-2xl transition-all duration-300">
+            <div className=" min-h-[450px] max-h-[450px] bg-gray-100 border border-blue-500 p-6 rounded-2xl hover:scale-105 hover:shadow-2xl transition-all duration-300"  style={{ overflowY: 'auto' }}>
               <h2 className="text-lg font-medium text-gray-700 mb-2">{pkg.name}</h2>
               {/* Recommended Upload Size: 600 x 600 px (portrait ratio, high enough resolution for most use cases) 
     Aspect Ratio: 2:3 (portrait) */}

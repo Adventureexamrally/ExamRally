@@ -4,15 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import Api from '../service/Api';
 import { UserContext } from '../context/UserProvider';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { toast, ToastContainer } from 'react-toastify';
 
 const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
+    const { refreshUser } = useContext(UserContext);
+  
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(pkg.discountPrice);
+  const [finalPrice, setFinalPrice] = useState(pkg.discountPrice || pkg.discountedAmount);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
@@ -50,7 +53,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       });
   
       if (res.data.valid) {
-        const baseAmount = Number(pkg.discountPrice);
+        const baseAmount = Number(pkg.discountPrice) || Number(pkg.discountedAmount);
         const discount = (baseAmount * res.data.discountPercent) / 100;
         const newTotal = baseAmount - discount;
         
@@ -72,7 +75,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
   
       // Reset discount if coupon validation fails
       setDiscountPercent(0);
-      setFinalPrice(pkg.discountPrice);
+      setFinalPrice(pkg.discountPrice || pkg.discountedAmount);
     } finally {
       setIsProcessing(false);
     }
@@ -93,12 +96,12 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
         payment_capture: 1,
         userId: user?._id,
         courseId: JSON.stringify(pkg.coursesIncluded),
-        courseName: pkg?.name || "Course Name",
+        courseName: pkg?.name ||pkg.subscriptionType || "Course Name",
         email: user?.email,
         phoneNumber: user?.phoneNumber,
         notes: {
           package_id: pkg._id,
-          package_name: pkg.name,
+          package_name: pkg.name || pkg.subscriptionType,
           courses: JSON.stringify(pkg.coursesIncluded),
           coupon_code: discountPercent > 0 ? couponCode : null,
           discount_percent: discountPercent
@@ -121,7 +124,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           const res = await Api.post('/orders/verify-payment', {
             userId: user._id,
             courseId: JSON.stringify(pkg.coursesIncluded),
-            courseName: pkg.name|| "Course Name",
+            courseName: pkg.name||pkg.subscriptionType|| "Course Name",
             paymentId: response.razorpay_payment_id,
             orderId: response.razorpay_order_id,
             signature: response.razorpay_signature,
@@ -129,9 +132,11 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             expiryDays: pkg.duration, // ✅ Send expiryDays from client
           });
           console.log(res)
-        
-            alert("Payment successful!");
+                 await refreshUser()
+                 toast.success("Payment successful! ");
+                 setInterval(() => {
             setShowModal(false);
+                 }, 2000);
         },
         
         prefill: {
@@ -150,7 +155,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       rzp.on('payment.failed', async function (response) {
 
         console.error('Payment failed:', response.error.metadata);
- 
+ toast.error("Payment failed. Please try again.");
       
         try {
           const errorData = response.error || {};
@@ -168,10 +173,10 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           });
           
       
-          alert("Payment failed. Please try again.");
+          // alert("Payment failed. Please try again.");
         } catch (err) {
           console.error("Failed to report payment failure:", err);
-          alert("Payment failed and could not be logged.");
+          toast.error("Payment failed and could not be logged.");
         }
       });
 
@@ -185,6 +190,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
+      <ToastContainer />
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
       <div className="relative">
           <div className="absolute top-4 right-4">
@@ -197,7 +203,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           </div>
           
           <div className="bg-gradient-to-r from-green-600 to-green-800 p-6 text-white">
-            <h2 className="text-2xl font-bold">{pkg?.name}</h2>
+            <h2 className="text-2xl font-bold">{pkg?.name || pkg.subscriptionType}</h2>
             <p className="opacity-90">Get access to {pkg?.coursesIncluded?.length || 0} courses</p>
           </div>
         </div>
@@ -206,11 +212,11 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           <div className="flex justify-between items-center mb-4">
             <div>
               <p className="text-gray-600">Access Period</p>
-              <p className="font-medium">{accessDuration}</p>
+              <p className="font-medium">{accessDuration || pkg.expiryDays}</p>
             </div>
             <div className="text-right">
               <p className="text-gray-600">Original Price</p>
-              <p className="text-lg font-bold line-through">₹{pkg.price}</p>
+              <p className="text-lg font-bold line-through">₹{pkg.price || pkg.amount}</p>
             </div>
           </div>
 
@@ -218,10 +224,10 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-bold text-green-800">Special Offer</p>
-                <p className="text-green-700">₹{pkg.discountPrice}</p>
+                <p className="text-green-700">₹{pkg.discountPrice || pkg.discountedAmount}</p>
               </div>
               <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                {Math.round((1 - pkg.discountPrice/pkg.price) * 100)}% OFF
+                {Math.round((1 - pkg.discountPrice/pkg.price) * 100) || Math.round((1 -pkg.discountedAmount/pkg.amount) * 100)}% OFF
               </span>
             </div>
           </div>

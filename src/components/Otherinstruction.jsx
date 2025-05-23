@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Api from "../service/Api";
+import { UserContext } from "../context/UserProvider";
 
 const OtherInstruction = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -8,6 +9,7 @@ const OtherInstruction = () => {
     const [examData, setExamData] = useState(null);
     const {id} = useParams()
 
+  const { user } = useContext(UserContext);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -43,16 +45,15 @@ const handleNextClick = () => {
     ? "English"
     : selectedLanguage;
 
-  navigate(`/mocktest/${id}`, { state: { language: finalLanguage } });
+  navigate(`/mocktest/${id}/${user?._id}`, { state: { language: finalLanguage } });
 };
 
   const handlePreviousClick = () => {
-    navigate(`/instruction/${id}`);
+    navigate(`/instruction/${id}/${user?._id}`);
   };
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold">New Test Create That</h1>
 
       {/* Instruction Header */}
       <div className="bg-blue-300 p-3 flex justify-between items-center">
