@@ -2,13 +2,19 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import logo from '../../assets/logo/sample-logo.png';
-import Swal from 'sweetalert2'
-import { FaChevronLeft, FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
+import logo from "../../assets/logo/sample-logo.png";
+import Swal from "sweetalert2";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaCompress,
+  FaExpand,
+  FaInfoCircle,
+} from "react-icons/fa";
 import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
-import { Avatar } from '@mui/material';
-
+import { Avatar } from "@mui/material";
+import axios from "axios";
 const MockLiveTest = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -21,9 +27,12 @@ const MockLiveTest = () => {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sectionTimes, setSectionTimes] = useState({});
-  const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
-
+  const currentSectionStartTimeRef = useRef(new Date()); // Add this at top with other hooks
+ const [text, setText] = useState("");
+  const [corrections, setCorrections] = useState([]);
+  const [scoreBreakdown, setScoreBreakdown] = useState(null);
   const { user } = useContext(UserContext);
+  const [wordCount, setWordCount] = useState(0);
 
   const location = useLocation();
   const selectedLanguage = location.state?.language || "English";
@@ -68,6 +77,7 @@ const MockLiveTest = () => {
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name, setShow_name] = useState("");
   const [t_questions, sett_questions] = useState("");
+
   useEffect(() => {
     // Check if data has already been fetched
     if (!isDataFetched) {
@@ -76,24 +86,23 @@ const MockLiveTest = () => {
           if (res.data) {
             setExamData(res.data);
             setIsDataFetched(true);
-            setShow_name(res.data.show_name)
-            sett_questions(res.data.t_questions) // Mark that data is fetched
-            console.log("kl", res.data.show_name);
+            setShow_name(res.data.show_name);
+            sett_questions(res.data.t_questions); // Mark that data is fetched
+            console.error("kl", res.data);
           }
         })
         .catch((err) => console.error("Error fetching data:", err));
     }
   }, [id]); // Only trigger when `id` changes
 
-
   // In the useEffect that fetches exam state
   useEffect(() => {
     if (user?._id && id) {
       Api.get(`results/${user?._id}/${id}`)
-        .then(response => {
+        .then((response) => {
           if (response.data) {
             const state = response.data;
-            setGetresult(state)
+            setGetresult(state);
             console.error("hello", state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
@@ -103,12 +112,16 @@ const MockLiveTest = () => {
 
             if (state.section) {
               state.section.forEach((section) => {
-                const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                const questions =
+                  section.questions?.[selectedLanguage?.toLowerCase()] || [];
                 questions.forEach((question, questionIndex) => {
                   const absoluteIndex = absoluteIndexCounter++;
 
                   // Set selected option if exists
-                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
+                  if (
+                    question.selectedOption !== undefined &&
+                    question.selectedOption !== null
+                  ) {
                     initialOptions[absoluteIndex] = question.selectedOption;
                   }
 
@@ -142,10 +155,9 @@ const MockLiveTest = () => {
           }
         })
 
-        .catch(error => console.error('Error fetching exam state:', error));
+        .catch((error) => console.error("Error fetching exam state:", error));
     }
   }, [id, user?._id, t_questions, selectedLanguage]);
-
 
   const commonDataRef = useRef(null);
 
@@ -157,15 +169,17 @@ const MockLiveTest = () => {
 
       // Only show toast if no toast is currently active
       if (!toast.isActive(toastId.current)) {
-        toastId.current = toast.info("Scrolling with the mouse wheel is disabled. Use the scrollbar instead.", {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false,
-          theme: "colored",
-        }
+        toastId.current = toast.info(
+          "Scrolling with the mouse wheel is disabled. Use the scrollbar instead.",
+          {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: false,
+            theme: "colored",
+          }
         );
       }
     };
@@ -294,7 +308,7 @@ const MockLiveTest = () => {
           (now - currentSectionStartTimeRef.current) / 1000
         );
 
-        setSectionTimes(prev => ({
+        setSectionTimes((prev) => ({
           ...prev,
           [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent,
         }));
@@ -369,6 +383,9 @@ const MockLiveTest = () => {
                   common_data: question.common_data,
                   explanation: question.explanation,
                   selectedOption: question.selectedOption,
+                  keywords: question.keywords,
+                  words_limit: question.words_limit,
+                  question_type: question.question_type,
                   isVisited: 0,
                   NotVisited: 0,
                   q_on_time: 0,
@@ -382,6 +399,9 @@ const MockLiveTest = () => {
                   common_data: question.common_data,
                   explanation: question.explanation,
                   selectedOption: question.selectedOption,
+                  keywords: question.keywords,
+                  words_limit: question.words_limit,
+                  question_type: question.question_type,
                   isVisited: 0,
                   NotVisited: 0,
                   q_on_time: 0,
@@ -395,6 +415,9 @@ const MockLiveTest = () => {
                   common_data: question.common_data,
                   explanation: question.explanation,
                   selectedOption: question.selectedOption,
+                  keywords: question.keywords,
+                  question_type: question.question_type,
+                  words_limit: question.words_limit,
                   isVisited: 0,
                   NotVisited: 0,
                   q_on_time: 0,
@@ -422,7 +445,10 @@ const MockLiveTest = () => {
           setSelectedOptions(initialOptions);
 
           // Now post the transformed data to your '/results' endpoint
-          const postResponse = await Api.post(`/results/${user?._id}/${id}`, transformedData);
+          const postResponse = await Api.post(
+            `/results/${user?._id}/${id}`,
+            transformedData
+          );
           console.log("Data posted successfully:", postResponse);
         } catch (error) {
           console.error("Error occurred:", error.message);
@@ -463,7 +489,7 @@ const MockLiveTest = () => {
       examData &&
       examData.section[currentSectionIndex] &&
       examData.section[currentSectionIndex].questions?.[
-      selectedLanguage?.toLowerCase()
+        selectedLanguage?.toLowerCase()
       ]
     ) {
       const totalQuestions =
@@ -716,6 +742,7 @@ const MockLiveTest = () => {
       } else {
         console.log("Submitting the exam.");
         submitExam();
+        // checkGrammar();
       }
     }
   };
@@ -742,7 +769,7 @@ const MockLiveTest = () => {
         });
     }
   }, [id]);
-  console.log("timetakenfromdb:", timeTakenFromDB);
+  // console.log("timetakenfromdb:", timeTakenFromDB);
 
   useEffect(() => {
     const totalSectionTime =
@@ -765,6 +792,7 @@ const MockLiveTest = () => {
   }, [examData, currentSectionIndex, resultData]);
 
   const updateSectionTime = () => {
+    console.log("updte seccall")
     if (!examDataSubmission || timeTakenFromDB.length === 0) return;
 
     const {
@@ -800,11 +828,12 @@ const MockLiveTest = () => {
       }
       return section;
     });
-
+   
     if (user?._id) {
       Api.post(`results/${user._id}/${id}`, {
         ExamId: id,
         section: updatedSections,
+
         score: totalScore,
         totalTime: formattedTotalTime,
         timeTakenInSeconds: timeTakenInSecondsUpdated,
@@ -836,6 +865,8 @@ const MockLiveTest = () => {
     timeTakenFromDB,
   ]);
 
+
+
   useEffect(() => {
     if (!user?._id || !id) return;
     if (user?._id) {
@@ -843,6 +874,9 @@ const MockLiveTest = () => {
         .then((response) => {
           setResultData(response.data);
           console.log("Result Data:", response.data);
+        const descriptiveText = response.data.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.descriptive[0]?.text?.[0] || " ";
+        setText(descriptiveText);
+          console.log(text)
         })
         .catch((error) => {
           console.error("Error fetching result data:", error);
@@ -870,11 +904,127 @@ const MockLiveTest = () => {
     handleSubmitSection();
     toast.success("Test Completed! Moving to result.");
     await submitExam();
-    await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
     navigate(`/liveresult/${id}/${user?._id}`);
   };
 
-  const submitExam = () => {
+const getKeywords = () => {
+  const keywordString =
+    examData?.section?.[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ]?.[0]?.keywords;
+
+  if (typeof keywordString === "string") {
+    return keywordString.split(",").map((k) => k.trim().toLowerCase());
+  }
+  return [];
+};
+
+
+// Grammar check function
+const checkGrammar = async () => {
+  try {
+    console.log("Checking grammar...");
+    const response = await axios.post(
+      "https://ginger4.p.rapidapi.com/correction",
+      text,
+      {
+        params: {
+          lang: "US",
+          generateRecommendations: "false",
+          flagInfomralLanguage: "true",
+        },
+        headers: {
+          "x-rapidapi-key":
+            "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
+          "x-rapidapi-host": "ginger4.p.rapidapi.com",
+          "Content-Type": "text/plain",
+        },
+      }
+    );
+
+    const issues = response.data.GingerTheDocumentResult.Corrections || [];
+    setCorrections(issues);
+    calculateScore(issues);
+  } catch (error) {
+    console.error("Grammar check failed:", error);
+  }
+};
+
+// Score calculation function
+const calculateScore = async (issues) => {
+  const keywords = getKeywords();
+  const expectedWordCount =  examData?.section?.[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ]?.[0]?.words_limit;
+  let spellingErrors = 0;
+  let grammarErrors = 0;
+
+console.log(keywords)
+
+  issues.forEach((issue) => {
+    const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
+    if (category.includes("capitalization")) {
+      spellingErrors++;
+    } else {
+      grammarErrors++;
+    }
+  });
+
+  const totalWords = text.trim().split(/\s+/).length;
+
+  // Calculate spelling score
+  const spellingScore =
+    spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+
+  // Calculate grammar score
+  const grammarScore =
+    grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
+
+  // Calculate word count score
+  const wordCountScore = Math.min((totalWords / expectedWordCount) * 20, 20);
+
+  // Calculate keyword score
+  let matchedKeywords = 0;
+  const lowerText = text.toLowerCase();
+  keywords.forEach((kw) => {
+    if (lowerText.includes(kw)) matchedKeywords++;
+  });
+  const keywordScore =
+    keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
+
+  // Total score calculation
+  const totalScore =
+    spellingScore + grammarScore + wordCountScore + keywordScore;
+
+  const scoreData = {
+    spellingScore,
+    grammarScore,
+    wordCountScore,
+    keywordScore,
+    totalScore: Math.round(totalScore),
+    totalWords,
+  };
+
+  await submitExam(text, issues, scoreData, keywords, expectedWordCount);
+
+  console.log("Score Data:", scoreData);
+  console.log("Text:", text);
+  console.log("Issues:", issues);
+  console.log("Keywords:", keywords);
+  console.log("Expected Word Count:", expectedWordCount);
+};
+
+  const submitExam = async (
+   
+    issues,
+    scoreBreakdown,
+    keywords,
+    scoreData,
+    expectedWordCount
+  ) => {
+    await   checkGrammar()
+   console.log("Score Data:", scoreData)
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -986,6 +1136,27 @@ const MockLiveTest = () => {
             : -question?.minus_mark
           : 0;
 
+      const descriptiveData = {
+        // userId: user?._id,
+        // examId: id,
+
+        // Convert everything to arrays
+        text: [text], // Essay as single-item array
+        corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
+        scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
+          ([key, value]) => ({
+            metric: key,
+            value: value,
+          })
+        ), // Convert object to array of {metric, value}
+          keywords:[scoreData],
+        
+        expectedWordCount: [expectedWordCount], // Wrap as array
+        scoreData:[keywords], // Already array, just check
+        date: [new Date().toISOString()], // Optional: wrap date as array too
+      };
+
+      console.log(";[",descriptiveData);
       return {
         question: question?.question,
         options: optionsData,
@@ -998,8 +1169,10 @@ const MockLiveTest = () => {
         NotVisited: notVisited,
         q_on_time: singleQuestionTime,
         score: questionScore,
+        descriptive: descriptiveData,
       };
     });
+    console.log("answersData", answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1045,7 +1218,25 @@ const MockLiveTest = () => {
                   : -section.minus_mark
                 : 0;
 
-            return {
+
+            const descriptiveData = {
+                 text: [text], // Essay as single-item array
+        corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
+        scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
+          ([key, value]) => ({
+            metric: key,
+            value: value,
+          })
+        ), // Convert object to array of {metric, value}
+          scoreData:scoreData,
+        
+        expectedWordCount: [expectedWordCount], // Wrap as array
+        keywords:keywords, // Already array, just check
+        date: [new Date().toISOString()], // Optional: wrap date as array too
+            };
+
+            const answerObj = {
+              descriptive: descriptiveData,
               question: question.question,
               options: question.options || [],
               answer: question.answer,
@@ -1058,8 +1249,14 @@ const MockLiveTest = () => {
               NotVisited: notVisited,
               score: questionScore,
             };
+
+            return answerObj;
           }
         );
+
+        // ✅ This line makes sure descriptive is stored in a global flat array
+        answersData.push(...sectionAnswersData);
+        console.log("answerdata ",answersData)
 
         const correctCount = sectionAnswersData.filter(
           (q) => q.correct === 1
@@ -1104,6 +1301,7 @@ const MockLiveTest = () => {
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
+              descriptive: answersData[sectionStartIndex + index]?.descriptive,
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -1119,6 +1317,7 @@ const MockLiveTest = () => {
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
+              descriptive: answersData[sectionStartIndex + index]?.descriptive,
             })),
             tamil: section.questions.tamil.map((question, index) => ({
               question: question?.question,
@@ -1134,6 +1333,7 @@ const MockLiveTest = () => {
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
+              descriptive: answersData[sectionStartIndex + index]?.descriptive,
             })),
           },
 
@@ -1154,6 +1354,8 @@ const MockLiveTest = () => {
         };
       })
       .filter(Boolean);
+
+    console.log("Formatted Sections:", formattedSections);
 
     const totalStats = formattedSections.reduce(
       (acc, section) => ({
@@ -1185,24 +1387,16 @@ const MockLiveTest = () => {
       },
       endTime,
     });
+
   };
 
   const handlePauseResume = () => {
+    console.log("$")
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
       setIsPaused(true);
       setPauseCount(pauseCount + 1);
 
-      // Capture current time data before showing the dialog
-      // const now = new Date();
-      // const timeSpent = Math.floor(
-      //   (now - currentSectionStartTimeRef.current) / 1000
-      // );
-
-      // setSectionTimes(prev => ({
-      //   ...prev,
-      //   [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
-      // }));
 
       const now = new Date();
       console.log("Current time:", now);
@@ -1237,7 +1431,8 @@ const MockLiveTest = () => {
 
         return previous;
       });
-
+               // You can dynamically set this text depending on your use case
+    console.log("setText updated to:", "kummar");
       // gh
       // ✅ Reset currentSectionStartTimeRef to now for next session
       currentSectionStartTimeRef.current = now;
@@ -1278,21 +1473,74 @@ const MockLiveTest = () => {
           Api.get(`topic-test/livetest/getall`)
             .then((packagesRes) => {
               const activePackages = packagesRes.data;
-              const matchingPackage = activePackages.find(pkg => pkg.exams.includes(id));
+              const matchingPackage = activePackages.find((pkg) =>
+                pkg.exams.includes(id)
+              );
               if (matchingPackage) {
                 navigate(`/livetest/${matchingPackage.link_name}`);
               } else {
-                navigate('/livetest');
+                navigate("/livetest");
               }
             })
             .catch(() => {
-              navigate('/livetest');
+              navigate("/livetest");
             });
         } else {
           setIsPaused(false);
           setPauseCount(0);
         }
       });
+    }
+  };
+
+
+  const [words, setWords] = useState(); // default word limit
+  const [countType, setCountType] = useState(" ");
+  const [wordCounto, setWordCounto] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
+
+  useEffect(() => {
+    const selectedQuestion =
+      examData?.section?.[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+      ]?.[0];
+
+    if (selectedQuestion) {
+      setWords(Number(selectedQuestion.words_limit));
+      setCountType(selectedQuestion.count_type?.toLowerCase());
+    }
+  }, [examData, currentSectionIndex, selectedLanguage]);
+
+  const handleChange = (e) => {
+    let inputText = e.target.value;
+    let wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+
+    const currentCount = wordsArray.length;
+    setWordCounto(currentCount);
+
+    if (
+      (countType === "decrement" && currentCount >= words) ||
+      (countType === "increment" && currentCount >= words)
+    ) {
+      setLimitReached(true);
+    } else {
+      setLimitReached(false);
+    }
+
+    if (countType === "decrement" && currentCount > words) {
+      wordsArray = wordsArray.slice(0, words);
+      inputText = wordsArray.join(" ");
+    }
+
+    setText(inputText);
+  };
+
+  const preventShortcuts = (e) => {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      ["c", "v", "x", "a", "z", "y"].includes(e.key.toLowerCase())
+    ) {
+      e.preventDefault();
     }
   };
 
@@ -1555,6 +1803,32 @@ const MockLiveTest = () => {
     };
   };
 
+  // const renderCorrections = () => {
+  //   return corrections.map((correction, index) => {
+  //     return (
+  //       <div key={index} style={{ marginBottom: "10px" }}>
+  //         <p>
+  //           <strong>Issue:</strong> {correction.MistakeText}
+  //         </p>
+  //         <p>
+  //           <strong>Category:</strong> {correction.TopCategoryIdDescription}
+  //         </p>
+  //         <p>
+  //           <strong>Suggested Correction(s):</strong>
+  //           {correction.Suggestions.map((suggestion, i) => (
+  //             <span key={i} style={{ display: "block" }}>
+  //               {suggestion.Text}
+  //             </span>
+  //           ))}
+  //         </p>
+  //       </div>
+  //     );
+  //   });
+  // };
+
+  console.warn(scoreBreakdown);
+
+console.warn();
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
@@ -1592,7 +1866,10 @@ const MockLiveTest = () => {
               <div className="modal-dialog modal-xl">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h1 className="modal-title fs-5 text-green-500" id="staticBackdropLabel">
+                    <h1
+                      className="modal-title fs-5 text-green-500"
+                      id="staticBackdropLabel"
+                    >
                       Section Submit
                     </h1>
                     <button
@@ -1682,10 +1959,11 @@ const MockLiveTest = () => {
             <div key={index}>
               <h1
                 className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                      ${currentSectionIndex === index
-                    ? " font-medium underline"
-                    : ""
-                  }`}
+                      ${
+                        currentSectionIndex === index
+                          ? " font-medium underline"
+                          : ""
+                      }`}
               >
                 {section.name}
                 <div className="relative group ml-2 d-inline-block">
@@ -1781,7 +2059,7 @@ const MockLiveTest = () => {
                     <span className="text-success">
                       +
                       {examData?.section &&
-                        examData.section[currentSectionIndex]
+                      examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].plus_mark
                         : "No plus marks"}
                     </span>
@@ -1789,7 +2067,7 @@ const MockLiveTest = () => {
                     <span className="text-danger">
                       -
                       {examData?.section &&
-                        examData.section[currentSectionIndex]
+                      examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].minus_mark
                         : "No minus marks"}
                     </span>
@@ -1803,39 +2081,42 @@ const MockLiveTest = () => {
                   {examData.section[currentSectionIndex]?.questions?.[
                     selectedLanguage?.toLowerCase()
                   ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                    <div
+                      className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                      ${
+                        isFullscreen
+                           ? "h-[calc(100vh-56px)] md:h-[calc(100vh-56px)]" /* Adjusted for fullscreen */
+        : "h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] lg:h-[calc(100vh-56px)] xl:h-[calc(100vh-56px)]" /* Full height minus top offset for all regular states */
+                      }`}
+                      style={{ overflowY: "auto" }}
+                    >
                       <div
-                        className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                      ${isFullscreen
-                            ? 'h-[80vh] md:h-[80vh]'
-                            : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                          }`
-                        }
-                        style={{ overflowY: 'auto' }}
-                      >
-                        <div
-                          className="text-wrap"
-                          style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              examData.section[currentSectionIndex]?.questions?.[
-                                selectedLanguage?.toLowerCase()
-                              ]?.[clickedQuestionIndex - startingIndex]
-                                ?.common_data || "No common data available",
-                          }}
-                        />
-                      </div>
-                    )}
+                        className="text-wrap"
+                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            examData.section[currentSectionIndex]?.questions?.[
+                              selectedLanguage?.toLowerCase()
+                            ]?.[clickedQuestionIndex - startingIndex]
+                              ?.common_data || "No common data available",
+                        }}
+                      />
+                    </div>
+                  )}
                   {/* Right side for Question */}
                   <div
-                    className={`  ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                    className={`  ${
+                      isFullscreen
+                        ? "h-[calc(100vh-56px)] md:h-[calc(100vh-56px)]" /* Adjusted for fullscreen */
+        : "h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] lg:h-[calc(100vh-56px)] xl:h-[calc(100vh-56px)]" /* Full height minus top offset for all regular states */
+                    } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${
+                      examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                      }`} style={{ overflowY: 'auto' }}
+                    }`}
+                    style={{ overflowY: "auto" }}
                   >
                     <div>
                       <div
@@ -1852,57 +2133,100 @@ const MockLiveTest = () => {
 
                       {examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.options ? (
-                        <div>
+                      ]?.[clickedQuestionIndex - startingIndex]
+                        ?.question_type === "descriptive" ? (
+                       
+                   <div>
+      <textarea
+        value={text}
+        onChange={handleChange}
+        onKeyDown={preventShortcuts}
+        onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
+        onPaste={(e) => e.preventDefault()}
+        disabled={limitReached}
+        placeholder="Enter your text..."
+        rows="6"
+        cols="100"
+        style={{
+          width: "100%",
+          height:'350px',
+          padding: "10px",
+          fontSize: "1rem",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          resize: "none",
+          backgroundColor: limitReached ? "#f5f5f5" : "#fff",
+        }}
+      />
+      <div className="fw-bold text-right" style={{ marginTop: "8px",  color: limitReached ? "red" : "#555" }}>
+        {limitReached
+          ? "Word limit reached"
+          : countType === "decrement"
+          ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
+          : `Words used: ${wordCounto} / ${words}`}
+      </div>
+    </div>
+                      ) : (
+                        <>
                           {examData.section[currentSectionIndex]?.questions?.[
                             selectedLanguage?.toLowerCase()
-                          ]?.[
-                            clickedQuestionIndex - startingIndex
-                          ]?.options.map((option, index) => (
-                            <div key={index} className="p-1 rounded-lg m-2 ">
-                              <input
-                                type="radio"
-                                id={`option-${index}`}
-                                name="exam-option"
-                                value={index}
-                                checked={
-                                  selectedOptions[clickedQuestionIndex] ===
-                                  index
-                                }
-                                onChange={() => {
-                                  console.log("Selected Option Index:", index);
-                                  handleOptionChange(index);
-                                }}
-                                 style={{
-                                                                     // Blue color for radio button
-                                                                    width: "1.2rem",
-                                                                    height: "1.2rem",
-                                                                    
-                                                                }}
-                              />{" "}
-                              &nbsp;&nbsp;
-                              <label
-                                htmlFor={`option-${index}`}
-                                dangerouslySetInnerHTML={{
-                                  __html: option || "No option available",
-                                }}
-                              />
+                          ]?.[clickedQuestionIndex - startingIndex]?.options ? (
+                            <div>
+                              {examData.section[
+                                currentSectionIndex
+                              ]?.questions?.[selectedLanguage?.toLowerCase()]?.[
+                                clickedQuestionIndex - startingIndex
+                              ]?.options.map((option, index) => (
+                                <div key={index} className="p-1 rounded-lg m-2">
+                                   <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                  <input
+                                    type="radio"
+                                    id={`option-${index}`}
+                                    name="exam-option"
+                                    value={index}
+                                    checked={
+                                      selectedOptions[clickedQuestionIndex] ===
+                                      index
+                                    }
+                                    onChange={() => handleOptionChange(index)}
+                                      style={{
+                                         accentColor: "#3B82F6",
+                                         width: "1.2rem",
+                                         height: "1.2rem",
+                                         marginRight: "8px",
+                                         marginTop: "0px" // Remove vertical offset
+                                       }}
+                                  />
+                                  &nbsp;&nbsp;
+                                  <label
+                                    htmlFor={`option-${index}`}
+                                    dangerouslySetInnerHTML={{
+                                      __html: option || "No option available",
+                                    }}
+                                  />
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No options available</p>
+                          ) : (
+                            <p>No options available</p>
+                          )}
+                        </>
                       )}
                     </div>
+
                     <div className="md:flex hidden items-center">
                       <div
-                        className={`fixed top-1/2 ${closeSideBar ? "right-0" : ""
-                          } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
+                        className={`fixed top-1/2 ${
+                          closeSideBar ? "right-0" : ""
+                        } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
                         onClick={toggleMenu2}
                       >
                         <FaChevronRight
-                          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? "absalute left-0 rotate-180" : ""
-                            }`}
+                          className={`w-2 h-5 text-white transition-transform duration-300 ${
+                            closeSideBar ? "absalute left-0 rotate-180" : ""
+                          }`}
                         />
                       </div>
                     </div>
@@ -1910,17 +2234,17 @@ const MockLiveTest = () => {
                 </div>
               ) : (
                 <div
-                className="d-flex justify-content-center align-items-center"
-                style={{ height: '100vh' }} // Full viewport height
-              >
-                <div
-                  className="spinner-border text-primary"
-                  role="status"
-                  style={{ width: '3rem', height: '3rem' }}
+                  className="d-flex justify-content-center align-items-center"
+                  style={{ height: "100vh" }} // Full viewport height
                 >
-                  <span className="visually-hidden">Loading...</span>
+                  <div
+                    className="spinner-border text-primary"
+                    role="status"
+                    style={{ width: "3rem", height: "3rem" }}
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 </div>
-              </div>
               )}
             </>
           ) : (
@@ -1933,17 +2257,22 @@ const MockLiveTest = () => {
         {/* Sidebar */}
         {/* Sidebar */}
 
-
         <div
-          className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
-        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
-      ${isFullscreen
-              ? 'h-[87vh] md:h-[87vh]'
-              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-          style={{ overflowY: 'auto' }}
-        >
+  className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+    ${isMobileMenuOpen ? "translate-x-0 w-3/4 " : "translate-x-full "}
+    ${
+      closeSideBar
+        ? "md:translate-x-full md:w-0 border-0"
+        : "md:translate-x-0 md:w-1/4"
+    }
+    ${
+      isFullscreen
+        ? "h-[calc(100vh-56px)] md:h-[calc(100vh-56px)]" /* Adjusted for fullscreen */
+        : "h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] lg:h-[calc(100vh-56px)] xl:h-[calc(100vh-56px)]" /* Full height minus top offset for all regular states */
+    } fixed top-14 right-0 z-40 md:static shadow-sm md:block`}
+  style={{ overflowY: "auto" }}
+>
+ 
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
               <svg
@@ -1987,10 +2316,11 @@ const MockLiveTest = () => {
             <center>
               <button
                 onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused
+                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
+                  isPaused
                     ? "bg-green-500 hover:bg-green-600 text-white"
                     : "bg-red-500 hover:bg-red-600 text-white"
-                  }`}
+                }`}
               >
                 Pause
               </button>
@@ -2059,8 +2389,9 @@ const MockLiveTest = () => {
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
-                  }if (selectedOptions[fullIndex] == null) {
-                    className="notansImg";
+                  }
+                  if (selectedOptions[fullIndex] == null) {
+                    className = "notansImg";
                   }
                 } else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
@@ -2117,14 +2448,14 @@ const MockLiveTest = () => {
             {examData?.section?.[currentSectionIndex]?.questions?.[
               selectedLanguage?.toLowerCase()
             ]?.length > 0 && (
-                <button
-                  onClick={handleNextClick}
-                  className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
-                >
-                  <span className="block md:hidden">Save</span>
-                  <span className="hidden md:block"> Save & Next</span>
-                </button>
-              )}
+              <button
+                onClick={handleNextClick}
+                className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
+              >
+                <span className="block md:hidden">Save</span>
+                <span className="hidden md:block"> Save & Next</span>
+              </button>
+            )}
           </div>
           {/* Right side - Save & Next and Submit Section */}
           <div className="flex justify-center md:w-[20%]">
@@ -2148,4 +2479,3 @@ const MockLiveTest = () => {
 };
 
 export default MockLiveTest;
-

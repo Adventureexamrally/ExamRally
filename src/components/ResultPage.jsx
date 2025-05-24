@@ -431,8 +431,8 @@ const getComparisonStats = (sectionName) => {
               <MdOutlineSkipNext size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Skipped</p>
-              <p className="text-xl font-bold">{totalSkipped}</p>
+              <p className="text-sm text-gray-600">Rank</p>
+              <p className="text-xl font-bold">{Rank}/{alluserDetails.length}</p>
             </div>
           </div>
         </div>
@@ -780,7 +780,7 @@ const getComparisonStats = (sectionName) => {
         <tbody className="bg-white divide-y divide-indigo-100">
           {selectedBlueprint.map((item, index) => (
             <tr key={item._id} className={index % 2 === 0 ? 'bg-white hover:bg-indigo-50' : 'bg-indigo-50 hover:bg-indigo-100'}>
-              <td className="px-6 py-4 whitespace-nowrap text-md text-indigo-800 fw-bold">{item.subject}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-md text-indigo-800 fw-bold">   {index + 1}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-800">{item.topic}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-800">{item.tak_time}</td>
             </tr>

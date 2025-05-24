@@ -1835,8 +1835,8 @@ console.warn(currentState)
                     <div
                     className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
                   ${isFullscreen
-                        ? 'h-[80vh] md:h-[80vh]'
-                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                        ? "h-[calc(100vh-56px)] md:h-[calc(100vh-56px)]" /* Adjusted for fullscreen */
+        : "h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] lg:h-[calc(100vh-56px)] xl:h-[calc(100vh-56px)]" /* Full height minus top offset for all regular states */
                       }`
                     }
                     style={{ overflowY: 'auto' }}
@@ -1858,8 +1858,8 @@ console.warn(currentState)
                   {/* Right side for Question */}
                   <div
                     className={`  ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                       ? "h-[calc(100vh-56px)] md:h-[calc(100vh-56px)]" /* Adjusted for fullscreen */
+        : "h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] lg:h-[calc(100vh-56px)] xl:h-[calc(100vh-56px)]" /* Full height minus top offset for all regular states */
                       } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
@@ -1890,34 +1890,34 @@ console.warn(currentState)
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
                             <div key={index} className="p-1 rounded-lg m-2 ">
-                              <input
-                                type="radio"
-                                className="p-5"
-                                id={`option-${index}`}
-                                name="exam-option"
-                                value={index}
-                                checked={
-                                  selectedOptions[clickedQuestionIndex] ===
-                                  index
-                                }
-                                onChange={() => {
-                                  console.log("Selected Option Index:", index);
-                                  handleOptionChange(index);
-                                }}
-                                  style={{
-                                                                    accentColor: "#3B82F6", // Blue color for radio button
-                                                                    width: "1.2rem",
-                                                                    height: "1.2rem",
-                                                                    
-                                                                }}
-                              />{" "}
-                              &nbsp;&nbsp;
-                              <label
-                                htmlFor={`option-${index}`}
-                                dangerouslySetInnerHTML={{
-                                  __html: option || "No option available",
-                                }}
-                              />
+                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+  <input
+    type="radio"
+    className="p-5"
+    id={`option-${index}`}
+    name="exam-option"
+    value={index}
+    checked={selectedOptions[clickedQuestionIndex] === index}
+    onChange={() => {
+      console.log("Selected Option Index:", index);
+      handleOptionChange(index);
+    }}
+    style={{
+      accentColor: "#3B82F6",
+      width: "1.2rem",
+      height: "1.2rem",
+      marginRight: "8px",
+      marginTop: "0px" // Remove vertical offset
+    }}
+  />
+  <label
+    htmlFor={`option-${index}`}
+    dangerouslySetInnerHTML={{
+      __html: option || "No option available",
+    }}
+  />
+</div>
+
                             </div>
                           ))}
                         </div>
@@ -1971,8 +1971,8 @@ console.warn(currentState)
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
       ${isFullscreen
-              ? 'h-[87vh] md:h-[87vh]'
-              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
+        ? "h-[calc(100vh-56px)] md:h-[calc(100vh-56px)]" /* Adjusted for fullscreen */
+        : "h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] lg:h-[calc(100vh-56px)] xl:h-[calc(100vh-56px)]" /* Full height minus top offset for all regular states */
             } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
           style={{ overflowY: 'auto' }}
         >

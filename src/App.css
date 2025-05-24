@@ -44,6 +44,112 @@
 .read-the-docs {
   color: #888;
 }
+.score-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.score-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: #4a5568;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.score-icon {
+  color: #f6ad55;
+  font-size: 1.5rem;
+}
+
+.score-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.score-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #718096;
+}
+
+.metric-icon {
+  color: #a0aec0;
+}
+
+.metric-value {
+  font-weight: bold;
+  color: #2d3748;
+}
+
+   {/* <p>Metric: {scoreItem.metric}</p>
+              <p>Confidence: {scoreItem.value?.Confidence}</p>
+              <p>Should Replace: {scoreItem.value?.ShouldReplace?.toString()}</p>
+              <p>Correction Type: {scoreItem.value?.CorrectionType}</p> */}
+
+
+                          {/* <button onClick={checkGrammar}>Check Grammar</button>
+
+                          {scoreBreakdown && (
+                            <div>
+                              <h3>Score Breakdown</h3>
+                              <p>Total Score: {scoreBreakdown.totalScore}</p>
+                              <p>
+                                Spelling Score: {scoreBreakdown.spellingScore}
+                              </p>
+                              <p>
+                                Grammar Score: {scoreBreakdown.grammarScore}
+                              </p>
+                              <p>
+                                Word Count Score:{" "}
+                                {scoreBreakdown.wordCountScore}
+                              </p>
+                              <p>
+                                Keyword Score: {scoreBreakdown.keywordScore}
+                              </p>
+                              <p>Total Words: {scoreBreakdown.totalWords}</p>
+                            </div>
+                          )}
+
+                          <div>
+                            <h3>Corrections</h3>
+                            {renderCorrections()}
+                          </div> */}
+
+.score-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  color: #4a5568;
+}
+
+.total-score {
+  color: #38a169;
+  font-size: 1.1rem;
+}
 
 /* .answerImg{
   background-image: url("./assets/images/ans.png");

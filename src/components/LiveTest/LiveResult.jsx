@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import Api from '../../service/Api';
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
 import { UserContext } from '../../context/UserProvider';
+import { FaSpellCheck, FaKeyboard, FaRegFileWord, FaSearch, FaStar, FaAlignLeft } from 'react-icons/fa';
 import { 
   FaCheckCircle, 
   FaTimesCircle, 
@@ -39,7 +40,7 @@ const [alluserDetails,setAllUserDetails]=useState([])
 const [Rank,SetRank]=useState(0)
 const [percentile,setpercentile]=useState(0)
 const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
-
+const [topictype,setTopictype]=useState([])
 
 
      const { user } = useContext(UserContext);
@@ -51,7 +52,7 @@ const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
   Api.get(`results/${user?._id}/${id}`)
     .then(res => {
       setResultData(res.data);
-      console.log(res.data);
+      console.warn(res.data);
       if (res.data && res.data.section && Array.isArray(res.data.section)) {
         setSectionData(res.data.section); // Store the section data
       }
@@ -147,6 +148,8 @@ const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
           setExamData(res.data);
           setIsDataFetched(true); 
           setShow_name(res.data.show_name) // Mark that data is fetched
+          setTopictype(res.data.topic_test.subject)
+
         }
       })
       .catch((err) => console.error("Error fetching data:", err));
@@ -345,7 +348,7 @@ const getComparisonStats = (sectionName) => {
 
   return sectionStats;
 };
-
+                                  
 
   if (!resultData) {
     return (
@@ -355,7 +358,224 @@ const getComparisonStats = (sectionName) => {
     );
   }
 
+
+  
+    const location = useLocation();
+    const selectedLanguage = location.state?.language || "English";
+    console.log("][",selectedLanguage)
+
+    function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  return [
+    hours.toString().padStart(2, '0'),
+    minutes.toString().padStart(2, '0'),
+    secs.toString().padStart(2, '0')
+  ].join(':');
+}
   return (
+     <>
+      {topictype === "Descriptive Test" ? 
+      (
+        <div className="container mx-auto px-4 py-6">
+  <div>
+    <h1 className="text-2xl font-bold text-green-500 mb-4 md:mb-0">{show_name}</h1>
+  </div>
+
+  {resultData?.section?.length > 0 ? (
+    resultData.section.map((sec, index) => (
+      <div key={index} className="mb-4">
+       <div className="bg-green-500 flex justify-between items-center p-3 rounded-md">
+  <h2 className="text-white font-medium">
+    Section {index + 1} ({sec.name}):
+  </h2>
+
+  <h2 className="text-white font-semibold">
+  Time Taken – {formatTime(sec.timeTaken ?? 0)}
+</h2>
+</div>
+
+
+      
+
+        <div className="ml-4 mt-2 space-y-2">
+          {sec.questions?.[selectedLanguage?.toLowerCase()]?.map((question, qIndex) => (
+            <div key={qIndex}>
+        <p
+                className="text-gray-700 font-medium "
+                dangerouslySetInnerHTML={{ __html: question.question }}
+              />
+            </div>
+          ))}
+        </div>
+       <div>
+  {
+    sec.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.descriptive?.map((item, index) => (
+      <div key={index}>
+        
+       <div className="flex flex-wrap gap-4 ">
+      {item.scoreData?.map((score, id) => (
+        <div key={id} className="flex flex-wrap gap-4 justify-center w-full max-w-5xl">
+          {/* Spelling */}
+          <div className="w-full sm:w-64 bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center mb-2">
+              <FaSpellCheck className="text-blue-800 mr-2" />
+              <h4 className="text-md font-semibold text-gray-800">Spelling Score </h4>
+            </div>
+            <div className="text-xl font-bold text-blue-800">{score.spellingScore}/35</div>
+          </div>
+
+          {/* Grammar */}
+          <div className="w-full sm:w-64 bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center mb-2">
+              <FaKeyboard className="text-blue-800 mr-2" />
+              <h4 className="text-md font-semibold text-gray-800">Grammar Score</h4>
+            </div>
+            <div className="text-xl font-bold text-blue-800">{score.grammarScore}/35</div>
+          </div>
+
+          {/* Word Count */}
+          <div className="w-full sm:w-64 bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center mb-2">
+              <FaAlignLeft className="text-blue-800 mr-2" />
+              <h4 className="text-md font-semibold text-gray-800">Word Count Score</h4>
+            </div>
+            <div className="text-xl font-bold text-blue-800">{score.wordCountScore}/20</div>
+          </div>
+
+          {/* Keywords */}
+          <div className="w-full sm:w-64 bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center mb-2">
+              <FaSearch className="text-blue-800 mr-2" />
+              <h4 className="text-md font-semibold text-gray-800">Keyword Score</h4>
+            </div>
+            <div className="text-xl font-bold text-blue-800">{score.keywordScore}/10</div>
+          </div>
+
+          {/* Total Words */}
+
+          <div className="w-full sm:w-64 bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center mb-2">
+              <FaRegFileWord className="text-blue-800 mr-2" />
+              <h4 className="text-md font-semibold text-gray-800">Total Words</h4>
+            </div>
+            <div className="text-xl font-bold text-blue-800">{score.totalWords}/{item.expectedWordCount?.[0]}</div>
+          </div>
+
+          {/* Total Score */}
+          <div className="w-full sm:w-64 bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center mb-2">
+              <FaStar className="text-green-400 mr-2" />
+              <h4 className="text-md font-semibold text-gray-800">Total Score</h4>
+              <FaStar className="text-green-400 ml-2" />
+
+            </div>
+            <div className="text-xl font-bold text-blue-800">{score.totalScore}/100</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+          <h2 className="font-semibold text-green-500 fw-bold font h3 mt-3">Your Answer:</h2>
+          
+        <p className='justify p-4'><strong className='text-blue-800'>Your Text:</strong> &nbsp; &nbsp; &nbsp; {item.text?.[0]}</p>
+
+        {/* <p><strong>Corrections:</strong> {JSON.stringify(item.corrections)}</p> */}
+
+<div className="space-y-6">
+  {item.scoreBreakdown?.map((scoreItem, idx) => (
+    <div 
+      key={idx}
+      className="relative p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+    // style={{
+    //     background: 'white',
+    //     border: 'double 4px transparent',
+    //     borderRadius: '0.75rem',
+    //     backgroundImage: 'linear-gradient(white, white), linear-gradient(to right, #00ff87, #00ff87,#60efff, #60efff)',
+    //     backgroundOrigin: 'border-box',
+    //     backgroundClip: 'padding-box, border-box'
+    //   }}
+    >
+      <div className="relative z-10">
+        <div className="flex items-center mb-4">
+          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+            <svg 
+              className="w-6 h-6 text-blue-800 animate-pulse" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800">Score Breakdown #{idx + 1}</h3>
+        </div>
+
+        <div className="space-y-3 pl-16">
+          <div className="flex">
+            <span className="w-32 font-medium text-gray-600">Correction:</span>
+            <span className="text-gray-800 font-medium animate-[fadeIn_0.5s_ease-in-out]">
+              {scoreItem.value?.TopCategoryIdDescription}
+            </span>
+          </div>
+          
+          <div className="flex">
+            <span className="w-32 font-medium text-gray-600">Mistake Text:</span>
+            <span className="text-gray-800 animate-[fadeIn_0.5s_ease-in-out]">
+              {scoreItem.value?.MistakeText || "N/A"}
+            </span>
+          </div>
+
+          <div className="pt-3">
+            <h4 className="flex items-center text-lg font-semibold text-gray-700 mb-2">
+              <svg 
+                className="w-5 h-5 text-blue-800 mr-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Suggestions
+            </h4>
+            
+            <ul className="space-y-2">
+              {scoreItem.value?.Suggestions?.map((sugg, i) => (
+                <li 
+                  key={i}
+                  className="pl-6 py-2 border-l-4 border-blue-200 bg-blue-50 rounded-r-lg transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:translate-x-1"
+                >
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 w-5 h-5 mt-0.5 mr-2 text-blue-800"><i className="bi bi-stars"></i></span>
+                    <span className="text-gray-700">{sugg.Text}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+      </div>
+    ))
+  }
+</div>
+      </div>
+    ))
+  ) : (
+    <p>No Descriptive data Available.</p>
+  )}
+</div>
+
+
+
+
+      ):(
+  
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -583,6 +803,8 @@ const getComparisonStats = (sectionName) => {
       </div>
 
     </div>
+      ) }
+    </>
   );
 };
 
