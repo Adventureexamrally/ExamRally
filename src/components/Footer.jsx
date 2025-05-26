@@ -130,10 +130,10 @@ function Footer() {
                   { text: "Home", path: "/" },
                   { text: "All in One Subscription", path: "rally-super-pro" },
                   { text: "Blog", path: "/blog" },
-                  { text: "Refund Policy", path: "/privacy-policy" },
+                  { text: "Refund Policy", path: "/refund-policy" },
                   { text: "Privacy Policy", path: "/privacy-policy" },
                   { text: "Terms and Conditions", path: "/TermsConditions" },
-                  // {text: 'Contact Us', path: '/contactus'}
+                  {text: 'Contact Us', path: '/contactus'}
                 ].map((item) => (
                   <li key={item.text}>
                     <Link
