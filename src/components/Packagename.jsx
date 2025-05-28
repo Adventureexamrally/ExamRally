@@ -699,7 +699,7 @@ const Packagename = () => {
                                 ) : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
                                     Coming Soon
                                   </div>
                                 ) : (
@@ -1129,7 +1129,7 @@ const Packagename = () => {
                   <div className="absolute inset-0 z-[-10] border-2 rounded-xl"></div>
                   <div className="flex justify-center">
                     <span className="text-xl font-semibold font p-2">
-                      Features
+                      Features 
                     </span>
                   </div>
                   {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
@@ -1150,22 +1150,27 @@ const Packagename = () => {
                     <del className=" rounded px-2 py-1 mb-2 drop-shadow">
                       Rs.{data.amount}
                     </del>
-                    <button
-                      className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"
-                      onClick={() => {
-                        if (!isSignedIn) {
-                          navigate("/sign-in");
-                        }
-                        //  else {
-                        //   paymentmeth(data.discountedAmount);
-                        // }
-                        else {
-                          setshowmodel(true);
-                        }
-                      }}
-                    >
-                      Rs. {data.discountedAmount}
-                    </button>
+                       <button
+  className={`px-3 py-1 font-bold rounded-full ${
+    isEnrolled 
+      ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
+      : "bg-green-500 text-gray-50 hover:bg-green-400"
+  }`}
+  onClick={() => {
+    if (!isSignedIn) {
+      navigate('/sign-in');
+    } else if (isEnrolled) {
+      // Do nothing or show a message if needed, since already purchased
+      console.log("Already enrolled");
+    } else {
+      setshowmodel(true);
+    }
+  }}
+  disabled={isEnrolled} // disables button if enrolled
+>
+  {isEnrolled ? "Purchased" : `Rs.${ data.discountedAmount}`}
+</button>
+
                     <p className="font-bold">
                       You Save Money: Rs. {data.amount - data.discountedAmount}
                     </p>

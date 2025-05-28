@@ -177,6 +177,34 @@ const DetailedCategorie = () => {
         setActiveIndex(index); // Open the panel if it's not open
       }
     };
+
+
+   const [isEnrolled, setIsEnrolled] = useState(false);
+    const status = true;
+  useEffect(() => {
+    const enrolled = user?.enrolledCourses?.some(course => {
+      // Ensure expiryDate is a valid Date object
+      const expireDate = new Date(course?.expiryDate);
+  
+      // Check if expiryDate is valid and in the future
+      const isNotExpired = !isNaN(expireDate) && expireDate > new Date();
+  
+      // Check if user is enrolled in the course and if it's not expired
+      return course?.courseId?.includes(data?._id) && isNotExpired;
+    });
+  
+    setIsEnrolled(enrolled);
+  }, [user, data]);
+    
+    console.log("check", user?.enrolledCourses);
+    
+    if (isEnrolled) {
+      console.log("Hii");
+    } else if (status) {
+      console.log("bye");
+    }
+
+
   return (
     <>
       {loading ? (
@@ -477,17 +505,25 @@ const DetailedCategorie = () => {
   Rs.{amount}
 </del>
 
-                  <button
-  className="bg-green-500 text-gray-50 px-3 py-1 font-bold hover:bg-green-400 rounded-full"
+            <button
+  className={`px-3 py-1 font-bold rounded-full ${
+    isEnrolled 
+      ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
+      : "bg-green-500 text-gray-50 hover:bg-green-400"
+  }`}
   onClick={() => {
     if (!isSignedIn) {
       navigate('/sign-in');
-    }    else {
-      setshowmodel(true)
-      }
+    } else if (isEnrolled) {
+      // Do nothing or show a message if needed, since already purchased
+      console.log("Already enrolled");
+    } else {
+      setshowmodel(true);
+    }
   }}
+  disabled={isEnrolled} // disables button if enrolled
 >
-  Rs.{discountedAmount}
+  {isEnrolled ? "Purchased" : `Rs.${discountedAmount}`}
 </button>
 
             
