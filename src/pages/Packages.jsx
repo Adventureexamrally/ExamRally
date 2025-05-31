@@ -114,47 +114,73 @@ const handlePackageSelect = (pkg) => {
   return (
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold text-gray-800">Trending Packages</h1>
+        <h1 className="text-2xl font-semibold text-green-800 font">Trending Packages</h1>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
-        {trending.map((pkg, index) => (
-          <div key={index} className="group">
-            <div className=" min-h-[450px] max-h-[450px] bg-gray-100 border border-blue-500 p-6 rounded-2xl hover:scale-105 hover:shadow-2xl transition-all duration-300"  style={{ overflowY: 'auto' }}>
-              <h2 className="text-lg font-medium text-gray-700 mb-2">{pkg.name}</h2>
-              {/* Recommended Upload Size: 600 x 600 px (portrait ratio, high enough resolution for most use cases) 
-    Aspect Ratio: 2:3 (portrait) */}
-<img 
-  src={pkg.image} 
-  alt="pkg" 
-  style={{
-    width: '100%',
-    maxWidth: '300px',  // or whatever width you need
-    aspectRatio: '1 / 1',
-    objectFit: 'contain',
-    height: 'auto'
-  }} 
-/>
-<div className="text-center mt-2">
-              <del className=" text-green-700 font-semibold rounded px-3 py-1 inline-block mb-2">
-              Rs. {pkg.price}</del>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
+        {trending.slice(0, 4).map((pkg, index) => (
+  <div key={index} className="group">
+  <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto" 
+      >
+    {/* Hide scrollbar for Chrome/Safari/Opera */}
+   
 
-                <button
-                  className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"
-                  onClick={() => handlePackageSelect(pkg)}
-
-                >
-                  Rs. {pkg.discountPrice}
-                </button>
-
-                <p className="text-green-500 font-bold">
-                  You Save: Rs. {pkg.price - pkg.discountPrice}
-                </p>
-
-              </div>
-            </div>
-          </div>
+    {/* Header */}
+    <div className="mb-4">
+      <h2 className="text-xl font-bold text-gray-800 mb-2 text-center">{pkg.name}</h2>
+      <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
+    </div>
+    
+    {/* Features List */}
+  <div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{ 
+  scrollbarWidth: 'none',
+  msOverflowStyle: 'none',
+}}>  
+  <style jsx>{`
+    div::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
+  {pkg.feature.map((item, index) => (
+    <div key={index} className="flex items-start gap-3">
+      <div className="mt-1 text-green-500">
+        <i className="bi bi-check-circle-fill"></i>
+      </div>
+      <p className="text-gray-700">{item}</p>
+    </div>
+  ))}
+</div>
+    
+    {/* Pricing Section */}
+    <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
+      <div className="mb-2">
+        <del className="text-gray-500 font-medium">Rs. {pkg.price}</del>
+        <span className="ml-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+          Save Rs. {pkg.price - pkg.discountPrice}
+        </span>
+      </div>
+      
+      
+      <button
+        className=" bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 font-bold hover:from-green-600 hover:to-green-700 rounded-lg shadow-md transition-all duration-300"
+        onClick={() => handlePackageSelect(pkg)}
+      >
+         Rs. {pkg.discountPrice}
+      </button>
+      
+      <p className="text-xs text-gray-500 mt-2">
+        Limited time offer
+      </p>
+    </div>
+  </div>
+</div>
         ))}
+              {showModal && selectedPackage && (
+                    <PackageCoupon 
+                      pkg={selectedPackage} 
+                      setShowModal={setShowModal}
+                    />
+                  )}
       </div>
       {showModal && selectedPackage && (
             <PackageCoupon 
