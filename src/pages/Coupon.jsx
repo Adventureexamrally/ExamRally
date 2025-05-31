@@ -5,7 +5,7 @@ import Api from '../service/Api';
 import { UserContext } from '../context/UserProvider';
 import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
-
+const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
 const Coupon = ({ data, setshowmodel }) => {
   const { isSignedIn } = useUser();
   const { user } = useContext(UserContext);
@@ -100,8 +100,11 @@ const Coupon = ({ data, setshowmodel }) => {
         return;
       }
 
+      console.log(key);
+      
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: key,
         amount: Math.round(amountToPay * 100),
         currency: 'INR',
         name: data?.name,
