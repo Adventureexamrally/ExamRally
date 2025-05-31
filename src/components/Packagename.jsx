@@ -18,7 +18,7 @@ import Coupon from "../pages/Coupon";
 const Packagename = () => {
   const [data, setData] = useState({});
   const [faqs, setFaqs] = useState([]);
-  const [showmodel,setshowmodel]=useState(false)
+  const [showmodel, setshowmodel] = useState(false);
 
   const { id } = useParams();
 
@@ -42,7 +42,7 @@ const Packagename = () => {
   const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
   const [seo, setSeo] = useState([]);
   const [ad, setAD] = useState([]);
-const [payment, setPayment] = useState("");
+  const [payment, setPayment] = useState("");
   const [responseId, setResponseId] = useState("");
   const [responseState, setResponseState] = useState([]);
 
@@ -57,7 +57,6 @@ const [payment, setPayment] = useState("");
 
   const [resultData, setResultData] = useState(null);
 
-
   const { user } = useContext(UserContext);
   // console.log(user)
 
@@ -68,7 +67,7 @@ const [payment, setPayment] = useState("");
       const packageData = res.data.data[0];
       setData(packageData);
       setFaqs(packageData.faqs);
-  console.log("wednesday",packageData);
+      console.log("wednesday", packageData);
       // Only fetch results if user ID is present
       if (user?._id) {
         packageData?.exams?.forEach((test) => {
@@ -94,14 +93,12 @@ const [payment, setPayment] = useState("");
         });
       }
     });
-  
+
     run();
   }, [id, user?._id]);
-  
 
   // Fetch test result
   // Api.get(`/results/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
-
 
   async function run() {
     const response2 = await Api.get(`/get-Specific-page/${id}`);
@@ -209,107 +206,104 @@ const [payment, setPayment] = useState("");
   // console.log(data);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const status = true;
-  
+
   useEffect(() => {
-    const enrolled = user?.enrolledCourses?.some(course => {
+    const enrolled = user?.enrolledCourses?.some((course) => {
       // Ensure expiryDate is a valid Date object
       const expireDate = new Date(course?.expiryDate);
-  
+
       // Check if expiryDate is valid and in the future
       const isNotExpired = !isNaN(expireDate) && expireDate > new Date();
-  
+
       // Check if user is enrolled in the course and if it's not expired
       return course?.courseId?.includes(data?._id) && isNotExpired;
     });
-  
+
     setIsEnrolled(enrolled);
-  }, [user, data,isEnrolled]);
-  
-  
+  }, [user, data, isEnrolled]);
+
   console.log("check", user?.enrolledCourses);
-  
+
   // if (isEnrolled) {
   //   console.log("Hii");
   // } else if (status) {
   //   console.log("bye");
   // }
-  
 
-//  const loadRazorpayScript = () => {
-//     return new Promise((resolve) => {
-//       const script = document.createElement("script");
-//       script.src = "https://checkout.razorpay.com/v1/checkout.js";
-//       console.log(script.src);
-//       script.onload = () => {
-//         resolve(true);
-//       };
-//       script.onerror = () => {
-//         resolve(false);
-//       };
-//       document.body.appendChild(script);
-//     });
-//   };
+  //  const loadRazorpayScript = () => {
+  //     return new Promise((resolve) => {
+  //       const script = document.createElement("script");
+  //       script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  //       console.log(script.src);
+  //       script.onload = () => {
+  //         resolve(true);
+  //       };
+  //       script.onerror = () => {
+  //         resolve(false);
+  //       };
+  //       document.body.appendChild(script);
+  //     });
+  //   };
 
-//   const paymentmeth = async (discountedAmount) => {
-//     console.log("Join Payment");
-//     try {
-//       console.log("Join Payment Inner");
-//       const res = await Api.post("/orders/orders", {
-//         amount: discountedAmount * 100,
-//         currency: "INR",
-//         receipt: `${user?.email}`, 
-//       payment_capture: 1
-//       });
-//       console.log("data show that ", res.data);
-//       console.log("Order response:", res.data);
+  //   const paymentmeth = async (discountedAmount) => {
+  //     console.log("Join Payment");
+  //     try {
+  //       console.log("Join Payment Inner");
+  //       const res = await Api.post("/orders/orders", {
+  //         amount: discountedAmount * 100,
+  //         currency: "INR",
+  //         receipt: `${user?.email}`,
+  //       payment_capture: 1
+  //       });
+  //       console.log("data show that ", res.data);
+  //       console.log("Order response:", res.data);
 
-//       // Load Razorpay script
-//       const scriptLoaded = await loadRazorpayScript();
-//       if (!scriptLoaded) {
-//         alert(
-//           "Failed to load Razorpay SDK. Please check your internet connection."
-//         );
-//         return;
-//       }
-//       const options = {
-//         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-//         amount: discountedAmount * 100,
-//         currency: "INR",
-//         name: data?.name,
-//         description: "Test Payment",
-//         handler: function (response) {
-//           setResponseId(response.razorpay_payment_id);
-//         },
-//         prefill: {
-//           name: user?.firstName,
-//           email: user?.email,
-//         },
-//         theme: {
-//           color: "#F4C430",
-//         },
-//         notes: {
-//           user_id: user?._id,
-//           course_id: data?._id,
-//           courseName: data?.categorys,
-//         },
-//       };
-// console.log("ji".options)
-//       const paymentObject = new window.Razorpay(options);
-//       paymentObject.open();
-//       const rzp = new window.Razorpay(options);
-//       rzp.open();
+  //       // Load Razorpay script
+  //       const scriptLoaded = await loadRazorpayScript();
+  //       if (!scriptLoaded) {
+  //         alert(
+  //           "Failed to load Razorpay SDK. Please check your internet connection."
+  //         );
+  //         return;
+  //       }
+  //       const options = {
+  //         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  //         amount: discountedAmount * 100,
+  //         currency: "INR",
+  //         name: data?.name,
+  //         description: "Test Payment",
+  //         handler: function (response) {
+  //           setResponseId(response.razorpay_payment_id);
+  //         },
+  //         prefill: {
+  //           name: user?.firstName,
+  //           email: user?.email,
+  //         },
+  //         theme: {
+  //           color: "#F4C430",
+  //         },
+  //         notes: {
+  //           user_id: user?._id,
+  //           course_id: data?._id,
+  //           courseName: data?.categorys,
+  //         },
+  //       };
+  // console.log("ji".options)
+  //       const paymentObject = new window.Razorpay(options);
+  //       paymentObject.open();
+  //       const rzp = new window.Razorpay(options);
+  //       rzp.open();
 
-//       rzp.on("payment.failed", function (response) {
-//         console.error("Payment failed", response.error);
-//         alert("Payment failed. Please try again.");
-//       });
-//       console.log("ji".options)
-//     } catch (error) {
-//       console.error("Error during payment:", error);
-//       alert(error.message);
-//     }
-//   };
-
+  //       rzp.on("payment.failed", function (response) {
+  //         console.error("Payment failed", response.error);
+  //         alert("Payment failed. Please try again.");
+  //       });
+  //       console.log("ji".options)
+  //     } catch (error) {
+  //       console.error("Error during payment:", error);
+  //       alert(error.message);
+  //     }
+  //   };
 
   const isPaidTest = (test) => {
     return test?.result_type?.toLowerCase() === "paid";
@@ -488,10 +482,11 @@ const [payment, setPayment] = useState("");
                  </div> */}
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${activeSection === "prelims"
+                    className={`btn w-100 mb-2 text-white ${
+                      activeSection === "prelims"
                         ? "bg-[#131656] hover:bg-[#131656]"
                         : "bg-green-500 hover:bg-green-600"
-                      }`}
+                    }`}
                     onClick={handlePrelimsClick}
                     // disabled={activeSection && activeSection !== "prelims"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
@@ -501,10 +496,11 @@ const [payment, setPayment] = useState("");
                 </div>
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${activeSection === "mains"
+                    className={`btn w-100 mb-2 text-white ${
+                      activeSection === "mains"
                         ? "bg-[#131656] hover:bg-[#131656]"
                         : "bg-green-500 hover:bg-green-600"
-                      }`}
+                    }`}
                     onClick={handleMainsClick}
                     // disabled={activeSection && activeSection !== "mains"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
@@ -514,10 +510,11 @@ const [payment, setPayment] = useState("");
                 </div>
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${activeSection === "PYQ"
+                    className={`btn w-100 mb-2 text-white ${
+                      activeSection === "PYQ"
                         ? "bg-[#131656] hover:bg-[#131656]"
                         : "bg-green-500 hover:bg-green-600"
-                      }`}
+                    }`}
                     onClick={handleUpdatesClick}
                     // disabled={activeSection && activeSection !== "PYQ"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
@@ -659,18 +656,15 @@ const [payment, setPayment] = useState("");
                                         size={20}
                                         color="orange"
                                       />
-                                      {test.t_questions
-                                      }
+                                      {test.t_questions}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       {" "}
-
                                       <BsSpeedometer2 size={20} color="green" />
                                       {test.t_marks}
-
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -687,57 +681,75 @@ const [payment, setPayment] = useState("");
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
 
-                                                                  {/* Check if the current date is greater than or equal to live_date */}
+                                {/* Check if the current date is greater than or equal to live_date */}
 
-                                                      {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
-                                                        // 🔒 Locked: Not enrolled + (paid or not live)
-                                                        <button
-                                                          className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
-                                                          disabled
-                                                        >
-                                                          <div className="flex items-center justify-center font-semibold gap-1">
-                                                            <IoMdLock />
-                                                            Locked
-                                                          </div>
-                                                        </button>
-                                                      ) : isEnrolled && new Date(test.live_date) > new Date() ? (
-                                                        // 🚧 Coming Soon: Enrolled, but test not yet live
-                                                        <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                                          Coming Soon
-                                                        </div>
-                                                      ) : (
-                                                        // ✅ Actionable: Enrolled and test is live
-                                                        <button
-                                                          className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                                            resultData?.[test._id]?.status === "completed"
-                                                              ? "bg-green-500 text-white hover:bg-green-600"
-                                                              : resultData?.[test._id]?.status === "paused"
-                                                              ? "bg-green-500 text-white hover:bg-green-600"
-                                                              : "bg-green-500 text-white hover:bg-green-600"
-                                                          }`}
-                                                          onClick={() => {
-                                                            if (!isSignedIn) {
-                                                              openNewWindow('/sign-in');
-                                                              return;
-                                                            }
+                                {(!isEnrolled && isPaidTest(test)) ||
+                                (!isEnrolled &&
+                                  new Date(test.live_date) > new Date()) ? (
+                                  // 🔒 Locked: Not enrolled + (paid or not live)
+                                  <button
+                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
+                                    disabled
+                                  >
+                                    <div className="flex items-center justify-center font-semibold gap-1">
+                                      <IoMdLock />
+                                      Locked
+                                    </div>
+                                  </button>
+                                ) : isEnrolled &&
+                                  new Date(test.live_date) > new Date() ? (
+                                  // 🚧 Coming Soon: Enrolled, but test not yet live
+                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
+                                    Coming Soon
+                                  </div>
+                                ) : (
+                                  // ✅ Actionable: Enrolled and test is live
+                                  <button
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                      resultData?.[test._id]?.status ===
+                                      "completed"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : resultData?.[test._id]?.status ===
+                                          "paused"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : "bg-green-500 text-white hover:bg-green-600"
+                                    }`}
+                                    onClick={() => {
+                                      if (!isSignedIn) {
+                                        openNewWindow("/sign-in");
+                                        return;
+                                      }
 
-                                                            if (resultData?.[test._id]?.status === "completed") {
-                                                              openNewWindow(`/result/${test._id}/${user?._id}`);
-                                                            } else if (resultData?.[test._id]?.status === "paused") {
-                                                              openNewWindow(`/mocktest/${test._id}/${user?._id}`);
-                                                            } else {
-                                                              openNewWindow(`/instruction/${test._id}/${user?._id}`);
-                                                            }
-                                                          }}
-                                                        >
-                                                          {resultData?.[test._id]?.status === "completed"
-                                                            ? "View Result"
-                                                            : resultData?.[test._id]?.status === "paused"
-                                                            ? "Resume"
-                                                            : "Take Test"}
-                                    </button>
-                                  )}
-
+                                      if (
+                                        resultData?.[test._id]?.status ===
+                                        "completed"
+                                      ) {
+                                        openNewWindow(
+                                          `/result/${test._id}/${user?._id}`
+                                        );
+                                      } else if (
+                                        resultData?.[test._id]?.status ===
+                                        "paused"
+                                      ) {
+                                        openNewWindow(
+                                          `/mocktest/${test._id}/${user?._id}`
+                                        );
+                                      } else {
+                                        openNewWindow(
+                                          `/instruction/${test._id}/${user?._id}`
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    {resultData?.[test._id]?.status ===
+                                    "completed"
+                                      ? "View Result"
+                                      : resultData?.[test._id]?.status ===
+                                        "paused"
+                                      ? "Resume"
+                                      : "Take Test"}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -790,8 +802,7 @@ const [payment, setPayment] = useState("");
                                         size={20}
                                         color="orange"
                                       />
-                                      {test.t_questions
-                                      }
+                                      {test.t_questions}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -817,7 +828,9 @@ const [payment, setPayment] = useState("");
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
+                                {(!isEnrolled && isPaidTest(test)) ||
+                                (!isEnrolled &&
+                                  new Date(test.live_date) > new Date()) ? (
                                   // 🔒 Locked: Not enrolled + (paid or not live)
                                   <button
                                     className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
@@ -828,7 +841,8 @@ const [payment, setPayment] = useState("");
                                       Locked
                                     </div>
                                   </button>
-                                ) : isEnrolled && new Date(test.live_date) > new Date() ? (
+                                ) : isEnrolled &&
+                                  new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
                                     Coming Soon
@@ -836,35 +850,51 @@ const [payment, setPayment] = useState("");
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
                                   <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
+                                    className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                      resultData?.[test._id]?.status ===
+                                      "completed"
                                         ? "bg-green-500 text-white hover:bg-green-600"
-                                        : resultData?.[test._id]?.status === "paused"
-                                          ? "bg-green-500 text-white hover:bg-green-600"
-                                          : "bg-green-500 text-white hover:bg-green-600"
-                                      }`}
+                                        : resultData?.[test._id]?.status ===
+                                          "paused"
+                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                        : "bg-green-500 text-white hover:bg-green-600"
+                                    }`}
                                     onClick={() => {
                                       if (!isSignedIn) {
-                                        navigate('/sign-in');
+                                        navigate("/sign-in");
                                         return;
                                       }
 
-                                      if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}/${user?._id}`);
-                                      } else if (resultData?.[test._id]?.status === "paused") {
-                                        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
+                                      if (
+                                        resultData?.[test._id]?.status ===
+                                        "completed"
+                                      ) {
+                                        openNewWindow(
+                                          `/result/${test._id}/${user?._id}`
+                                        );
+                                      } else if (
+                                        resultData?.[test._id]?.status ===
+                                        "paused"
+                                      ) {
+                                        openNewWindow(
+                                          `/mocktest/${test._id}/${user?._id}`
+                                        );
                                       } else {
-                                        openNewWindow(`/instruction/${test._id}/${user?._id}`);
+                                        openNewWindow(
+                                          `/instruction/${test._id}/${user?._id}`
+                                        );
                                       }
                                     }}
                                   >
-                                    {resultData?.[test._id]?.status === "completed"
+                                    {resultData?.[test._id]?.status ===
+                                    "completed"
                                       ? "View Result"
-                                      : resultData?.[test._id]?.status === "paused"
-                                        ? "Resume"
-                                        : "Take Test"}
+                                      : resultData?.[test._id]?.status ===
+                                        "paused"
+                                      ? "Resume"
+                                      : "Take Test"}
                                   </button>
                                 )}
-
                               </div>
                             </div>
                           </div>
@@ -917,8 +947,7 @@ const [payment, setPayment] = useState("");
                                         size={20}
                                         color="orange"
                                       />
-                                      {test.t_questions
-                                      }
+                                      {test.t_questions}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -941,60 +970,74 @@ const [payment, setPayment] = useState("");
                                     </p>
                                   </div>
                                 </div>
-
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Check if the current date is greater than or equal to live_date */}
+                            {/* Check if the current date is greater than or equal to live_date */}
 
-                                {(!isEnrolled && isPaidTest(test)) || (!isEnrolled && new Date(test.live_date) > new Date()) ? (
-                                  // 🔒 Locked: Not enrolled + (paid or not live)
-                                  <button
-                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
-                                    disabled
-                                  >
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Locked
-                                    </div>
-                                  </button>
-                                ) : isEnrolled && new Date(test.live_date) > new Date() ? (
-                                  // 🚧 Coming Soon: Enrolled, but test not yet live
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                    Coming Soon
-                                  </div>
-                                ) : (
-                                  // ✅ Actionable: Enrolled and test is live
-                                  <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${resultData?.[test._id]?.status === "completed"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : resultData?.[test._id]?.status === "paused"
-                                          ? "bg-green-500 text-white hover:bg-green-600"
-                                          : "bg-green-500 text-white hover:bg-green-600"
-                                      }`}
-                                    onClick={() => {
-                                      if (!isSignedIn) {
-                                        navigate('/sign-in');
-                                        return;
-                                      }
+                            {(!isEnrolled && isPaidTest(test)) ||
+                            (!isEnrolled &&
+                              new Date(test.live_date) > new Date()) ? (
+                              // 🔒 Locked: Not enrolled + (paid or not live)
+                              <button
+                                className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
+                                disabled
+                              >
+                                <div className="flex items-center justify-center font-semibold gap-1">
+                                  <IoMdLock />
+                                  Locked
+                                </div>
+                              </button>
+                            ) : isEnrolled &&
+                              new Date(test.live_date) > new Date() ? (
+                              // 🚧 Coming Soon: Enrolled, but test not yet live
+                              <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                Coming Soon
+                              </div>
+                            ) : (
+                              // ✅ Actionable: Enrolled and test is live
+                              <button
+                                className={`mt-3 py-2 px-4 rounded w-full transition ${
+                                  resultData?.[test._id]?.status === "completed"
+                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                    : resultData?.[test._id]?.status ===
+                                      "paused"
+                                    ? "bg-green-500 text-white hover:bg-green-600"
+                                    : "bg-green-500 text-white hover:bg-green-600"
+                                }`}
+                                onClick={() => {
+                                  if (!isSignedIn) {
+                                    navigate("/sign-in");
+                                    return;
+                                  }
 
-                                      if (resultData?.[test._id]?.status === "completed") {
-                                        openNewWindow(`/result/${test._id}/${user?._id}`);
-                                      } else if (resultData?.[test._id]?.status === "paused") {
-                                        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
-                                      } else {
-                                        openNewWindow(`/instruction/${test._id}/${user?._id}`);
-                                      }
-                                    }}
-                                  >
-                                    {resultData?.[test._id]?.status === "completed"
-                                      ? "View Result"
-                                      : resultData?.[test._id]?.status === "paused"
-                                        ? "Resume"
-                                        : "Take Test"}
-                                  </button>
-                                )}
-
+                                  if (
+                                    resultData?.[test._id]?.status ===
+                                    "completed"
+                                  ) {
+                                    openNewWindow(
+                                      `/result/${test._id}/${user?._id}`
+                                    );
+                                  } else if (
+                                    resultData?.[test._id]?.status === "paused"
+                                  ) {
+                                    openNewWindow(
+                                      `/mocktest/${test._id}/${user?._id}`
+                                    );
+                                  } else {
+                                    openNewWindow(
+                                      `/instruction/${test._id}/${user?._id}`
+                                    );
+                                  }
+                                }}
+                              >
+                                {resultData?.[test._id]?.status === "completed"
+                                  ? "View Result"
+                                  : resultData?.[test._id]?.status === "paused"
+                                  ? "Resume"
+                                  : "Take Test"}
+                              </button>
+                            )}
                           </div>
                         )
                     )}
@@ -1004,17 +1047,23 @@ const [payment, setPayment] = useState("");
 
               <div className="my-2">
                 {subTitles.map((subTitle) => (
-                  <div key={subTitle._id}>
+                  <div key={subTitle._id} className="my-3 space-y-2">
                     <ul className="list-none">
                       <li>
-                        <h3 className="fw-bold font">{subTitle.title}</h3>
+                        {/* <h3 className="fw-bold font">{subTitle.title}</h3> */}
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: subTitle.title,
+                          }}
+                          className="ml-3 leading-8 text-base"
+                        ></div>
                       </li>
                       <li>
                         <div
                           dangerouslySetInnerHTML={{
                             __html: subTitle.description,
                           }}
-                          className="font ml-3"
+                          className=" ml-3 leading-8 text-base"
                         ></div>
                       </li>
                     </ul>
@@ -1034,10 +1083,11 @@ const [payment, setPayment] = useState("");
                       className="border rounded-lg overflow-hidden shadow-sm "
                     >
                       <button
-                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${activeIndex === index
+                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${
+                          activeIndex === index
                             ? "bg-green-100 text-green-700"
                             : "hover:bg-gray-50"
-                          }`}
+                        }`}
                         onClick={() => handleAccordionToggle(index)}
                       >
                         <span
@@ -1053,8 +1103,9 @@ const [payment, setPayment] = useState("");
                         </span>
                       </button>
                       <div
-                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
-                          }`}
+                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${
+                          activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
+                        }`}
                       >
                         <p
                           className="text-gray-600"
@@ -1074,53 +1125,66 @@ const [payment, setPayment] = useState("");
             {/* advertiswment part */}
             <div className="w-fill md:w-1/5 m-1">
               <div>
-                <div
-                  className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-md border-2 " 
-                >
+                <div className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-md border-2 ">
                   <div className="absolute inset-0 z-[-10] border-2 rounded-xl"></div>
                   <div className="flex justify-center">
                     <span className="text-xl font-semibold font p-2">
-                      Features
+                      Features 
                     </span>
                   </div>
-{/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
+                  {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
     Aspect Ratio: 2:3 (portrait) */}
-                  <img 
-  src={data.featurePhoto} 
-  alt="Ad" 
-  style={{
-    width: '100%',
-    maxWidth: '400px',
-    aspectRatio: '2 / 3',
-    objectFit: 'contain'
-  }} />
+                  <img
+                    src={data.featurePhoto}
+                    alt="Ad"
+                    style={{
+                      width: "100%",
+                      maxWidth: "400px",
+                      aspectRatio: "2 / 3",
+                      objectFit: "contain",
+                    }}
+                  />
 
                   {/* <img src={data.featurePhoto} alt="" /> */}
                   <div className="text-center mt-3">
-                   
                     <del className=" rounded px-2 py-1 mb-2 drop-shadow">
-  Rs.{data.amount}
-</del>
-                    <button className="bg-green-500 text-white px-3 py-1 font-bold hover:bg-green-400 rounded-full"  onClick={() => {
+                      Rs.{data.amount}
+                    </del>
+                       <button
+  className={`px-3 py-1 font-bold rounded-full ${
+    isEnrolled 
+      ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
+      : "bg-green-500 text-gray-50 hover:bg-green-400"
+  }`}
+  onClick={() => {
     if (!isSignedIn) {
       navigate('/sign-in');
-     }
-    //  else {
-    //   paymentmeth(data.discountedAmount);
-    // }
-    else {
-    setshowmodel(true)
+    } else if (isEnrolled) {
+      // Do nothing or show a message if needed, since already purchased
+      console.log("Already enrolled");
+    } else {
+      setshowmodel(true);
     }
-  }} >
-                    Rs. {data.discountedAmount}
-                    </button>
-                    <p className="font-bold">You Save Money: Rs. {data.amount - data.discountedAmount}</p>
+  }}
+  disabled={isEnrolled} // disables button if enrolled
+>
+  {isEnrolled ? "Purchased" : `Rs.${ data.discountedAmount}`}
+</button>
+
+                    <p className="font-bold">
+                      You Save Money: Rs. {data.amount - data.discountedAmount}
+                    </p>
                   </div>
                 </div>
-              {showmodel && <Coupon data={data} setshowmodel={setshowmodel}/>}
+                {showmodel && (
+                  <Coupon data={data} setshowmodel={setshowmodel} />
+                )}
                 {ad.length > 0 &&
-                  ad.map((item,index) => (
-                    <div key={index} className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300">
+                  ad.map((item, index) => (
+                    <div
+                      key={index}
+                      className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300"
+                    >
                       <Link to={item.link_name}>
                         <img
                           src={item.photo}
@@ -1140,4 +1204,3 @@ const [payment, setPayment] = useState("");
 };
 
 export default Packagename;
- 

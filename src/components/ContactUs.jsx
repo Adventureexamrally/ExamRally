@@ -1,194 +1,162 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
+import Api from "../service/Api";
+import {
+  MapPinIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  ChatBubbleBottomCenterTextIcon,
+} from "@heroicons/react/24/outline";
 
-const ContactUs = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-    newsletter: false
+function ContactUs() {
+  const [contactInfo, setContactInfo] = useState({
+    address: "",
+    email: "",
+    phone: "",
+    whatsapp: ""
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        setLoading(true);
+        const res = await Api.get("site-documents");
+        setContactInfo(res.data.contact || {});
+        setError(null);
+      } catch (error) {
+        console.error("Failed to load contact info:", error);
+        setError("Failed to load contact information. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email address';
-    }
-    if (!formData.subject) newErrors.subject = 'Subject is required';
-    if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters';
-    }
+    fetchContactInfo();
+  }, []);
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-green-600"></div>
+      </div>
+    );
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Form submitted:', formData);
-    setIsLoading(false);
-    setIsSubmitted(true);
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    });
-    setTimeout(() => setIsSubmitted(false), 4000);
-  };
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+          <div className="flex items-center">
+            <svg
+              className="h-6 w-6 text-red-500 mr-3"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-red-700 font-medium">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Contact Us
-          </h2>
-          <p className="mt-4 text-lg text-gray-600">
-            Have questions or feedback? We'd love to hear from you!
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center mb-12">
+        <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+          Contact Us
+        </h1>
+        <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+          We'd love to hear from you
+        </p>
+      </div>
 
-        {isSubmitted && (
-          <div className="mb-8 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-            Thank you for your message! We'll get back to you soon.
-          </div>
-        )}
-
-        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
-          <div className="p-8 sm:p-10">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className={`block w-full px-4 py-3 rounded-md border ${errors.name ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none`}
-                      placeholder="Your name"
-                    />
+      <div className="rounded-xl shadow-lg overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* Contact Information */}
+          <div className=" p-8 md:p-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Information</h2>
+            
+            <div className="space-y-6">
+              {contactInfo.address && (
+                <div className="flex items-start">
+                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                    <MapPinIcon className="h-6 w-6 text-green-600" />
                   </div>
-                  {errors.name && (
-                    <p className="mt-2 text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className={`block w-full px-4 py-3 rounded-md border ${errors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none`}
-                      placeholder="your.email@example.com"
-                    />
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-800">Address</h3>
+                    <p className="mt-1 text-gray-600">{contactInfo.address}</p>
                   </div>
-                  {errors.email && (
-                    <p className="mt-2 text-sm text-red-600">{errors.email}</p>
-                  )}
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
-                  Subject
-                </label>
-                <div className="mt-1">
-                  <select
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className={`block w-full px-4 py-3 rounded-md border ${errors.subject ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none`}
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="support">Support</option>
-                    <option value="feedback">Feedback</option>
-                    <option value="other">Other</option>
-                  </select>
+              )}
+              
+              {contactInfo.email && (
+                <div className="flex items-start">
+                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                    <EnvelopeIcon className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-800">Email</h3>
+                    <a
+                      href={`mailto:${contactInfo.email}`}
+                      className="mt-1 text-gray-600 hover:text-green-700 hover:underline transition-colors"
+                    >
+                      {contactInfo.email}
+                    </a>
+                  </div>
                 </div>
-                {errors.subject && (
-                  <p className="mt-2 text-sm text-red-600">{errors.subject}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                  Message
-                </label>
-                <div className="mt-1">
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleChange}
-                    className={`block w-full px-4 py-3 rounded-md border ${errors.message ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none`}
-                    placeholder="Your message here..."
-                  />
+              )}
+              
+              {contactInfo.phone && (
+                <div className="flex items-start">
+                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                    <PhoneIcon className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-800">Phone</h3>
+                    <a
+                      href={`tel:${contactInfo.phone.replace(/\D/g, "")}`}
+                      className="mt-1 text-gray-600 hover:text-green-700 hover:underline transition-colors"
+                    >
+                      {contactInfo.phone}
+                    </a>
+                  </div>
                 </div>
-                {errors.message && (
-                  <p className="mt-2 text-sm text-red-600">{errors.message}</p>
-                )}
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isLoading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors`}
-                >
-                  {isLoading ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Sending...
-                    </>
-                  ) : 'Send Message'}
-                </button>
-              </div>
-            </form>
+              )}
+              
+              {contactInfo.whatsapp && (
+                <div className="flex items-start">
+                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                    <ChatBubbleBottomCenterTextIcon className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-800">WhatsApp</h3>
+                    <a
+                      href={`https://wa.me/${contactInfo.whatsapp.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 text-gray-600 hover:text-green-700 hover:underline transition-colors"
+                    >
+                      {contactInfo.whatsapp}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+
+          
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default ContactUs;

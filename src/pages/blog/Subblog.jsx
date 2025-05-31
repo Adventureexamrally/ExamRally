@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import Api from "../../service/Api";
 import { Helmet } from "react-helmet";
 
-
 // const VITE_APP_API_BASE_URL=import.meta.env.VITE_APP_API_BASE_URL
 
 const Subblog = () => {
@@ -62,18 +61,17 @@ const Subblog = () => {
                 <div className="flex items-center space-x-2 m-2">
                   <span className="text-gray-500 text-sm">
                     {" "}
-                    <i className="bi bi-bell-fill"></i>{" "}
-                    {new Date(blogDetails.createdAt).toLocaleDateString()}
+                    <i className="bi bi-bell-fill"></i>
+                    {"Updated on: "}
+                    {new Date(blogDetails.updatedAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </span>
                 </div>
               </div>
-              {blogDetails.photo && (
-                <img
-                  src={blogDetails.photo}
-                  alt="no photo found"
-                  className="max-h-60"
-                />
-              )}
+            
 
               <p
                 className="text-md font-semibold text-gray-800 m-2"
@@ -154,7 +152,10 @@ const Subblog = () => {
                      .rich-table-wrapper tr:last-child td:first-child {
                        border-bottom-left-radius: 8px;
                      }
-
+                            p {
+                            display:flex;
+                            flex-direction:column
+                            }
                      .rich-table-wrapper tr:last-child td:last-child {
                        border-bottom-right-radius: 8px;
                      }

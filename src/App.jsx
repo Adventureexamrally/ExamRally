@@ -51,6 +51,7 @@ import ContactUs from "./components/ContactUs";
 import Coupon from "./pages/Coupon";
 import ErrorReport from "./pages/user/ErrorReport";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Refund_policy from "./components/Refund_policy";
 
 
 
@@ -158,10 +159,10 @@ function MainApp() {
         <Route path="/rally-pro" element={<Rally_pro />} />
         <Route path="/rally-super-pro" element={<Rallysuper_Pro />} />
         <Route path="/top-trending-exams/:id" element={<Packagename />} />
-        
+        <Route path='/refund-policy' element={<Refund_policy/>}/>
         <Route path="/privacy-policy" element={<Privacy_Policy />} />
         <Route path="/TermsConditions" element={<Terms_Condition />} />
-        {/* <Route path="/contactus" element={<ContactUs />} /> */}
+        <Route path="/contactus" element={<ContactUs />} />
 
         {/* Only render Test component without Header and Footer */}
         
@@ -172,10 +173,10 @@ function MainApp() {
         <Route path="/blogdetails/:link" element={<Subblog />} />
 
         <Route path="/livetest/:link" element={<DetailedCategorie />} />
-        <Route path="/pdf-course" element={<PdfCourseHome />} />
+        {/* <Route path="/pdf-course" element={<PdfCourseHome />} />
         <Route path="/pdf-course/:level" element={<PdfCourse />} />
 
-        <Route path="/video-course" element={<VideoCourse />} />
+        <Route path="/video-course" element={<VideoCourse />} /> */}
         <Route path="/pdf" element={<ProtectedRoute />}>
           <Route path="instruction/:id/:userId" element={<PdfInstruction />} />
           <Route path="mocktest/:id/:userId" element={<PdfTest />} />

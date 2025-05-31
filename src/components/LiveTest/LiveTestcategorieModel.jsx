@@ -190,7 +190,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                           </button>
                                                         ) : isEnrolled && new Date(test.live_date) > new Date() ? (
                                                           // 🚧 Coming Soon if enrolled but test not live yet
-                                                          <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                                          <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
                                                             Coming Soon
                                                           </div>
                                                         ) : (

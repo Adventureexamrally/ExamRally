@@ -77,6 +77,7 @@ const ErrorReport = () => {
             setIsLoading(true);
             setError(null);
             const response = await Api.get('reports/get-reports');
+            console.log('Fetched reports:', response.data);                                                                                                   
             const userReports = response.data.filter(report =>
                 report.userName === user?.firstName &&
                 report.emailId === user?.email
@@ -246,7 +247,23 @@ const ErrorReport = () => {
                             </Typography>
                           </>
                         )}
-                        
+{report.status === 'resolved' && report.adminComment && (
+  <Box sx={{ mt: 3 }}>
+    <Typography 
+      variant="h6" 
+      sx={{ fontWeight: 'bold', color: 'green', mb: 1 }}
+    >
+      Admin Reply:
+    </Typography>
+    <Typography 
+      variant="body1" 
+      sx={{ color: 'green' }} // You can also use 'success.main' for theme-based green
+    >
+    <i className="bi bi-asterisk"></i>  {report.adminComment}
+    </Typography>
+  </Box>
+)}
+
                         <Box sx={{ 
                           display: 'flex', 
                           justifyContent: 'flex-end',

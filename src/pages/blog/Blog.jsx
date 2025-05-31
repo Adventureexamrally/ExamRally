@@ -47,7 +47,7 @@ const Blog = () => {
 
     const handleScroll = () => {
       if (carouselRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        const { scrollLeft, scrollWidth, clientWidth,scrollRight } = carouselRef.current;
         setIsAtStart(scrollLeft === 0);
         setIsAtEnd(scrollLeft === scrollWidth - clientWidth);
       }
@@ -80,6 +80,7 @@ const Blog = () => {
 
   const scrollToNext = () => {
     carouselRef.current?.scrollBy({ left: 150, behavior: "smooth" });
+    setIsAtStart(false);
   };
 
   const scrollToPrevious = () => {
@@ -120,7 +121,7 @@ const Blog = () => {
         />
         <div className="flex items-center text-xs text-gray-500 mt-auto">
           <FaCalendarAlt className="mr-1" />
-          <span>{new Date(blog.createdAt).toLocaleDateString('en-US', { 
+          <span>{new Date(blog.updatedAt).toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'short', 
             day: 'numeric' 

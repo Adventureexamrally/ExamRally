@@ -1839,7 +1839,10 @@ console.warn(currentState)
                         : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
                       }`
                     }
-                    style={{ overflowY: 'auto' }}
+                      style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
                   >
                       <div
                         className="text-wrap"
@@ -1857,7 +1860,7 @@ console.warn(currentState)
 
                   {/* Right side for Question */}
                   <div
-                    className={`  ${isFullscreen
+                    className={`   ${isFullscreen
                       ? 'h-[80vh] md:h-[80vh]'
                       : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
                       } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
@@ -1865,7 +1868,11 @@ console.warn(currentState)
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                      }`} style={{ overflowY: 'auto' }}
+                      }`}   style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+  
                   >
                     <div>
                       <div
@@ -1890,34 +1897,34 @@ console.warn(currentState)
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
                             <div key={index} className="p-1 rounded-lg m-2 ">
-                              <input
-                                type="radio"
-                                className="p-5"
-                                id={`option-${index}`}
-                                name="exam-option"
-                                value={index}
-                                checked={
-                                  selectedOptions[clickedQuestionIndex] ===
-                                  index
-                                }
-                                onChange={() => {
-                                  console.log("Selected Option Index:", index);
-                                  handleOptionChange(index);
-                                }}
-                                  style={{
-                                                                    accentColor: "#3B82F6", // Blue color for radio button
-                                                                    width: "1.2rem",
-                                                                    height: "1.2rem",
-                                                                    
-                                                                }}
-                              />{" "}
-                              &nbsp;&nbsp;
-                              <label
-                                htmlFor={`option-${index}`}
-                                dangerouslySetInnerHTML={{
-                                  __html: option || "No option available",
-                                }}
-                              />
+                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+  <input
+    type="radio"
+    className="p-5"
+    id={`option-${index}`}
+    name="exam-option"
+    value={index}
+    checked={selectedOptions[clickedQuestionIndex] === index}
+    onChange={() => {
+      console.log("Selected Option Index:", index);
+      handleOptionChange(index);
+    }}
+    style={{
+      accentColor: "#3B82F6",
+      width: "1.2rem",
+      height: "1.2rem",
+      marginRight: "8px",
+      marginTop: "0px" // Remove vertical offset
+    }}
+  />
+  <label
+    htmlFor={`option-${index}`}
+    dangerouslySetInnerHTML={{
+      __html: option || "No option available",
+    }}
+  />
+</div>
+
                             </div>
                           ))}
                         </div>
@@ -1967,14 +1974,17 @@ console.warn(currentState)
         {/* Sidebar */}
 
         <div
-          className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+          className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
-      ${isFullscreen
+ ${isFullscreen
               ? 'h-[87vh] md:h-[87vh]'
               : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
             } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-          style={{ overflowY: 'auto' }}
+            style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
         >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">

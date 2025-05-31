@@ -8,7 +8,7 @@ const ProtectedRoute = () => {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useContext(UserContext); // Get current user from context
   const { userId,id } = useParams(); // Get userId from route param
-console.log("userId", userId,id);
+// console.log("userId", userId,id);
 
   if (!isLoaded) {
     return <div>Loading...</div>;
@@ -18,7 +18,7 @@ console.log("userId", userId,id);
   if (!isSignedIn) {
     return <Navigate to="/" replace />;
   }
-console.log("user from context:", user?._id, "from route:", userId);
+// console.log("user from context:", user?._id, "from route:", userId);
 
 // Don't navigate until both values are present
 if (userId && user?._id && user?._id !== userId) {
