@@ -67,13 +67,7 @@ const Subblog = () => {
                   </span>
                 </div>
               </div>
-              {blogDetails.photo && (
-                <img
-                  src={blogDetails.photo}
-                  alt="no photo found"
-                  className="max-h-60"
-                />
-              )}
+            
 
               <p
                 className="text-md font-semibold text-gray-800 m-2"
@@ -154,7 +148,10 @@ const Subblog = () => {
                      .rich-table-wrapper tr:last-child td:first-child {
                        border-bottom-left-radius: 8px;
                      }
-
+                            p {
+                            display:flex;
+                            flex-direction:column
+                            }
                      .rich-table-wrapper tr:last-child td:last-child {
                        border-bottom-right-radius: 8px;
                      }

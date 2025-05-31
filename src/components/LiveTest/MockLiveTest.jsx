@@ -28,16 +28,17 @@ const MockLiveTest = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sectionTimes, setSectionTimes] = useState({});
   const currentSectionStartTimeRef = useRef(new Date()); // Add this at top with other hooks
- const [text, setText] = useState("");
+  const [text, setText] = useState([]);
+  const [scoreData, setScoreData] = useState({});
   const [corrections, setCorrections] = useState([]);
   const [scoreBreakdown, setScoreBreakdown] = useState(null);
   const { user } = useContext(UserContext);
   const [wordCount, setWordCount] = useState(0);
-
+  const [descriptiveData, setDescriptiveData] = useState([]);
   const location = useLocation();
   const selectedLanguage = location.state?.language || "English";
   // Fetch exam data
-
+console.log(descriptiveData)
   const { id } = useParams();
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
@@ -632,6 +633,7 @@ const MockLiveTest = () => {
 
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
+    handleDescriptiveTest();
     updateSectionTime();
     console.log("Handling section submission...");
     setIsPaused(true); // Pause the timer
@@ -640,9 +642,6 @@ const MockLiveTest = () => {
     const timeSpent = Math.floor(
       (now - currentSectionStartTimeRef.current) / 1000
     );
-
-
-
 
     // Reset timer for accuracy
     currentSectionStartTimeRef.current = new Date();
@@ -737,11 +736,14 @@ const MockLiveTest = () => {
         console.log("New Starting Index for Next Section:", newStartingIndex);
 
         setClickedQuestionIndex(newStartingIndex);
-      } else {
-        console.log("Submitting the exam.");
-        submitExam();
-        // checkGrammar();
-      }
+      }else {
+  console.log("Submitting the exam in 7 seconds...");
+
+    submitExam();
+    // checkGrammar();
+ // Delay of 7000 milliseconds = 7 seconds
+}
+
     }
   };
 
@@ -754,6 +756,12 @@ const MockLiveTest = () => {
 
   const [dataid, setDataid] = useState(null); // State to store the data
 
+
+
+
+   useEffect(() => {
+    // handleDescriptiveTest();
+  }, []);
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
     if (user?._id) {
@@ -790,7 +798,7 @@ const MockLiveTest = () => {
   }, [examData, currentSectionIndex, resultData]);
 
   const updateSectionTime = () => {
-    console.log("updte seccall")
+    // console.log("updte seccall");
     if (!examDataSubmission || timeTakenFromDB.length === 0) return;
 
     const {
@@ -826,27 +834,29 @@ const MockLiveTest = () => {
       }
       return section;
     });
-   
-    if (user?._id) {
-      Api.post(`results/${user._id}/${id}`, {
-        ExamId: id,
-        section: updatedSections,
 
-        score: totalScore,
-        totalTime: formattedTotalTime,
-        timeTakenInSeconds: timeTakenInSecondsUpdated,
-        takenAt: examStartTime,
-        submittedAt: endTime,
-        status: isPaused ? "paused" : "completed",
-        sectionTimes, // Optional: make sure this matches backend schema
+  if (user?._id) {
+
+    Api.post(`results/${user._id}/${id}`, {
+      ExamId: id,
+      section: updatedSections,
+      score: totalScore,
+      totalTime: formattedTotalTime,
+      timeTakenInSeconds: timeTakenInSecondsUpdated,
+      takenAt: examStartTime,
+      submittedAt: endTime,
+      status: isPaused ? "paused" : "completed",
+      sectionTimes, // Optional: make sure this matches backend schema
+    })
+      .then((res) => {
+        console.log("Submitted:", res.data);
       })
-        .then((res) => {
-          console.log("Submitted:", res.data);
-        })
-        .catch((err) => {
-          console.error("Error submitting:", err);
-        });
-    }
+      .catch((err) => {
+        console.error("Error submitting:", err);
+      });
+  
+}
+
   };
 
   useEffect(() => {
@@ -863,8 +873,6 @@ const MockLiveTest = () => {
     timeTakenFromDB,
   ]);
 
-
-
   useEffect(() => {
     if (!user?._id || !id) return;
     if (user?._id) {
@@ -872,9 +880,26 @@ const MockLiveTest = () => {
         .then((response) => {
           setResultData(response.data);
           console.log("Result Data:", response.data);
-        const descriptiveText = response.data.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.descriptive[0]?.text?.[0] || " ";
-        setText(descriptiveText);
-          console.log(text)
+          const descriptiveArray = response.data.section.map(
+            (section, index) => {
+              const descriptiveQuestion =
+                section.questions?.[selectedLanguage?.toLowerCase()]?.[0]
+                  ?.descriptive?.[0];
+
+              return {
+                text: [descriptiveQuestion?.text?.[0] || ""],
+                // corrections: [],
+                // scoreBreakdown: [],
+                // scoreData: [],
+                // expectedWordCount: [descriptiveQuestion?.wordCount || 0],
+                // keywords: descriptiveQuestion?.keywords || [],
+                // date: [new Date().toISOString()],
+              };
+            }
+          );
+
+          setDescriptiveData(descriptiveArray);
+          console.log("Descriptive Data:", descriptiveText);
         })
         .catch((error) => {
           console.error("Error fetching result data:", error);
@@ -906,26 +931,38 @@ const MockLiveTest = () => {
     navigate(`/liveresult/${id}/${user?._id}`);
   };
 
-const getKeywords = () => {
-  const keywordString =
-    examData?.section?.[currentSectionIndex]?.questions?.[
-      selectedLanguage?.toLowerCase()
-    ]?.[0]?.keywords;
+  const getKeywords = () => {
+    const keywordString =
+      examData?.section?.[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+      ]?.[0]?.keywords;
 
-  if (typeof keywordString === "string") {
-    return keywordString.split(",").map((k) => k.trim().toLowerCase());
-  }
-  return [];
-};
+    if (typeof keywordString === "string") {
+      return keywordString.split(",").map((k) => k.trim().toLowerCase());
+    }
+    return [];
+  };
 
 
-// Grammar check function
-const checkGrammar = async () => {
+  // ✅ Check grammar for the current section's text
+const checkGrammar = async (currentText) => {
   try {
-    console.log("Checking grammar...");
+    const textToCheck = currentText?.trim();
+
+    if (!textToCheck) {
+      console.warn("⚠️ No text provided for grammar check.");
+      return {
+        corrections: [],
+        scoreBreakdown: {},
+        scoreData: {},
+      };
+    }
+
+    console.log("🔍 Checking grammar for text:", textToCheck);
+
     const response = await axios.post(
       "https://ginger4.p.rapidapi.com/correction",
-      text,
+      textToCheck,
       {
         params: {
           lang: "US",
@@ -933,67 +970,81 @@ const checkGrammar = async () => {
           flagInfomralLanguage: "true",
         },
         headers: {
-          "x-rapidapi-key":
-            "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
+          "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
           "x-rapidapi-host": "ginger4.p.rapidapi.com",
           "Content-Type": "text/plain",
         },
       }
     );
 
-    const issues = response.data.GingerTheDocumentResult.Corrections || [];
+    const issues = response?.data?.GingerTheDocumentResult?.Corrections || [];
+    console.log("✅ Grammar issues found:", issues);
+
+    // Update local state
     setCorrections(issues);
-    calculateScore(issues);
+    const scoreData = calculateScore(issues); // This should return a score breakdown object
+    const scoreBreakdown = issues?.[0]?.Suggestions || [];
+
+    setScoreBreakdown(scoreBreakdown);
+
+    // Return structured data for use in the caller
+    return {
+      corrections: issues,
+      scoreBreakdown,
+      scoreData,
+    };
   } catch (error) {
-    console.error("Grammar check failed:", error);
+    console.error("❌ Grammar check failed:", error?.response?.data || error.message);
+    return {
+      corrections: [],
+      scoreBreakdown: {},
+      scoreData: {},
+    };
   }
 };
 
-// Score calculation function
+  // Grammar check function
 const calculateScore = async (issues) => {
   const keywords = getKeywords();
-  const expectedWordCount =  examData?.section?.[currentSectionIndex]?.questions?.[
+  const expectedWordCount =
+    examData?.section?.[currentSectionIndex]?.questions?.[
       selectedLanguage?.toLowerCase()
-    ]?.[0]?.words_limit;
+    ]?.[0]?.words_limit || 100;
+
+  const currentText =
+    descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+
   let spellingErrors = 0;
   let grammarErrors = 0;
 
-console.log(keywords)
-
+  // Count spelling vs grammar issues
   issues.forEach((issue) => {
     const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
-    if (category.includes("capitalization")) {
+    if (category.includes("capitalization") || category.includes("spelling")) {
       spellingErrors++;
     } else {
       grammarErrors++;
     }
   });
 
-  const totalWords = text.trim().split(/\s+/).length;
+  // Word count
+  const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
 
-  // Calculate spelling score
-  const spellingScore =
-    spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+  // Score calculations
+  const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+  const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
+  const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
 
-  // Calculate grammar score
-  const grammarScore =
-    grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
-
-  // Calculate word count score
-  const wordCountScore = Math.min((totalWords / expectedWordCount) * 20, 20);
-
-  // Calculate keyword score
+  // Keyword match score
   let matchedKeywords = 0;
-  const lowerText = text.toLowerCase();
+  const lowerText = currentText.toLowerCase();
   keywords.forEach((kw) => {
     if (lowerText.includes(kw)) matchedKeywords++;
   });
-  const keywordScore =
-    keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
+  const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
 
-  // Total score calculation
-  const totalScore =
-    spellingScore + grammarScore + wordCountScore + keywordScore;
+  // Total score
+  const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
 
   const scoreData = {
     spellingScore,
@@ -1004,25 +1055,33 @@ console.log(keywords)
     totalWords,
   };
 
-  await submitExam(text, issues, scoreData, keywords, expectedWordCount);
+  setScoreData(scoreData);
 
-  console.log("Score Data:", scoreData);
-  console.log("Text:", text);
+  if (currentSectionIndex === examData?.section?.length - 1) {
+    await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
+  }
+
+  // Debug logs
+  console.log("✅ Score Data:", scoreData);
+  console.log("Text:", currentText);
   console.log("Issues:", issues);
   console.log("Keywords:", keywords);
   console.log("Expected Word Count:", expectedWordCount);
 };
 
+
   const submitExam = async (
-   
     issues,
     scoreBreakdown,
     keywords,
     scoreData,
     expectedWordCount
   ) => {
-    await   checkGrammar()
-   console.log("Score Data:", scoreData)
+    await checkGrammar();
+  // await handleDescriptiveTest()
+    // console.log("Score Data:", scoreData);
+    console.log("inside ", descriptiveData);
+
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -1134,27 +1193,27 @@ console.log(keywords)
             : -question?.minus_mark
           : 0;
 
-      const descriptiveData = {
-        // userId: user?._id,
-        // examId: id,
+      // const descriptiveData = {
+      //   // userId: user?._id,
+      //   // examId: id,
 
-        // Convert everything to arrays
-        text: [text], // Essay as single-item array
-        corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
-        scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
-          ([key, value]) => ({
-            metric: key,
-            value: value,
-          })
-        ), // Convert object to array of {metric, value}
-          keywords:[scoreData],
-        
-        expectedWordCount: [expectedWordCount], // Wrap as array
-        scoreData:[keywords], // Already array, just check
-        date: [new Date().toISOString()], // Optional: wrap date as array too
-      };
+      //   // Convert everything to arrays
+      //   text: [text[currentSectionIndex]], // Essay as single-item array
+      //   corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
+      //   scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
+      //     ([key, value]) => ({
+      //       metric: key,
+      //       value: value,
+      //     })
+      //   ), // Convert object to array of {metric, value}
+      //   keywords: [scoreData],
 
-      console.log(";[",descriptiveData);
+      // expectedWordCount: [expectedWordCount], // Wrap as array
+      //   scoreData: [keywords], // Already array, just check
+      //   date: [new Date().toISOString()], // Optional: wrap date as array too
+      // };
+
+      // console.log(";[", descriptiveData);
       return {
         question: question?.question,
         options: optionsData,
@@ -1167,7 +1226,7 @@ console.log(keywords)
         NotVisited: notVisited,
         q_on_time: singleQuestionTime,
         score: questionScore,
-        descriptive: descriptiveData,
+        descriptive: descriptiveData[index] || [],
       };
     });
     console.log("answersData", answersData);
@@ -1216,25 +1275,24 @@ console.log(keywords)
                   : -section.minus_mark
                 : 0;
 
+            // const descriptiveData = {
+            //   text: [text[currentSectionIndex]], // Essay as single-item array
+            //   corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
+            //   scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
+            //     ([key, value]) => ({
+            //       metric: key,
+            //       value: value,
+            //     })
+            //   ), // Convert object to array of {metric, value}
+            //   scoreData: scoreData,
 
-            const descriptiveData = {
-                 text: [text], // Essay as single-item array
-        corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
-        scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
-          ([key, value]) => ({
-            metric: key,
-            value: value,
-          })
-        ), // Convert object to array of {metric, value}
-          scoreData:scoreData,
-        
-        expectedWordCount: [expectedWordCount], // Wrap as array
-        keywords:keywords, // Already array, just check
-        date: [new Date().toISOString()], // Optional: wrap date as array too
-            };
-
+            //   expectedWordCount: [expectedWordCount], // Wrap as array
+            //   keywords: keywords, // Already array, just check
+            //   date: [new Date().toISOString()], // Optional: wrap date as array too
+            // };
+console.warn("check-item",descriptiveData[absoluteIndex])
             const answerObj = {
-              descriptive: descriptiveData,
+              descriptive: descriptiveData[absoluteIndex],
               question: question.question,
               options: question.options || [],
               answer: question.answer,
@@ -1254,7 +1312,7 @@ console.log(keywords)
 
         // ✅ This line makes sure descriptive is stored in a global flat array
         answersData.push(...sectionAnswersData);
-        console.log("answerdata ",answersData)
+        console.log("answerdata ", answersData);
 
         const correctCount = sectionAnswersData.filter(
           (q) => q.correct === 1
@@ -1299,7 +1357,7 @@ console.log(keywords)
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: answersData[sectionStartIndex + index]?.descriptive,
+              descriptive: descriptiveData[sectionIndex] || [],
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -1315,7 +1373,7 @@ console.log(keywords)
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: answersData[sectionStartIndex + index]?.descriptive,
+              descriptive: descriptiveData[sectionIndex],
             })),
             tamil: section.questions.tamil.map((question, index) => ({
               question: question?.question,
@@ -1331,7 +1389,7 @@ console.log(keywords)
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: answersData[sectionStartIndex + index]?.descriptive,
+              descriptive: descriptiveData[sectionIndex],
             })),
           },
 
@@ -1385,16 +1443,83 @@ console.log(keywords)
       },
       endTime,
     });
-
   };
 
-  const handlePauseResume = () => {
-    console.log("$")
+  const handleDescriptiveTest = async () => {
+  console.warn("▶ Function started: handleDescriptiveTest");
+
+  const prevText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+  console.warn("📌 Previous text retrieved:", prevText);
+
+  const currentText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+  console.warn("📌 Current text retrieved:", currentText);
+console.log("0",scoreData)
+  // Run first grammar check
+  const grammarResult = await checkGrammar(currentText);
+  console.warn("✅ Grammar check results received",grammarResult);
+
+  const corrections = grammarResult?.corrections || [];
+  const scoreBreakdown = grammarResult?.scoreBreakdown || {};
+  // const scoreData = grammarResult?.scoreData || {};
+  
+  console.warn("🔧 Corrections:", corrections);
+  console.warn("📊 Score Breakdown:", scoreBreakdown);
+  console.warn("📈 Score Data:", scoreData[currentSectionIndex]);
+
+  const keywords = getKeywords(currentText);
+  console.warn("🔑 Extracted keywords:", keywords);
+
+  const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.words_limit;
+  console.warn("🔢 Expected word count:", expectedWordCount);
+
+  const currentDescriptiveData = {
+    corrections: Array.isArray(corrections) ? corrections : [],
+    scoreBreakdown: Object.entries(scoreBreakdown).map(([metric, value]) => ({ metric, value })),
+    scoreData: scoreData,
+    expectedWordCount: [expectedWordCount],
+    keywords: keywords,
+    date: [new Date().toISOString()],
+    text: [currentText],
+  };
+
+  console.warn("📦 Constructed currentDescriptiveData:", currentDescriptiveData);
+
+  // Update state
+  setDescriptiveData((prev) => {
+    console.warn("🛠 Updating descriptiveData state...");
+    const updated = [...prev];
+    updated[currentSectionIndex] = {
+      ...updated[currentSectionIndex],
+      ...currentDescriptiveData,
+    };
+    console.warn("🆕 Updated descriptiveData at index", currentSectionIndex, ":", updated[currentSectionIndex]);
+    return updated;
+  });
+
+  console.warn("🕒 Scheduling second grammar check after delay...");
+
+  setTimeout(async () => {
+    const newText = currentText;
+    console.warn("⏰ Timeout triggered. Rechecking grammar...");
+
+    if (prevText !== newText) {
+      console.warn("✏️ Text has changed. Running grammar check again...");
+      await checkGrammar(newText);
+    } else {
+      console.warn("🔁 Text hasn't changed. Running grammar check anyway...");
+      await checkGrammar(currentText);
+    }
+  }, 200);
+};
+
+
+  const handlePauseResume = async () => {
+   handleDescriptiveTest();
+    console.log("$");
     if (pauseCount < 1) {
       clearInterval(questionTimerRef.current);
       setIsPaused(true);
       setPauseCount(pauseCount + 1);
-
 
       const now = new Date();
       console.log("Current time:", now);
@@ -1429,9 +1554,6 @@ console.log(keywords)
 
         return previous;
       });
-               // You can dynamically set this text depending on your use case
-    console.log("setText updated to:", "kummar");
-      // gh
       // ✅ Reset currentSectionStartTimeRef to now for next session
       currentSectionStartTimeRef.current = now;
       console.log("Reset currentSectionStartTimeRef to:", now);
@@ -1491,7 +1613,6 @@ console.log(keywords)
     }
   };
 
-
   const [words, setWords] = useState(); // default word limit
   const [countType, setCountType] = useState(" ");
   const [wordCounto, setWordCounto] = useState(0);
@@ -1508,6 +1629,7 @@ console.log(keywords)
       setCountType(selectedQuestion.count_type?.toLowerCase());
     }
   }, [examData, currentSectionIndex, selectedLanguage]);
+  // console.log("Set Text Value", "", text[currentSectionIndex]);
 
   const handleChange = (e) => {
     let inputText = e.target.value;
@@ -1516,21 +1638,38 @@ console.log(keywords)
     const currentCount = wordsArray.length;
     setWordCounto(currentCount);
 
-    if (
+    const limitReached =
       (countType === "decrement" && currentCount >= words) ||
-      (countType === "increment" && currentCount >= words)
-    ) {
-      setLimitReached(true);
-    } else {
-      setLimitReached(false);
-    }
+      (countType === "increment" && currentCount >= words);
+    setLimitReached(limitReached);
 
     if (countType === "decrement" && currentCount > words) {
       wordsArray = wordsArray.slice(0, words);
       inputText = wordsArray.join(" ");
     }
 
-    setText(inputText);
+    // const updatedText = [...text];
+    // updatedText[currentSectionIndex] = inputText;
+    // setText(updatedText);
+
+   setDescriptiveData((prev) => {
+  const updated = [...prev];
+
+  // If the index is undefined, initialize it
+  if (!updated[currentSectionIndex]) {
+    updated[currentSectionIndex] = {};
+  }
+
+  updated[currentSectionIndex] = {
+    ...updated[currentSectionIndex],
+    text: [inputText],
+  };
+
+  // console.warn("Updated descriptiveData at index", currentSectionIndex, updated[currentSectionIndex]);
+
+  return updated;
+});
+
   };
 
   const preventShortcuts = (e) => {
@@ -1558,6 +1697,7 @@ console.log(keywords)
 
   // Function to show the toast and move to the next section (or result if last section)
   const handleSectionCompletion = async () => {
+    handleDescriptiveTest();
     console.log("handleSectionCompletion called");
     setIsPaused(false);
 
@@ -1593,7 +1733,7 @@ console.log(keywords)
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
         await submitExam();
-        await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         navigate(`/liveresult/${id}/${user?._id}`);
       }
     }
@@ -1823,7 +1963,6 @@ console.log(keywords)
   //     );
   //   });
   // };
-
 
   return (
     <div className="mock-font " ref={commonDataRef}>
@@ -2078,17 +2217,17 @@ console.log(keywords)
                     selectedLanguage?.toLowerCase()
                   ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                     <div
-                        className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                      ${isFullscreen
-                            ? 'h-[80vh] md:h-[80vh]'
-                            : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                          }`
-                        }
-                            style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-                      >
+                      className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                      ${
+                        isFullscreen
+                          ? "h-[80vh] md:h-[80vh]"
+                          : "    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]"
+                      }`}
+                      style={{
+                        height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
+                        overflowY: "auto",
+                      }}
+                    >
                       <div
                         className="text-wrap"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
@@ -2103,19 +2242,22 @@ console.log(keywords)
                     </div>
                   )}
                   {/* Right side for Question */}
-              <div
-                    className={`  ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                  <div
+                    className={`  ${
+                      isFullscreen
+                        ? "h-[80vh] md:h-[80vh]"
+                        : "    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]"
+                    } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${
+                      examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                      }`}     style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+                    }`}
+                    style={{
+                      height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
+                      overflowY: "auto",
+                    }}
                   >
                     <div>
                       <div
@@ -2134,38 +2276,51 @@ console.log(keywords)
                         selectedLanguage?.toLowerCase()
                       ]?.[clickedQuestionIndex - startingIndex]
                         ?.question_type === "descriptive" ? (
-                       
-                   <div>
-      <textarea
-        value={text}
-        onChange={handleChange}
-        onKeyDown={preventShortcuts}
-        onCopy={(e) => e.preventDefault()}
-        onCut={(e) => e.preventDefault()}
-        onPaste={(e) => e.preventDefault()}
-        disabled={limitReached}
-        placeholder="Enter your text..."
-        rows="6"
-        cols="100"
-        style={{
-          width: "100%",
-          height:'350px',
-          padding: "10px",
-          fontSize: "1rem",
-          borderRadius: "8px",
-          border: "1px solid #ccc",
-          resize: "none",
-          backgroundColor: limitReached ? "#f5f5f5" : "#fff",
-        }}
-      />
-      <div className="fw-bold text-right" style={{ marginTop: "8px",  color: limitReached ? "red" : "#555" }}>
-        {limitReached
-          ? "Word limit reached"
-          : countType === "decrement"
-          ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
-          : `Words used: ${wordCounto} / ${words}`}
-      </div>
-    </div>
+                        <div>
+                          <textarea
+                            value={
+                              descriptiveData?.[currentSectionIndex]
+                                ?.text?.[0] || ""
+                            }
+                            onChange={handleChange}
+                            onKeyDown={preventShortcuts}
+                            onCopy={(e) => e.preventDefault()}
+                            onCut={(e) => e.preventDefault()}
+                            onPaste={(e) => e.preventDefault()}
+                            disabled={limitReached}
+                            placeholder="Enter your text..."
+                            rows="6"
+                            cols="100"
+                            style={{
+                              width: "100%",
+                              height: "350px",
+                              padding: "10px",
+                              fontSize: "1rem",
+                              borderRadius: "8px",
+                              border: "1px solid #ccc",
+                              resize: "none",
+                              backgroundColor: limitReached
+                                ? "#f5f5f5"
+                                : "#fff",
+                            }}
+                          />
+                          <div
+                            className="fw-bold text-right"
+                            style={{
+                              marginTop: "8px",
+                              color: limitReached ? "red" : "#555",
+                            }}
+                          >
+                            {limitReached
+                              ? "Word limit reached"
+                              : countType === "decrement"
+                              ? `Words remaining: ${Math.max(
+                                  words - wordCounto,
+                                  0
+                                )} / ${words}`
+                              : `Words used: ${wordCounto} / ${words}`}
+                          </div>
+                        </div>
                       ) : (
                         <>
                           {examData.section[currentSectionIndex]?.questions?.[
@@ -2178,32 +2333,39 @@ console.log(keywords)
                                 clickedQuestionIndex - startingIndex
                               ]?.options.map((option, index) => (
                                 <div key={index} className="p-1 rounded-lg m-2">
-                                   <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                  <input
-                                    type="radio"
-                                    id={`option-${index}`}
-                                    name="exam-option"
-                                    value={index}
-                                    checked={
-                                      selectedOptions[clickedQuestionIndex] ===
-                                      index
-                                    }
-                                    onChange={() => handleOptionChange(index)}
-                                      style={{
-                                         accentColor: "#3B82F6",
-                                         width: "1.2rem",
-                                         height: "1.2rem",
-                                         marginRight: "8px",
-                                         marginTop: "0px" // Remove vertical offset
-                                       }}
-                                  />
-                                  &nbsp;&nbsp;
-                                  <label
-                                    htmlFor={`option-${index}`}
-                                    dangerouslySetInnerHTML={{
-                                      __html: option || "No option available",
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      marginBottom: "10px",
                                     }}
-                                  />
+                                  >
+                                    <input
+                                      type="radio"
+                                      id={`option-${index}`}
+                                      name="exam-option"
+                                      value={index}
+                                      checked={
+                                        selectedOptions[
+                                          clickedQuestionIndex
+                                        ] === index
+                                      }
+                                      onChange={() => handleOptionChange(index)}
+                                      style={{
+                                        accentColor: "#3B82F6",
+                                        width: "1.2rem",
+                                        height: "1.2rem",
+                                        marginRight: "8px",
+                                        marginTop: "0px", // Remove vertical offset
+                                      }}
+                                    />
+                                    &nbsp;&nbsp;
+                                    <label
+                                      htmlFor={`option-${index}`}
+                                      dangerouslySetInnerHTML={{
+                                        __html: option || "No option available",
+                                      }}
+                                    />
                                   </div>
                                 </div>
                               ))}
@@ -2255,20 +2417,24 @@ console.log(keywords)
 
         {/* Sidebar */}
         {/* Sidebar */}
- <div
+        <div
           className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
-        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
- ${isFullscreen
-              ? 'h-[87vh] md:h-[87vh]'
-              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-            style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+        ${isMobileMenuOpen ? "translate-x-0  w-3/4 " : "translate-x-full "}
+        ${
+          closeSideBar
+            ? "md:translate-x-full md:w-0 border-0"
+            : "md:translate-x-0 md:w-1/4"
+        }
+ ${
+   isFullscreen
+     ? "h-[87vh] md:h-[87vh]"
+     : "h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]"
+ } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+          style={{
+            height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
+            overflowY: "auto",
+          }}
         >
- 
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
               <svg

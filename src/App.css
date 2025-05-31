@@ -384,11 +384,83 @@
 	vertical-align: bottom;
 }
 
-
+.hie{
+  background-color: green;
+  padding: 5px;
+}
 
 .blink {
   animation: blink-animation 2s infinite;
 }
+
+/* Gradient Tag Styles */
+.blog-tag {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  margin: 0.25rem;
+  border-radius: 9999px; /* Fully rounded */
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  text-align: center;
+  justify-self: center;
+  align-items: center;
+  align-self: center;
+}
+
+.blog-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient Color Variations */
+.tag-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
+}
+
+.tag-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.tag-warning {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.tag-danger {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.tag-info {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.tag-dark {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+}
+
+.tag-purple {
+  background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+}
+
+.tag-pink {
+  background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+}
+
+/* For dark mode */
+@media (prefers-color-scheme: dark) {
+  .blog-tag {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .blog-tag:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
 
 @keyframes blink-animation {
   0%, 100% {
