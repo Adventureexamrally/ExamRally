@@ -117,7 +117,7 @@ const handlePackageSelect = (pkg) => {
   return (
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white" >
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold text-gray-800">Trending Packages</h1>
+        <h1 className="text-2xl font-semibold text-green-800  font">Trending Packages</h1>
         <Link to='/All-Packages'  className="border-1 h-10 border-blue-500 text-blue-500 rounded-full px-3 md:px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600">
                     View More
                 </Link>
@@ -126,36 +126,36 @@ const handlePackageSelect = (pkg) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
         {trending.slice(0, 4).map((pkg, index) => (
   <div key={index} className="group">
-  <div className="min-h-[450px] max-h-[450px] bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto" 
-       style={{ 
-         scrollbarWidth: 'none',  /* Firefox */
-         msOverflowStyle: 'none',  /* IE/Edge */
-       }}>
+  <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto" 
+      >
     {/* Hide scrollbar for Chrome/Safari/Opera */}
-    <style jsx>{`
-      div::-webkit-scrollbar {
-        display: none;
-      }
-    `}</style>
+   
 
     {/* Header */}
     <div className="mb-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-2">{pkg.name}</h2>
+      <h2 className="text-xl font-bold text-gray-800 mb-2 text-center" >{pkg.name}</h2>
       <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
     </div>
     
     {/* Features List */}
-    <div className="flex-grow space-y-1 mb-2">
-      {pkg.feature.map((item, index) => (
-        <div key={index} className="flex items-start gap-3">
-          <div className="mt-1 text-green-500">
+  <div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{ 
+  scrollbarWidth: 'none',
+  msOverflowStyle: 'none',
+}}>  
+  <style jsx>{`
+    div::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
+  {pkg.feature.map((item, index) => (
+    <div key={index} className="flex items-start gap-3">
+      <div className="mt-1 text-green-500">
         <i className="bi bi-check-circle-fill"></i>
-
-          </div>
-          <p className="text-gray-700">{item}</p>
-        </div>
-      ))}
+      </div>
+      <p className="text-gray-700">{item}</p>
     </div>
+  ))}
+</div>
     
     {/* Pricing Section */}
     <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
