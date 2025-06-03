@@ -1207,14 +1207,15 @@ useEffect(() => {
       display: none;
     }
   `}</style>
-  {data.feature.map((item, index) => (
-    <div key={index} className="flex items-start gap-3">
-      <div className="mt-1 text-green-500">
-        <i className="bi bi-check-circle-fill"></i>
-      </div>
-      <p className="text-gray-700">{item}</p>
+ {data?.feature?.map((item, index) => (
+  <div key={index} className="flex items-start gap-3">
+    <div className="mt-1 text-green-500">
+      <i className="bi bi-check-circle-fill"></i>
     </div>
-  ))}
+    <p className="text-gray-700">{item}</p>
+  </div>
+))}
+
 </div>
                
                 {/* <img src={data.featurePhoto} alt="" /> */}
