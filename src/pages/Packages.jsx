@@ -12,6 +12,7 @@ const Packages = () => {
   const [trending, setTrending] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
 
   useEffect(() => {
     Api.get('group-packages/get-all-active')
@@ -111,6 +112,8 @@ const handlePackageSelect = (pkg) => {
   }
 };
 
+console.log("data show",user)
+
   return (
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
       <div className="flex justify-between items-center mb-4">
@@ -118,7 +121,7 @@ const handlePackageSelect = (pkg) => {
       </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
-        {trending.slice(0, 4).map((pkg, index) => (
+        {trending.map((pkg, index) => (
   <div key={index} className="group">
   <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto" 
       >
@@ -182,12 +185,7 @@ const handlePackageSelect = (pkg) => {
                     />
                   )}
       </div>
-      {showModal && selectedPackage && (
-            <PackageCoupon 
-              pkg={selectedPackage} 
-              setShowModal={setShowModal}
-            />
-          )}
+    
     </div>
   );
 };

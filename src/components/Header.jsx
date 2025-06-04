@@ -158,7 +158,9 @@ const Header = () => {
           </Link>
   
           <SignedOut>
-            <SignInButton />
+          <SignInButton className="bg-[#000080]  text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+  Sign In
+</SignInButton>
           </SignedOut>
           <SignedIn>
             <CustomUserMenu />

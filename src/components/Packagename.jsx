@@ -60,42 +60,114 @@ const Packagename = () => {
   const { user } = useContext(UserContext);
   // console.log(user)
 
-  useEffect(() => {
-    // Fetch package content
-    Api.get(`packages/package-content/${id}`).then((res) => {
-      console.log("Package Content:", res.data);
+    const fetchPackageContent = async () => {
+    try {
+      const res = await Api.get(`packages/package-content/${id}`);
       const packageData = res.data.data[0];
+
+      console.log("Package Content:", res.data);
+      console.log("wednesday", packageData);
+
       setData(packageData);
       setFaqs(packageData.faqs);
-      console.log("wednesday", packageData);
-      // Only fetch results if user ID is present
-      if (user?._id) {
-        packageData?.exams?.forEach((test) => {
-          Api.get(`/results/${user._id}/${test._id}`)
-            .then((res) => {
-              if (
-                res.data?.status === "completed" ||
-                res.data?.status === "paused"
-              ) {
+
+      // If user exists, fetch results
+      if (user?._id && packageData?.exams?.length > 0) {
+        for (const test of packageData.exams) {
+          try {
+            const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
+            const result = resultRes.data;
+
+            if (result?.status === "completed" || result?.status === "paused") {
+              setResultData((prev) => ({
+                ...prev,
+                [test._id]: {
+                  ...result,
+                  lastQuestionIndex: result.lastVisitedQuestionIndex,
+                  selectedOptions: result.selectedOptions,
+                },
+              }));
+            }
+          } catch (err) {
+            console.error("Error fetching result for test:", test._id, err);
+          }
+        }
+      }
+
+      if (typeof run === "function") {
+        run();
+      }
+
+    } catch (err) {
+      console.error("Error fetching package content:", err);
+    }
+  };
+
+  useEffect(() => {
+
+
+  if (id && user?._id) {
+    fetchPackageContent();
+  }
+
+}, [id, user?._id]); // re-run on route change or new user
+useEffect(() => {
+  console.log("ResultData updated:", resultData);
+  // You can add other logic here to respond to resultData changes
+}, [JSON.stringify(resultData)]);
+
+useEffect(() => {
+  const handleVisibilityChange = async () => {
+    if (document.visibilityState === "visible") {
+      console.log("User returned to tab");
+      if (user?._id && id) {
+        try {
+          let shouldReload = false;
+
+          const res = await Api.get(`packages/package-content/${id}`);
+          const freshPackageData = res.data.data[0];
+
+          console.log("Package Content:", res.data);
+          console.log("wednesday", freshPackageData);
+
+          setData(freshPackageData);
+          setFaqs(freshPackageData.faqs);
+
+          if (freshPackageData?.exams?.length > 0) {
+            for (const test of freshPackageData.exams) {
+              const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
+              const result = resultRes.data;
+
+              if (result?.status === "completed" || result?.status === "paused") {
+                shouldReload = true;
                 setResultData((prev) => ({
                   ...prev,
                   [test._id]: {
-                    ...res.data,
-                    lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-                    selectedOptions: res.data.selectedOptions,
+                    ...result,
+                    lastQuestionIndex: result.lastVisitedQuestionIndex,
+                    selectedOptions: result.selectedOptions,
                   },
                 }));
               }
-            })
-            .catch((err) => {
-              console.error("Error fetching result:", err);
-            });
-        });
-      }
-    });
+            }
+          }
 
-    run();
-  }, [id, user?._id]);
+          if (shouldReload) {
+            window.location.reload();
+          }
+        } catch (err) {
+          console.error("Error fetching result for tests:", err);
+        }
+      }
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  };
+}, [user?._id, id]);
+
 
   // Fetch test result
   // Api.get(`/results/65a12345b6c78d901e23f456/67d1af373fb78ae2c1ff2d77`)
@@ -162,19 +234,6 @@ const Packagename = () => {
   // Store FAQ data
   const [activeIndex, setActiveIndex] = useState(null); // Track active index for opening and closing
 
-  // useEffect(() => {
-  //   // Fetching data based on the id from the URL params
-  //   Api.get(`packages/package-content/${id}`)
-  //     .then((res) => {
-  //       console.log(res.data);
-  //       // Setting the FAQ data from the response
-  //       setFaqs(res.data?.package_content?.[0]?.faqs || []);
-  //       console.log(res.data?.package_content?.[0]?.faqs); // Extracting and logging the FAQs
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching data:', error);
-  //     });
-  // }, [id]);  // Effect will run whenever 'id' changes
 
   const handleAccordionToggle = (index) => {
     // Toggle the active index (open/close the panel)
@@ -308,6 +367,8 @@ const Packagename = () => {
   const isPaidTest = (test) => {
     return test?.result_type?.toLowerCase() === "paid";
   };
+
+
 
   return (
     <>
@@ -1125,33 +1186,51 @@ const Packagename = () => {
             {/* advertiswment part */}
             <div className="w-fill md:w-1/5 m-1">
               <div>
-                <div className="relative flex flex-col p-4 w-full bg-cover rounded-xl shadow-md border-2 ">
-                  <div className="absolute inset-0 z-[-10] border-2 rounded-xl"></div>
-                  <div className="flex justify-center">
-                    <span className="text-xl font-semibold font p-2">
-                      Features 
-                    </span>
-                  </div>
-                  {/* Recommended Upload Size: 400 x 600 px (portrait ratio, high enough resolution for most use cases) 
-    Aspect Ratio: 2:3 (portrait) */}
-                  <img
-                    src={data.featurePhoto}
-                    alt="Ad"
-                    style={{
-                      width: "100%",
-                      maxWidth: "400px",
-                      aspectRatio: "2 / 3",
-                      objectFit: "contain",
-                    }}
-                  />
+              
 
-                  {/* <img src={data.featurePhoto} alt="" /> */}
-                  <div className="text-center mt-3">
-                    <del className=" rounded px-2 py-1 mb-2 drop-shadow">
-                      Rs.{data.amount}
-                    </del>
-                       <button
-  className={`px-3 py-1 font-bold rounded-full ${
+    <div className="relative flex flex-col w-full bg-cover rounded-xl shadow-md border-2">
+                <div className="absolute inset-0 z-[-10] border-2 rounded-xl "></div>
+  <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto">
+
+               <div className="mb-4">
+      <h2 className="text-xl font-bold text-gray-800 mb-2 text-center" >Features</h2>
+      <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
+    </div>
+    
+              
+<div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{ 
+  scrollbarWidth: 'none',
+  msOverflowStyle: 'none',
+}}>  
+  <style jsx>{`
+    div::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
+ {data?.feature?.map((item, index) => (
+  <div key={index} className="flex items-start gap-3">
+    <div className="mt-1 text-green-500">
+      <i className="bi bi-check-circle-fill"></i>
+    </div>
+    <p className="text-gray-700">{item}</p>
+  </div>
+))}
+
+</div>
+               
+                {/* <img src={data.featurePhoto} alt="" /> */}
+                      <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
+      <div className="mb-2">
+        <del className="text-gray-500 font-medium">       Rs.{data.amount}</del>
+        <p className="ml-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+         You Save Money: Rs. {data.amount - data.discountedAmount}
+        </p>
+      </div>
+      
+      
+      <button
+        
+         className={`px-3 py-1 font-bold rounded-full ${
     isEnrolled 
       ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
       : "bg-green-500 text-gray-50 hover:bg-green-400"
@@ -1167,18 +1246,21 @@ const Packagename = () => {
     }
   }}
   disabled={isEnrolled} // disables button if enrolled
->
-  {isEnrolled ? "Purchased" : `Rs.${ data.discountedAmount}`}
-</button>
-
-                    <p className="font-bold">
-                      You Save Money: Rs. {data.amount - data.discountedAmount}
-                    </p>
-                  </div>
+      >
+         {isEnrolled ? "Purchased" : `Rs.${ data.discountedAmount}`}
+      </button>
+      
+      <p className="text-xs text-gray-500 mt-2">
+        Limited time offer
+      </p>
+    </div>
+                  {showmodel && (
+                    <Coupon data={data} setshowmodel={setshowmodel} />
+                  )}
                 </div>
-                {showmodel && (
-                  <Coupon data={data} setshowmodel={setshowmodel} />
-                )}
+              </div>
+
+                
                 {ad.length > 0 &&
                   ad.map((item, index) => (
                     <div

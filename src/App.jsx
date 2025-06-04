@@ -173,10 +173,10 @@ function MainApp() {
         <Route path="/blogdetails/:link" element={<Subblog />} />
 
         <Route path="/livetest/:link" element={<DetailedCategorie />} />
-        {/* <Route path="/pdf-course" element={<PdfCourseHome />} />
+        <Route path="/pdf-course" element={<PdfCourseHome />} />
         <Route path="/pdf-course/:level" element={<PdfCourse />} />
 
-        <Route path="/video-course" element={<VideoCourse />} /> */}
+        <Route path="/video-course" element={<VideoCourse />} />
         <Route path="/pdf" element={<ProtectedRoute />}>
           <Route path="instruction/:id/:userId" element={<PdfInstruction />} />
           <Route path="mocktest/:id/:userId" element={<PdfTest />} />

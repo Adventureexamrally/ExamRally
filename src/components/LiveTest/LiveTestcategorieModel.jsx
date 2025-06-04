@@ -4,7 +4,7 @@ import { ImCheckmark2 } from 'react-icons/im';
 import { IoMdLock } from 'react-icons/io';
 import { MdOutlineAccessTime } from 'react-icons/md';
 import { FaTachometerAlt } from "react-icons/fa";  // Import the correct icon
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { UserContext } from '../../context/UserProvider';
 import Api from '../../service/Api';
@@ -38,10 +38,48 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
   const navigate = useNavigate();
   console.log(user)
   const { isSignedIn } = useUser();
+
+    const { id } = useParams();
+
   useEffect(() => {
     if (user?._id) {
     // Fetch test result for each test
     data?.exams?.forEach((test) => {
+      Api.get(`/results/${user?._id}/${test._id}`)
+        .then((res) => {
+          if (res.data?.status === "completed"
+            || res.data?.status === "paused"
+          ) {
+            console.warn("reskuma",res.data.status)
+            setResultData((prev) => ({
+              ...prev,
+              [test._id]: {
+                ...res.data,
+                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                selectedOptions: res.data.selectedOptions
+              }
+            }));
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching result:", err);
+        });
+    });
+}
+  }, [ data?.exams,user?._id]);
+
+  useEffect(() => {
+    console.log("ResultData updated:", resultData);
+    // You can add other logic here to respond to resultData changes
+  }, [JSON.stringify(resultData)]);
+
+  useEffect(() => {
+  const handleVisibilityChange = async () => {
+    if (document.visibilityState === "visible") {
+      console.log("User returned to tab");
+      if (user?._id) {
+     try{
+        data?.exams?.forEach((test) => {
       Api.get(`/results/${user?._id}/${test._id}`)
         .then((res) => {
           if (res.data?.status === "completed"
@@ -61,8 +99,53 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
           console.error("Error fetching result:", err);
         });
     });
-}
-  }, [ data?.exams,user?._id]);
+    
+            // window.location.reload();
+          
+     }
+        catch (err) {
+          console.error("Error fetching result for tests:", err);
+        }
+      }
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  };
+}, [user?._id,resultData]);
+
+
+
+//  useEffect(() => {
+//   const handleVisibilityChange = async () => {
+//     if (document.visibilityState !== "visible") return;
+
+//     console.log("User returned to tab");
+
+// const shouldReload=true;
+//     try {
+    
+//       if (shouldReload) {
+//         // Give state update a moment before reloading
+//         setTimeout(() => {
+//           window.location.reload();
+//         }, 300);
+//       }
+//     } catch (err) {
+//       console.error("Error in visibility handler:", err);
+//     }
+//   };
+
+//   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+//   return () => {
+//     document.removeEventListener("visibilitychange", handleVisibilityChange);
+//   };
+// }, [user?._id, id, data]);
+
+
   console.log(resultData);
 
    const [isEnrolled, setIsEnrolled] = useState(false);
@@ -89,6 +172,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
     } else if (status) {
       console.log("bye");
     }
+
     
     const isPaidTest = (test) => {
         return test?.result_type?.toLowerCase() === "paid";
