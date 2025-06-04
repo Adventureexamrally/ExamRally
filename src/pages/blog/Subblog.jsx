@@ -20,16 +20,27 @@ const Subblog = () => {
       const response = await Api.get(`blogs/get/${link}`);
       console.log(response.data);
       setBlogDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching blog details:", error);
+    }
 
+    try {
       const ad = await Api.get(`blog-Ad/getbypage/${link}`);
       setBlogAd(ad.data);
+    } catch (error) {
+      console.warn("No blog ad found or error fetching ad:", error);
+      setBlogAd(null); // or leave it unset
+    }
 
+    try {
       const response3 = await Api.get(`/get-Specific-page/${link}`);
       setSeo(response3.data);
+      console.log("seo", response3.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching SEO data:", error);
     }
   }
+
   return (
     <>
       <Helmet>
@@ -71,14 +82,14 @@ const Subblog = () => {
                   </span>
                 </div>
               </div>
-            
+
 
               <p
                 className="text-md font-semibold text-gray-800 m-2"
                 dangerouslySetInnerHTML={{ __html: blogDetails.description }}
               />
               <div className="m-3">
-                {blogDetails.subtitles && blogDetails.subtitles.length > 0 ? (
+                {blogDetails.subtitles && blogDetails.subtitles?.length > 0 ? (
                   blogDetails.subtitles.map((item, index) => (
                     <div key={item._id || index} className="mb-8">
                       {item.subtitle && (
@@ -175,7 +186,7 @@ const Subblog = () => {
               </div>
             </div>
 
-            {blogAd.length > 0 && (
+            {blogAd?.length > 0 && (
               <div className="w-1/5 hidden md:block">
                 <div>
                   {blogAd.map((item) => (
