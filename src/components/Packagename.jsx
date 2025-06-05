@@ -264,22 +264,46 @@ useEffect(() => {
   }, []);
   // console.log(data);
   const [isEnrolled, setIsEnrolled] = useState(false);
+        const [expiredate, setExpirydate] = useState();
+  
   const status = true;
 
   useEffect(() => {
-    const enrolled = user?.enrolledCourses?.some((course) => {
-      // Ensure expiryDate is a valid Date object
-      const expireDate = new Date(course?.expiryDate);
-
-      // Check if expiryDate is valid and in the future
-      const isNotExpired = !isNaN(expireDate) && expireDate > new Date();
-
-      // Check if user is enrolled in the course and if it's not expired
-      return course?.courseId?.includes(data?._id) && isNotExpired;
-    });
-
-    setIsEnrolled(enrolled);
-  }, [user, data, isEnrolled]);
+     const enrolled = user?.enrolledCourses?.some((course) => {
+       // Parse expiry and purchase dates
+       const expireDate = new Date(course?.expiryDate);
+       const purchaseDate = new Date(course?.purchaseDate);
+ 
+       // Format dates (optional, for display)
+       const formatDate = (date) => {
+         const day = String(date.getDate()).padStart(2, "0");
+         const month = String(date.getMonth() + 1).padStart(2, "0");
+         const year = date.getFullYear();
+         return `${day}-${month}-${year}`;
+       };
+ 
+       const formattedExpiry = formatDate(expireDate);
+       const formattedPurchase = formatDate(purchaseDate);
+ 
+       // Calculate remaining days
+       const today = new Date();
+       const timeDiff = expireDate.getTime() - today.getTime();
+       const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+ 
+       if (
+         !isNaN(daysLeft) &&
+         daysLeft >= 0 &&
+         course?.courseId?.includes(data?._id)
+       ) {
+         setExpirydate(daysLeft); // 👈 Set number of days left
+         return true;
+       }
+ 
+       return false;
+     });
+ 
+     setIsEnrolled(enrolled);
+   }, [user, data]);
 
   console.log("check", user?.enrolledCourses);
 
@@ -744,12 +768,12 @@ useEffect(() => {
 
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                {(!isEnrolled && isPaidTest(test)) ||
-                                (!isEnrolled &&
-                                  new Date(test.live_date) > new Date()) ? (
-                                  // 🔒 Locked: Not enrolled + (paid or not live)
+                                  {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+                                  // 🔒 Locked if:
+                                  // - Not enrolled AND (test is paid OR not live), OR
+                                  // - Enrolled BUT course is expired
                                   <button
-                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
+                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
                                     disabled
                                   >
                                     <div className="flex items-center justify-center font-semibold gap-1">
@@ -757,7 +781,11 @@ useEffect(() => {
                                       Locked
                                     </div>
                                   </button>
-                                ) : isEnrolled &&
+                                ) 
+                                
+                                
+                                
+                                : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
@@ -889,20 +917,20 @@ useEffect(() => {
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                {(!isEnrolled && isPaidTest(test)) ||
-                                (!isEnrolled &&
-                                  new Date(test.live_date) > new Date()) ? (
-                                  // 🔒 Locked: Not enrolled + (paid or not live)
-                                  <button
-                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
-                                    disabled
-                                  >
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Locked
-                                    </div>
-                                  </button>
-                                ) : isEnrolled &&
+                                       {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+  // 🔒 Locked if:
+  // - Not enrolled AND (test is paid OR not live), OR
+  // - Enrolled BUT course is expired
+  <button
+    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
+    disabled
+  >
+    <div className="flex items-center justify-center font-semibold gap-1">
+      <IoMdLock />
+      Locked
+    </div>
+  </button>
+) : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
@@ -1036,20 +1064,20 @@ useEffect(() => {
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Check if the current date is greater than or equal to live_date */}
 
-                            {(!isEnrolled && isPaidTest(test)) ||
-                            (!isEnrolled &&
-                              new Date(test.live_date) > new Date()) ? (
-                              // 🔒 Locked: Not enrolled + (paid or not live)
-                              <button
-                                className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
-                                disabled
-                              >
-                                <div className="flex items-center justify-center font-semibold gap-1">
-                                  <IoMdLock />
-                                  Locked
-                                </div>
-                              </button>
-                            ) : isEnrolled &&
+                                   {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+  // 🔒 Locked if:
+  // - Not enrolled AND (test is paid OR not live), OR
+  // - Enrolled BUT course is expired
+  <button
+    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
+    disabled
+  >
+    <div className="flex items-center justify-center font-semibold gap-1">
+      <IoMdLock />
+      Locked
+    </div>
+  </button>
+) : isEnrolled &&
                               new Date(test.live_date) > new Date() ? (
                               // 🚧 Coming Soon: Enrolled, but test not yet live
                               <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
@@ -1245,20 +1273,34 @@ useEffect(() => {
       setshowmodel(true);
     }
   }}
-  disabled={isEnrolled} // disables button if enrolled
+     
       >
-         {isEnrolled ? "Purchased" : `Rs.${ data.discountedAmount}`}
-      </button>
       
-      <p className="text-xs text-gray-500 mt-2">
-        Limited time offer
-      </p>
+       {expiredate
+                        ? isEnrolled
+                          ? "Purchased"
+                          : `Rs.${data.discountedAmount}`
+                        : `Rs.${data.discountedAmount}`}
+                    </button>
+
+                    {expiredate ? (
+                      <p className="text-md text-red-500 mt-2 font blink">
+                        <i className="bi bi-clock-history"></i> {expiredate} -
+                        Days Left
+                      </p>
+                    ) : (
+                      <p className="text-md text-gray-500 mt-2 font">
+                        <i className="bi bi-clock-history"></i> Limited Time
+                        offer
+                      </p>
+                    )}
     </div>
+      </div>
+              </div>
                   {showmodel && (
                     <Coupon data={data} setshowmodel={setshowmodel} />
                   )}
-                </div>
-              </div>
+              
 
                 
                 {ad.length > 0 &&

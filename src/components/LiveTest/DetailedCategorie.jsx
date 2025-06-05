@@ -36,6 +36,7 @@ const DetailedCategorie = () => {
   const [faqs, setFaqs] = useState([]);
   const [showmodel, setshowmodel] = useState(false);
   const [trending, setTrending] = useState({});
+  const [expiredate, setExpirydate] = useState();
 
   console.log(link);
 
@@ -184,14 +185,36 @@ const DetailedCategorie = () => {
   const status = true;
   useEffect(() => {
     const enrolled = user?.enrolledCourses?.some((course) => {
-      // Ensure expiryDate is a valid Date object
+      // Parse expiry and purchase dates
       const expireDate = new Date(course?.expiryDate);
+      const purchaseDate = new Date(course?.purchaseDate);
 
-      // Check if expiryDate is valid and in the future
-      const isNotExpired = !isNaN(expireDate) && expireDate > new Date();
+      // Format dates (optional, for display)
+      const formatDate = (date) => {
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      };
 
-      // Check if user is enrolled in the course and if it's not expired
-      return course?.courseId?.includes(data?._id) && isNotExpired;
+      const formattedExpiry = formatDate(expireDate);
+      const formattedPurchase = formatDate(purchaseDate);
+
+      // Calculate remaining days
+      const today = new Date();
+      const timeDiff = expireDate.getTime() - today.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+
+      if (
+        !isNaN(daysLeft) &&
+        daysLeft >= 0 &&
+        course?.courseId?.includes(data?._id)
+      ) {
+        setExpirydate(daysLeft); // 👈 Set number of days left
+        return true;
+      }
+
+      return false;
     });
 
     setIsEnrolled(enrolled);
@@ -483,74 +506,90 @@ const DetailedCategorie = () => {
             <div className="md:m-3 w-full md:w-1/5 ">
               <div className="relative flex flex-col w-full bg-cover rounded-xl shadow-md border-2">
                 <div className="absolute inset-0 z-[-10] border-2 rounded-xl "></div>
-  <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto">
+                <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto">
+                  <div className="mb-4">
+                    <h2 className="text-xl font-bold text-gray-800 mb-2 text-center">
+                      Features
+                    </h2>
+                    <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
+                  </div>
 
-               <div className="mb-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-2 text-center" >Features</h2>
-      <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
-    </div>
-    
-              
-<div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{ 
-  scrollbarWidth: 'none',
-  msOverflowStyle: 'none',
-}}>  
-  <style jsx>{`
-    div::-webkit-scrollbar {
-      display: none;
-    }
-  `}</style>
-  {data.feature.map((item, index) => (
-    <div key={index} className="flex items-start gap-3">
-      <div className="mt-1 text-green-500">
-        <i className="bi bi-check-circle-fill"></i>
-      </div>
-      <p className="text-gray-700">{item}</p>
-    </div>
-  ))}
-</div>
-               
-                {/* <img src={data.featurePhoto} alt="" /> */}
-                      <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
-      <div className="mb-2">
-        <del className="text-gray-500 font-medium">  Rs.{amount}</del>
-        <p className="ml-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
-          You Save Money: Rs. {amount - discountedAmount}
-        </p>
-      </div>
-      
-      
-      <button
-        
-         className={`px-3 py-1 font-bold rounded-full ${
-    isEnrolled 
-      ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
-      : "bg-green-500 text-gray-50 hover:bg-green-400"
-  }`}
-  onClick={() => {
-    if (!isSignedIn) {
-      navigate('/sign-in');
-    } else if (isEnrolled) {
-      // Do nothing or show a message if needed, since already purchased
-      console.log("Already enrolled");
-    } else {
-      setshowmodel(true);
-    }
-  }}
-  disabled={isEnrolled} // disables button if enrolled
-      >
-          {isEnrolled ? "Purchased" : `Rs.${discountedAmount}`}
-      </button>
-      
-      <p className="text-xs text-gray-500 mt-2">
-        Limited time offer
-      </p>
-    </div>
+                  <div
+                    className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]"
+                    style={{
+                      scrollbarWidth: "none",
+                      msOverflowStyle: "none",
+                    }}
+                  >
+                    <style jsx>{`
+                      div::-webkit-scrollbar {
+                        display: none;
+                      }
+                    `}</style>
+                    {data.feature.map((item, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="mt-1 text-green-500">
+                          <i className="bi bi-check-circle-fill"></i>
+                        </div>
+                        <p className="text-gray-700">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* <img src={data.featurePhoto} alt="" /> */}
+                  <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
+                    <div className="mb-2">
+                      <del className="text-gray-500 font-medium">
+                        {" "}
+                        Rs.{amount}
+                      </del>
+                      <p className="ml-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+                        You Save Money: Rs. {amount - discountedAmount}
+                      </p>
+                    </div>
+
+                    <button
+                      className={`px-3 py-1 font-bold rounded-full ${
+                        isEnrolled
+                          ? "bg-[#000080] text-white cursor-not-allowed"
+                          : "bg-green-500 text-gray-50 hover:bg-green-400"
+                      }`}
+                      onClick={() => {
+                        if (!isSignedIn) {
+                          navigate("/sign-in");
+                        } else if (isEnrolled) {
+                          console.log("Already enrolled");
+                        } else {
+                          setshowmodel(true);
+                        }
+                      }}
+                      
+                    >
+                      {expiredate
+                        ? isEnrolled
+                          ? "Purchased"
+                          : `Rs.${discountedAmount}`
+                        : `Rs.${discountedAmount}`}
+                    </button>
+
+                    {expiredate ? (
+                      <p className="text-md text-red-500 mt-2 font blink">
+                        <i className="bi bi-clock-history"></i> {expiredate} -
+                        Days Left
+                      </p>
+                    ) : (
+                      <p className="text-md text-gray-500 mt-2 font">
+                        <i className="bi bi-clock-history"></i> Limited Time
+                        offer
+                      </p>
+                    )}
+                  </div>
+                    </div>
+              </div>
                   {showmodel && (
                     <Coupon data={data} setshowmodel={setshowmodel} />
                   )}
-                </div>
-              </div>
+              
 
               {ad.length > 0 && (
                 <div>

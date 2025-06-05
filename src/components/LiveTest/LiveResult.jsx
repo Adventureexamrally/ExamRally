@@ -42,6 +42,7 @@ import {
 } from "react-icons/md";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { GiRank3 } from "react-icons/gi";
+import ResultAnimation from "../../animationeffect/ResultAnimation";
 
 const LiveResult = () => {
   const [resultData, setResultData] = useState(null);
@@ -1035,6 +1036,9 @@ const LiveResult = () => {
               </ResponsiveContainer>
             </div>
           </div>
+           <div>
+                  <ResultAnimation/>
+                </div>
         </div>
       )}
     </>

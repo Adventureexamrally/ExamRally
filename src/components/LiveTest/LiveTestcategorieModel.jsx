@@ -14,6 +14,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
     console.log(data);
 
     const [showDifficulty, setShowDifficulty] = useState({});
+      const [expiredate, setExpirydate] = useState();
 
     const handleShowLevelClick = (testId) => {
         setShowDifficulty((prevState) => ({
@@ -32,7 +33,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
     };
  const [resultData, setResultData] = useState(null);
  
- 
+ console.warn("sf",expiredate)
    const { user } = useContext(UserContext);
 
   const navigate = useNavigate();
@@ -150,21 +151,43 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
 
    const [isEnrolled, setIsEnrolled] = useState(false);
     const status = true;
-  useEffect(() => {
-    const enrolled = user?.enrolledCourses?.some(course => {
-      // Ensure expiryDate is a valid Date object
+ useEffect(() => {
+    const enrolled = user?.enrolledCourses?.some((course) => {
+      // Parse expiry and purchase dates
       const expireDate = new Date(course?.expiryDate);
-  
-      // Check if expiryDate is valid and in the future
-      const isNotExpired = !isNaN(expireDate) && expireDate > new Date();
-  
-      // Check if user is enrolled in the course and if it's not expired
-      return course?.courseId?.includes(data?._id) && isNotExpired;
+      const purchaseDate = new Date(course?.purchaseDate);
+
+      // Format dates (optional, for display)
+      const formatDate = (date) => {
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      };
+
+      const formattedExpiry = formatDate(expireDate);
+      const formattedPurchase = formatDate(purchaseDate);
+
+      // Calculate remaining days
+      const today = new Date();
+      const timeDiff = expireDate.getTime() - today.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+
+      if (
+        !isNaN(daysLeft) &&
+        daysLeft >= 0 &&
+        course?.courseId?.includes(data?._id)
+      ) {
+        setExpirydate(daysLeft); // 👈 Set number of days left
+        return true;
+      }
+
+      return false;
     });
-  
+
     setIsEnrolled(enrolled);
   }, [user, data]);
-    
+  
     console.log("check", user?.enrolledCourses);
     
     if (isEnrolled) {
@@ -261,18 +284,20 @@ const LiveTestcategorieModel = ({ data, topic, activeSection}) => {
                                                                 </div>
                                                             </div>
                                                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                                                                                                    {!isEnrolled && isPaidTest(test) || !isEnrolled && new Date(test.live_date) > new Date() ? (
-                                                          // 🔒 Locked if user not enrolled AND (test is paid OR not live)
-                                                          <button
-                                                            className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600  cursor-not-allowed"
-                                                            disabled
-                                                          >
-                                                            <div className="flex items-center justify-center font-semibold gap-1">
-                                                              <IoMdLock />
-                                                              Locked
-                                                            </div>
-                                                          </button>
-                                                        ) : isEnrolled && new Date(test.live_date) > new Date() ? (
+                                                         {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+  // 🔒 Locked if:
+  // - Not enrolled AND (test is paid OR not live), OR
+  // - Enrolled BUT course is expired
+  <button
+    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
+    disabled
+  >
+    <div className="flex items-center justify-center font-semibold gap-1">
+      <IoMdLock />
+      Locked
+    </div>
+  </button>
+)  : isEnrolled && new Date(test.live_date) > new Date() ? (
                                                           // 🚧 Coming Soon if enrolled but test not live yet
                                                           <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
                                                             Coming Soon
