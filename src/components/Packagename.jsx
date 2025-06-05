@@ -104,7 +104,7 @@ const Packagename = () => {
   };
 
   useEffect(() => {
-
+fetchPackageContent()
 
   if (id && user?._id) {
     fetchPackageContent();
@@ -116,57 +116,57 @@ useEffect(() => {
   // You can add other logic here to respond to resultData changes
 }, [JSON.stringify(resultData)]);
 
-useEffect(() => {
-  const handleVisibilityChange = async () => {
-    if (document.visibilityState === "visible") {
-      console.log("User returned to tab");
-      if (user?._id && id) {
-        try {
-          let shouldReload = false;
+// useEffect(() => {
+//   const handleVisibilityChange = async () => {
+//     if (document.visibilityState === "visible") {
+//       console.log("User returned to tab");
+//       if (user?._id && id) {
+//         try {
+//           let shouldReload = false;
 
-          const res = await Api.get(`packages/package-content/${id}`);
-          const freshPackageData = res.data.data[0];
+//           const res = await Api.get(`packages/package-content/${id}`);
+//           const freshPackageData = res.data.data[0];
 
-          console.log("Package Content:", res.data);
-          console.log("wednesday", freshPackageData);
+//           console.log("Package Content:", res.data);
+//           console.log("wednesday", freshPackageData);
 
-          setData(freshPackageData);
-          setFaqs(freshPackageData.faqs);
+//           setData(freshPackageData);
+//           setFaqs(freshPackageData.faqs);
 
-          if (freshPackageData?.exams?.length > 0) {
-            for (const test of freshPackageData.exams) {
-              const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
-              const result = resultRes.data;
+//           if (freshPackageData?.exams?.length > 0) {
+//             for (const test of freshPackageData.exams) {
+//               const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
+//               const result = resultRes.data;
 
-              if (result?.status === "completed" || result?.status === "paused") {
-                shouldReload = true;
-                setResultData((prev) => ({
-                  ...prev,
-                  [test._id]: {
-                    ...result,
-                    lastQuestionIndex: result.lastVisitedQuestionIndex,
-                    selectedOptions: result.selectedOptions,
-                  },
-                }));
-              }
-            }
-          }
+//               if (result?.status === "completed" || result?.status === "paused") {
+//                 shouldReload = true;
+//                 setResultData((prev) => ({
+//                   ...prev,
+//                   [test._id]: {
+//                     ...result,
+//                     lastQuestionIndex: result.lastVisitedQuestionIndex,
+//                     selectedOptions: result.selectedOptions,
+//                   },
+//                 }));
+//               }
+//             }
+//           }
 
-          if (shouldReload) {
-            window.location.reload();
-          }
-        } catch (err) {
-          console.error("Error fetching result for tests:", err);
-        }
-      }
-    }
-  };
+//           if (shouldReload) {
+//             window.location.reload();
+//           }
+//         } catch (err) {
+//           console.error("Error fetching result for tests:", err);
+//         }
+//       }
+//     }
+//   };
 
-  document.addEventListener("visibilitychange", handleVisibilityChange);
-  return () => {
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
-  };
-}, [user?._id, id]);
+//   document.addEventListener("visibilitychange", handleVisibilityChange);
+//   return () => {
+//     document.removeEventListener("visibilitychange", handleVisibilityChange);
+//   };
+// }, [user?._id, id]);
 
 
   // Fetch test result
