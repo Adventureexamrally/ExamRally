@@ -90,7 +90,7 @@ useEffect(() => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
-        {packagesWithEnrollment.map((pkg, index) => (
+        {packagesWithEnrollment.slice(0,4).map((pkg, index) => (
           <div key={index} className="group">
             <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto">
               <div className="mb-4">
