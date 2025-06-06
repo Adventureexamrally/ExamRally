@@ -128,6 +128,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             paymentId: response.razorpay_payment_id,
             orderId: response.razorpay_order_id,
             signature: response.razorpay_signature,
+            coupon: discountPercent > 0 ? couponCode : null,
             amount: finalPrice,
             expiryDays: pkg.duration, // ✅ Send expiryDays from client
           });
