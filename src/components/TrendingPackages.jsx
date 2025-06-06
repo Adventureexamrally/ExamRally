@@ -124,6 +124,7 @@ useEffect(() => {
 <button
   className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 font-bold hover:from-green-600 hover:to-green-700 rounded-lg shadow-md transition-all duration-300"
   onClick={() => handlePackageSelect(pkg)}
+  disabled={pkg.enrolled && !pkg.expired}
   // allow repurchase if expired
 >
   {pkg.enrolled && !pkg.expired
