@@ -42,11 +42,13 @@ const Banner = () => {
         ) : slides.length === 1 ? (
           <div className="relative">
             <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-md shadow-lg">
+              <a href={slides[0].link}>
               <img
                 src={slides[0].photo}
                 alt="Slide 1"
                 className="w-full h-full"
               />
+              </a>
             </div>
           </div>
         ) : (
@@ -54,11 +56,13 @@ const Banner = () => {
             {slides.map((slide, index) => (
               <div key={index} className="relative">
                 <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-md shadow-lg">
+                  <a href={slide.link}>
                   <img
                     src={slide.photo}
                     alt={`Slide ${index + 1}`}
                     className="w-full h-full"
                   />
+                  </a>
                 </div>
               </div>
             ))}
