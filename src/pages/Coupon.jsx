@@ -90,6 +90,7 @@ const Coupon = ({ data, setshowmodel }) => {
         userId: user?._id,
         courseId: data?._id,
         courseName: data?.name || data?.Title || data?.categorys || "Course Name",
+        coupon: discountPercent > 0 ? couponCode : null,
         email: user?.email,
         phoneNumber: user?.phoneNumber,
       });

@@ -99,6 +99,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
         courseName: pkg?.name ||pkg.subscriptionType || "Course Name",
         email: user?.email,
         phoneNumber: user?.phoneNumber,
+         coupon: discountPercent > 0 ? couponCode : null,
         notes: {
           package_id: pkg._id,
           package_name: pkg.name || pkg.subscriptionType,

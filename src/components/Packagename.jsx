@@ -789,7 +789,13 @@ useEffect(() => {
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
-                                    Coming Soon
+                                   {test.show_date
+    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })}`
+    : 'Coming Soon'}
                                   </div>
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
@@ -934,7 +940,13 @@ useEffect(() => {
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                   <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                    Coming Soon
+                                     {test.show_date
+    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })}`
+    : 'Coming Soon'}
                                   </div>
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
@@ -1081,7 +1093,13 @@ useEffect(() => {
                               new Date(test.live_date) > new Date() ? (
                               // 🚧 Coming Soon: Enrolled, but test not yet live
                               <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                Coming Soon
+                                {test.show_date
+    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })}`
+    : 'Coming Soon'}
                               </div>
                             ) : (
                               // ✅ Actionable: Enrolled and test is live
