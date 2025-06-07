@@ -40,11 +40,9 @@ const TrendingPackages = () => {
   const [packagesWithEnrollment, setPackagesWithEnrollment] = useState([]);
   const [duration,setDuration]=useState([])
 useEffect(() => {
-  if (user && Array.isArray(user.enrolledCourses) && Array.isArray(data)) {
-    const enrolledCourseNames = user.enrolledCourses.map(course =>
-      course.courseName?.trim().toLowerCase()
-    );
+  if (!data.length) return;
 
+  if (user && Array.isArray(user.enrolledCourses)) {
     const updatedPackages = data.map(item => {
       const packageName = item.name?.trim().toLowerCase();
       const matchedCourse = user.enrolledCourses.find(
@@ -77,8 +75,12 @@ useEffect(() => {
     });
 
     setPackagesWithEnrollment(updatedPackages);
+  } else {
+    // User not signed in, just show all packages without enrollment info
+    setPackagesWithEnrollment(data);
   }
 }, [user, data]);
+
 
   return (
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">

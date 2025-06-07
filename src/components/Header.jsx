@@ -5,18 +5,24 @@ import { SignedIn, SignedOut, SignInButton, useUser } from "@clerk/clerk-react";
 import CustomUserMenu from './CustomUserButton';
 import Api from '../service/Api';
 import { motion } from 'framer-motion';
+import PopupModal from './PopupModal';
 
 const Header = () => {
-  const { isSignedIn, user, isLoaded } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const [offer, setOffer] = useState(null);
   const [countdown, setCountdown] = useState("");
+  const [showPopupModal, setShowPopupModal] = useState(false);
+  const [hasShownPopup, setHasShownPopup] = useState(false);
 
+  // Fetch offer on mount
   useEffect(() => {
     const fetchOffer = async () => {
       try {
         const response = await Api.get('offers');
-        setOffer(response.data[0]); // Use first offer
-        console.log("Offer data:", response.data[0]);
+        const activeOffer = response.data[0];
+        if (activeOffer) {
+          setOffer(activeOffer);
+        }
       } catch (error) {
         console.error('Error fetching offer:', error);
       }
@@ -24,36 +30,52 @@ const Header = () => {
     fetchOffer();
   }, []);
 
+  // Update countdown timer
   useEffect(() => {
-    const updateCountdown = () => {
-      if (offer) {
-        const now = new Date();
-        const start = new Date(offer.startDateTime);
-        const end = new Date(offer.endDateTime);
+    const interval = setInterval(() => {
+      if (!offer) return;
 
-        if (now < start || now > end) {
-          setCountdown("");
-          setOffer(null); // Hide expired offers
-          return;
-        }
+      const now = new Date();
+      const start = new Date(offer.startDateTime);
+      const end = new Date(offer.endDateTime);
 
-        const timeDiff = end - now;
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-        setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      if (now < start || now > end) {
+        setCountdown("");
+        setOffer(null);
+        return;
       }
-    };
 
-    const countdownInterval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(countdownInterval);
+      const timeDiff = end - now;
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+      setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [offer]);
+
+  // Read popup state from localStorage on initial render
+  useEffect(() => {
+    console.log("Initial mount: Clerk loaded?", isLoaded, "Signed in?", isSignedIn);
+
+    if (!isLoaded) return;
+
+    const hasPopupBeenShown = localStorage.getItem('hasShownPopup');
+
+    if (isSignedIn && hasPopupBeenShown !== 'true') {
+      console.log("Showing popup for signed-in user");
+      setShowPopupModal(true);
+      localStorage.setItem('hasShownPopup', 'true');
+    }
+  }, [isSignedIn, isLoaded]);
 
   return (
     <header className="bg-white shadow-md">
-      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-around">
-        
+      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+
         {/* Logo */}
         <div className="flex items-center space-x-3">
           <Link to="/">
@@ -61,9 +83,9 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* Search bar (lg screens only) */}
-        <div className="flex-1 max-w-md mx-auto hidden lg:block">
-          <div className="relative">
+        {/* Search Bar */}
+        <div className="hidden lg:flex flex-1 justify-center max-w-lg">
+          <div className="relative w-full">
             <input
               type="text"
               placeholder="Search..."
@@ -78,72 +100,56 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Offer or Telegram + Sign-in display on md+ screens */}
-        <div className="hidden md:flex items-center space-x-4">
-          {offer && new Date() >= new Date(offer.startDateTime) && new Date() <= new Date(offer.endDateTime) ? (
-            <Link to={offer.offerLink} className="flex flex-col md:flex-row items-center lg:space-x-2">
-              <img
-                src={offer.imageUrl}
-                className="h-14 w-20 object-contain blink"
-                alt={offer.offerName}
-              />
-              <div className="text-center lg:text-left">
-                <div className="d-flex">
+        {/* Offer or Telegram + Signin */}
+        <div className="flex items-center space-x-4">
+          {offer ? (
+            <Link to={offer.offerLink} className="flex items-center space-x-2">
+              <img src={offer.imageUrl} alt={offer.offerName} className="h-14 w-20 object-contain blink" />
+              <div>
+                <div className="flex items-center space-x-1">
                   <motion.span
                     animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1.2, 1] }}
-                    transition={{
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      duration: 1,
-                      ease: "easeInOut",
-                      times: [0, 0.25, 0.75, 1],
-                    }}
-                    className="ml-2 text-blue-400 inline-block text-xl origin-center"
+                    transition={{ repeat: Infinity, duration: 1 }}
+                    className="text-blue-400 text-xl"
                   >
                     ✨
                   </motion.span>
-                  <h1 className="text-green text-sm lg:text-lg font-semibold">
+                  <span className="text-green-600 font-semibold text-sm lg:text-lg">
                     {offer.offerName}
-                  </h1>
+                  </span>
                   <motion.span
                     animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1.2, 1] }}
-                    transition={{
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      duration: 1,
-                      ease: "easeInOut",
-                      times: [0, 0.25, 0.75, 1],
-                    }}
-                    className="text-blue-400 inline-block text-xl origin-center"
+                    transition={{ repeat: Infinity, duration: 1 }}
+                    className="text-blue-400 text-xl"
                   >
                     ✨
                   </motion.span>
                 </div>
-                <div className="bg-gradient-to-r from-purple-500 to-amber-600 p-0.5 rounded-lg animate-gradient-x">
-                  <p className="text-white bg-[#131656] text-xs lg:text-sm px-3 py-1 rounded-[0.25rem] font-semibold text-center">
+                <div className="bg-gradient-to-r from-purple-500 to-amber-600 p-0.5 rounded-lg mt-1">
+                  <p className="text-white bg-[#131656] text-xs lg:text-sm px-3 py-1 rounded font-semibold text-center">
                     ⚡ Ends Soon: {countdown}
                   </p>
                 </div>
               </div>
             </Link>
           ) : (
-            <>
-              <Link to="https://t.me/examrally" className="flex items-center space-x-1 text-[#24A1DE]">
-                <i className="bi bi-telegram text-2xl"></i>
-                <span>Join Telegram</span>
-              </Link>
-
-              <SignedOut>
-                <SignInButton className="bg-[#000080] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                  Sign In
-                </SignInButton>
-              </SignedOut>
-
-              <SignedIn>
-                <CustomUserMenu />
-              </SignedIn>
-            </>
+            <Link to="https://t.me/examrally" className="flex items-center space-x-2 text-[#24A1DE]">
+              <i className="bi bi-telegram text-2xl"></i>
+              <span className="font-medium">Join Telegram</span>
+            </Link>
           )}
+
+          {/* Sign-in / User Menu */}
+          <SignedOut>
+            <SignInButton className="bg-[#000080] text-white py-2 px-4 rounded-lg shadow hover:bg-blue-900">
+              Sign In
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <CustomUserMenu />
+            {showPopupModal && <PopupModal onClose={() => setShowPopupModal(false)} />}
+          </SignedIn>
         </div>
       </div>
     </header>
