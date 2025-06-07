@@ -200,7 +200,7 @@ function MainApp() {
         </Route>
 
         <Route path="/All-Packages" element={<Packages />} />
-        <Route path="/All-Archivers" element={<AllArch />} />
+        {/* <Route path="/All-Archivers" element={<AllArch />} /> */}
 
 
 
