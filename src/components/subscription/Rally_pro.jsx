@@ -32,6 +32,7 @@ const Rally_pro = () => {
       const selectedSub = filtered.length > 0 ? filtered[0] : null;
       setSub(selectedSub);
       setData(selectedSub);
+      console.log(selectedSub)
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -55,6 +56,8 @@ const Rally_pro = () => {
         const expiryDate = new Date(matchedCourse.expiryDate);
         const timeDiff = expiryDate - currentDate;
         const remainingDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+console.log("koli",currentDate,expiryDate,timeDiff,remainingDays)
 
         if (remainingDays > 0) {
           setEnrolled(true);

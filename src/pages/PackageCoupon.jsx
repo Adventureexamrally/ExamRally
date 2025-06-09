@@ -131,7 +131,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             signature: response.razorpay_signature,
             coupon: discountPercent > 0 ? couponCode : null,
             amount: finalPrice,
-            expiryDays: pkg.duration, // ✅ Send expiryDays from client
+            expiryDays: pkg.expiryDays || pkg.duration, // ✅ Send expiryDays from client
           });
           console.log(res)
                  await refreshUser()
