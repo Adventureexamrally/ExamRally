@@ -29,9 +29,11 @@ const Profile = () => {
     const fetchUserDetails = async () => {
       try {
         const clerkId = clerkUser.id;
+         const email = clerkUser.emailAddresses[0]?.emailAddress;
+        console.log("clerkId",clerkUser);
+        
 
-        // Fetch user details from backend using Clerk's user ID
-        const res = await Api.get(`/auth/getUserDetails/${clerkId}`);
+        const res = await Api.get(`/auth/getUserDetails/${clerkId}/${email}`);
         console.log('Fetched user from backend:', res.data);
 
         setUserDetails(res.data); // Set fetched user details to state
