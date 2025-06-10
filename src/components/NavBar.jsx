@@ -138,7 +138,7 @@ const NavBar = () => {
                     onMouseLeave={() => setActiveSubMenu(null)}
                   >
                     <Link
-                      to="/banking-&-insurance"
+                      to="/subscriptions"
                       className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
                     >
                       Banking & Insurance
@@ -291,7 +291,7 @@ const NavBar = () => {
                     onMouseLeave={() => setActiveSubMenu(null)}
                   >
                     <Link
-                      to="/banking-&-insurance"
+                      to="/subscriptions"
                       className="block px-4 py-2 w-full text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
                     >
                       Banking & Insurance

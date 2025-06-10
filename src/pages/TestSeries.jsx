@@ -152,10 +152,18 @@ function TestSeries() {
             </div>
           ) : (
             <div className="container">
-              <div className="text-center text-2xl font-bold mt-2 font bg-green-500 text-white">
-                Most Accurate & Best Online Test Series for Bank Exams – Full-Length &amp;
-                Topic-Wise Mock Tests
-              </div>
+             <div class="text-center py-3 px-4 bg-gradient-to-r from-green-600 to-green-500 rounded-lg shadow-lg">
+  <h2 class="text-2xl md:text-1xl font-bold text-white">
+    <span class="text-[#131656]">Most Accurate & Best</span>
+    <span> Online Test Series for </span>
+    <span class="underline decoration-white">Bank Exams</span>
+    <span> – </span>
+    <span class="text-[#131656]">Full-Length</span>
+    <span> & </span>
+    <span class="text-[#131656]">Topic-Wise</span>
+    <span> Mock Tests</span>
+  </h2>
+</div>
               <div className="row">
                 <div className="col-md-6">
                   <Rally_pro />
