@@ -20,6 +20,7 @@ const clerkFrontendApi = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 if (!clerkFrontendApi) {
   throw new Error("Missing Clerk Publishable Key in environment variables.");
 }
+console.log(clerkFrontendApi);
 
 // Use ReactDOM.createRoot (React 18+)
 const root = ReactDOM.createRoot(document.getElementById("root"));
