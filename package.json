@@ -23,6 +23,7 @@
     "canvas-confetti": "^1.9.3",
     "examrally": "file:",
     "firebase": "^11.1.0",
+    "formik": "^2.4.6",
     "framer-motion": "^12.10.4",
     "react": "^18.3.1",
     "react-countdown": "^2.3.6",
@@ -36,9 +37,11 @@
     "react-router-dom": "^6.30.0",
     "react-slick": "^0.30.3",
     "react-toastify": "^11.0.5",
+    "react-youtube": "^10.1.0",
     "recharts": "^2.15.2",
     "slick-carousel": "^1.8.1",
-    "sweetalert2": "^11.17.2"
+    "sweetalert2": "^11.17.2",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

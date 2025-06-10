@@ -90,6 +90,7 @@ const Coupon = ({ data, setshowmodel }) => {
         userId: user?._id,
         courseId: data?._id,
         courseName: data?.name || data?.Title || data?.categorys || "Course Name",
+        coupon: discountPercent > 0 ? couponCode : null,
         email: user?.email,
         phoneNumber: user?.phoneNumber,
       });
@@ -116,6 +117,7 @@ const Coupon = ({ data, setshowmodel }) => {
             courseName: data?.name || data?.Title || data?.categorys || "Course Name",
             paymentId: response.razorpay_payment_id,
             orderId: response.razorpay_order_id,
+            coupon: discountPercent > 0 ? couponCode : null,
             signature: response.razorpay_signature,
             amount: finalPrice,
             expiryDays: data.expiryDays, // ✅ Send expiryDays from client

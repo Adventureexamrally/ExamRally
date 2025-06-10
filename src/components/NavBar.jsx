@@ -138,7 +138,7 @@ const NavBar = () => {
                     onMouseLeave={() => setActiveSubMenu(null)}
                   >
                     <Link
-                      to="/banking-&-insurance"
+                      to="/subscriptions"
                       className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
                     >
                       Banking & Insurance
@@ -220,8 +220,9 @@ const NavBar = () => {
           </nav>
 
           {/* "Get App" Button */}
-          <button className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-600 hover:text-white transition duration-300">
-            Get App
+          <button className="bg-[#131656] text-white px-4 py-1 flex flex-col rounded hover:bg-[#131679]   transition duration-300">
+         <span>Get App</span>
+  <span className="text-xs mt-1 blink">Coming Soon </span>
           </button>
           {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
           {/* <User /> */}
@@ -290,7 +291,7 @@ const NavBar = () => {
                     onMouseLeave={() => setActiveSubMenu(null)}
                   >
                     <Link
-                      to="/banking-&-insurance"
+                      to="/subscriptions"
                       className="block px-4 py-2 w-full text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
                     >
                       Banking & Insurance

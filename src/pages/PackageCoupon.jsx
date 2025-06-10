@@ -99,6 +99,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
         courseName: pkg?.name ||pkg.subscriptionType || "Course Name",
         email: user?.email,
         phoneNumber: user?.phoneNumber,
+         coupon: discountPercent > 0 ? couponCode : null,
         notes: {
           package_id: pkg._id,
           package_name: pkg.name || pkg.subscriptionType,
@@ -128,8 +129,9 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
             paymentId: response.razorpay_payment_id,
             orderId: response.razorpay_order_id,
             signature: response.razorpay_signature,
+            coupon: discountPercent > 0 ? couponCode : null,
             amount: finalPrice,
-            expiryDays: pkg.duration, // ✅ Send expiryDays from client
+            expiryDays: pkg.expiryDays || pkg.duration, // ✅ Send expiryDays from client
           });
           console.log(res)
                  await refreshUser()

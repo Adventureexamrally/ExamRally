@@ -52,6 +52,7 @@ import Coupon from "./pages/Coupon";
 import ErrorReport from "./pages/user/ErrorReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Refund_policy from "./components/Refund_policy";
+import ScrollToTopButton from "./ScrollToTopButton";
 
 
 
@@ -68,28 +69,26 @@ function MainApp() {
   const location = useLocation();
   const [showModal, setShowModal] = useState(false);
 
+
   useEffect(() => {
-    // Show modal when navigating to "/mocktest"
     if (location.pathname === "/") {
       setShowModal(true);
     } else {
       setShowModal(false);
     }
   }, [location.pathname]);
-  // Check if the current route is "/mock-test"
 
-  const isMockTestRoute = ["/mocktest","/mocklivetest", "/instruction","/otherins","/instruct", "/otherinstruct", "/mocksolution","/livesolution",  "/result", "/liveresult", "/pdf/instruction", "/pdf/otherinstruct", "/pdf/mocktest","/pdf/result","/pdf/mocksolution"].some((path) =>
+  const isMockTestRoute = [
+    "/mocktest", "/mocklivetest", "/instruction", "/otherins", 
+    "/instruct", "/otherinstruct", "/mocksolution", "/livesolution",  
+    "/result", "/liveresult", "/pdf/instruction", "/pdf/otherinstruct", 
+    "/pdf/mocktest", "/pdf/result", "/pdf/mocksolution"
+  ].some(path => location.pathname.startsWith(path));
 
-    location.pathname.startsWith(path)
-  );
   useEffect(() => {
-    // Check if the modal has been shown before by looking into localStorage
     const hasModalBeenShown = localStorage.getItem("abcmodal123");
-
-    // If not shown before and the current route is "/"
     if (!hasModalBeenShown && location.pathname === "/") {
       setShowModal(true);
-      // Set the flag in localStorage so the modal won't show again
       localStorage.setItem("abcmodal123", "pair");
     } else {
       setShowModal(false);
@@ -200,7 +199,7 @@ function MainApp() {
         </Route>
 
         <Route path="/All-Packages" element={<Packages />} />
-        <Route path="/All-Archivers" element={<AllArch />} />
+        {/* <Route path="/All-Archivers" element={<AllArch />} /> */}
 
 
 
@@ -224,6 +223,7 @@ function MainApp() {
 
       {/* Conditionally render Footer for routes other than "/mock-test" */}
       {!isMockTestRoute && <Footer />}
+          <ScrollToTopButton showButton={!isMockTestRoute} />
     </>
   );
 }

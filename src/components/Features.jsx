@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 import Api from "../service/Api";
 import { Link } from "react-router-dom";
+import YoutubeVideo from "./Youtube/YoutubeVideo";
 
 const features = [
   {
@@ -50,69 +51,7 @@ const features = [
 ];
 
 export default function Features() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [boxSize, setBoxSize] = useState(400); // Default size for medium screens
 
-  const [customWidth, setCustomWidth] = useState(450); // Default custom width
-  const [customHeight, setCustomHeight] = useState(250); // Default custom height
-
-  const [youtubeVideos, setYoutubeVideos] = useState([]); // To store the fetched videos
-
-  // Fetch YouTube videos on component mount
-  useEffect(() => {
-   Api.get("uploads/videos")
-      .then((response) => {
-        setYoutubeVideos(response.data);
-        console.log("Videos fetched:", response.data) // Assuming the API returns an array of video objects
-      })
-      .catch((error) => {
-        console.error("Error fetching videos:", error);
-      });
-  }, []);
-
-  // Responsive box size handler
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setBoxSize(250); // Small screens (mobile)
-      } else if (window.innerWidth < 1024) {
-        setBoxSize(350); // Medium screens (tablet)
-      } else {
-        setBoxSize(450); // Large screens (desktop)
-      }
-    };
-
-    handleResize(); // Set size on load
-    window.addEventListener("resize", handleResize); // Listen for window resize
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Get the indexes of previous and next videos
-  const prevIndex = currentIndex === 0 ? youtubeVideos.length - 1 : currentIndex - 1;
-  const nextIndex = currentIndex === youtubeVideos.length - 1 ? 0 : currentIndex + 1;
-
-  // Functions to navigate between videos
-  const prevVideo = () => {
-    setCurrentIndex(prevIndex);
-  };
-
-  const nextVideo = () => {
-    setCurrentIndex(nextIndex);
-  };
-
-  // Helper function to safely get the video URL for embedding
-  const getEmbedUrl = (video) => {
-    if (video?.youtubeUrl && typeof video.youtubeUrl === 'string') {
-      // If the URL is in the shortened form (youtu.be)
-      if (video.youtubeUrl.includes('youtu.be')) {
-        const videoId = video.youtubeUrl.split('/').pop().split('?')[0]; // Extract video ID
-        return `https://www.youtube.com/embed/${videoId}`;
-      }
-      // If the URL is the regular watch?v= form
-      return video.youtubeUrl.replace("watch?v=", "embed/");
-    }
-    return ''; // Return an empty string if the link is not available or invalid
-  };
   
 
   return (
@@ -139,120 +78,11 @@ export default function Features() {
           </p>
         </div>
       </div>
-          <div className=" flex justify-between mx-3 mt-5 font-semibold">
-          <h1 className="md:text-2xl font-bold  m-2 leading-snug text-green-500">Youtube Videos</h1>
+          
+    <YoutubeVideo />
+               
 
-            <Link
-        to="https://www.youtube.com/@examrally_banking"
-
-        className="border-1 h-10 border-green-500 text-green-500 rounded-full px-4 py-2 text-sm font-semibold transition duration-200 hover:text-white hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600"
-
-      >
-        View More
-      </Link>
-          </div>
-      <div className="relative flex justify-center items-center w-full  py-4 rounded-lg mb-36">
-      <div className="relative flex items-center w-[90%] justify-center">
-        {/* Show full screen video on mobile */}
-        {youtubeVideos.length === 0 ? (
-          <div className="text-center text-gray-500">Loading videos...</div>
-        ) : (
-          <>
-            {boxSize === 250 ? (
-              <div
-                className="relative z-10 transition-transform duration-300 mx-2"
-                style={{
-                  width: `${customWidth}px`,
-                  height: `${customHeight}px`,
-                }}
-              >
-                {/* <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1> */}
-                <iframe
-                  className="w-full h-full rounded-lg shadow-xl"
-                  src={getEmbedUrl(youtubeVideos[currentIndex])}
-                  title="Current Video"
-                  allowFullScreen
-                />
-                 <h1 className="p-2 h5 font  rounded ">{youtubeVideos[currentIndex ]?.description}</h1>
-              </div>
-            ) : (
-              <>
-                {/* Previous Video (Left) */}
-                <div
-                  className="relative  z-10 transition-transform duration-300 mx-2"
-                  style={{
-                    width: `${customWidth}px`,
-                    height: `${customHeight}px`,
-                  }}
-                >
-                  {/* <h1 className="h5 font">{youtubeVideos[prevIndex]?.title}</h1> */}
-                  <iframe
-                    className="w-full h-full rounded-lg shadow-lg"
-                    src={getEmbedUrl(youtubeVideos[prevIndex])}
-                    title="Previous Video"
-                    allowFullScreen
-                  />
-                 <h1 className="p-2 h5 font  rounded ">{youtubeVideos[prevIndex]?.description}</h1>
-                </div>
-
-                {/* Current Video (Center) */}
-                <div
-                  className="relative z-10 transition-transform duration-300 mx-2"
-                  style={{
-                    width: `${customWidth}px`,
-                    height: `${customHeight}px`,
-                  }}
-                >
-                  {/* <h1 className="h5 font">{youtubeVideos[currentIndex]?.title}</h1> */}
-                  <iframe
-                    className="w-full h-full rounded-lg shadow-xl"
-                    src={getEmbedUrl(youtubeVideos[currentIndex])}
-                    title="Current Video"
-                    allowFullScreen
-                  />
-                  <h1 className="p-2 h5 font  rounded ">{youtubeVideos[currentIndex]?.description}</h1>
-                </div>
-
-                {/* Next Video (Right) */}
-                <div
-                 className="relative z-10 transition-transform duration-300 mx-2"
-                 style={{
-                   width: `${customWidth}px`,
-                   height: `${customHeight}px`,
-                 }}>
-                  {/* <h1 className="h5 font">{youtubeVideos[nextIndex]?.title}</h1> */}
-                  <iframe
-                    className="w-full h-full rounded-lg shadow-lg"
-                    src={getEmbedUrl(youtubeVideos[nextIndex])}
-                    title="Next Video"
-                    allowFullScreen
-                  />
-                 <h1 className="p-2 h5 font  rounded ">{youtubeVideos[nextIndex]?.description}</h1>
-                </div>
-              </>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Left Navigation Button */}
-      <button
-        className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-green-600  hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
-        onClick={prevVideo}
-      >
-                <i className=" fw-bold bi bi-chevron-double-left"></i>
-
-      </button>
-
-      {/* Right Navigation Button */}
-      <button
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-green-600  hover:opacity-100 p-3 rounded-full transition duration-300 ease-in-out hover:scale-110 z-50 md:z-10"
-        onClick={nextVideo}
-      >
-        <i className=" fw-bold bi bi-chevron-double-right"></i>
-      </button>
-    </div>
- 
+    
 
     </>
   );
