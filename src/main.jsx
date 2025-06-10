@@ -28,7 +28,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   // <React.StrictMode>
     <Provider store={store}>
-    <ClerkProvider publishableKey={clerkFrontendApi}>
+    <ClerkProvider publishableKey={clerkFrontendApi} frontendApi="clerk.examrally.in">
       <UserProvider>
       <App />
       </UserProvider>
