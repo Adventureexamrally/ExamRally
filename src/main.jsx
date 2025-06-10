@@ -39,14 +39,17 @@ if (!clerkFrontendApi) {
 console.log("Clerk Key:", clerkFrontendApi);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+const clerkConfig = {
+  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  domain: "examrally.in",
+  isSatellite: false, // Set true if using cross-origin auth
+  signInUrl: "/" // Customize as needed
+};
 
 root.render(
   // <React.StrictMode>
   <Provider store={store}>
-    <ClerkProvider
-      publishableKey={clerkFrontendApi}
-      domain="clerk.examrally.in"
-    >
+     <ClerkProvider {...clerkConfig}>
       <UserProvider>
         <App />
       </UserProvider>
