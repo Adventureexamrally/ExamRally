@@ -21,6 +21,7 @@ if (!clerkFrontendApi) {
 }
 console.log("Clerk Key:", clerkFrontendApi);
 
+
 const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
 if (!clerkKey) {
   throw new Error("Missing Clerk Publishable Key");
@@ -28,7 +29,7 @@ if (!clerkKey) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <ClerkProvider publishableKey={clerkKey}>
+    <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
       <UserProvider>
         <App />
       </UserProvider>
