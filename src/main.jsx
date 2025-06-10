@@ -29,7 +29,7 @@ if (!clerkKey) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
+    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim()}>
       <UserProvider>
         <App />
       </UserProvider>

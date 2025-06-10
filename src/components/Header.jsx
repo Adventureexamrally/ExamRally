@@ -165,6 +165,7 @@ const Header = () => {
           <SignedIn>
             <CustomUserMenu />
           </SignedIn>
+           <SignIn />
         </div>
       </div>
     </div>
