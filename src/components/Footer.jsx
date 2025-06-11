@@ -186,9 +186,9 @@ function Footer() {
                   </li>
                 ))}
                 {[
-                  { text: "Live Tests", path: "/#live-tests" },
-                  { text: "Top Trending Exams", path: "/#TopTrendingExams" },
-                  { text: "Trending Packages", path: "/#TrendingPackages" },
+                  // { text: "Live Tests", path: "/#live-tests" },
+                  // { text: "Top Trending Exams", path: "/#TopTrendingExams" },
+                  { text: "Trending Packages", path: "/All-Packages" },
                 ].map((item) => (
                   <li key={item.text}>
                     {/* <a href={item.path} className="hover:text-green-600 transition">
