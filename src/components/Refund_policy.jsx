@@ -88,10 +88,18 @@ function Refund_policy() {
                                 <p className="text-gray-600 text-sm">We evaluate your request within 48 working hours</p>
                             </div>
                             
-                            <div className="relative pl-12">
+                            <div className="relative pl-12 pb-8">
                                 <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">3</div>
                                 <h3 className="font-medium text-gray-800 mb-1">Processing</h3>
                                 <p className="text-gray-600 text-sm">Approved refunds processed within 14 business days</p>
+                            </div>
+                              <div className="relative pl-12">
+                                <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">3</div>
+                                <h3 className="font-medium text-gray-800 mb-1">Bank Transfer Time</h3>
+                                <p className="text-gray-600 text-sm">
+                                   While we process the refund within 14 days, it may take an additional 3–7 business days for the amount to reflect in the customer’s account, 
+                                   depending on the bank or payment provider
+                                    </p>
                             </div>
                         </div>
                     </div>
