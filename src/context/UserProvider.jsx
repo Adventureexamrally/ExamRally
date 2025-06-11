@@ -13,8 +13,11 @@ export const UserProvider = ({ children }) => {
     const fetchUserDetails = async () => {
       try {
         const clerkId = clerkUser.id;
+        const email = clerkUser.emailAddresses[0]?.emailAddress;
+        console.log("clerkId",clerkUser);
+        
 
-        const res = await Api.get(`/auth/getUserDetails/${clerkId}`);
+        const res = await Api.get(`/auth/getUserDetails/${clerkId}/${email}`);
         console.log("res",res.data);
         
         setUser(res.data);

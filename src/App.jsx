@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from "react-router-dom";
 import Home from "./pages/Home";
 import NotFound from "./pages/404/NotFound";
 import Header from "./components/Header";
@@ -224,6 +224,7 @@ function MainApp() {
       {/* Conditionally render Footer for routes other than "/mock-test" */}
       {!isMockTestRoute && <Footer />}
           <ScrollToTopButton showButton={!isMockTestRoute} />
+   
     </>
   );
 }

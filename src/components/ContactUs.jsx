@@ -70,43 +70,46 @@ function ContactUs() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-          Contact Us
+        <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
+          Get in Touch
         </h1>
-        <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-          We'd love to hear from you
+        <div className="mt-4 max-w-2xl mx-auto">
+          <div className="h-1 w-20 bg-green-500 mx-auto"></div>
+        </div>
+        <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600">
+          We're here to help and answer any questions you might have.
         </p>
       </div>
 
-      <div className="rounded-xl shadow-lg overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
           {/* Contact Information */}
-          <div className=" p-8 md:p-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Information</h2>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-8">Contact Information</h2>
             
-            <div className="space-y-6">
+            <div className="space-y-8">
               {contactInfo.address && (
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                <div className="flex">
+                  <div className="bg-white p-3 rounded-lg shadow-sm mr-6 flex-shrink-0">
                     <MapPinIcon className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-800">Address</h3>
-                    <p className="mt-1 text-gray-600">{contactInfo.address}</p>
+                    <h3 className="text-lg font-semibold text-gray-800">Our Location</h3>
+                    <p className="mt-2 text-gray-600 leading-relaxed">{contactInfo.address}</p>
                   </div>
                 </div>
               )}
               
               {contactInfo.email && (
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                <div className="flex">
+                  <div className="bg-white p-3 rounded-lg shadow-sm mr-6 flex-shrink-0">
                     <EnvelopeIcon className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-800">Email</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Email Us</h3>
                     <a
                       href={`mailto:${contactInfo.email}`}
-                      className="mt-1 text-gray-600 hover:text-green-700 hover:underline transition-colors"
+                      className="mt-2 text-gray-600 hover:text-green-700 transition-colors block"
                     >
                       {contactInfo.email}
                     </a>
@@ -115,15 +118,15 @@ function ContactUs() {
               )}
               
               {contactInfo.phone && (
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                <div className="flex">
+                  <div className="bg-white p-3 rounded-lg shadow-sm mr-6 flex-shrink-0">
                     <PhoneIcon className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-800">Phone</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Call Us</h3>
                     <a
                       href={`tel:${contactInfo.phone.replace(/\D/g, "")}`}
-                      className="mt-1 text-gray-600 hover:text-green-700 hover:underline transition-colors"
+                      className="mt-2 text-gray-600 hover:text-green-700 transition-colors block"
                     >
                       {contactInfo.phone}
                     </a>
@@ -132,17 +135,17 @@ function ContactUs() {
               )}
               
               {contactInfo.whatsapp && (
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-3 rounded-full mr-4">
+                <div className="flex">
+                  <div className="bg-white p-3 rounded-lg shadow-sm mr-6 flex-shrink-0">
                     <ChatBubbleBottomCenterTextIcon className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-800">WhatsApp</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">WhatsApp</h3>
                     <a
                       href={`https://wa.me/${contactInfo.whatsapp.replace(/\D/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 text-gray-600 hover:text-green-700 hover:underline transition-colors"
+                      className="mt-2 text-gray-600 hover:text-green-700 transition-colors block"
                     >
                       {contactInfo.whatsapp}
                     </a>
@@ -150,9 +153,34 @@ function ContactUs() {
                 </div>
               )}
             </div>
-          </div>
 
           
+          </div>
+
+          {/* Contact Form - You can add this later if needed */}
+          <div className="bg-white p-12">
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                  <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Want to send us a message?</h3>
+                <p className="text-gray-600 mb-6">We'll get back to you as soon as possible.</p>
+                 <a
+                      href={`mailto:${contactInfo.email}`}
+                      className="mt-2 text-white hover:text-green-700 transition-colors block"
+                    >
+                <button className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+
+                      {contactInfo.email}
+                         </button>
+                    </a>
+             
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
