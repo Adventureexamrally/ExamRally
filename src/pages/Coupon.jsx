@@ -16,7 +16,7 @@ const Coupon = ({ data, setshowmodel }) => {
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [finalPrice, setFinalPrice] = useState(
-    data?.discountedAmount || data?.amount || 1998
+    data?.discountedAmount || data?.amount || 1
   );  const [message, setMessage] = useState({ text: '', type: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);

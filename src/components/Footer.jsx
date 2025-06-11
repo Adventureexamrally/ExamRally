@@ -37,6 +37,7 @@ function Footer() {
       try {
         const res = await Api.get("site-documents");
         setContactInfo(res.data.contact || {});
+       
       } catch (error) {
         console.error("Failed to load contact info:", error);
       }
@@ -65,60 +66,76 @@ function Footer() {
               </p>
               <div className="flex space-x-4">
                 {/* Social media icons would go here */}
-                <div className="flex space-x-4 mt-6">
-                   <a
-                    href={contactInfo.telegram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-600 transition"
-                  >
-                    <FaTelegramPlane size={20} />
-                  </a>
-                    <a
-                    href={contactInfo.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-600 transition"
-                  >
-                    <FaInstagram size={20} />
-                  </a>
-                    <a
-                    href={contactInfo.youtube}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-600 transition"
-                  >
-                    <FaYoutube size={20} />
-                  </a>
-                  <a
-                    href={contactInfo.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-600 transition"
-                  >
-                    <FaFacebookF size={20} />
-                  </a>
-                
-                  <a
-                    href={contactInfo.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-600 transition"
-                  >
-                    <FaXTwitter size={20} />
-             
-                  </a>
-                
-                  <a
-                    href={contactInfo.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-600 transition"
-                  >
-                    <FaLinkedinIn size={20} />
-                  </a>
-                 
-                </div>
+            <div className="flex space-x-4 mt-6">
+  {/* Telegram (has a fallback) */}
+  <a
+    href={contactInfo.telegram || "https://t.me/examrally"}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-green-500 hover:text-green-600 transition"
+  >
+    <FaTelegramPlane size={20} />
+  </a>
+
+  {/* Instagram */}
+  {contactInfo.instagram && (
+    <a
+      href={contactInfo.instagram}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-green-500 hover:text-green-600 transition"
+    >
+      <FaInstagram size={20} />
+    </a>
+  )}
+
+  {/* YouTube (has a fallback) */}
+  <a
+    href={contactInfo.youtube || "https://www.youtube.com/@examrally_banking"}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-green-500 hover:text-green-600 transition"
+  >
+    <FaYoutube size={20} />
+  </a>
+
+  {/* Facebook */}
+  {contactInfo.facebook && (
+    <a
+      href={contactInfo.facebook}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-green-500 hover:text-green-600 transition"
+    >
+      <FaFacebookF size={20} />
+    </a>
+  )}
+
+  {/* Twitter */}
+  {contactInfo.twitter && (
+    <a
+      href={contactInfo.twitter}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-green-500 hover:text-green-600 transition"
+    >
+      <FaXTwitter size={20} />
+    </a>
+  )}
+
+  {/* LinkedIn */}
+  {contactInfo.linkedin && (
+    <a
+      href={contactInfo.linkedin}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-green-500 hover:text-green-600 transition"
+    >
+      <FaLinkedinIn size={20} />
+    </a>
+  )}
+</div>
+
               </div>
             </div>
 
