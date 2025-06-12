@@ -53,6 +53,7 @@ import ErrorReport from "./pages/user/ErrorReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Refund_policy from "./components/Refund_policy";
 import ScrollToTopButton from "./ScrollToTopButton";
+import PopupModal from "./components/PopupModal";
 
 
 
@@ -67,14 +68,15 @@ function App() {
 
 function MainApp() {
   const location = useLocation();
+  const [showModalji, setShowModalji] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
 
   useEffect(() => {
     if (location.pathname === "/") {
-      setShowModal(true);
+      setShowModalji(true);
     } else {
-      setShowModal(false);
+      setShowModalji(false);
     }
   }, [location.pathname]);
 
@@ -88,12 +90,21 @@ function MainApp() {
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("abcmodal123");
     if (!hasModalBeenShown && location.pathname === "/") {
-      setShowModal(true);
+      setShowModalji(true);
       localStorage.setItem("abcmodal123", "pair");
     } else {
-      setShowModal(false);
+      setShowModalji(false);
     }
   }, [location.pathname]);
+  
+ useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowModal(true);
+    }, 240000); // 4 minutes = 240000 ms
+
+    return () => clearTimeout(timer); // cleanup
+  }, []);
+
   return (
     <>
       {/* Conditionally render Header and NavBar for routes other than "/mock-test" */}
@@ -104,7 +115,7 @@ function MainApp() {
         </>
       )}
       {/* Modal */}
-      {showModal && (
+      {showModalji && (
         <div
           className="modal fade show d-flex align-items-center justify-content-center"
           tabIndex="-1"
@@ -121,7 +132,7 @@ function MainApp() {
                 <button
                   type="button"
                   className="btn-close text-sm"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => setShowModalji(false)}
                   aria-label="Close"
                 ></button>
               </div>
@@ -220,7 +231,7 @@ function MainApp() {
           }
         />
       </Routes>
-
+  <PopupModal showModal={showModal} setShowModal={setShowModal} />
       {/* Conditionally render Footer for routes other than "/mock-test" */}
       {!isMockTestRoute && <Footer />}
           <ScrollToTopButton showButton={!isMockTestRoute} />
