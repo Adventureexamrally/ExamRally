@@ -21,7 +21,7 @@ const validationSchema = Yup.object().shape({
   state: Yup.string().required('State is required'),
 });
 
-const PopupModal = ({ showModal, setShowModal }) => {
+const PopupModal = ({ showModal, setShowModal,onSuccess }) => {
   const [initialValues, setInitialValues] = useState({ phoneNumber: '', state: '' });
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();
 
@@ -57,12 +57,14 @@ const PopupModal = ({ showModal, setShowModal }) => {
         userId: clerkUser.id,
         email: clerkUser.emailAddresses[0]?.emailAddress
       });
+       onSuccess(); // Update localStorage
       setShowModal(false); // Close modal after success
     } catch (err) {
       console.error('Error updating user:', err);
     } finally {
       setSubmitting(false);
     }
+  
   };
 
   if (!showModal) return null;
