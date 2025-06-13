@@ -788,15 +788,21 @@ useEffect(() => {
                                 : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
-                                   {test.show_date
+                                    <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
+  {test.show_date
     ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })}`
     : 'Coming Soon'}
-                                  </div>
+</div>
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
                                   <button
@@ -939,15 +945,21 @@ useEffect(() => {
 ) : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                     {test.show_date
+                                    <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
+  {test.show_date
     ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })}`
     : 'Coming Soon'}
-                                  </div>
+</div>
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
                                   <button
@@ -1092,15 +1104,21 @@ useEffect(() => {
 ) : isEnrolled &&
                               new Date(test.live_date) > new Date() ? (
                               // 🚧 Coming Soon: Enrolled, but test not yet live
-                              <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                {test.show_date
+                                <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
+  {test.show_date
     ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })}`
     : 'Coming Soon'}
-                              </div>
+</div>
                             ) : (
                               // ✅ Actionable: Enrolled and test is live
                               <button

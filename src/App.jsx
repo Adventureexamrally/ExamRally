@@ -17,7 +17,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Packagename from "./components/Packagename";
 import ResultPage from "./components/ResultPage";
 import jaiib from '../src/assets/logo/offer.jpg'
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Resultanalysis from "./components/Resultanalysis";
 import Mocksolution from "./components/Mocksolution";
 import Subblog from "./pages/blog/Subblog";
@@ -53,6 +53,9 @@ import ErrorReport from "./pages/user/ErrorReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Refund_policy from "./components/Refund_policy";
 import ScrollToTopButton from "./ScrollToTopButton";
+import PopupModal from "./components/PopupModal";
+import { useUser } from '@clerk/clerk-react';
+import { UserContext } from "./context/UserProvider";
 
 
 
@@ -67,14 +70,15 @@ function App() {
 
 function MainApp() {
   const location = useLocation();
+  const [showModalji, setShowModalji] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
+  const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
 
   useEffect(() => {
     if (location.pathname === "/") {
-      setShowModal(true);
+      setShowModalji(true);
     } else {
-      setShowModal(false);
+      setShowModalji(false);
     }
   }, [location.pathname]);
 
@@ -85,15 +89,32 @@ function MainApp() {
     "/pdf/mocktest", "/pdf/result", "/pdf/mocksolution"
   ].some(path => location.pathname.startsWith(path));
 
+  const { user } = useContext(UserContext);
+
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("abcmodal123");
     if (!hasModalBeenShown && location.pathname === "/") {
-      setShowModal(true);
+      setShowModalji(true);
       localStorage.setItem("abcmodal123", "pair");
     } else {
-      setShowModal(false);
+      setShowModalji(false);
     }
   }, [location.pathname]);
+ 
+  
+   useEffect(() => {
+    if (user && !hasUserSubmittedData) {
+      // Check if phoneNumber & state are missing
+      const isMissingData = !user.phoneNumber || !user.state;
+      
+      const timer = setTimeout(() => {
+        // Only show if data is missing AND not submitted before
+        setShowModal(isMissingData);
+      }, 2000);
+
+      return () => clearTimeout(timer); 
+    }
+  }, [user, hasUserSubmittedData]);
   return (
     <>
       {/* Conditionally render Header and NavBar for routes other than "/mock-test" */}
@@ -104,7 +125,7 @@ function MainApp() {
         </>
       )}
       {/* Modal */}
-      {showModal && (
+      {showModalji && (
         <div
           className="modal fade show d-flex align-items-center justify-content-center"
           tabIndex="-1"
@@ -121,7 +142,7 @@ function MainApp() {
                 <button
                   type="button"
                   className="btn-close text-sm"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => setShowModalji(false)}
                   aria-label="Close"
                 ></button>
               </div>
@@ -220,6 +241,9 @@ function MainApp() {
           }
         />
       </Routes>
+   {showModal && user && (
+  <PopupModal showModal={showModal} setShowModal={setShowModal}           onSuccess={() => localStorage.setItem("userDataSubmitted", "true")} />
+)}
 
       {/* Conditionally render Footer for routes other than "/mock-test" */}
       {!isMockTestRoute && <Footer />}

@@ -33,6 +33,52 @@ const Mocksolution = () => {
     const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
     const { user } = useContext(UserContext);
+     const startingIndex = examData?.section
+    ?.slice(0, currentSectionIndex)
+    .reduce(
+      (acc, section) =>
+        acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+      0
+    ) || 0;
+
+  // Reset clickedQuestionIndex when section changes
+  useEffect(() => {
+    setClickedQuestionIndex(startingIndex);
+  }, [currentSectionIndex, startingIndex]);
+
+  // Fetch exam data
+  useEffect(() => {
+    if (!user?._id) return;
+
+    Api.get(`results/${user?._id}/${id}`)
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data);
+          console.log(res.data);
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }, [id, user]);
+
+  useEffect(() => {
+    if (!isDataFetched) {
+      Api.get(`exams/getExam/${id}`)
+        .then((res) => {
+          if (res.data) {
+            setExamData(res.data);
+            console.log("dd", res.data);
+            setIsDataFetched(true);
+            setShow_name(res.data.show_name);
+            setExam_name(res.data.exam_name);
+            setTest_type(res.data.test_type);
+            setTest_name(res.data.test_name);
+            setDescription(res.data.description);
+            sett_questions(res.data.t_questions);
+          }
+        })
+        .catch((err) => console.error("Error fetching data:", err));
+    }
+  }, [id]);
     useEffect(() => {
 
         if (!user?._id) return; // Don't run if user is not loaded yet
@@ -72,15 +118,7 @@ const Mocksolution = () => {
         }
     }, [id]);
 
-    const startingIndex =
-        examData?.section
-            ?.slice(0, currentSectionIndex)
-            .reduce(
-                (acc, section) =>
-                    acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
-                0
-            ) || 0;
-
+  
     // Mark a question as visited when clicked
     useEffect(() => {
         if (!visitedQuestions.includes(clickedQuestionIndex)) {
