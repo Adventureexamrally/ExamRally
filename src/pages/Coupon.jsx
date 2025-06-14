@@ -136,7 +136,7 @@ const Coupon = ({ data, setshowmodel }) => {
         },
         notes: {
           user_id: user?._id,
-          course_id: data?._id,
+          courses: data?._id,
           courseName: data?.categorys || data?.Title || data?.name,
         },
         theme: {
