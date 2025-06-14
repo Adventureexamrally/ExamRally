@@ -77,7 +77,7 @@ const Header = () => {
       {/* Center: Search bar (hidden on small screens) */}
       <div className="flex-1 max-w-md mx-auto hidden lg:block ">
         <div className="relative">
-          <input
+          {/* <input
             type="text"
             placeholder="Search..."
             className="w-full py-2 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -87,7 +87,7 @@ const Header = () => {
             className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-800 text-white px-4 py-1 rounded-lg"
           >
             Search
-          </button>
+          </button> */}
         </div>
       </div>
   

@@ -73,36 +73,35 @@ function MainApp() {
   const location = useLocation();
   const [showModalji, setShowModalji] = useState(false);
   const [showModal, setShowModal] = useState(false);
+   const [isLoading, setIsLoading] = useState(true);
   const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
 
   
 useEffect(() => {
-  // Check if the modal has been shown before
-  const hasShownModal = localStorage.getItem('hasShownModal');
+  const modalInfo = localStorage.getItem('modalShownDate');
+  const today = new Date().toISOString().split('T')[0]; // Get today's date as YYYY-MM-DD
 
-  if (hasShownModal) {
-    // If it has already been shown, do nothing
-    return;
+  // If it's not shown today
+  if (modalInfo !== today) {
+    // Call your API
+    Api.get('/models')
+      .then((response) => {
+        const data = response.data;
+        console.warn(data);
+
+        if (Array.isArray(data) && data.length > 0) {
+          console.warn(data[0].photo);
+          setShowModalji(data[0].photo);
+          localStorage.setItem('modalShownDate', today); // Save today's date
+        } else if (data && data.photo) {
+          setShowModalji(data.photo);
+          localStorage.setItem('modalShownDate', today); // Save today's date
+        }
+      })
+      .catch(() => {
+        console.log('Error fetching photo');
+      });
   }
-
-  // Fetch data and possibly show the modal
-  Api.get('/models')
-    .then((response) => {
-      const data = response.data;
-      console.warn(data);
-
-      if (Array.isArray(data) && data.length > 0) {
-        console.warn(data[0].photo);
-        setShowModalji(data[0].photo);
-        localStorage.setItem('hasShownModal', 'true'); // Mark as shown
-      } else if (data && data.photo) {
-        setShowModalji(data.photo);
-        localStorage.setItem('hasShownModal', 'true'); // Mark as shown
-      }
-    })
-    .catch(() => {
-      console.log('Error fetching photo');
-    });
 }, []);
 
 
@@ -133,7 +132,12 @@ useEffect(() => {
     }
   }, [location.pathname]);
  
-  
+  useEffect(() => {
+  if (showModalji) {
+    setIsLoading(true); // ✅ When modal opens, start loading
+  }
+}, [showModalji]);
+
    useEffect(() => {
     if (user && !hasUserSubmittedData) {
       // Check if phoneNumber & state are missing
@@ -157,34 +161,54 @@ useEffect(() => {
         </>
       )}
       {/* Modal */}
-      {showModalji && (
-        <div
-          className="modal fade show d-flex align-items-center justify-content-center"
-          tabIndex="-1"
-          role="dialog"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }} // Full-screen overlay
-        >
-          <div
-            className="modal-dialog modal-dialog-centered"
-            role="document"
-          >
-            <div className="modal-content">
-              <div className="modal-header">
+  {showModalji && (
+  <div
+    className="modal fade show d-flex align-items-center justify-content-center"
+    tabIndex="-1"
+    role="dialog"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }}
+  >
+    <div className="modal-dialog modal-dialog-centered" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <button
+            type="button"
+            className="btn-close text-sm"
+            onClick={() => setShowModalji(false)}
+            aria-label="Close"
+          ></button>
+        </div>
 
-                <button
-                  type="button"
-                  className="btn-close text-sm"
-                  onClick={() => setShowModalji(false)}
-                  aria-label="Close"
-                ></button>
+        <div className="modal-body">
+          <div className="flex items-center justify-center">
+            {isLoading && (
+               <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-green-500 fw-bold "
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                 
+                </div>
               </div>
-              <div className="modal-body">
-                <img src={showModalji} alt="Mock Test" className="img-fluid" />
-              </div>
-            </div>
+            )}
+
+            <img
+              src={showModalji}
+              alt="Mock Test"
+              className={`img-fluid ${isLoading ? 'hidden' : ''}`}
+              onLoad={() => setIsLoading(false)}
+            />
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
+
 <ScrollToTop/>
       <Routes>
         <Route element={<ProtectedRoute />}> 

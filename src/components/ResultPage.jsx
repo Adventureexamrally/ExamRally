@@ -171,7 +171,20 @@ const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
 
 
   if (!resultData) {
-    return <div>Loading...</div>;
+    return (
+      <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-green-500 fw-bold "
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                 
+                </div>
+              </div>
+    );
   }
 
   const { score,correct,s_accuracy, incorrect,skipped, Attempted,Not_Attempted,NotVisited,isVisited, timeTaken, Accuracy, section ,cutoff_mark, } = resultData;

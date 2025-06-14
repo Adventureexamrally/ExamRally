@@ -101,7 +101,7 @@ const NavBar = () => {
   return (
     <>
 
-      <nav className="bg-green-600 text-white py-1 font-semibold shadow-md">
+      <nav className="bg-green-600 text-white py-1 font-semibold shadow-md py-2">
         <div className="container mx-auto flex justify-between items-center px-4">
           {/* Logo */}
 
@@ -220,10 +220,10 @@ const NavBar = () => {
           </nav>
 
           {/* "Get App" Button */}
-          <button className="bg-[#131656] text-white px-4 py-1 flex flex-col rounded hover:bg-[#131679]   transition duration-300">
+          {/* <button className="bg-[#131656] text-white px-4 py-1 flex flex-col rounded hover:bg-[#131679]   transition duration-300">
          <span>Get App</span>
   <span className="text-xs mt-1 blink">Coming Soon </span>
-          </button>
+          </button> */}
           {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
           {/* <User /> */}
 
