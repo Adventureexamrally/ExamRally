@@ -56,6 +56,7 @@ import ScrollToTopButton from "./ScrollToTopButton";
 import PopupModal from "./components/PopupModal";
 import { useUser } from '@clerk/clerk-react';
 import { UserContext } from "./context/UserProvider";
+import  Api  from "./service/Api";
 
 
 
@@ -73,6 +74,37 @@ function MainApp() {
   const [showModalji, setShowModalji] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
+
+  
+useEffect(() => {
+  // Check if the modal has been shown before
+  const hasShownModal = localStorage.getItem('hasShownModal');
+
+  if (hasShownModal) {
+    // If it has already been shown, do nothing
+    return;
+  }
+
+  // Fetch data and possibly show the modal
+  Api.get('/models')
+    .then((response) => {
+      const data = response.data;
+      console.warn(data);
+
+      if (Array.isArray(data) && data.length > 0) {
+        console.warn(data[0].photo);
+        setShowModalji(data[0].photo);
+        localStorage.setItem('hasShownModal', 'true'); // Mark as shown
+      } else if (data && data.photo) {
+        setShowModalji(data.photo);
+        localStorage.setItem('hasShownModal', 'true'); // Mark as shown
+      }
+    })
+    .catch(() => {
+      console.log('Error fetching photo');
+    });
+}, []);
+
 
   useEffect(() => {
     if (location.pathname === "/") {
@@ -147,7 +179,7 @@ function MainApp() {
                 ></button>
               </div>
               <div className="modal-body">
-                <img src={jaiib} alt="Mock Test" className="img-fluid" />
+                <img src={showModalji} alt="Mock Test" className="img-fluid" />
               </div>
             </div>
           </div>

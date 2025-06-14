@@ -8,6 +8,7 @@ import { FaChevronRight, FaInfoCircle } from "react-icons/fa";
 
 const Mocksolution = () => {
     const [examData, setExamData] = useState(null);
+        const [examDatas, setExamsData] = useState(null);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState([]);
@@ -53,7 +54,7 @@ const Mocksolution = () => {
     Api.get(`results/${user?._id}/${id}`)
       .then((res) => {
         if (res.data) {
-          setExamData(res.data);
+        //   setExamData(res.data);
           console.log(res.data);
         }
       })
@@ -87,7 +88,7 @@ const Mocksolution = () => {
 
             .then((res) => {
                 if (res.data) {
-                    setExamData(res.data);
+                    // setExamData(res.data);
                     console.log(res.data);
                 }
             })
@@ -182,7 +183,7 @@ const Mocksolution = () => {
         Api.get(`results/${user?._id}/${id}`)
             .then((res) => {
                 if (res.data) {
-                    setExamData(res.data);
+                    setExamsData(res.data);
                     // Store results for all sections
                     setResultsBySection(res.data.section.map(section => ({
                         correct: section.correct,
@@ -648,10 +649,10 @@ const Mocksolution = () => {
                                             />
 
                                             {
-                                                examData?.section[currentSectionIndex]?.questions?.[
+                                                examDatas?.section[currentSectionIndex]?.questions?.[
                                                     selectedLanguage?.toLowerCase()
                                                 ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
-                                                    const question = examData.section[currentSectionIndex]?.questions?.[
+                                                    const question = examDatas.section[currentSectionIndex]?.questions?.[
                                                         selectedLanguage?.toLowerCase()
                                                     ]?.[clickedQuestionIndex - startingIndex];
 
@@ -955,10 +956,10 @@ const Mocksolution = () => {
 
 
                         <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-                            {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
+                            {examDatas?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
                                 // Calculate the actual question number including previous sections
                                 const actualQuestionNumber = startingIndex + index + 1;
-                                const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
+                                const currentQuestion = examDatas.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
                                 const answer = currentQuestion?.answer;
 
 
@@ -997,10 +998,6 @@ const Mocksolution = () => {
                                         className = "notVisitImg";
                                     }
                                 }
-
-                                // if (resultData?.section.isVisited - resultData?.section.Attempted){
-                                //     className = "skipImg"; // Skipped question - visited but no answer selected
-                                // }
                                 return (
                                     <div key={index}>
                                         <span
@@ -1023,41 +1020,7 @@ setCheck(null);
                                     </div>
                                 );
                             })}
-                        </div>
-
-
-
-
-
-
-
-                        <div className="mt-3 bg-gray-100">
-                            <div className="container mt-3">
-                                <div className="row align-items-center">
-                                    <div className="col-6">
-                                        <div className="smanswerImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.correct}</div>
-                                        <p>Correct</p>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="smnotansImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.incorrect}</div>
-                                        <p>Wrong</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="container mt-3">
-                                <div className="row align-items-center">
-                                    <div className="col-6">
-                                        <div className="smnotVisitImg  text-black fw-bold flex align-items-center justify-content-center">{resultData?.unseen}</div>
-                                        <p>Unseen</p>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="smskipimg  text-white fw-bold flex align-items-center justify-content-center">{resultData.skipped}</div>
-                                        <p>Skipped</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        </div>                     
                     </div>
                 </div>
             </div>
