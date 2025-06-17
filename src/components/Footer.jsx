@@ -18,6 +18,7 @@ import {
 import { FaXTwitter } from "react-icons/fa6";
 import Api from "../service/Api";
 import { Telegram, YouTube } from "@mui/icons-material";
+import { fetchUtcNow } from "../service/timeApi";
 function Footer() {
   const [contactInfo, setContactInfo] = useState({
     address: "",
@@ -48,7 +49,22 @@ function Footer() {
 
   const navigate = useNavigate(); // Hook to navigate programmatically
   const location = useLocation(); // Hook to get the current location (path + hash)
-
+     const [utcNow, setUtcNow] = useState(null);
+     const [year,setYear]=useState(null) 
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+           setYear(globalDate.getFullYear());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
+console.warn(year)
   return (
     <>
       <div>
@@ -254,7 +270,7 @@ function Footer() {
       </div>
       <footer className=" bg-green-600 text-center text-white p-4 mt-8 fw-bold">
         <p className="text-sm">
-          &copy; {new Date().getFullYear()} Examrally. All Rights Reserved.
+          &copy; {year} Examrally. All Rights Reserved.
         </p>
       </footer>
     </>

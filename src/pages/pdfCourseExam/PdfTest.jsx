@@ -22,7 +22,7 @@ const Test = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sectionTimes, setSectionTimes] = useState({});
 const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
-
+console.warn(currentSectionStartTimeRef)
   const { user } = useContext(UserContext);
 
   const location = useLocation();

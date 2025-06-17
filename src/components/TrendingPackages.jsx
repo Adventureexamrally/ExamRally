@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-react';
 import { UserContext } from '../context/UserProvider';
 import PackageCoupon from '../pages/PackageCoupon';
 import { BsRocketTakeoffFill } from "react-icons/bs";
+import { fetchUtcNow } from '../service/timeApi';
 
 const TrendingPackages = () => {
   const navigate = useNavigate();
@@ -39,6 +40,20 @@ const TrendingPackages = () => {
 
   const [packagesWithEnrollment, setPackagesWithEnrollment] = useState([]);
   const [duration,setDuration]=useState([])
+    const [utcNow, setUtcNow] = useState(null);
+    
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
 useEffect(() => {
   if (!data.length) return;
 
@@ -55,9 +70,8 @@ useEffect(() => {
 
       if (matchedCourse) {
         enrolled = true;
-        const currentDate = new Date();
         const expiryDate = new Date(matchedCourse.expiryDate);
-        const timeDiff = expiryDate - currentDate;
+        const timeDiff = expiryDate - utcNow;
         daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
         if (daysLeft <= 0) {

@@ -3,6 +3,7 @@ import DashBoard from './DashBoard';
 import { FaEdit } from 'react-icons/fa';
 import { useUser } from '@clerk/clerk-react';
 import Api from '../../service/Api';
+import { fetchUtcNow } from '../../service/timeApi';
 
 const Profile = () => {
   const [open, setOpen] = useState(false);
@@ -86,6 +87,20 @@ const Profile = () => {
     }
   };
 
+    const [utcNow, setUtcNow] = useState(null);
+      
+    // 1. Fetch UTC time from server
+     useEffect(() => {
+        fetchUtcNow()
+          .then(globalDate => {
+            setUtcNow(globalDate);
+            console.warn("Server UTC Date:", globalDate.toISOString());
+          })
+          .catch(error => {
+            console.error("Failed to fetch UTC time:", error);
+            // handle error as needed
+          });
+      }, []);
   return (
     <div className="flex flex-col md:flex-row">
       <DashBoard handleDrawerToggle={handleDrawerToggle} open={open} setOpen={setOpen} />
@@ -200,7 +215,7 @@ const Profile = () => {
                   placeholder="Enter Date of Birth"
                   required
                   disabled={!isEditing}
-                  max={new Date().toISOString().split('T')[0]} // 🔒 restrict to today or earlier
+                  max={utcNow.toISOString().split('T')[0]} // 🔒 restrict to today or earlier
                   className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>

@@ -9,6 +9,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { toast, ToastContainer } from "react-toastify";
+import { fetchUtcNow } from "../service/timeApi";
 
 const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
@@ -26,6 +27,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
   const [accessDuration, setAccessDuration] = useState("");
+   const [utcNow, setUtcNow] = useState(null);
 
   // Calculate access duration based on package validity
   useEffect(() => {
@@ -33,7 +35,19 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       setAccessDuration(`${pkg.duration} Days`);
     }
   }, [pkg.validityDays]);
-
+    
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -55,9 +69,9 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
       const res = await Api.post("/coupons/validate", {
         couponCode: couponCode.trim().toUpperCase(),
-        currentDate: new Date().toISOString(),
+        currentDate: utcNow.toISOString(),
       });
-
+console.warn(res)
       if (res.data.valid) {
         const baseAmount =
           Number(pkg.discountPrice) || Number(pkg.discountedAmount);

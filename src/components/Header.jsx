@@ -6,6 +6,7 @@ import CustomUserMenu from './CustomUserButton';
 import offer from '../assets/images/offer.png'
 import Api from '../service/Api';
 import { motion } from 'framer-motion';
+import { fetchUtcNow } from '../service/timeApi';
 
 const Header = () => {
 
@@ -14,6 +15,21 @@ const Header = () => {
 
   const [offer, setOffer] = useState(null);
   const [countdown, setCountdown] = useState("");
+
+     const [utcNow, setUtcNow] = useState(null);
+      
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
   useEffect(() => {
     const fetchOffer = async () => {
       try {
@@ -32,7 +48,7 @@ const Header = () => {
       if (offer) {
         const end = new Date(offer.endDateTime);
         const start = new Date(offer.startDateTime);
-        const now = new Date();
+        const now = utcNow;
         // Check if current time is before start time
         if (now < start) {
           setCountdown("");
@@ -94,7 +110,7 @@ const Header = () => {
       {/* Offer and Telegram/Sign-in */}
       <div className="flex items-center space-x-4">
         {/* Offer display */}
-        {offer && new Date() >= new Date(offer.startDateTime) && (
+        {offer && utcNow >= new Date(offer.startDateTime) && (
           <Link to={offer.offerLink} className="flex flex-col md:flex-row items-center lg:space-x-2">
             <img
               src={offer.imageUrl}

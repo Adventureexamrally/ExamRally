@@ -1,7 +1,7 @@
 // Uncomment these to see console logs during debugging
-// console.log = () => {};
-// console.warn = () => {};
-// console.error = () => {};
+console.log = () => {};
+console.warn = () => {};
+console.error = () => {};
 
 import React from "react";
 import ReactDOM from "react-dom/client";

@@ -4,6 +4,7 @@ import Api from '../service/Api';
 import { useUser } from '@clerk/clerk-react';
 import { UserContext } from '../context/UserProvider';
 import PackageCoupon from './PackageCoupon';
+import { fetchUtcNow } from '../service/timeApi';
 
 const Packages = () => {
   const navigate = useNavigate();
@@ -38,6 +39,22 @@ const Packages = () => {
 
   const [packagesWithEnrollment, setPackagesWithEnrollment] = useState([]);
   const [duration,setDuration]=useState([])
+    const [utcNow, setUtcNow] = useState(null);
+    
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
+
+
 useEffect(() => {
   if (!data.length) return;
 
@@ -54,9 +71,8 @@ useEffect(() => {
 
       if (matchedCourse) {
         enrolled = true;
-        const currentDate = new Date();
         const expiryDate = new Date(matchedCourse.expiryDate);
-        const timeDiff = expiryDate - currentDate;
+        const timeDiff = expiryDate - utcNow;
         daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
         if (daysLeft <= 0) {
@@ -122,6 +138,7 @@ useEffect(() => {
   className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 font-bold hover:from-green-600 hover:to-green-700 rounded-lg shadow-md transition-all duration-300"
   onClick={() => handlePackageSelect(pkg)}
   // allow repurchase if expired
+    disabled={pkg.enrolled && !pkg.expired}
 >
   {pkg.enrolled && !pkg.expired
     ? "Purchased"

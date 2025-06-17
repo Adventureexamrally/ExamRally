@@ -57,6 +57,7 @@ import PopupModal from "./components/PopupModal";
 import { useUser } from '@clerk/clerk-react';
 import { UserContext } from "./context/UserProvider";
 import  Api  from "./service/Api";
+import { fetchUtcNow } from "./service/timeApi";
 
 
 
@@ -75,15 +76,32 @@ function MainApp() {
   const [showModal, setShowModal] = useState(false);
    const [isLoading, setIsLoading] = useState(true);
   const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
+const [utcNow, setUtcNow] = useState(null);
+const [Today, setToday] = useState(null);
 
-  
+
+// Fetch UTC time from server
 useEffect(() => {
+  fetchUtcNow()
+    .then(globalDate => {
+      setUtcNow(globalDate);
+      const serverDateStr = globalDate.toISOString().split('T')[0];
+      setToday(serverDateStr);
+      console.warn("Server UTC Date:", serverDateStr);
+    })
+    .catch(error => {
+      console.error("Failed to fetch UTC time:", error);
+    });
+}, []);
+
+// Show modal logic - runs only when 'Today' is set
+useEffect(() => {
+  if (!Today) return; // Wait for Today to be initialized
+
   const modalInfo = localStorage.getItem('modalShownDate');
-  const today = new Date().toISOString().split('T')[0]; // Get today's date as YYYY-MM-DD
 
   // If it's not shown today
-  if (modalInfo !== today) {
-    // Call your API
+  if (modalInfo !== Today) {
     Api.get('/models')
       .then((response) => {
         const data = response.data;
@@ -92,17 +110,17 @@ useEffect(() => {
         if (Array.isArray(data) && data.length > 0) {
           console.warn(data[0].photo);
           setShowModalji(data[0].photo);
-          localStorage.setItem('modalShownDate', today); // Save today's date
+          localStorage.setItem('modalShownDate', Today);
         } else if (data && data.photo) {
           setShowModalji(data.photo);
-          localStorage.setItem('modalShownDate', today); // Save today's date
+          localStorage.setItem('modalShownDate', Today);
         }
       })
       .catch(() => {
         console.log('Error fetching photo');
       });
   }
-}, []);
+}, [Today]); // Dependency is 'Today' from server
 
 
   useEffect(() => {

@@ -8,6 +8,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
+import axios from "axios";
+import { fetchUtcNow } from "../../service/timeApi";
 
 const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   console.log(data);
@@ -147,42 +149,54 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
 
   const [isEnrolled, setIsEnrolled] = useState(false);
   const status = true;
-  useEffect(() => {
-    const enrolled = user?.enrolledCourses?.some((course) => {
-      // Parse expiry and purchase dates
-      const expireDate = new Date(course?.expiryDate);
-      const purchaseDate = new Date(course?.purchaseDate);
+  const [utcNow, setUtcNow] = useState(null);
+  
+// 1. Fetch UTC time from server
+ useEffect(() => {
+    fetchUtcNow()
+      .then(globalDate => {
+        setUtcNow(globalDate);
+        console.warn("Server UTC Date:", globalDate.toISOString());
+      })
+      .catch(error => {
+        console.error("Failed to fetch UTC time:", error);
+        // handle error as needed
+      });
+  }, []);
 
-      // Format dates (optional, for display)
-      const formatDate = (date) => {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
-      };
+// 2. Check enrollment only when we have the server UTC date
+useEffect(() => {
+  if (!utcNow || !user?.enrolledCourses || !data?._id) return;
 
-      const formattedExpiry = formatDate(expireDate);
-      const formattedPurchase = formatDate(purchaseDate);
-
-      // Calculate remaining days
-      const today = new Date();
-      const timeDiff = expireDate.getTime() - today.getTime();
-      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
-
-      if (
-        !isNaN(daysLeft) &&
-        daysLeft >= 0 &&
-        course?.courseId?.includes(data?._id)
-      ) {
-        setExpirydate(daysLeft); // 👈 Set number of days left
-        return true;
-      }
-
+  const enrolled = user.enrolledCourses.some((course) => {
+    if (!course?.expiryDate || !course?.purchaseDate || !course?.courseId) {
       return false;
-    });
+    }
 
-    setIsEnrolled(enrolled);
-  }, [user, data]);
+    const expireDateUTC = new Date(course.expiryDate);
+    const purchaseDateUTC = new Date(course.purchaseDate);
+
+    // Validate dates
+    if (isNaN(expireDateUTC.getTime()) || isNaN(purchaseDateUTC.getTime())) {
+      return false;
+    }
+
+    // Calculate remaining days using server UTC time
+    const timeDiff = expireDateUTC.getTime() - utcNow.getTime();
+    console.warn(utcNow)
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+    if (daysLeft >= 0 && course.courseId.includes(data._id)) {
+      setExpirydate(daysLeft);
+      return true;
+    }
+
+    return false;
+  });
+
+  setIsEnrolled(enrolled);
+}, [utcNow, user, data]);
+
 
   console.log("check", user?.enrolledCourses);
 
@@ -294,7 +308,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
                               <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                               {(!isEnrolled &&
                                 (isPaidTest(test) ||
-                                  new Date(test.live_date) > new Date())) ||
+                                  new Date(test.live_date) > utcNow)) ||
                               (isEnrolled && expiredate < 0) ? (
                              
                               
@@ -308,7 +322,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
                                   </div>
                                 </button>
                               ) : isEnrolled &&
-                                new Date(test.live_date) > new Date() ? (
+                                new Date(test.live_date) > utcNow ? (
                                 // 🚧 Coming Soon if enrolled but test not live yet
           <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
   ${

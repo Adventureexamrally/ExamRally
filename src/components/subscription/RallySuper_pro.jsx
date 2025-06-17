@@ -4,6 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserProvider";
 import PackageCoupon from "../../pages/PackageCoupon";
+import { fetchUtcNow } from "../../service/timeApi";
 
 const RallySuper_pro = () => {
   const [sub, setSub] = useState(null);
@@ -22,6 +23,21 @@ const RallySuper_pro = () => {
     fetchSubscription();
   }, []);
 
+
+     const [utcNow, setUtcNow] = useState(null);
+      
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
   const fetchSubscription = async () => {
     try {
       const response = await Api.get("subscription/getall/sub");
@@ -51,7 +67,7 @@ const RallySuper_pro = () => {
       );
 
       if (matchedCourse) {
-        const currentDate = new Date();
+        const currentDate = utcNow;
         const expiryDate = new Date(matchedCourse.expiryDate);
         const timeDiff = expiryDate - currentDate;
         const remainingDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));

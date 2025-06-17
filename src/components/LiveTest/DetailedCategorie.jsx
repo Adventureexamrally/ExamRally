@@ -16,6 +16,7 @@ import axios from "axios";
 import { useUser } from "@clerk/clerk-react";
 import { UserContext } from "../../context/UserProvider";
 import Coupon from "../../pages/Coupon";
+import { fetchUtcNow } from "../../service/timeApi";
 
 const DetailedCategorie = () => {
   const [catDetail, setCatDetails] = useState([]);
@@ -182,8 +183,23 @@ const DetailedCategorie = () => {
   };
 
   const [isEnrolled, setIsEnrolled] = useState(false);
+   const [utcNow, setUtcNow] = useState(null);
   const status = true;
+
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
+  
   useEffect(() => {
+     if (!utcNow || !user?.enrolledCourses || !data?._id) return;
     const enrolled = user?.enrolledCourses?.some((course) => {
       // Parse expiry and purchase dates
       const expireDate = new Date(course?.expiryDate);
@@ -200,9 +216,7 @@ const DetailedCategorie = () => {
       const formattedExpiry = formatDate(expireDate);
       const formattedPurchase = formatDate(purchaseDate);
 
-      // Calculate remaining days
-      const today = new Date();
-      const timeDiff = expireDate.getTime() - today.getTime();
+      const timeDiff = expireDate.getTime() - utcNow.getTime();
       const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
 
       if (
