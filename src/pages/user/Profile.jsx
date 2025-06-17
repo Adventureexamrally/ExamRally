@@ -96,11 +96,18 @@ const Profile = () => {
 
           {/* Conditional rendering if no user details exist */}
           {!userDetails.firstName && !isEditing ? (
-            <div className="flex items-center justify-center">
-             <div className="spinner-border text-green-500 " role="status">
-  <span className="visually-hidden">Loading...</span>
-</div>
-            </div>
+                <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-green-500 fw-bold "
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                 
+                </div>
+              </div>
           ) : (
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               <div className="col-span-2 md:col-span-1">

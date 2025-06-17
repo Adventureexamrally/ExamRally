@@ -196,6 +196,8 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
     return test?.result_type?.toLowerCase() === "paid";
   };
 
+  
+
   return (
     <div
       className="modal fade"
@@ -308,18 +310,25 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
                               ) : isEnrolled &&
                                 new Date(test.live_date) > new Date() ? (
                                 // 🚧 Coming Soon if enrolled but test not live yet
-                             <div
-  className={`mt-3 font-semibold py-2 px-4 border border-1 rounded text-center cursor-not-allowed 
-    ${test.show_date ? 'text-[#131656] ' : 'text-red-500  border-red-500'}`}
->
+          <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
   {test.show_date
-    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
+    ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
       })}`
     : 'Coming Soon'}
 </div>
+
 
                               ) : (
                                 // ✅ User is enrolled and test is live → show proper action

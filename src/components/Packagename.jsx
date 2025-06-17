@@ -59,50 +59,60 @@ const Packagename = () => {
 
   const { user } = useContext(UserContext);
   // console.log(user)
+const fetchPackageContent = async () => {
+  try {
+    const res = await Api.get(`packages/package-content/${id}`);
+    const packageData = res.data.data[0];
 
-    const fetchPackageContent = async () => {
-    try {
-      const res = await Api.get(`packages/package-content/${id}`);
-      const packageData = res.data.data[0];
+    setData(packageData);
+    setFaqs(packageData.faqs);
 
-      console.log("Package Content:", res.data);
-      console.log("wednesday", packageData);
+    // Reset result data before fetching new results
+    setResultData({});
 
-      setData(packageData);
-      setFaqs(packageData.faqs);
-
-      // If user exists, fetch results
-      if (user?._id && packageData?.exams?.length > 0) {
-        for (const test of packageData.exams) {
-          try {
-            const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
-            const result = resultRes.data;
-
-            if (result?.status === "completed" || result?.status === "paused") {
-              setResultData((prev) => ({
-                ...prev,
-                [test._id]: {
-                  ...result,
-                  lastQuestionIndex: result.lastVisitedQuestionIndex,
-                  selectedOptions: result.selectedOptions,
-                },
-              }));
-            }
-          } catch (err) {
-            console.error("Error fetching result for test:", test._id, err);
-          }
+    // If user exists, fetch results
+    if (user?._id && packageData?.exams?.length > 0) {
+      const resultPromises = packageData.exams.map(async (test) => {
+        try {
+          const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
+          return {
+            testId: test._id,
+            result: resultRes.data
+          };
+        } catch (err) {
+          console.error("Error fetching result for test:", test._id, err);
+          return null;
         }
-      }
+      });
 
-      if (typeof run === "function") {
-        run();
-      }
-
-    } catch (err) {
-      console.error("Error fetching package content:", err);
+      const results = await Promise.all(resultPromises);
+      results.forEach(item => {
+        if (item && (item.result?.status === "completed" || item.result?.status === "paused")) {
+          setResultData(prev => ({
+            ...prev,
+            [item.testId]: {
+              ...item.result,
+              lastQuestionIndex: item.result.lastVisitedQuestionIndex,
+              selectedOptions: item.result.selectedOptions,
+            },
+          }));
+        }
+      });
     }
-  };
 
+    if (typeof run === "function") {
+      run();
+    }
+
+  } catch (err) {
+    console.error("Error fetching package content:", err);
+  }
+};
+
+// Make sure to call fetchPackageContent when component mounts and when user changes
+useEffect(() => {
+  fetchPackageContent();
+}, [id, user?._id]);  // Add dependencies here
   useEffect(() => {
 fetchPackageContent()
 
@@ -391,7 +401,33 @@ useEffect(() => {
   const isPaidTest = (test) => {
     return test?.result_type?.toLowerCase() === "paid";
   };
+useEffect(() => {
+  window.addEventListener("focus", fetchPackageContent);
+  return () => {
+    window.removeEventListener("focus", fetchPackageContent);
+  };
+}, []);
+// In the component where you take the test (mocktest/instruction pages)
+useEffect(() => {
+  return () => {
+    // This will run when component unmounts (when you navigate back)
+    if (window.opener) {
+      window.opener.postMessage('refresh-needed', '*');
+    }
+  };
+}, []);
 
+// And in your main component add this effect:
+useEffect(() => {
+  const handleMessage = (event) => {
+    if (event.data === 'refresh-needed') {
+      forceRefresh();
+    }
+  };
+
+  window.addEventListener('message', handleMessage);
+  return () => window.removeEventListener('message', handleMessage);
+}, []);
 
 
   return (
@@ -788,62 +824,55 @@ useEffect(() => {
                                 : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center cursor-not-allowed">
-                                   {test.show_date
-    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
+                                     <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
+  {test.show_date
+    ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
       })}`
     : 'Coming Soon'}
-                                  </div>
+</div>
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
-                                  <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                      resultData?.[test._id]?.status ===
-                                      "completed"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : resultData?.[test._id]?.status ===
-                                          "paused"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : "bg-green-500 text-white hover:bg-green-600"
-                                    }`}
-                                    onClick={() => {
-                                      if (!isSignedIn) {
-                                        openNewWindow("/sign-in");
-                                        return;
-                                      }
+                          <button
+  className={`mt-3 py-2 px-4 rounded w-full transition ${
+    resultData?.[test._id]?.status === "completed"
+      ? "bg-green-500 text-white hover:bg-green-600"
+      : resultData?.[test._id]?.status === "paused"
+      ? "bg-green-500 text-white hover:bg-green-600"
+      : "bg-green-500 text-white hover:bg-green-600"
+  }`}
+  onClick={() => {
+    if (!isSignedIn) {
+      navigate("/sign-in");
+      return;
+    }
 
-                                      if (
-                                        resultData?.[test._id]?.status ===
-                                        "completed"
-                                      ) {
-                                        openNewWindow(
-                                          `/result/${test._id}/${user?._id}`
-                                        );
-                                      } else if (
-                                        resultData?.[test._id]?.status ===
-                                        "paused"
-                                      ) {
-                                        openNewWindow(
-                                          `/mocktest/${test._id}/${user?._id}`
-                                        );
-                                      } else {
-                                        openNewWindow(
-                                          `/instruction/${test._id}/${user?._id}`
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    {resultData?.[test._id]?.status ===
-                                    "completed"
-                                      ? "View Result"
-                                      : resultData?.[test._id]?.status ===
-                                        "paused"
-                                      ? "Resume"
-                                      : "Take Test"}
-                                  </button>
+    if (resultData?.[test._id]?.status === "completed") {
+      openNewWindow(`/result/${test._id}/${user?._id}`);
+    } else if (resultData?.[test._id]?.status === "paused") {
+      openNewWindow(`/mocktest/${test._id}/${user?._id}`);
+    } else {
+      openNewWindow(`/instruction/${test._id}/${user?._id}`);
+    }
+  }}
+>
+  {resultData?.[test._id]?.status === "completed"
+    ? "View Result"
+    : resultData?.[test._id]?.status === "paused"
+    ? "Resume"
+    : "Take Test"}
+</button>
                                 )}
                               </div>
                             </div>
@@ -939,15 +968,21 @@ useEffect(() => {
 ) : isEnrolled &&
                                   new Date(test.live_date) > new Date() ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
-                                  <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                     {test.show_date
+                                    <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
+  {test.show_date
     ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })}`
     : 'Coming Soon'}
-                                  </div>
+</div>
                                 ) : (
                                   // ✅ Actionable: Enrolled and test is live
                                   <button
@@ -1092,15 +1127,21 @@ useEffect(() => {
 ) : isEnrolled &&
                               new Date(test.live_date) > new Date() ? (
                               // 🚧 Coming Soon: Enrolled, but test not yet live
-                              <div className="mt-3 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                {test.show_date
+                                <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+  ${
+    test.show_date 
+      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
+      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
+  }
+  shadow-md hover:shadow-lg`}>
+  {test.show_date
     ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })}`
     : 'Coming Soon'}
-                              </div>
+</div>
                             ) : (
                               // ✅ Actionable: Enrolled and test is live
                               <button

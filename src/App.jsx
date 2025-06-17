@@ -17,7 +17,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Packagename from "./components/Packagename";
 import ResultPage from "./components/ResultPage";
 import jaiib from '../src/assets/logo/offer.jpg'
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Resultanalysis from "./components/Resultanalysis";
 import Mocksolution from "./components/Mocksolution";
 import Subblog from "./pages/blog/Subblog";
@@ -53,6 +53,10 @@ import ErrorReport from "./pages/user/ErrorReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Refund_policy from "./components/Refund_policy";
 import ScrollToTopButton from "./ScrollToTopButton";
+import PopupModal from "./components/PopupModal";
+import { useUser } from '@clerk/clerk-react';
+import { UserContext } from "./context/UserProvider";
+import  Api  from "./service/Api";
 
 
 
@@ -67,14 +71,45 @@ function App() {
 
 function MainApp() {
   const location = useLocation();
+  const [showModalji, setShowModalji] = useState(false);
   const [showModal, setShowModal] = useState(false);
+   const [isLoading, setIsLoading] = useState(true);
+  const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
+
+  
+useEffect(() => {
+  const modalInfo = localStorage.getItem('modalShownDate');
+  const today = new Date().toISOString().split('T')[0]; // Get today's date as YYYY-MM-DD
+
+  // If it's not shown today
+  if (modalInfo !== today) {
+    // Call your API
+    Api.get('/models')
+      .then((response) => {
+        const data = response.data;
+        console.warn(data);
+
+        if (Array.isArray(data) && data.length > 0) {
+          console.warn(data[0].photo);
+          setShowModalji(data[0].photo);
+          localStorage.setItem('modalShownDate', today); // Save today's date
+        } else if (data && data.photo) {
+          setShowModalji(data.photo);
+          localStorage.setItem('modalShownDate', today); // Save today's date
+        }
+      })
+      .catch(() => {
+        console.log('Error fetching photo');
+      });
+  }
+}, []);
 
 
   useEffect(() => {
     if (location.pathname === "/") {
-      setShowModal(true);
+      setShowModalji(true);
     } else {
-      setShowModal(false);
+      setShowModalji(false);
     }
   }, [location.pathname]);
 
@@ -85,15 +120,37 @@ function MainApp() {
     "/pdf/mocktest", "/pdf/result", "/pdf/mocksolution"
   ].some(path => location.pathname.startsWith(path));
 
+  const { user } = useContext(UserContext);
+
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("abcmodal123");
     if (!hasModalBeenShown && location.pathname === "/") {
-      setShowModal(true);
+      setShowModalji(true);
       localStorage.setItem("abcmodal123", "pair");
     } else {
-      setShowModal(false);
+      setShowModalji(false);
     }
   }, [location.pathname]);
+ 
+  useEffect(() => {
+  if (showModalji) {
+    setIsLoading(true); // ✅ When modal opens, start loading
+  }
+}, [showModalji]);
+
+   useEffect(() => {
+    if (user && !hasUserSubmittedData) {
+      // Check if phoneNumber & state are missing
+      const isMissingData = !user.phoneNumber || !user.state;
+      
+      const timer = setTimeout(() => {
+        // Only show if data is missing AND not submitted before
+        setShowModal(isMissingData);
+      }, 2000);
+
+      return () => clearTimeout(timer); 
+    }
+  }, [user, hasUserSubmittedData]);
   return (
     <>
       {/* Conditionally render Header and NavBar for routes other than "/mock-test" */}
@@ -104,34 +161,54 @@ function MainApp() {
         </>
       )}
       {/* Modal */}
-      {showModal && (
-        <div
-          className="modal fade show d-flex align-items-center justify-content-center"
-          tabIndex="-1"
-          role="dialog"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }} // Full-screen overlay
-        >
-          <div
-            className="modal-dialog modal-dialog-centered"
-            role="document"
-          >
-            <div className="modal-content">
-              <div className="modal-header">
+  {showModalji && (
+  <div
+    className="modal fade show d-flex align-items-center justify-content-center"
+    tabIndex="-1"
+    role="dialog"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)", minHeight: "100vh" }}
+  >
+    <div className="modal-dialog modal-dialog-centered" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <button
+            type="button"
+            className="btn-close text-sm"
+            onClick={() => setShowModalji(false)}
+            aria-label="Close"
+          ></button>
+        </div>
 
-                <button
-                  type="button"
-                  className="btn-close text-sm"
-                  onClick={() => setShowModal(false)}
-                  aria-label="Close"
-                ></button>
+        <div className="modal-body">
+          <div className="flex items-center justify-center">
+            {isLoading && (
+               <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-green-500 fw-bold "
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                 
+                </div>
               </div>
-              <div className="modal-body">
-                <img src={jaiib} alt="Mock Test" className="img-fluid" />
-              </div>
-            </div>
+            )}
+
+            <img
+              src={showModalji}
+              alt="Mock Test"
+              className={`img-fluid ${isLoading ? 'hidden' : ''}`}
+              onLoad={() => setIsLoading(false)}
+            />
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
+
 <ScrollToTop/>
       <Routes>
         <Route element={<ProtectedRoute />}> 
@@ -220,6 +297,9 @@ function MainApp() {
           }
         />
       </Routes>
+   {showModal && user && (
+  <PopupModal showModal={showModal} setShowModal={setShowModal}           onSuccess={() => localStorage.setItem("userDataSubmitted", "true")} />
+)}
 
       {/* Conditionally render Footer for routes other than "/mock-test" */}
       {!isMockTestRoute && <Footer />}
