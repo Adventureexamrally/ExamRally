@@ -137,48 +137,56 @@ console.warn(res)
         throw new Error("Failed to load Razorpay SDK");
       }
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: Math.round(finalPrice * 100),
-        currency: "INR",
-        name: pkg.name,
-        description: `Package purchase: ${pkg.name}`,
-        handler: async function (response) {
-          const res = await Api.post("/orders/verify-payment", {
-            userId: user._id,
-            courseId: JSON.stringify(pkg.coursesIncluded),
-            courseName: pkg.name || pkg.subscriptionType || "Course Name",
-            paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            coupon: discountPercent > 0 ? couponCode : null,
-            amount: finalPrice,
-            expiryDays: pkg.expiryDays || pkg.duration, // ✅ Send expiryDays from client
-          });
-          console.log(res);
-          await refreshUser();
-          toast.success("Payment successful! ");
-          setInterval(() => {
-            setShowModal(false);
-          }, 2000);
-        },
-        notes: {
-          user_id: user?._id,
-          // course_id: pkg._id,
-          courseName: pkg.name || pkg.subscriptionType,
-          courses: JSON.stringify(pkg.coursesIncluded),
-          coupon_code: discountPercent > 0 ? couponCode : null,
-          discount_percent: discountPercent,
-        },
-        prefill: {
-          name: user?.firstName || "",
-          email: user?.email || "",
-          contact: user?.phoneNumber || "",
-        },
-        theme: {
-          color: "#2E7D32",
-        },
-      };
+    const options = {
+  key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  amount: Math.round(finalPrice * 100),
+  currency: "INR",
+  name: pkg.name,
+  description: `Package purchase: ${pkg.name}`,
+  handler: async function (response) {
+    const payload = {
+      userId: user._id,
+      courseId: JSON.stringify(pkg.coursesIncluded),
+      courseName: pkg.name || pkg.subscriptionType || "Course Name",
+      paymentId: response.razorpay_payment_id,
+      orderId: response.razorpay_order_id,
+      signature: response.razorpay_signature,
+      coupon: discountPercent > 0 ? couponCode : null,
+      amount: finalPrice,
+      expiryDays: pkg.expiryDays || pkg.duration,
+    };
+
+    // ✅ Only add subscriptions: true if pkg.subscriptionType exists
+    if (pkg.subscriptionType) {
+      payload.subscriptions = true;
+    }
+
+    const res = await Api.post("/orders/verify-payment", payload);
+    console.log(res);
+    await refreshUser();
+    toast.success("Payment successful!");
+    setTimeout(() => {
+      setShowModal(false);
+    }, 2000);
+  },
+  notes: {
+    user_id: user?._id,
+    courseName: pkg.name || pkg.subscriptionType,
+    courses: JSON.stringify(pkg.coursesIncluded),
+    coupon_code: discountPercent > 0 ? couponCode : null,
+    discount_percent: discountPercent,
+    ...(pkg.subscriptionType ? { subscriptions: true } : {}), // 🟢 Conditionally add to notes too
+  },
+  prefill: {
+    name: user?.firstName || "",
+    email: user?.email || "",
+    contact: user?.phoneNumber || "",
+  },
+  theme: {
+    color: "#2E7D32",
+  },
+};
+
 
       const rzp = new window.Razorpay(options);
       rzp.open();

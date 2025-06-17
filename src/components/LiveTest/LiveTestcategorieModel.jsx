@@ -166,37 +166,30 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
 
 // 2. Check enrollment only when we have the server UTC date
 useEffect(() => {
-  if (!utcNow || !user?.enrolledCourses || !data?._id) return;
+  if (!utcNow || !data?._id || (!user?.enrolledCourses && !user?.subscriptions)) return;
 
-  const enrolled = user.enrolledCourses.some((course) => {
-    if (!course?.expiryDate || !course?.purchaseDate || !course?.courseId) {
-      return false;
-    }
+  const checkExpiry = (course) => {
+    const expireDate = new Date(course?.expiryDate);
+    const timeDiff = expireDate.getTime() - utcNow.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
 
-    const expireDateUTC = new Date(course.expiryDate);
-    const purchaseDateUTC = new Date(course.purchaseDate);
-
-    // Validate dates
-    if (isNaN(expireDateUTC.getTime()) || isNaN(purchaseDateUTC.getTime())) {
-      return false;
-    }
-
-    // Calculate remaining days using server UTC time
-    const timeDiff = expireDateUTC.getTime() - utcNow.getTime();
-    console.warn(utcNow)
-    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-
-    if (daysLeft >= 0 && course.courseId.includes(data._id)) {
-      setExpirydate(daysLeft);
+    if (
+      !isNaN(daysLeft) &&
+      daysLeft >= 0 &&
+      course?.courseId?.includes(data._id)
+    ) {
+      setExpirydate(daysLeft); // Set days left
       return true;
     }
 
     return false;
-  });
+  };
 
-  setIsEnrolled(enrolled);
-}, [utcNow, user, data]);
+  const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+  const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
 
+  setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+}, [user, data, utcNow]);
 
   console.log("check", user?.enrolledCourses);
 

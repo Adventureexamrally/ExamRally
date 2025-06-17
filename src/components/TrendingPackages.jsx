@@ -54,13 +54,19 @@ const TrendingPackages = () => {
           // handle error as needed
         });
     }, []);
+
 useEffect(() => {
   if (!data.length) return;
 
-  if (user && Array.isArray(user.enrolledCourses)) {
+  if (user && (Array.isArray(user.enrolledCourses) || Array.isArray(user.subscriptions))) {
+    const allCourses = [
+      ...(user.enrolledCourses || []),
+      ...(user.subscriptions || []),
+    ];
+
     const updatedPackages = data.map(item => {
       const packageName = item.name?.trim().toLowerCase();
-      const matchedCourse = user.enrolledCourses.find(
+      const matchedCourse = allCourses.find(
         course => course.courseName?.trim().toLowerCase() === packageName
       );
 
@@ -93,8 +99,7 @@ useEffect(() => {
     // User not signed in, just show all packages without enrollment info
     setPackagesWithEnrollment(data);
   }
-}, [user, data]);
-
+}, [user, data, utcNow]);
 
   return (
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">

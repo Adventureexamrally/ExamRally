@@ -198,41 +198,31 @@ const DetailedCategorie = () => {
         });
     }, []);
   
-  useEffect(() => {
-     if (!utcNow || !user?.enrolledCourses || !data?._id) return;
-    const enrolled = user?.enrolledCourses?.some((course) => {
-      // Parse expiry and purchase dates
-      const expireDate = new Date(course?.expiryDate);
-      const purchaseDate = new Date(course?.purchaseDate);
+useEffect(() => {
+  if (!utcNow || !data?._id || (!user?.enrolledCourses && !user?.subscriptions)) return;
 
-      // Format dates (optional, for display)
-      const formatDate = (date) => {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
-      };
+  const checkExpiry = (course) => {
+    const expireDate = new Date(course?.expiryDate);
+    const timeDiff = expireDate.getTime() - utcNow.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
 
-      const formattedExpiry = formatDate(expireDate);
-      const formattedPurchase = formatDate(purchaseDate);
+    if (
+      !isNaN(daysLeft) &&
+      daysLeft >= 0 &&
+      course?.courseId?.includes(data._id)
+    ) {
+      setExpirydate(daysLeft); // Set days left
+      return true;
+    }
 
-      const timeDiff = expireDate.getTime() - utcNow.getTime();
-      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+    return false;
+  };
 
-      if (
-        !isNaN(daysLeft) &&
-        daysLeft >= 0 &&
-        course?.courseId?.includes(data?._id)
-      ) {
-        setExpirydate(daysLeft); // 👈 Set number of days left
-        return true;
-      }
+  const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+  const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
 
-      return false;
-    });
-
-    setIsEnrolled(enrolled);
-  }, [user, data]);
+  setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+}, [user, data, utcNow]);
 
   console.log("check", user?.enrolledCourses);
 

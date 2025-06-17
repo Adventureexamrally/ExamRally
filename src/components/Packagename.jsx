@@ -295,40 +295,31 @@ useEffect(() => {
   }, []);
 
 
-  useEffect(() => {
-     const enrolled = user?.enrolledCourses?.some((course) => {
-       // Parse expiry and purchase dates
-       const expireDate = new Date(course?.expiryDate);
-       const purchaseDate = new Date(course?.purchaseDate);
- 
-       // Format dates (optional, for display)
-       const formatDate = (date) => {
-         const day = String(date.getDate()).padStart(2, "0");
-         const month = String(date.getMonth() + 1).padStart(2, "0");
-         const year = date.getFullYear();
-         return `${day}-${month}-${year}`;
-       };
- 
-       const formattedExpiry = formatDate(expireDate);
-       const formattedPurchase = formatDate(purchaseDate);
- 
-       const timeDiff = expireDate.getTime() - utcNow;
-       const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
- 
-       if (
-         !isNaN(daysLeft) &&
-         daysLeft >= 0 &&
-         course?.courseId?.includes(data?._id)
-       ) {
-         setExpirydate(daysLeft); // 👈 Set number of days left
-         return true;
-       }
- 
-       return false;
-     });
- 
-     setIsEnrolled(enrolled);
-   }, [user, data]);
+useEffect(() => {
+  if (!utcNow || (!user?.enrolledCourses && !user?.subscriptions)) return;
+
+  const checkExpiry = (course) => {
+    const expireDate = new Date(course?.expiryDate);
+    const timeDiff = expireDate.getTime() - utcNow.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+
+    if (
+      !isNaN(daysLeft) &&
+      daysLeft >= 0 &&
+      course?.courseId?.includes(data._id)
+    ) {
+      setExpirydate(daysLeft); // Set days left
+      return true;
+    }
+
+    return false;
+  };
+
+  const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+  const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
+
+  setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+}, [user, data, utcNow]);
 
   console.log("check", user?.enrolledCourses);
 

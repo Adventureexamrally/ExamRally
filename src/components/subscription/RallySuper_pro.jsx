@@ -58,9 +58,9 @@ const RallySuper_pro = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (user && data && user.enrolledCourses) {
-      const matchedCourse = user.enrolledCourses.find(
+   useEffect(() => {
+    if (user && data) {
+      const matchedCourse = user. subscriptions?.find(
         (course) =>
           course.courseName?.trim().toLowerCase() ===
           data.subscriptionType?.trim().toLowerCase()
@@ -71,6 +71,8 @@ const RallySuper_pro = () => {
         const expiryDate = new Date(matchedCourse.expiryDate);
         const timeDiff = expiryDate - currentDate;
         const remainingDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+console.log("koli",currentDate,expiryDate,timeDiff,remainingDays)
 
         if (remainingDays > 0) {
           setEnrolled(true);
@@ -84,7 +86,6 @@ const RallySuper_pro = () => {
       }
     }
   }, [user, data]);
-
   return (
     <div className="relative container border-2 mt-2 rounded-lg shadow-xl mb-4">
       <div className="absolute inset-0 z-[-10] border-2 rounded-lg"></div>
