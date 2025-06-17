@@ -25,6 +25,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/system';
+import { fetchUtcNow } from '../../service/timeApi';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
@@ -56,7 +57,7 @@ const StatusChip = styled(Chip)(({ status, theme }) => ({
     color: '#ef4444'
   })
 }));
-
+  
 const ErrorReport = () => {
     const [open, setOpen] = useState(false);
     const [reports, setReports] = useState([]);
@@ -105,7 +106,20 @@ const ErrorReport = () => {
           return <ErrorIcon fontSize="small" />;
       }
     };
-
+ const [utcNow, setUtcNow] = useState(null);
+    
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh' }}>
             <DashBoard 
@@ -276,7 +290,7 @@ const ErrorReport = () => {
                               fontSize: isMobile ? '0.7rem' : '0.8rem'
                             }}
                           >
-                            Reported on: {new Date(report.createdAt || new Date()).toLocaleDateString()}
+                            Reported on: {new Date(report.createdAt || utcNow).toLocaleDateString()}
                           </Typography>
                         </Box>
                       </CardContent>

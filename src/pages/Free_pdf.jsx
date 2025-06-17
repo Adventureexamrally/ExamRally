@@ -7,6 +7,7 @@ import { useContext } from 'react';
 import { UserContext } from '../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import Coupon from './Coupon';
+import { fetchUtcNow } from '../service/timeApi';
 
 const Free_pdf = () => {
   const [seo, setSeo] = useState([]);
@@ -29,6 +30,20 @@ const Free_pdf = () => {
   const { isSignedIn } = useUser();
 
   const [categories, setCategories] = useState([]);
+     const [utcNow, setUtcNow] = useState(null);
+      
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -86,7 +101,7 @@ const Free_pdf = () => {
           // Check expiry date
           if (course.expiryDate) {
             const expireDate = new Date(course.expiryDate);
-            const today = new Date();
+            const today = utcNow;
             return expireDate >= today;
           }
           return true;
@@ -115,10 +130,11 @@ const Free_pdf = () => {
     if (!course || !course.expiryDate) return null;
     
     const expireDate = new Date(course.expiryDate);
-    const today = new Date();
+    const today = utcNow;
     const timeDiff = expireDate.getTime() - today.getTime();
     return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
   };
+  
 
   return (
     <>

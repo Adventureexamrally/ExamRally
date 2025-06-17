@@ -9,6 +9,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { toast, ToastContainer } from "react-toastify";
+import { fetchUtcNow } from "../service/timeApi";
 
 const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
@@ -26,6 +27,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
   const [accessDuration, setAccessDuration] = useState("");
+   const [utcNow, setUtcNow] = useState(null);
 
   // Calculate access duration based on package validity
   useEffect(() => {
@@ -33,7 +35,19 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       setAccessDuration(`${pkg.duration} Days`);
     }
   }, [pkg.validityDays]);
-
+    
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -55,9 +69,9 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
       const res = await Api.post("/coupons/validate", {
         couponCode: couponCode.trim().toUpperCase(),
-        currentDate: new Date().toISOString(),
+        currentDate: utcNow.toISOString(),
       });
-
+console.warn(res)
       if (res.data.valid) {
         const baseAmount =
           Number(pkg.discountPrice) || Number(pkg.discountedAmount);
@@ -123,48 +137,56 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
         throw new Error("Failed to load Razorpay SDK");
       }
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: Math.round(finalPrice * 100),
-        currency: "INR",
-        name: pkg.name,
-        description: `Package purchase: ${pkg.name}`,
-        handler: async function (response) {
-          const res = await Api.post("/orders/verify-payment", {
-            userId: user._id,
-            courseId: JSON.stringify(pkg.coursesIncluded),
-            courseName: pkg.name || pkg.subscriptionType || "Course Name",
-            paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            coupon: discountPercent > 0 ? couponCode : null,
-            amount: finalPrice,
-            expiryDays: pkg.expiryDays || pkg.duration, // ✅ Send expiryDays from client
-          });
-          console.log(res);
-          await refreshUser();
-          toast.success("Payment successful! ");
-          setInterval(() => {
-            setShowModal(false);
-          }, 2000);
-        },
-        notes: {
-          user_id: user?._id,
-          // course_id: pkg._id,
-          courseName: pkg.name || pkg.subscriptionType,
-          courses: JSON.stringify(pkg.coursesIncluded),
-          coupon_code: discountPercent > 0 ? couponCode : null,
-          discount_percent: discountPercent,
-        },
-        prefill: {
-          name: user?.firstName || "",
-          email: user?.email || "",
-          contact: user?.phoneNumber || "",
-        },
-        theme: {
-          color: "#2E7D32",
-        },
-      };
+    const options = {
+  key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  amount: Math.round(finalPrice * 100),
+  currency: "INR",
+  name: pkg.name,
+  description: `Package purchase: ${pkg.name}`,
+  handler: async function (response) {
+    const payload = {
+      userId: user._id,
+      courseId: JSON.stringify(pkg.coursesIncluded),
+      courseName: pkg.name || pkg.subscriptionType || "Course Name",
+      paymentId: response.razorpay_payment_id,
+      orderId: response.razorpay_order_id,
+      signature: response.razorpay_signature,
+      coupon: discountPercent > 0 ? couponCode : null,
+      amount: finalPrice,
+      expiryDays: pkg.expiryDays || pkg.duration,
+    };
+
+    // ✅ Only add subscriptions: true if pkg.subscriptionType exists
+    if (pkg.subscriptionType) {
+      payload.subscriptions = true;
+    }
+
+    const res = await Api.post("/orders/verify-payment", payload);
+    console.log(res);
+    await refreshUser();
+    toast.success("Payment successful!");
+    setTimeout(() => {
+      setShowModal(false);
+    }, 2000);
+  },
+  notes: {
+    user_id: user?._id,
+    courseName: pkg.name || pkg.subscriptionType,
+    courses: JSON.stringify(pkg.coursesIncluded),
+    coupon_code: discountPercent > 0 ? couponCode : null,
+    discount_percent: discountPercent,
+    ...(pkg.subscriptionType ? { subscriptions: true } : {}), // 🟢 Conditionally add to notes too
+  },
+  prefill: {
+    name: user?.firstName || "",
+    email: user?.email || "",
+    contact: user?.phoneNumber || "",
+  },
+  theme: {
+    color: "#2E7D32",
+  },
+};
+
 
       const rzp = new window.Razorpay(options);
       rzp.open();

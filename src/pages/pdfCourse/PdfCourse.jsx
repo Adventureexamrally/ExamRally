@@ -5,14 +5,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { IoMdLock } from 'react-icons/io';
 import { UserContext } from '../../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
+import { fetchUtcNow } from '../../service/timeApi';
 
 const PdfCourse = () => {
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-    const [isfree] = useState(false)
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [year, setYear] = useState(currentYear);
-    const [month, setMonth] = useState(currentMonth);
+  
     const [ad, setAD] = useState([])
     const [seo, setSeo] = useState([])
     const [alldata, setAlldata] = useState([]);
@@ -22,6 +18,27 @@ const PdfCourse = () => {
     const [selectedExam, setSelectedExam] = useState('');
     const [pdfSubscription, setPdfSubscription] = useState(null);
 const [openScheduleId, setOpenScheduleId] = useState(null);
+   const [utcNow, setUtcNow] = useState(null);
+  const [year, setYear] = useState(null);
+  const [month, setMonth] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isfree] = useState(false);
+
+  // 1. Fetch UTC time from server
+  useEffect(() => {
+    fetchUtcNow()
+      .then(globalDate => {
+        setUtcNow(globalDate);
+        console.warn("Server UTC Date:", globalDate.toISOString());
+
+        // Set year and month after fetching UTC date
+        setYear(globalDate.getFullYear());
+        setMonth(globalDate.getMonth());
+      })
+      .catch(error => {
+        console.error("Failed to fetch UTC time:", error);
+      });
+  }, []);
 
 const toggleSchedule = (id) => {
   setOpenScheduleId((prevId) => (prevId === id ? null : id));
@@ -222,7 +239,7 @@ const toggleSchedule = (id) => {
       const hasActiveSubscription = () => {
     if (!pdfSubscription) return false;
   
-    const now = new Date();
+    const now = utcNow;
     const expiry = new Date(pdfSubscription.expiryDate);
   
     return expiry > now;
@@ -529,7 +546,7 @@ const toggleSchedule = (id) => {
                                                                 }
 
                                                                 // 🔒 LOCKED: Even if content is free, if live date is in the future, show "Locked"
-                                                                if (!hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > new Date()) {
+                                                                if (!hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
                                                                     return (
                                                                     <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded">
                                                                         <IoMdLock /> Locked
@@ -538,7 +555,7 @@ const toggleSchedule = (id) => {
                                                                 }
 
                                                                 // ⏳ COMING SOON: Only if subscribed AND live date is in future
-                                                                if (hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > new Date()) {
+                                                                if (hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
                                                                     return (
                                                                     <div className="flex-1 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
                                                                         Coming Soon

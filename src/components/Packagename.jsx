@@ -14,6 +14,7 @@ import { BsSpeedometer2 } from "react-icons/bs";
 import { UserContext } from "../context/UserProvider";
 import { useUser } from "@clerk/clerk-react";
 import Coupon from "../pages/Coupon";
+import { fetchUtcNow } from "../service/timeApi";
 
 const Packagename = () => {
   const [data, setData] = useState({});
@@ -278,42 +279,47 @@ useEffect(() => {
   
   const status = true;
 
-  useEffect(() => {
-     const enrolled = user?.enrolledCourses?.some((course) => {
-       // Parse expiry and purchase dates
-       const expireDate = new Date(course?.expiryDate);
-       const purchaseDate = new Date(course?.purchaseDate);
- 
-       // Format dates (optional, for display)
-       const formatDate = (date) => {
-         const day = String(date.getDate()).padStart(2, "0");
-         const month = String(date.getMonth() + 1).padStart(2, "0");
-         const year = date.getFullYear();
-         return `${day}-${month}-${year}`;
-       };
- 
-       const formattedExpiry = formatDate(expireDate);
-       const formattedPurchase = formatDate(purchaseDate);
- 
-       // Calculate remaining days
-       const today = new Date();
-       const timeDiff = expireDate.getTime() - today.getTime();
-       const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
- 
-       if (
-         !isNaN(daysLeft) &&
-         daysLeft >= 0 &&
-         course?.courseId?.includes(data?._id)
-       ) {
-         setExpirydate(daysLeft); // 👈 Set number of days left
-         return true;
-       }
- 
-       return false;
-     });
- 
-     setIsEnrolled(enrolled);
-   }, [user, data]);
+  const [utcNow, setUtcNow] = useState(null);
+  
+// 1. Fetch UTC time from server
+ useEffect(() => {
+    fetchUtcNow()
+      .then(globalDate => {
+        setUtcNow(globalDate);
+        console.warn("Server UTC Date:", globalDate.toISOString());
+      })
+      .catch(error => {
+        console.error("Failed to fetch UTC time:", error);
+        // handle error as needed
+      });
+  }, []);
+
+
+useEffect(() => {
+  if (!utcNow || (!user?.enrolledCourses && !user?.subscriptions)) return;
+
+  const checkExpiry = (course) => {
+    const expireDate = new Date(course?.expiryDate);
+    const timeDiff = expireDate.getTime() - utcNow.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+
+    if (
+      !isNaN(daysLeft) &&
+      daysLeft >= 0 &&
+      course?.courseId?.includes(data._id)
+    ) {
+      setExpirydate(daysLeft); // Set days left
+      return true;
+    }
+
+    return false;
+  };
+
+  const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+  const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
+
+  setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+}, [user, data, utcNow]);
 
   console.log("check", user?.enrolledCourses);
 
@@ -804,7 +810,7 @@ useEffect(() => {
 
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                  {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+                                  {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) >utcNow)) || (isEnrolled && expiredate < 0) ? (
                                   // 🔒 Locked if:
                                   // - Not enrolled AND (test is paid OR not live), OR
                                   // - Enrolled BUT course is expired
@@ -822,7 +828,7 @@ useEffect(() => {
                                 
                                 
                                 : isEnrolled &&
-                                  new Date(test.live_date) > new Date() ? (
+                                  new Date(test.live_date) > utcNow ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                      <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
   ${
@@ -952,7 +958,7 @@ useEffect(() => {
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                       {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+                                       {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > utcNow)) || (isEnrolled && expiredate < 0) ? (
   // 🔒 Locked if:
   // - Not enrolled AND (test is paid OR not live), OR
   // - Enrolled BUT course is expired
@@ -966,7 +972,7 @@ useEffect(() => {
     </div>
   </button>
 ) : isEnrolled &&
-                                  new Date(test.live_date) > new Date() ? (
+                                  new Date(test.live_date) > utcNow ? (
                                   // 🚧 Coming Soon: Enrolled, but test not yet live
                                     <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
   ${
@@ -1111,7 +1117,7 @@ useEffect(() => {
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Check if the current date is greater than or equal to live_date */}
 
-                                   {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > new Date())) || (isEnrolled && expiredate < 0) ? (
+                                   {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > utcNow)) || (isEnrolled && expiredate < 0) ? (
   // 🔒 Locked if:
   // - Not enrolled AND (test is paid OR not live), OR
   // - Enrolled BUT course is expired
@@ -1125,7 +1131,7 @@ useEffect(() => {
     </div>
   </button>
 ) : isEnrolled &&
-                              new Date(test.live_date) > new Date() ? (
+                              new Date(test.live_date) > utcNow ? (
                               // 🚧 Coming Soon: Enrolled, but test not yet live
                                 <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
   ${

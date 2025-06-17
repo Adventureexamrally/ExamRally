@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Api from '../../service/Api';
 import { useUser } from '@clerk/clerk-react';
 import PdfCoupon from './pdfCoupon';
+import { fetchUtcNow } from '../../service/timeApi';
 
 const PdfCourseHome = () => {
   const [data, setAlldata] = useState([]);
@@ -22,9 +23,24 @@ const PdfCourseHome = () => {
     const response = await Api.get(`pdfcourseDetails`);
     setAlldata(response.data[0]);
   };
+   const [utcNow, setUtcNow] = useState(null);
+      
+  // 1. Fetch UTC time from server
+   useEffect(() => {
+      fetchUtcNow()
+        .then(globalDate => {
+          setUtcNow(globalDate);
+          console.warn("Server UTC Date:", globalDate.toISOString());
+        })
+        .catch(error => {
+          console.error("Failed to fetch UTC time:", error);
+          // handle error as needed
+        });
+    }, []);
+
 
   const getSubscriptionEndDate = (months) => {
-    const startDate = new Date();
+    const startDate = utcNow;
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + parseInt(months));
     return endDate.toLocaleDateString('en-GB', {
