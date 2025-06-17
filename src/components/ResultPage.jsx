@@ -283,17 +283,26 @@ const [selectedComparisonSection, setSelectedComparisonSection] = useState('');
 
 console.log(alluserDetails);
 const getComparisonStats = (sectionName) => {
-  const you = resultData.section.find(sect => sect.name === sectionName);
-  
+  const normalize = (str) => (str || '').trim().toLowerCase();
+
+  const normalizeTime = (time) => {
+    const t = Number(time) || 0;
+    return t > 100000 ? Math.round(t / 1000) : Math.round(t); // Convert ms to sec if large
+  };
+
+  const you = resultData.section.find(
+    (sect) => normalize(sect.name) === normalize(sectionName)
+  );
+
   const sectionStats = {
     you: {
-      score: you?.s_score || 0,
-      answered: you?.Attempted || 0,
-      notAnswered: you?.Not_Attempted || 0,
-      correct: you?.correct || 0,
-      wrong: you?.incorrect || 0,
-      time: you?.timeTaken || 0,
-      accuracy: you?.s_accuracy || 0,
+      score: Number(you?.s_score) || 0,
+      answered: Number(you?.Attempted) || 0,
+      notAnswered: Number(you?.Not_Attempted) || 0,
+      correct: Number(you?.correct) || 0,
+      wrong: Number(you?.incorrect) || 0,
+      time: normalizeTime(you?.timeTaken),
+      accuracy: Number(you?.s_accuracy) || 0,
     },
     average: {
       score: 0,
@@ -312,54 +321,62 @@ const getComparisonStats = (sectionName) => {
       wrong: 0,
       time: 0,
       accuracy: 0,
-    }
+    },
   };
 
-  const scores = [];
+  const scores = alluserDetails
+    .map((userResult) =>
+      userResult.section?.find(
+        (sect) => normalize(sect.name) === normalize(sectionName)
+      )
+    )
+    .filter(Boolean);
 
-  alluserDetails.forEach(userResult => {
-    const section = userResult.section?.find(sect => sect.name === sectionName);
-    if (section) {
-      scores.push(section);
+  if (scores.length === 0) return sectionStats;
 
-      sectionStats.average.score += section.s_score;
-      sectionStats.average.answered += section.Attempted;
-      sectionStats.average.notAnswered += section.Not_Attempted;
-      sectionStats.average.correct += section.correct;
-      sectionStats.average.wrong += section.incorrect;
-      sectionStats.average.time += section.timeTaken;
-      sectionStats.average.accuracy += section.s_accuracy;
-    }
+  scores.forEach((section) => {
+    sectionStats.average.score += Number(section.s_score) || 0;
+    sectionStats.average.answered += Number(section.Attempted) || 0;
+    sectionStats.average.notAnswered += Number(section.Not_Attempted) || 0;
+    sectionStats.average.correct += Number(section.correct) || 0;
+    sectionStats.average.wrong += Number(section.incorrect) || 0;
+    sectionStats.average.time += normalizeTime(section.timeTaken);
+    sectionStats.average.accuracy += Number(section.s_accuracy) || 0;
   });
 
   const totalUsers = scores.length;
 
-  if (totalUsers > 0) {
-    sectionStats.average.score = (sectionStats.average.score / totalUsers).toFixed(2);
-    sectionStats.average.answered = Math.round(sectionStats.average.answered / totalUsers);
-    sectionStats.average.notAnswered = Math.round(sectionStats.average.notAnswered / totalUsers);
-    sectionStats.average.correct = Math.round(sectionStats.average.correct / totalUsers);
-    sectionStats.average.wrong = Math.round(sectionStats.average.wrong / totalUsers);
-    sectionStats.average.time = (sectionStats.average.time / totalUsers).toFixed(2);
-    sectionStats.average.accuracy = (sectionStats.average.accuracy / totalUsers).toFixed(2);
+  sectionStats.average.score = Number(
+    (sectionStats.average.score / totalUsers).toFixed(2)
+  );
+  sectionStats.average.answered = Math.round(sectionStats.average.answered / totalUsers);
+  sectionStats.average.notAnswered = Math.round(sectionStats.average.notAnswered / totalUsers);
+  sectionStats.average.correct = Math.round(sectionStats.average.correct / totalUsers);
+  sectionStats.average.wrong = Math.round(sectionStats.average.wrong / totalUsers);
+  sectionStats.average.time = Math.round(sectionStats.average.time / totalUsers);
+  sectionStats.average.accuracy = Number(
+    (sectionStats.average.accuracy / totalUsers).toFixed(2)
+  );
 
-    // Get Topper (max score)
-    const topper = scores.reduce((prev, current) => (prev.s_score > current.s_score ? prev : current));
-    console.log(topper);
-    
-    sectionStats.topper = {
-      score: topper?.s_score || 0,
-      answered: topper?.Attempted || 0,
-      notAnswered: topper?.Not_Attempted || 0,
-      correct: topper?.correct || 0,
-      wrong: topper?.incorrect || 0,
-      time: topper?.timeTaken || 0,
-      accuracy: topper?.s_accuracy || 0
-    };
-  }
+  const topper = scores.sort(
+    (a, b) => Number(b.s_score || 0) - Number(a.s_score || 0)
+  )[0];
+
+  sectionStats.topper = {
+    score: Number(topper?.s_score) || 0,
+    answered: Number(topper?.Attempted) || 0,
+    notAnswered: Number(topper?.Not_Attempted) || 0,
+    correct: Number(topper?.correct) || 0,
+    wrong: Number(topper?.incorrect) || 0,
+    time: normalizeTime(topper?.timeTaken),
+    accuracy: Number(topper?.s_accuracy) || 0,
+  };
 
   return sectionStats;
 };
+
+
+
 
 
   if (!resultData) {
