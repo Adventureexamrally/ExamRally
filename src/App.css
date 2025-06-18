@@ -497,3 +497,10 @@
   background-color: #0e147a;
   transform: scale(1.1);
 }
+/* index.css */
+body {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+}
