@@ -1,38 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { MdLeaderboard } from 'react-icons/md';
 
-const Percentile = ({ alluserDetails, overallScore, initialPercentile ,totelmark}) => {
+const Percentile = ({ allScores, overallScore, initialPercentile, totelmark }) => {
     const [value, setValue] = useState(0);
     const [percentile, setPercentile] = useState(0);
     const [isInteractive, setIsInteractive] = useState(false);
-    const maxMarks = totelmark || 100; // Use provided total marks or default to 100
+    const maxMarks = totelmark || 100;
 
-    // Transform API data to expected format and sort
     const getSortedScores = () => {
-        if (!alluserDetails || alluserDetails.length === 0) return [];
-        return alluserDetails
-            .map(user => ({ score: user.o_score })) // Convert o_score to score
-            .sort((a, b) => b.score - a.score); // Descending order
+        if (!allScores || allScores.length === 0) return [];
+        return [...allScores].sort((a, b) => b - a); // Descending
     };
 
     const calculatePercentileForScore = (score) => {
-        const sortedUsers = getSortedScores();
-        if (sortedUsers.length === 0) return 0;
-        
-        // Find the rank (1-based index of first user with score <= current score)
-        const rank = sortedUsers.findIndex(user => user.score <= score) + 1;
-        
-        // If no users have lower score, rank is totalUsers + 1
-        const adjustedRank = rank === 0 ? sortedUsers.length + 1 : rank;
-        
-        // Calculate percentile using your specified formula
-        return (100 - ((adjustedRank / sortedUsers.length) * 100)).toFixed(2);
+        const sortedScores = getSortedScores();
+        const totalUsers = sortedScores.length;
+
+        if (totalUsers <= 1) return 100;
+
+        const rank = sortedScores.findIndex(s => s <= score) + 1;
+        const adjustedRank = rank === 0 ? totalUsers + 1 : rank;
+
+        const percentile = ((totalUsers - adjustedRank) / (totalUsers - 1)) * 100;
+        return percentile.toFixed(2);
     };
 
     const handleSliderChange = (event) => {
         const newValue = parseInt(event.target.value);
         setValue(newValue);
-        
         if (isInteractive) {
             setPercentile(calculatePercentileForScore(newValue));
         }
@@ -45,29 +40,28 @@ const Percentile = ({ alluserDetails, overallScore, initialPercentile ,totelmark
         }
     };
 
-    // Initialize with server values
     useEffect(() => {
-        if (overallScore >= 0) { // Handle 0 scores
+        if (overallScore >= 0) {
             setValue(overallScore);
-            setPercentile(initialPercentile || 0);
+            setPercentile(initialPercentile || calculatePercentileForScore(overallScore));
         }
     }, [overallScore, initialPercentile]);
-    // Calculate the percentage position (0-100) based on maxMarks
+
     const tooltipPosition = (value / maxMarks) * 100;
 
     return (
-        <div className='rounded-lg shadow-md p-6 mb-8 border '>
+        <div className='rounded-lg shadow-md p-6 mb-8 border'>
             <label className="flex mb-2 text-xl font-bold text-blue-700 dark:text-white">
-                <MdLeaderboard size={25}  style={{ marginRight: "10px" }} />
-
+                <MdLeaderboard size={25} style={{ marginRight: "10px" }} />
                 Percentile Calculator
             </label>
+
             <div className="relative">
                 <input
                     type="range"
                     value={value}
                     min="0"
-                    max={maxMarks}  // Use totalMarks or default to 100
+                    max={maxMarks}
                     step="1"
                     onChange={handleSliderChange}
                     onMouseDown={handleInteractionStart}
@@ -82,8 +76,8 @@ const Percentile = ({ alluserDetails, overallScore, initialPercentile ,totelmark
                     <p><strong>Percentile:</strong> {percentile}%</p>
                 </span>
             </div>
-        
-            <div className="relative">
+
+            <div className="relative mt-4">
                 <div className="flex justify-between text-xs">
                     {[...Array(6)].map((_, index) => {
                         const markValue = Math.round((maxMarks / 5) * index);
@@ -97,7 +91,7 @@ const Percentile = ({ alluserDetails, overallScore, initialPercentile ,totelmark
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Percentile
+export default Percentile;
