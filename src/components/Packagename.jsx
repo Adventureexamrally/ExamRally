@@ -951,11 +951,11 @@ useEffect(() => {
                     getTestStatusFromStorage(test._id)?.status;
 
       if (status === "completed") {
-        openNewWindow(`/liveresult/${test._id}/${user?._id}`);
+        openNewWindow(`/result/${test._id}/${user?._id}`);
       } else if (status === "paused") {
-        openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
+        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
       } else {
-        openNewWindow(`/instruct/${test._id}/${user?._id}`);
+        openNewWindow(`/instruction/${test._id}/${user?._id}`);
       }
     }}
   >
@@ -1114,11 +1114,11 @@ useEffect(() => {
                     getTestStatusFromStorage(test._id)?.status;
 
       if (status === "completed") {
-        openNewWindow(`/liveresult/${test._id}/${user?._id}`);
+        openNewWindow(`/result/${test._id}/${user?._id}`);
       } else if (status === "paused") {
-        openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
+        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
       } else {
-        openNewWindow(`/instruct/${test._id}/${user?._id}`);
+        openNewWindow(`/instruction/${test._id}/${user?._id}`);
       }
     }}
   >
@@ -1279,11 +1279,11 @@ useEffect(() => {
                     getTestStatusFromStorage(test._id)?.status;
 
       if (status === "completed") {
-        openNewWindow(`/liveresult/${test._id}/${user?._id}`);
+        openNewWindow(`/result/${test._id}/${user?._id}`);
       } else if (status === "paused") {
-        openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
+        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
       } else {
-        openNewWindow(`/instruct/${test._id}/${user?._id}`);
+        openNewWindow(`/instruction/${test._id}/${user?._id}`);
       }
     }}
   >
