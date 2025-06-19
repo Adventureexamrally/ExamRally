@@ -707,9 +707,10 @@ console.log(descriptiveData)
 
     // Store section summary
     setSectionSummaryData((prevData) => {
-      const newData = [...prevData, sectionSummary];
-      console.log("Updated Section Summary Data:", newData);
-      return newData;
+      const updatedData = prevData.filter(
+        (data) => data.sectionName !== sectionSummary.sectionName
+      );
+      return [...updatedData, sectionSummary];
     });
 
     // Display modal
