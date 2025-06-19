@@ -423,6 +423,81 @@ useEffect(() => {
   };
 }, []);
 
+  // Utility functions for localStorage
+const getTestStatusFromStorage = (testId) => {
+  const storedResults = localStorage.getItem('testResults');
+  if (!storedResults) return null;
+  
+  try {
+    const results = JSON.parse(storedResults);
+    return results[testId] || null;
+  } catch (error) {
+    console.error('Error parsing stored test results:', error);
+    return null;
+  }
+};
+
+const storeTestStatus = (testId, status, lastQuestionIndex = null, selectedOptions = null) => {
+  const storedResults = localStorage.getItem('testResults') || '{}';
+  
+  try {
+    const results = JSON.parse(storedResults);
+    results[testId] = {
+      status,
+      lastQuestionIndex,
+      selectedOptions,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('testResults', JSON.stringify(results));
+  } catch (error) {
+    console.error('Error storing test result:', error);
+  }
+};
+
+useEffect(() => {
+  if (user?._id) {
+    data?.exams?.forEach((test) => {
+      // First try to get from API
+      Api.get(`/results/${user?._id}/${test._id}`)
+        .then((res) => {
+          if (res.data?.status === "completed" || res.data?.status === "paused") {
+            setResultData((prev) => ({
+              ...prev,
+              [test._id]: {
+                ...res.data,
+                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                selectedOptions: res.data.selectedOptions,
+              },
+            }));
+            // Also store in localStorage
+            storeTestStatus(
+              test._id,
+              res.data.status,
+              res.data.lastVisitedQuestionIndex,
+              res.data.selectedOptions
+            );
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching result:", err);
+          // If API fails, check localStorage
+          const storedStatus = getTestStatusFromStorage(test._id);
+          if (storedStatus) {
+            setResultData((prev) => ({
+              ...prev,
+              [test._id]: {
+                status: storedStatus.status,
+                lastVisitedQuestionIndex: storedStatus.lastQuestionIndex,
+                selectedOptions: storedStatus.selectedOptions,
+              },
+            }));
+          }
+        });
+    });
+  }
+}, [data?.exams, user?._id]);
+
+
 // And in your main component add this effect:
 useEffect(() => {
   const handleMessage = (event) => {
@@ -810,76 +885,91 @@ useEffect(() => {
 
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                  {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) >utcNow)) || (isEnrolled && expiredate < 0) ? (
-                                  // 🔒 Locked if:
-                                  // - Not enrolled AND (test is paid OR not live), OR
-                                  // - Enrolled BUT course is expired
-                                  <button
-                                    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
-                                    disabled
-                                  >
-                                    <div className="flex items-center justify-center font-semibold gap-1">
-                                      <IoMdLock />
-                                      Locked
-                                    </div>
-                                  </button>
-                                ) 
-                                
-                                
-                                
-                                : isEnrolled &&
-                                  new Date(test.live_date) > utcNow ? (
-                                  // 🚧 Coming Soon: Enrolled, but test not yet live
-                                     <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
-  ${
-    test.show_date 
-      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
-      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
-  }
-  shadow-md hover:shadow-lg`}>
-  {test.show_date
-    ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
-      })}`
-    : 'Coming Soon'}
-</div>
-                                ) : (
-                                  // ✅ Actionable: Enrolled and test is live
-                          <button
-  className={`mt-3 py-2 px-4 rounded w-full transition ${
-    resultData?.[test._id]?.status === "completed"
-      ? "bg-green-500 text-white hover:bg-green-600"
-      : resultData?.[test._id]?.status === "paused"
-      ? "bg-green-500 text-white hover:bg-green-600"
-      : "bg-green-500 text-white hover:bg-green-600"
-  }`}
-  onClick={() => {
-    if (!isSignedIn) {
-      navigate("/sign-in");
-      return;
+                        {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
+(isEnrolled && expiredate !== undefined && expiredate < 0) ? (
+  // 🔒 Locked if:
+  // - Not enrolled AND (test is paid OR not live), OR
+  // - Enrolled BUT course is expired
+  <button
+    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
+    disabled
+  >
+    <div className="flex items-center justify-center font-semibold gap-1">
+      <IoMdLock />
+      Locked
+    </div>
+  </button>
+) : !utcNow || (isEnrolled && expiredate === undefined) ? (
+  // ⏳ Loading state while checking enrollment/expiry
+  <button
+    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
+    disabled
+  >
+    Loading...
+  </button>
+) : isEnrolled && new Date(test.live_date) > utcNow ? (
+  // 🚧 Coming Soon: Enrolled, but test not yet live
+  <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+    ${
+      test.show_date 
+        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
+    shadow-md hover:shadow-lg`}>
+    {test.show_date
+      ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        })}`
+      : 'Coming Soon'}
+  </div>
+) : (
+  // ✅ Actionable: Enrolled and test is live
+  <button
+    className={`mt-3 py-2 px-4 rounded w-full transition ${
+      (resultData?.[test._id]?.status === "completed" || 
+       getTestStatusFromStorage(test._id)?.status === "completed")
+        ? "bg-green-500 text-white hover:bg-green-600"
+        : (resultData?.[test._id]?.status === "paused" || 
+           getTestStatusFromStorage(test._id)?.status === "paused")
+        ? "bg-green-500 text-white hover:bg-green-600"
+        : "bg-green-500 text-white hover:bg-green-600"
+    }`}
+    onClick={() => {
+      if (!isSignedIn) {
+        const backdrop = document.querySelector(".modal-backdrop");
+        if (backdrop) backdrop.remove();
+        navigate("/sign-in");
+        return;
+      }
 
-    if (resultData?.[test._id]?.status === "completed") {
-      openNewWindow(`/result/${test._id}/${user?._id}`);
-    } else if (resultData?.[test._id]?.status === "paused") {
-      openNewWindow(`/mocktest/${test._id}/${user?._id}`);
-    } else {
-      openNewWindow(`/instruction/${test._id}/${user?._id}`);
-    }
-  }}
->
-  {resultData?.[test._id]?.status === "completed"
-    ? "View Result"
-    : resultData?.[test._id]?.status === "paused"
-    ? "Resume"
-    : "Take Test"}
-</button>
-                                )}
+      const status = resultData?.[test._id]?.status || 
+                    getTestStatusFromStorage(test._id)?.status;
+
+      if (status === "completed") {
+        openNewWindow(`/liveresult/${test._id}/${user?._id}`);
+      } else if (status === "paused") {
+        openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
+      } else {
+        openNewWindow(`/instruct/${test._id}/${user?._id}`);
+      }
+    }}
+  >
+    {resultData === undefined && getTestStatusFromStorage(test._id) === undefined ? (
+      "Loading..." // Show loading while checking test status
+    ) : (resultData?.[test._id]?.status === "completed" || 
+        getTestStatusFromStorage(test._id)?.status === "completed")
+      ? "View Result"
+      : (resultData?.[test._id]?.status === "paused" || 
+         getTestStatusFromStorage(test._id)?.status === "paused")
+      ? "Resume"
+      : "Take Test"}
+  </button>
+)}
                               </div>
                             </div>
                           </div>
@@ -958,7 +1048,8 @@ useEffect(() => {
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                                 {/* Check if the current date is greater than or equal to live_date */}
 
-                                       {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > utcNow)) || (isEnrolled && expiredate < 0) ? (
+                                    {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
+(isEnrolled && expiredate !== undefined && expiredate < 0) ? (
   // 🔒 Locked if:
   // - Not enrolled AND (test is paid OR not live), OR
   // - Enrolled BUT course is expired
@@ -971,72 +1062,77 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : isEnrolled &&
-                                  new Date(test.live_date) > utcNow ? (
-                                  // 🚧 Coming Soon: Enrolled, but test not yet live
-                                    <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
-  ${
-    test.show_date 
-      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
-      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
-  }
-  shadow-md hover:shadow-lg`}>
-  {test.show_date
-    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })}`
-    : 'Coming Soon'}
-</div>
-                                ) : (
-                                  // ✅ Actionable: Enrolled and test is live
-                                  <button
-                                    className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                      resultData?.[test._id]?.status ===
-                                      "completed"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : resultData?.[test._id]?.status ===
-                                          "paused"
-                                        ? "bg-green-500 text-white hover:bg-green-600"
-                                        : "bg-green-500 text-white hover:bg-green-600"
-                                    }`}
-                                    onClick={() => {
-                                      if (!isSignedIn) {
-                                        navigate("/sign-in");
-                                        return;
-                                      }
+) : !utcNow || (isEnrolled && expiredate === undefined) ? (
+  // ⏳ Loading state while checking enrollment/expiry
+  <button
+    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
+    disabled
+  >
+    Loading...
+  </button>
+) : isEnrolled && new Date(test.live_date) > utcNow ? (
+  // 🚧 Coming Soon: Enrolled, but test not yet live
+  <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+    ${
+      test.show_date 
+        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
+    }
+    shadow-md hover:shadow-lg`}>
+    {test.show_date
+      ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        })}`
+      : 'Coming Soon'}
+  </div>
+) : (
+  // ✅ Actionable: Enrolled and test is live
+  <button
+    className={`mt-3 py-2 px-4 rounded w-full transition ${
+      (resultData?.[test._id]?.status === "completed" || 
+       getTestStatusFromStorage(test._id)?.status === "completed")
+        ? "bg-green-500 text-white hover:bg-green-600"
+        : (resultData?.[test._id]?.status === "paused" || 
+           getTestStatusFromStorage(test._id)?.status === "paused")
+        ? "bg-green-500 text-white hover:bg-green-600"
+        : "bg-green-500 text-white hover:bg-green-600"
+    }`}
+    onClick={() => {
+      if (!isSignedIn) {
+        const backdrop = document.querySelector(".modal-backdrop");
+        if (backdrop) backdrop.remove();
+        navigate("/sign-in");
+        return;
+      }
 
-                                      if (
-                                        resultData?.[test._id]?.status ===
-                                        "completed"
-                                      ) {
-                                        openNewWindow(
-                                          `/result/${test._id}/${user?._id}`
-                                        );
-                                      } else if (
-                                        resultData?.[test._id]?.status ===
-                                        "paused"
-                                      ) {
-                                        openNewWindow(
-                                          `/mocktest/${test._id}/${user?._id}`
-                                        );
-                                      } else {
-                                        openNewWindow(
-                                          `/instruction/${test._id}/${user?._id}`
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    {resultData?.[test._id]?.status ===
-                                    "completed"
-                                      ? "View Result"
-                                      : resultData?.[test._id]?.status ===
-                                        "paused"
-                                      ? "Resume"
-                                      : "Take Test"}
-                                  </button>
-                                )}
+      const status = resultData?.[test._id]?.status || 
+                    getTestStatusFromStorage(test._id)?.status;
+
+      if (status === "completed") {
+        openNewWindow(`/liveresult/${test._id}/${user?._id}`);
+      } else if (status === "paused") {
+        openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
+      } else {
+        openNewWindow(`/instruct/${test._id}/${user?._id}`);
+      }
+    }}
+  >
+    {resultData === undefined && getTestStatusFromStorage(test._id) === undefined ? (
+      "Loading..." // Show loading while checking test status
+    ) : (resultData?.[test._id]?.status === "completed" || 
+        getTestStatusFromStorage(test._id)?.status === "completed")
+      ? "View Result"
+      : (resultData?.[test._id]?.status === "paused" || 
+         getTestStatusFromStorage(test._id)?.status === "paused")
+      ? "Resume"
+      : "Take Test"}
+  </button>
+)}
                               </div>
                             </div>
                           </div>
@@ -1117,7 +1213,8 @@ useEffect(() => {
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
                             {/* Check if the current date is greater than or equal to live_date */}
 
-                                   {(!isEnrolled && (isPaidTest(test) || new Date(test.live_date) > utcNow)) || (isEnrolled && expiredate < 0) ? (
+                                 {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
+(isEnrolled && expiredate !== undefined && expiredate < 0) ? (
   // 🔒 Locked if:
   // - Not enrolled AND (test is paid OR not live), OR
   // - Enrolled BUT course is expired
@@ -1130,68 +1227,77 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : isEnrolled &&
-                              new Date(test.live_date) > utcNow ? (
-                              // 🚧 Coming Soon: Enrolled, but test not yet live
-                                <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
-  ${
-    test.show_date 
-      ? 'border-1 text-green-500 border-red-700  py-0 px-0 text-wrap cursor-not-allowed' 
-      : 'text-red-400  border-2 border-gray-200 cursor-not-allowed'
-  }
-  shadow-md hover:shadow-lg`}>
-  {test.show_date
-    ? `Available from ${new Date(test.live_date).toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })}`
-    : 'Coming Soon'}
-</div>
-                            ) : (
-                              // ✅ Actionable: Enrolled and test is live
-                              <button
-                                className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                  resultData?.[test._id]?.status === "completed"
-                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                    : resultData?.[test._id]?.status ===
-                                      "paused"
-                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                    : "bg-green-500 text-white hover:bg-green-600"
-                                }`}
-                                onClick={() => {
-                                  if (!isSignedIn) {
-                                    navigate("/sign-in");
-                                    return;
-                                  }
+) : !utcNow || (isEnrolled && expiredate === undefined) ? (
+  // ⏳ Loading state while checking enrollment/expiry
+  <button
+    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
+    disabled
+  >
+    Loading...
+  </button>
+) : isEnrolled && new Date(test.live_date) > utcNow ? (
+  // 🚧 Coming Soon: Enrolled, but test not yet live
+  <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+    ${
+      test.show_date 
+        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
+    }
+    shadow-md hover:shadow-lg`}>
+    {test.show_date
+      ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        })}`
+      : 'Coming Soon'}
+  </div>
+) : (
+  // ✅ Actionable: Enrolled and test is live
+  <button
+    className={`mt-3 py-2 px-4 rounded w-full transition ${
+      (resultData?.[test._id]?.status === "completed" || 
+       getTestStatusFromStorage(test._id)?.status === "completed")
+        ? "bg-green-500 text-white hover:bg-green-600"
+        : (resultData?.[test._id]?.status === "paused" || 
+           getTestStatusFromStorage(test._id)?.status === "paused")
+        ? "bg-green-500 text-white hover:bg-green-600"
+        : "bg-green-500 text-white hover:bg-green-600"
+    }`}
+    onClick={() => {
+      if (!isSignedIn) {
+        const backdrop = document.querySelector(".modal-backdrop");
+        if (backdrop) backdrop.remove();
+        navigate("/sign-in");
+        return;
+      }
 
-                                  if (
-                                    resultData?.[test._id]?.status ===
-                                    "completed"
-                                  ) {
-                                    openNewWindow(
-                                      `/result/${test._id}/${user?._id}`
-                                    );
-                                  } else if (
-                                    resultData?.[test._id]?.status === "paused"
-                                  ) {
-                                    openNewWindow(
-                                      `/mocktest/${test._id}/${user?._id}`
-                                    );
-                                  } else {
-                                    openNewWindow(
-                                      `/instruction/${test._id}/${user?._id}`
-                                    );
-                                  }
-                                }}
-                              >
-                                {resultData?.[test._id]?.status === "completed"
-                                  ? "View Result"
-                                  : resultData?.[test._id]?.status === "paused"
-                                  ? "Resume"
-                                  : "Take Test"}
-                              </button>
-                            )}
+      const status = resultData?.[test._id]?.status || 
+                    getTestStatusFromStorage(test._id)?.status;
+
+      if (status === "completed") {
+        openNewWindow(`/liveresult/${test._id}/${user?._id}`);
+      } else if (status === "paused") {
+        openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
+      } else {
+        openNewWindow(`/instruct/${test._id}/${user?._id}`);
+      }
+    }}
+  >
+    {resultData === undefined && getTestStatusFromStorage(test._id) === undefined ? (
+      "Loading..." // Show loading while checking test status
+    ) : (resultData?.[test._id]?.status === "completed" || 
+        getTestStatusFromStorage(test._id)?.status === "completed")
+      ? "View Result"
+      : (resultData?.[test._id]?.status === "paused" || 
+         getTestStatusFromStorage(test._id)?.status === "paused")
+      ? "Resume"
+      : "Take Test"}
+  </button>
+)}
                           </div>
                         )
                     )}

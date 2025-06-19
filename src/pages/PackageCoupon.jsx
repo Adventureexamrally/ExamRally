@@ -158,7 +158,7 @@ console.warn(res)
 
     // ✅ Only add subscriptions: true if pkg.subscriptionType exists
     if (pkg.subscriptionType) {
-      payload.subscriptions = true;
+      payload.subscriptions = false;
     }
 
     const res = await Api.post("/orders/verify-payment", payload);
