@@ -35,45 +35,44 @@ const Header = () => {
       try {
         const response = await Api.get('offers');
         setOffer(response.data[0]); // Directly use response.data instead of calling .json()
-        console.log("Offer data:", response.data[0]);
+        console.warn("Offer data:", response.data[0]);
       } catch (error) {
         console.error('Error fetching offer:', error);
       }
     };
     fetchOffer();
   }, []);
+useEffect(() => {
+  if (!offer || !utcNow) return;
 
-  useEffect(() => {
-    const updateCountdown = () => {
-      if (offer) {
-        const end = new Date(offer.endDateTime);
-        const start = new Date(offer.startDateTime);
-        const now = utcNow;
-        // Check if current time is before start time
-        if (now < start) {
-          setCountdown("");
-          return;
-        }
+  const interval = setInterval(() => {
+    setUtcNow(prev => new Date(prev.getTime() + 1000)); // increment time by 1 second
 
-        // Check if current time is past end time
-        if (now > end) {
-          setCountdown("");
-          setOffer(null);
-          return;
-        }
+    const end = new Date(offer.endDateTime);
+    const start = new Date(offer.startDateTime);
+    const now = new Date(utcNow.getTime() + 1000); // simulate next second
 
-        const timeDiff = end - now;
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-        setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-      }
-    };
+    if (now < start) {
+      setCountdown("");
+      return;
+    }
 
-    const countdownInterval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(countdownInterval);
-  }, [offer]);
+    if (now > end) {
+      setCountdown("");
+      setOffer(null);
+      return;
+    }
+
+    const timeDiff = end - now;
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+    setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [offer, utcNow]);
 
   // if (!user) {
   //   return <div>Loading user info...</div>;
