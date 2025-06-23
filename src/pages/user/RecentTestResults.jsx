@@ -144,16 +144,16 @@ const RecentTestResults = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {results.map((result) => (
-              <div
-                key={result._id}
-                className={`border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${
-                  result.status.toLowerCase() === "passed"
-                    ? "border-l-4 border-green-500"
-                    : result.status.toLowerCase() === "failed"
-                    ? "border-l-4 border-red-500"
-                    : "border-l-4 border-yellow-500"
-                }`}
-              >
+             <div
+  key={result._id}
+  className={`border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${
+    (result.status || "").toLowerCase() === "passed"
+      ? "border-l-4 border-green-500"
+      : (result.status || "").toLowerCase() === "failed"
+      ? "border-l-4 border-red-500"
+      : "border-l-4 border-yellow-500"
+  }`}
+>
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-medium">

@@ -5,6 +5,7 @@ import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom"
 import logo from '../../assets/logo/bg-logo.png';
 import { FaChevronRight, FaInfoCircle } from "react-icons/fa";
 import { UserContext } from "../../context/UserProvider";
+import { Avatar } from "@mui/material";
 
 
 const LiveSolution = () => {
@@ -891,7 +892,23 @@ const LiveSolution = () => {
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
+ <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+              {/* Profile Image and Link */}
+              <div>
+                <Avatar
+                  alt={user?.firstName}
+                  src={user?.profilePicture}
+                  sx={{ width: 30, height: 30 }}
+                />
+              </div>
 
+              {/* Profile Information */}
+              <div>
+                <h1 className=" text-white text-wrap break-words">
+                  {user?.firstName + user?.lastName}
+                </h1>
+              </div>
+            </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Mark</h1>
                             <h1>{resultData?.s_score}</h1>
