@@ -42,6 +42,11 @@ const disableUserActions = () => {
   // Disable drag/drop
   window.addEventListener("dragstart", (e) => e.preventDefault());
 };
+(function() {
+  console.log = function() {};
+  console.error = function() {};
+  console.warn = function() {};
+})();
 
 const Root = () => {
   useEffect(() => {

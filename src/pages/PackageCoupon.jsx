@@ -102,132 +102,144 @@ console.warn(res)
     }
   };
 
-  const handlePayment = async () => {
-    if (!user?._id) {
-      alert("User is not authenticated. Please log in.");
-      return; // Exit early if no user ID is available
+const handlePayment = async () => {
+  if (!user?._id) {
+    alert("User is not authenticated. Please log in.");
+    return; // Exit early if no user ID is available
+  }
+  try {
+    setIsProcessing(true);
+
+    const res = await Api.post("/orders/orders", {
+      amount: Math.round(finalPrice * 100), // in paise
+      currency: "INR",
+      receipt: `${user?.email}` || "package-purchase",
+      payment_capture: 1,
+      userId: user?._id,
+      courseId: JSON.stringify(pkg.coursesIncluded),
+      courseName: pkg?.name || pkg.subscriptionType || "Course Name",
+      email: user?.email,
+      phoneNumber: user?.phoneNumber,
+      coupon: discountPercent > 0 ? couponCode : null,
+      notes: {
+        package_id: pkg._id,
+        package_name: pkg.name || pkg.subscriptionType,
+        courses: chunkCourses(pkg.coursesIncluded),
+        coupon_code: discountPercent > 0 ? couponCode : null,
+        discount_percent: discountPercent,
+      },
+    });
+
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded) {
+      throw new Error("Failed to load Razorpay SDK");
     }
-    try {
-      setIsProcessing(true);
-
-      const res = await Api.post("/orders/orders", {
-        amount: Math.round(finalPrice * 100), // in paise
-        currency: "INR",
-        receipt: `${user?.email}` || "package-purchase",
-        payment_capture: 1,
-        userId: user?._id,
-        courseId: JSON.stringify(pkg.coursesIncluded),
-        courseName: pkg?.name || pkg.subscriptionType || "Course Name",
-        email: user?.email,
-        phoneNumber: user?.phoneNumber,
-        coupon: discountPercent > 0 ? couponCode : null,
-        notes: {
-          package_id: pkg._id,
-          package_name: pkg.name || pkg.subscriptionType,
-          courses: JSON.stringify(pkg.coursesIncluded),
-          coupon_code: discountPercent > 0 ? couponCode : null,
-          discount_percent: discountPercent,
-        },
-       
-
-      });
-
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error("Failed to load Razorpay SDK");
-      }
 
     const options = {
-  key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-  amount: Math.round(finalPrice * 100),
-  currency: "INR",
-  name: pkg.name,
-  description: `Package purchase: ${pkg.name}`,
-  handler: async function (response) {
-    const payload = {
-      userId: user._id,
-      courseId: JSON.stringify(pkg.coursesIncluded),
-      courseName: pkg.name || pkg.subscriptionType || "Course Name",
-      paymentId: response.razorpay_payment_id,
-      orderId: response.razorpay_order_id,
-      signature: response.razorpay_signature,
-      coupon: discountPercent > 0 ? couponCode : null,
-      amount: finalPrice,
-      expiryDays: pkg.expiryDays || pkg.duration,
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: Math.round(finalPrice * 100),
+      currency: "INR",
+      name: pkg.name,
+      description: `Package purchase: ${pkg.name}`,
+      handler: async function (response) {
+        // ✅ THIS MUST BE TRIGGERED ON PAYMENT SUCCESS
+        console.log("Payment success response:", response);
+
+        const payload = {
+          userId: user._id,
+          courseId: JSON.stringify(pkg.coursesIncluded),
+          courseName: pkg.name || pkg.subscriptionType || "Course Name",
+          paymentId: response.razorpay_payment_id,
+          orderId: response.razorpay_order_id,
+          signature: response.razorpay_signature,
+          coupon: discountPercent > 0 ? couponCode : null,
+          amount: finalPrice,
+          expiryDays: pkg.expiryDays || pkg.duration,
+        };
+
+        if (pkg.subscriptionType) {
+          payload.subscriptions = true;
+        }
+
+        try {
+          const verifyRes = await Api.post("/orders/verify-payment", payload);
+          console.log("✅ Verify payment success:", verifyRes.data);
+          await refreshUser();
+          toast.success("Payment successful!");
+          setTimeout(() => setShowModal(false), 2000);
+        } catch (error) {
+          console.error("❌ Verify payment failed:", error);
+          toast.error("Verify payment failed.");
+        }
+      },
+      prefill: {
+        name: user?.firstName || "",
+        email: user?.email || "",
+        contact: user?.phoneNumber || "",
+      },
+      theme: {
+        color: "#2E7D32",
+      },
     };
 
-    // ✅ Only add subscriptions: true if pkg.subscriptionType exists
-    if (pkg.subscriptionType) {
-      payload.subscriptions = false;
-    }
+    const rzp = new window.Razorpay(options);
+    rzp.open();
 
-    const res = await Api.post("/orders/verify-payment", payload);
-    console.log(res);
-    await refreshUser();
-    toast.success("Payment successful!");
-    setTimeout(() => {
-      setShowModal(false);
-    }, 2000);
-  },
-  notes: {
-    user_id: user?._id,
-    courseName: pkg.name || pkg.subscriptionType,
-    courses: JSON.stringify(pkg.coursesIncluded),
-    coupon_code: discountPercent > 0 ? couponCode : null,
-    discount_percent: discountPercent,
-    ...(pkg.subscriptionType ? { subscriptions: true } : {}), // 🟢 Conditionally add to notes too
-  },
-  prefill: {
-    name: user?.firstName || "",
-    email: user?.email || "",
-    contact: user?.phoneNumber || "",
-  },
-  theme: {
-    color: "#2E7D32",
-  },
+    rzp.on("payment.failed", async function (response) {
+      console.error("Payment failed:", response.error.metadata);
+      toast.error("Payment failed. Please try again.");
+
+      try {
+        const errorData = response.error || {};
+        const meta = errorData.metadata || {};
+
+        console.log(errorData);
+
+        await Api.post("/orders/payment-failed", {
+          userId: user?._id,
+          courseId: pkg._id,
+          orderId: meta.order_id,
+          paymentId: errorData.metadata.payment_id || null,
+          reason:
+            errorData.description || errorData.reason || "Unknown error",
+          method: "razorpay",
+        });
+
+      } catch (err) {
+        console.error("Failed to report payment failure:", err);
+        toast.error("Payment failed and could not be logged.");
+      }
+    });
+  } catch (error) {
+    console.error("Payment error:", error);
+    alert(
+      error.response?.data?.message ||
+        error.message ||
+        "Payment processing failed"
+    );
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
+// Function to break courses into chunks
+const chunkCourses = (courses) => {
+  const chunkSize = 100; // Split into chunks of 25 items
+  console.warn('chunkSize:', chunkSize); // Log chunkSize
+  const result = [];
+  console.warn('Initial result:', result); // Log initial result
+
+  for (let i = 0; i < courses.length; i += chunkSize) {
+    console.warn(`Iteration ${i}: Taking slice from index ${i} to ${i + chunkSize}`);
+    result.push(courses.slice(i, i + chunkSize));
+    console.warn('Current result:', result); // Log result after each push
+  }
+
+  console.warn('Final result:', result); // Log final result
+  return result;
 };
 
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-
-      rzp.on("payment.failed", async function (response) {
-        console.error("Payment failed:", response.error.metadata);
-        toast.error("Payment failed. Please try again.");
-
-        try {
-          const errorData = response.error || {};
-          const meta = errorData.metadata || {};
-
-          console.log(errorData);
-
-          await Api.post("/orders/payment-failed", {
-            userId: user?._id,
-            courseId: JSON.stringify(pkg.coursesIncluded),
-            orderId: meta.order_id,
-            paymentId: errorData.metadata.payment_id || null,
-            reason:
-              errorData.description || errorData.reason || "Unknown error",
-            method: "razorpay",
-          });
-
-          // alert("Payment failed. Please try again.");
-        } catch (err) {
-          console.error("Failed to report payment failure:", err);
-          toast.error("Payment failed and could not be logged.");
-        }
-      });
-    } catch (error) {
-      console.error("Payment error:", error);
-      alert(
-        error.response?.data?.message ||
-          error.message ||
-          "Payment processing failed"
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
