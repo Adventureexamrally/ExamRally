@@ -220,10 +220,21 @@ const NavBar = () => {
           </nav>
 
           {/* "Get App" Button */}
-          {/* <button className="bg-[#131656] text-white px-4 py-1 flex flex-col rounded hover:bg-[#131679]   transition duration-300">
-         <span>Get App</span>
-  <span className="text-xs mt-1 blink">Coming Soon </span>
-          </button> */}
+      <Link
+  to="https://play.google.com/store/apps/details?id=io.examrally.in"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <button className=" text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
+  
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
+      alt="Get it on Google Play"
+      className="h-10 w-auto px-5"
+    />
+  </button>
+</Link>
+
           {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
           {/* <User /> */}
 
