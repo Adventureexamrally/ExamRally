@@ -205,12 +205,12 @@ const NavBar = () => {
             >
               Rally Super Pro
             </Link>
-             <Link 
+             {/* <Link 
             to='/homelivetest'
                className="hover:text-blue-600 transition duration-300"
             >
               Live Test
-            </Link>
+            </Link> */}
             {/* <Link
               to="/video-course"
               className="hover:text-blue-600 transition duration-300"
@@ -374,12 +374,12 @@ const NavBar = () => {
             >
               Rally Super Pro
             </Link>
-            <Link 
+            {/* <Link 
             to='/homelivetest'
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
               Live Test
-            </Link>
+            </Link> */}
             {/* <Link
               to="/video-course"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
