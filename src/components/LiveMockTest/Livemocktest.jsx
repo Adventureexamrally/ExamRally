@@ -926,7 +926,6 @@ console.log(descriptiveData)
 
   const handleTimerEnd = async () => {
     handleSubmitSection();
-    toast.success("Test Completed! Moving to result.");
     await submitExam();
     await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
     navigate('homelivetest');
@@ -1591,21 +1590,43 @@ console.log("0",scoreData)
 
           await submitExam();
           // Get active packages and find matching package
-          Api.get(`topic-test/livetest/getall`)
-            .then((packagesRes) => {
-              const activePackages = packagesRes.data;
-              const matchingPackage = activePackages.find((pkg) =>
-                pkg.exams.includes(id)
-              );
-              if (matchingPackage) {
-                navigate('/homelivetest');
-              } else {
-                navigate("/homelivetest");
-              }
-            })
-            .catch(() => {
-              navigate("/homelivetest");
-            });
+         Api.get(`topic-test/livetest/getall`)
+  .then((packagesRes) => {
+    const activePackages = packagesRes.data;
+    const matchingPackage = activePackages.find((pkg) =>
+      pkg.exams.includes(id)
+    );
+    
+    // Try to close the current tab
+    try {
+      // This will only work if the tab was opened by JavaScript (window.open)
+      window.close();
+      console.warn("1")
+      // If we want to do something in the opener window
+      if (window.opener) {
+          console.warn("2")
+        // You can communicate with the opener window if needed
+        window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
+      }
+    } catch (e) {
+        console.warn("3")
+      // If window.close() fails, just navigate in the current window
+      // navigate('/homelivetest');
+    }
+  })
+  .catch(() => {
+    try {
+      window.close();
+        console.warn("4")
+      if (window.opener) {
+          console.warn("5")
+        window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
+      }
+    } catch (e) {
+        console.warn("6")
+      navigate('/homelivetest');
+    }
+  });
         } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -1732,7 +1753,7 @@ console.log("0",scoreData)
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
-        toast.success("Test Completed! Moving to result.");
+ 
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         navigate('/homelivetest');

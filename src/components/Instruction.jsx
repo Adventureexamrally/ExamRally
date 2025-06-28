@@ -56,6 +56,7 @@ const Instruction = () => {
   }, [id]);
 
   return (
+    <>
     <div className="p-4">
       <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
         <h1 className="text-lg font-semibold text-white">Instruction</h1>
@@ -101,7 +102,7 @@ const Instruction = () => {
 
       <div className="mt-4">
         <p className="font-semibold">General Instructions:</p>
-        <ul className="list-decimal list-inside space-y-2 mt-2">
+        <ul className="list-decimal list-inside space-y-2 mt-2 mb-14">
       {
   examData?.time?.toLowerCase() === "composite" ? (
     <li>
@@ -245,15 +246,23 @@ const Instruction = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-        <div className="fixed bottom-1 right-4">
-        <Link to={`/otherinstruct/${id}/${user?._id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
-    Next
-  </button>
-</Link>
-        </div>
-      </div>
+   
+
+      </div >
+      
     </div>
+   <div className="fixed bottom-0 w-full flex justify-center bg-gradient-to-r from-gray-100 to-gray-200 p-3 shadow-lg">
+  <Link 
+    to={`/otherinstruct/${id}/${user?._id}`}
+    className="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-0.5 font-medium text-white hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300"
+  >
+    <span className="relative rounded-md px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
+      Next
+      <i className="bi bi-arrow-right-circle-fill ml-2 group-hover:translate-x-1 transition-transform duration-200"></i>
+    </span>
+  </Link>
+</div>
+    </>
   );
 };
 

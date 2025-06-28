@@ -13,7 +13,7 @@ const Homeliveresult = () => {
       .then((res) => {
         const data = res.data;
         let filtered = [];
-
+console.warn(data)
         if (Array.isArray(data)) {
           filtered = data.filter(item => item.status === 'completed');
         } else if (data && data.status === 'completed') {

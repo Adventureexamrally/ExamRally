@@ -883,13 +883,13 @@ const Test = () => {
     }
   }, [timeminus, isPaused]);
   
-  const handleTimerEnd = async () => {
-    handleSubmitSection();
-    toast.success("Test Completed! Moving to result.");
-    await submitExam();
-    await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-    navigate(`/result/${id}/${user?._id}`);
-  };
+ const handleTimerEnd = async () => {
+  handleSubmitSection(); // 1. Submits the section
+  await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
+  handleSectionCompletion(); // 4. Calls this after 1 second
+};
+
+
   const submitExam = () => {
     updateSectionTime()
     console.log("submitExam called");
@@ -1372,7 +1372,7 @@ console.warn(currentState)
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
-        toast.success("Test Completed! Moving to result.");
+    
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         navigate(`/result/${id}/${user?._id}`);
@@ -1418,69 +1418,56 @@ console.warn(currentState)
     return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   };
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
+ const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Function to toggle fullscreen mode
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
-      // If not in fullscreen, enter fullscreen
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.mozRequestFullScreen) {
-        // Firefox
-        document.documentElement.mozRequestFullScreen();
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        // Chrome, Safari
-        document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) {
-        // IE/Edge
-        document.documentElement.msRequestFullscreen();
+      const docEl = document.documentElement;
+
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen();
+      } else if (docEl.mozRequestFullScreen) {
+        docEl.mozRequestFullScreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
       }
-      setIsFullscreen(true);
     } else {
-      // If in fullscreen, exit fullscreen
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if (document.mozCancelFullScreen) {
-        // Firefox
         document.mozCancelFullScreen();
       } else if (document.webkitExitFullscreen) {
-        // Chrome, Safari
         document.webkitExitFullscreen();
       } else if (document.msExitFullscreen) {
-        // IE/Edge
         document.msExitFullscreen();
       }
-      setIsFullscreen(false);
     }
   };
 
-  // Sync state with actual fullscreen changes
+  // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // Safari
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange); // Firefox
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange); // IE/Edge
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "mozfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "MSFullscreenChange",
-        handleFullscreenChange
-      );
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
+  }, []);
+
+  // 🔸 Attempt to auto-enter fullscreen on mount
+  useEffect(() => {
+    toggleFullScreen(); // This will only work if browser allows
   }, []);
 
   const [answeredCount, setAnsweredCount] = useState(0);

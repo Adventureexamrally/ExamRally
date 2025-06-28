@@ -8,6 +8,10 @@ import {
   Typography,
   Divider,
   Chip,
+  Box,
+  Grid,
+  CircularProgress,
+  Stack,
 } from '@mui/material';
 import { AccessTime, EmojiEvents } from '@mui/icons-material';
 import AOS from 'aos';
@@ -136,6 +140,13 @@ const HomeLivetest = () => {
     return `${day}${suffix} ${month} ${hours}:${minutes} ${ampm}`;
   };
 
+  window.addEventListener("message", (event) => {
+  if (event.data.redirect) {
+    // Perform redirect in the original tab
+    window.location.href = "/homelivetest";
+  }
+});
+
   const openNewWindow = (url) => {
     window.open(
       url,
@@ -144,110 +155,188 @@ const HomeLivetest = () => {
     );
   };
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <CircularProgress color="primary" />
+      </Box>
+    );
+  }
 
   return (
-<div className="flex flex-col items-center">
-  <Typography variant="h4" className="font-bold text-blue-800 mb-4 text-center">
-    Live Test
-  </Typography>
-  <Divider className="mb-6 bg-blue-200 w-full max-w-7xl" />
+    <Box sx={{ width: '100%', maxWidth: 1400, mx: 'auto', px: { xs: 2, sm: 3, md: 4 } }}>
+      <Stack spacing={4} sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1"
+        className='mt-3'
+        sx={{ 
+          fontWeight: 'bold', 
+          color: 'success.main', 
+          textAlign: 'center',
+          fontSize: { xs: '1.75rem', sm: '2rem' },
+        
+        }}>
+          Live Tests
+        </Typography>
+        
+        <Divider sx={{ 
+          bgcolor: 'success.main', 
+          height: 2,
+          width: '100%',
+          mx: 'auto'
+        }} />
+      </Stack>
 
-  <div className="w-full flex justify-center">
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl px-4 w-full">
-      {liveTests.map((test) => {
-        const res = resultLiveTests[test._id] || getTestStatusFromStorage(test._id);
-        const status = res?.status;
+      <Grid container spacing={3} justifyContent="center">
+      {utcNow && liveTests.map((test) => {
+  const res = resultLiveTests[test._id] || getTestStatusFromStorage(test._id);
+  const status = res?.status;
 
-        const start = new Date(test.livetestStartDate);
-        const end = new Date(test.livetestEndDate);
-        const resultTime = test.liveResult ? new Date(test.liveResult) : null;
 
-        let buttonText = 'Take Test';
-        let isButtonDisabled = false;
-        let buttonColor = 'warning';
+       const start = new Date(test.livetestStartDate);
+const end = new Date(test.livetestEndDate);
+const resultTime = test.liveResult ? new Date(test.liveResult) : null;
+const utcNow = new Date(); // Current UTC time
 
-        // Check test status first (regardless of time)
-        if (status === 'completed') {
-          buttonText = `${formatCustomDate(test.liveResult)}`;
-          buttonColor = 'success';
-        } else if (status === 'paused') {
-          buttonText = 'Resume';
-          buttonColor = 'warning';
-        } 
+console.log("resultTime", resultTime, start, end, utcNow);
 
-        // Check test time
-      
+let buttonText = '';
+let isButtonDisabled = false;
+let buttonColor = '';
 
-        const handleClick = () => {
-          if (!isSignedIn) {
-            navigate('/sign-in');
-            return;
-          }
+if (start > utcNow) {
+    // Test has not started yet
+    buttonText = 'Coming Soon';
+    isButtonDisabled = true;
+    buttonColor = 'secondary'; // You can change this to your preferred style
+} else {
+    // Test has started or is ongoing
+    buttonText = 'Take Test';
+    isButtonDisabled = false;
+    buttonColor = 'warning';
+}
 
-          if (buttonText === 'Resume') {
-            openNewWindow(`/homelivemocktest/${test._id}/${user._id}`);
-          } else if (buttonText === 'Take Test') {
-            openNewWindow(`/homeliveinstruct/${test._id}/${user._id}`);
-          }
-        };
+          
+          // Check test status first (regardless of time)
+          if (status === 'completed') {
+            buttonText = `${formatCustomDate(test.liveResult)}`;
+            buttonColor = 'success';
+          } else if (status === 'paused') {
+            buttonText = 'Resume';
+            buttonColor = 'warning';
+          } 
 
-        return (
-          <Card
-            key={test._id}
-            data-aos="fade-up"
-            className="h-full flex flex-col shadow-lg rounded-xl border hover:shadow-xl transition"
-          >
-            <CardContent className="p-4 flex-grow">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <Typography variant="h6" className="font-bold text-blue-900">
-                    {test.show_name}
-                  </Typography>
-                  <Typography variant="subtitle2" className="text-blue-700">
-                    {test.subtitle || 'Live Test'}
-                  </Typography>
-                </div>
-                <Chip label="Free" color="success" size="small" />
-              </div>
+          const handleClick = () => {
+            if (!isSignedIn) {
+              navigate('/sign-in');
+              return;
+            }
 
-              <div className="bg-blue-50 rounded-lg p-3 mb-4">
-                <div className="flex items-center mb-2 text-gray-700">
-                  <AccessTime className="text-blue-500 mr-2" fontSize="small" />
-                  <Typography variant="body2" className="text-sm">
-                    <strong>Test Window:</strong> {formatCustomDate(test.livetestStartDate)} – {formatCustomDate(test.livetestEndDate)}
-                  </Typography>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <EmojiEvents className="text-yellow-600 mr-2" fontSize="small" />
-                  <Typography variant="body2" className="text-sm">
-                    <strong>Results:</strong> {test.liveResult ? formatCustomDate(test.liveResult) : 'Not specified'}
-                  </Typography>
-                </div>
-              </div>
+            if (buttonText === 'Resume') {
+              openNewWindow(`/homelivemocktest/${test._id}/${user._id}`);
+            } else if (buttonText === 'Take Test') {
+              openNewWindow(`/homeliveinstruct/${test._id}/${user._id}`);
+            }
+          };
 
-              <Button
-                fullWidth
-                variant={isButtonDisabled ? 'outlined' : 'contained'}
-                color={buttonColor}
-                disabled={isButtonDisabled}
-                className="font-bold py-2"
-                onClick={handleClick}
-                startIcon={isButtonDisabled && <IoMdLock />}
-                size="small"
+          return (
+            <Grid item key={test._id} xs={12} sm={6} md={4} lg={3}>
+              <Card
+                data-aos="fade-up"
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: 3,
+                  borderRadius: 3,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: 6,
+                    transform: 'translateY(-4px)'
+                  }
+                }}
               >
-                {buttonText}
-              </Button>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  </div>
-  <div className="w-full max-w-7xl px-4">
-    <Hometotaltest/>
-  </div>
-</div>
+                <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'flex-start',
+                    mb: 2
+                  }}>
+                    <Box>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 'bold', 
+                        color: 'success.dark',
+                        fontSize: '1.1rem'
+                      }}>
+                        {test.show_name}
+                      </Typography>
+                     
+                    </Box>
+                    <Chip 
+                    
+                      label="Free" 
+                      size="small" 
+                      sx={{ 
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem'
+                      }} 
+                    
+                    />
+                  </Box>
+
+                  <Box className="text-[#81346b] bg-[#fedfe7]"
+                  sx={{ 
+                    // bgcolor: 'primary.light', 
+                    borderRadius: 2, 
+                    p: 2, 
+                    mb: 3,
+                    flexGrow: 1
+                  }}>
+                    <Stack spacing={1.5}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <AccessTime fontSize="small" sx={{ color: 'primary.main', mr: 1 }} />
+                        <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                          <Box component="span" sx={{ fontWeight: 'bold' }}>Test Window:</Box> {formatCustomDate(test.livetestStartDate)} – {formatCustomDate(test.livetestEndDate)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <EmojiEvents fontSize="small" sx={{ color: 'warning.main', mr: 1 }} />
+                        <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                          <Box component="span" sx={{ fontWeight: 'bold' }}>Results:</Box> {test.liveResult ? formatCustomDate(test.liveResult) : 'Not specified'}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Box>
+
+                  <Button
+                    fullWidth
+                    variant={isButtonDisabled ? 'outlined' : 'contained'}
+                    color={buttonColor}
+                    disabled={isButtonDisabled}
+                    onClick={handleClick}
+                    startIcon={isButtonDisabled && <IoMdLock />}
+                    size="medium"
+                    sx={{
+                      fontWeight: 'bold',
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    {buttonText}
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+      <Box sx={{ width: '100%', mt: 6 }}>
+        <Hometotaltest/>
+      </Box>
+    </Box>
   );
 };
 
