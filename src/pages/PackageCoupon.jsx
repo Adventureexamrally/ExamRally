@@ -121,13 +121,15 @@ const handlePayment = async () => {
       email: user?.email,
       phoneNumber: user?.phoneNumber,
       coupon: discountPercent > 0 ? couponCode : null,
-      notes: {
-        package_id: pkg._id,
-        package_name: pkg.name || pkg.subscriptionType,
-        courses: chunkCourses(pkg.coursesIncluded),
-        coupon_code: discountPercent > 0 ? couponCode : null,
-        discount_percent: discountPercent,
-      },
+     notes: {
+  user_id: user._id,
+  courses: JSON.stringify(pkg.coursesIncluded),
+  courseName: pkg.name || pkg.subscriptionType,
+  package_name: pkg.name,
+  coupon_code: discountPercent > 0 ? couponCode : null,
+  subscriptions: !!pkg.subscriptionType,
+  expiryDays: pkg.expiryDays || pkg.duration,
+},
     });
 
     const scriptLoaded = await loadRazorpayScript();
@@ -142,8 +144,14 @@ const handlePayment = async () => {
       name: pkg.name,
       description: `Package purchase: ${pkg.name}`,
       handler: async function (response) {
+        
         // ✅ THIS MUST BE TRIGGERED ON PAYMENT SUCCESS
         console.log("Payment success response:", response);
+  if (!response.razorpay_payment_id) {
+    console.error("❌ No payment ID received");
+    toast.error("Payment failed: No payment ID");
+    return;
+  }
 
         const payload = {
           userId: user._id,
