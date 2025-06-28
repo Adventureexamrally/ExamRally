@@ -55,8 +55,8 @@ const Subblog = () => {
           content={seo[0]?.seoData?.ogDescription}
         />
         <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                        ))} */}
+        <link rel="canonical" href={seo[0]?.seoData?.canonical || "https://examrally.in/"}></link>
+      
       </Helmet>
 
       <div className="container flex">
