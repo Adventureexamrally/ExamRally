@@ -80,7 +80,7 @@ useEffect(() => {
   // console.log(user)
   return (
     <header className="bg-white shadow-md">
-    <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-around">
+    <div className="container-fluid mx-auto px-4 py-3 flex flex-wrap items-center justify-around">
       
       {/* Left: Logo */}
       <div className="flex items-center space-x-3">
@@ -166,7 +166,7 @@ useEffect(() => {
         )}
   
         {/* Right Side Items: Telegram and Signin - hidden on small screens */}
-        <div className="hidden lg:flex items-center space-x-3">
+        <div className="hidden md:flex  lg:flex items-center space-x-3 ">
           <Link to="https://t.me/examrally" className="flex items-center space-x-1 text-[#24A1DE]">
             <i className="bi bi-telegram text-2xl"></i>
             <span>Join Telegram</span>
