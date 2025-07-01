@@ -9,7 +9,7 @@ import { Avatar } from "@mui/material";
 
 const Mocksolution = () => {
     const [examData, setExamData] = useState(null);
-        const [examDatas, setExamsData] = useState(null);
+    const [examDatas, setExamsData] = useState(null);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState([]);
@@ -35,92 +35,92 @@ const Mocksolution = () => {
     const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
     const { user } = useContext(UserContext);
-     const startingIndex = examData?.section
-    ?.slice(0, currentSectionIndex)
-    .reduce(
-      (acc, section) =>
-        acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
-      0
-    ) || 0;
+    const startingIndex = examData?.section
+        ?.slice(0, currentSectionIndex)
+        .reduce(
+            (acc, section) =>
+                acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+            0
+        ) || 0;
 
-  // Reset clickedQuestionIndex when section changes
-  useEffect(() => {
-    setClickedQuestionIndex(startingIndex);
-  }, [currentSectionIndex, startingIndex]);
-
-  // Fetch exam data
-  useEffect(() => {
-    if (!user?._id) return;
-
-    Api.get(`results/${user?._id}/${id}`)
-      .then((res) => {
-        if (res.data) {
-        //   setExamData(res.data);
-          console.log(res.data);
-        }
-      })
-      .catch((err) => console.error("Error fetching data:", err));
-  }, [id, user]);
-
-  useEffect(() => {
-    if (!isDataFetched) {
-      Api.get(`exams/getExam/${id}`)
-        .then((res) => {
-          if (res.data) {
-            setExamData(res.data);
-            console.log("dd", res.data);
-            setIsDataFetched(true);
-            setShow_name(res.data.show_name);
-            setExam_name(res.data.exam_name);
-            setTest_type(res.data.test_type);
-            setTest_name(res.data.test_name);
-            setDescription(res.data.description);
-            sett_questions(res.data.t_questions);
-          }
-        })
-        .catch((err) => console.error("Error fetching data:", err));
-    }
-  }, [id]);
+    // Reset clickedQuestionIndex when section changes
     useEffect(() => {
+        setClickedQuestionIndex(startingIndex);
+    }, [currentSectionIndex, startingIndex]);
 
-        if (!user?._id) return; // Don't run if user is not loaded yet
+    // // Fetch exam data
+    // useEffect(() => {
+    //     if (!user?._id) return;
 
-        Api.get(`results/${user?._id}/${id}`)
+    //     Api.get(`results/${user?._id}/${id}`)
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 //   setExamData(res.data);
+    //                 console.log(res.data);
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+    // }, [id, user]);
 
-            .then((res) => {
-                if (res.data) {
-                    // setExamData(res.data);
-                    console.log(res.data);
-                }
-            })
-            .catch((err) => console.error("Error fetching data:", err));
+    // useEffect(() => {
+    //     if (!isDataFetched) {
+    //         Api.get(`exams/getExam/${id}`)
+    //             .then((res) => {
+    //                 if (res.data) {
+    //                     setExamData(res.data);
+    //                     console.log("dd", res.data);
+    //                     setIsDataFetched(true);
+    //                     setShow_name(res.data.show_name);
+    //                     setExam_name(res.data.exam_name);
+    //                     setTest_type(res.data.test_type);
+    //                     setTest_name(res.data.test_name);
+    //                     setDescription(res.data.description);
+    //                     sett_questions(res.data.t_questions);
+    //                 }
+    //             })
+    //             .catch((err) => console.error("Error fetching data:", err));
+    //     }
+    // }, [id]);
+    // useEffect(() => {
 
-    }, [id, user]);
+    //     if (!user?._id) return; // Don't run if user is not loaded yet
 
-    useEffect(() => {
-        // Check if data has already been fetched
-        if (!isDataFetched) {
-            Api.get(`exams/getExam/${id}`)
-                .then((res) => {
-                    if (res.data) {
-                        setExamData(res.data);
-                        console.log("dd", res.data)
-                        setIsDataFetched(true);
-                        setShow_name(res.data.show_name);
-                        setExam_name(res.data.exam_name);
-                        setTest_type(res.data.test_type);
-                        setTest_name(res.data.test_name);
-                        setDescription(res.data.description);
+    //     Api.get(`results/${user?._id}/${id}`)
 
-                        sett_questions(res.data.t_questions)
-                        console.error("kl", res.data.t_question);
-                    }
-                })
-                .catch((err) => console.error("Error fetching data:", err));
-        }
-    }, [id]);
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 // setExamData(res.data);
+    //                 console.log(res.data);
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
 
-  
+    // }, [id, user]);
+
+    // useEffect(() => {
+    //     // Check if data has already been fetched
+    //     if (!isDataFetched) {
+    //         Api.get(`exams/getExam/${id}`)
+    //             .then((res) => {
+    //                 if (res.data) {
+    //                     setExamData(res.data);
+    //                     console.log("dd", res.data)
+    //                     setIsDataFetched(true);
+    //                     setShow_name(res.data.show_name);
+    //                     setExam_name(res.data.exam_name);
+    //                     setTest_type(res.data.test_type);
+    //                     setTest_name(res.data.test_name);
+    //                     setDescription(res.data.description);
+
+    //                     sett_questions(res.data.t_questions)
+    //                     console.error("kl", res.data.t_questions);
+    //                 }
+    //             })
+    //             .catch((err) => console.error("Error fetching data:", err));
+    //     }
+    // }, [id]);
+
+
     // Mark a question as visited when clicked
     useEffect(() => {
         if (!visitedQuestions.includes(clickedQuestionIndex)) {
@@ -178,41 +178,96 @@ const Mocksolution = () => {
     const [resultsBySection, setResultsBySection] = useState([]);
 
     // Update the useEffect that fetches results
+    // useEffect(() => {
+    //     if (!user?._id) return;
+
+    //     Api.get(`results/${user?._id}/${id}`)
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 setExamsData(res.data);
+    //                 // Store results for all sections
+    //                 setResultsBySection(res.data.section.map(section => ({
+    //                     correct: section.correct,
+    //                     incorrect: section.incorrect,
+    //                     skipped: section.skipped,
+    //                     Attempted: section.Attempted,
+    //                     Not_Attempted: section.Not_Attempted,
+    //                     s_score: section.s_score,
+    //                     unseen: section.NotVisited
+    //                 })));
+
+    //                 // Also set current section's data
+    //                 const currentSectionData = res.data.section[currentSectionIndex];
+    //                 if (currentSectionData) {
+    //                     setResultData({
+    //                         correct: currentSectionData.correct,
+    //                         incorrect: currentSectionData.incorrect,
+    //                         skipped: currentSectionData.skipped,
+    //                         Attempted: currentSectionData.Attempted,
+    //                         Not_Attempted: currentSectionData.Not_Attempted,
+    //                         s_score: currentSectionData.s_score,
+    //                         unseen: currentSectionData.NotVisited
+    //                     });
+    //                 }
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+    // }, [id, user]);
+
     useEffect(() => {
-        if (!user?._id) return;
+  if (!user?._id || isDataFetched) return;
 
-        Api.get(`results/${user?._id}/${id}`)
-            .then((res) => {
-                if (res.data) {
-                    setExamsData(res.data);
-                    // Store results for all sections
-                    setResultsBySection(res.data.section.map(section => ({
-                        correct: section.correct,
-                        incorrect: section.incorrect,
-                        skipped: section.skipped,
-                        Attempted: section.Attempted,
-                        Not_Attempted: section.Not_Attempted,
-                        s_score: section.s_score,
-                        unseen: section.NotVisited
-                    })));
+  Promise.all([
+    Api.get(`exams/getExam/${id}`),
+    Api.get(`results/${user._id}/${id}`)
+  ])
+    .then(([examRes, resultRes]) => {
+      // ----- Exam Data -----
+      const exam = examRes.data;
+      if (exam) {
+        setExamData(exam);
+        console.log("dd", exam);
+        setIsDataFetched(true);
+        setShow_name(exam.show_name);
+        setExam_name(exam.exam_name);
+        setTest_type(exam.test_type);
+        setTest_name(exam.test_name);
+        setDescription(exam.description);
+        sett_questions(exam.t_questions);
+        console.error("kl", exam.t_question); // 🔸 Note: typo still preserved as per your request
+      }
 
-                    // Also set current section's data
-                    const currentSectionData = res.data.section[currentSectionIndex];
-                    if (currentSectionData) {
-                        setResultData({
-                            correct: currentSectionData.correct,
-                            incorrect: currentSectionData.incorrect,
-                            skipped: currentSectionData.skipped,
-                            Attempted: currentSectionData.Attempted,
-                            Not_Attempted: currentSectionData.Not_Attempted,
-                            s_score: currentSectionData.s_score,
-                            unseen: currentSectionData.NotVisited
-                        });
-                    }
-                }
-            })
-            .catch((err) => console.error("Error fetching data:", err));
-    }, [id, user]);
+      // ----- Result Data -----
+      const result = resultRes.data;
+      if (result) {
+        setExamsData(result);
+
+        setResultsBySection(result.section.map(section => ({
+          correct: section.correct,
+          incorrect: section.incorrect,
+          skipped: section.skipped,
+          Attempted: section.Attempted,
+          Not_Attempted: section.Not_Attempted,
+          s_score: section.s_score,
+          unseen: section.NotVisited
+        })));
+
+        const currentSectionData = result.section[currentSectionIndex];
+        if (currentSectionData) {
+          setResultData({
+            correct: currentSectionData.correct,
+            incorrect: currentSectionData.incorrect,
+            skipped: currentSectionData.skipped,
+            Attempted: currentSectionData.Attempted,
+            Not_Attempted: currentSectionData.Not_Attempted,
+            s_score: currentSectionData.s_score,
+            unseen: currentSectionData.NotVisited
+          });
+        }
+      }
+    })
+    .catch((err) => console.error("Error fetching exam or result:", err));
+}, [id, user]);
 
     // Update this when section changes
     useEffect(() => {
@@ -433,57 +488,57 @@ const Mocksolution = () => {
             alert("Submission failed.");
         }
     };
-     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      const docEl = document.documentElement;
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            const docEl = document.documentElement;
 
-      if (docEl.requestFullscreen) {
-        docEl.requestFullscreen();
-      } else if (docEl.mozRequestFullScreen) {
-        docEl.mozRequestFullScreen();
-      } else if (docEl.webkitRequestFullscreen) {
-        docEl.webkitRequestFullscreen();
-      } else if (docEl.msRequestFullscreen) {
-        docEl.msRequestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-    }
-  };
-
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen();
+            } else if (docEl.mozRequestFullScreen) {
+                docEl.mozRequestFullScreen();
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            } else if (docEl.msRequestFullscreen) {
+                docEl.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
     };
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+    // Listen for fullscreen changes
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
 
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
-    };
-  }, []);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+        document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
-  // 🔸 Attempt to auto-enter fullscreen on mount
-  useEffect(() => {
-    toggleFullScreen(); // This will only work if browser allows
-  }, []);
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+        };
+    }, []);
+
+    // 🔸 Attempt to auto-enter fullscreen on mount
+    useEffect(() => {
+        toggleFullScreen(); // This will only work if browser allows
+    }, []);
 
     return (
         <div className="p-1 mock-font ">
@@ -492,12 +547,12 @@ const Mocksolution = () => {
                 <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
                     <h1 className="h3 font-bold mt-3">{show_name}</h1>
                     <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-                       <button
-                                onClick={toggleFullScreen}
-                                className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-                              >
-                                {isFullscreen ? <FaCompress /> : <FaExpand />}
-                              </button>
+                    <button
+                        onClick={toggleFullScreen}
+                        className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
+                    >
+                        {isFullscreen ? <FaCompress /> : <FaExpand />}
+                    </button>
                 </div>
 
             </div>
@@ -657,9 +712,9 @@ const Mocksolution = () => {
                                             <div
                                                 className="md:w-[80%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300"
                                                 style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+                                                    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                                    overflowY: 'auto'
+                                                }}
                                             >
                                                 <div
                                                     className="text-wrap"
@@ -680,16 +735,16 @@ const Mocksolution = () => {
                                         )}
 
                                     {/* Right side for Question */}
-                                   <div
-  className="w-full p-3 mb-24 md:mb-0 flex flex-col md:flex-row justify-between"
-   style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
->
-  {/* Content with dynamic height */}
+                                    <div
+                                        className="w-full p-3 mb-24 md:mb-0 flex flex-col md:flex-row justify-between"
+                                        style={{
+                                            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                            overflowY: 'auto'
+                                        }}
+                                    >
+                                        {/* Content with dynamic height */}
 
-                                        
+
                                         <div>
 
                                             <div
@@ -937,17 +992,17 @@ const Mocksolution = () => {
                                 </div>
                             ) : (
                                 <div
-                                className="d-flex justify-content-center align-items-center"
-                                style={{ height: '100vh' }} // Full viewport height
-                              >
-                                <div
-                                  className="spinner-border text-primary"
-                                  role="status"
-                                  style={{ width: '3rem', height: '3rem' }}
+                                    className="d-flex justify-content-center align-items-center"
+                                    style={{ height: '100vh' }} // Full viewport height
                                 >
-                                  <span className="visually-hidden">Loading...</span>
+                                    <div
+                                        className="spinner-border text-primary"
+                                        role="status"
+                                        style={{ width: '3rem', height: '3rem' }}
+                                    >
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
                                 </div>
-                              </div>
                             )}
                         </>
                     ) : (
@@ -967,9 +1022,9 @@ const Mocksolution = () => {
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
         fixed top-14 right-0 z-40 md:static shadow-sm md:block `}
                     style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+                        height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                        overflowY: 'auto'
+                    }}
                 >
                     {isMobileMenuOpen && (
                         <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -992,23 +1047,23 @@ const Mocksolution = () => {
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
- <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
-              {/* Profile Image and Link */}
-              <div>
-                <Avatar
-                  alt={user?.firstName}
-                  src={user?.profilePicture}
-                  sx={{ width: 30, height: 30 }}
-                />
-              </div>
+                        <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+                            {/* Profile Image and Link */}
+                            <div>
+                                <Avatar
+                                    alt={user?.firstName}
+                                    src={user?.profilePicture}
+                                    sx={{ width: 30, height: 30 }}
+                                />
+                            </div>
 
-              {/* Profile Information */}
-              <div>
-                <h1 className=" text-white text-wrap break-words">
-                  {user?.firstName + user?.lastName}
-                </h1>
-              </div>
-            </div>
+                            {/* Profile Information */}
+                            <div>
+                                <h1 className=" text-white text-wrap break-words">
+                                    {user?.firstName + user?.lastName}
+                                </h1>
+                            </div>
+                        </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Mark</h1>
                             <h1>{resultData?.s_score}</h1>
@@ -1025,7 +1080,7 @@ const Mocksolution = () => {
                             <h1>InCorrect</h1>
                             <h1>{resultData?.incorrect}</h1>
                         </div>
-                        
+
 
 
 
@@ -1083,8 +1138,8 @@ const Mocksolution = () => {
                                                     setVisitedQuestions(prev => [...prev, startingIndex + index]);
                                                 }
 
-setCheck(null);
-        setIsClicked(false);
+                                                setCheck(null);
+                                                setIsClicked(false);
 
                                             }}
                                             className={`fw-bold flex align-items-center justify-content-center ${className}`}
@@ -1094,7 +1149,7 @@ setCheck(null);
                                     </div>
                                 );
                             })}
-                        </div>                     
+                        </div>
                     </div>
                 </div>
             </div>
