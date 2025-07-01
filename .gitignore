@@ -21,5 +21,6 @@ rad.json
 #Test results file
 TestResults.xml
 node_modules
-
+.env
+dist
 ````````

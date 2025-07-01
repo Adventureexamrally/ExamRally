@@ -58,6 +58,11 @@ import { useUser } from '@clerk/clerk-react';
 import { UserContext } from "./context/UserProvider";
 import  Api  from "./service/Api";
 import { fetchUtcNow } from "./service/timeApi";
+import HomeLivetest from "./components/LiveMockTest/HomeLivetest";
+import Livemockinstruction from "./components/LiveMockTest/Livemockinstruction";
+import Livemockotherinstruct from "./components/LiveMockTest/Livemockotherinstruct";
+import Livemocktest from "./components/LiveMockTest/Livemocktest";
+import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
 
 
 
@@ -135,7 +140,9 @@ useEffect(() => {
     "/mocktest", "/mocklivetest", "/instruction", "/otherins", 
     "/instruct", "/otherinstruct", "/mocksolution", "/livesolution",  
     "/result", "/liveresult", "/pdf/instruction", "/pdf/otherinstruct", 
-    "/pdf/mocktest", "/pdf/result", "/pdf/mocksolution"
+    "/pdf/mocktest", "/pdf/result", "/pdf/mocksolution",
+    "/homeliveinstruct","/homeliveotherinstruct",
+    "/homelivemocktest" 
   ].some(path => location.pathname.startsWith(path));
 
   const { user } = useContext(UserContext);
@@ -296,8 +303,11 @@ useEffect(() => {
         <Route path="/All-Packages" element={<Packages />} />
         {/* <Route path="/All-Archivers" element={<AllArch />} /> */}
 
-
-
+ {/* <Route path="/homelivetest" element={<HomeLivetest/>}/> */}
+ {/* <Route path="/homeliveinstruct/:id/:userId" element={<Livemockinstruction />} />
+<Route path="/homeliveotherinstruct/:id/:userId" element={<Livemockotherinstruct />} />
+<Route path="/homelivemocktest/:id/:userId" element={<Livemocktest />} />
+<Route path="/homeliveresult/:id" element={<Homeliveresult/>} /> */}
 
 
         <Route path="*" element={<NotFound />} />

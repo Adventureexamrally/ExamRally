@@ -292,7 +292,7 @@ useEffect(() => {
         console.error("Failed to fetch UTC time:", error);
         // handle error as needed
       });
-  }, []);
+  }, [utcNow]);
 
 
 useEffect(() => {
@@ -319,7 +319,7 @@ useEffect(() => {
   const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
 
   setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
-}, [user, data, utcNow]);
+}, [user, data, utcNow,isEnrolled,expiredate]);
 
   console.log("check", user?.enrolledCourses);
 

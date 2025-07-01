@@ -1,8 +1,9 @@
 {
   "name": "examrally",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
   "type": "module",
+  "homepage": "https://examrally.in",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",

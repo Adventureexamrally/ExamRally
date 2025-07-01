@@ -112,8 +112,8 @@ const Blog = () => {
       )}
       <div className="p-4 flex-1 flex flex-col">
         <h3
-          className="text-lg font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300"
-          dangerouslySetInnerHTML={{ __html: blog.title }}
+          className="text-sm font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300"
+          dangerouslySetInnerHTML={{ __html: `<style> strong span{ font-size: 0.9rem !important } strong{font-size: 0.9rem }</style>  ${blog.title}` }}
         />
         <p
           className="text-gray-600 mb-3 text-sm flex-1 line-clamp-2"

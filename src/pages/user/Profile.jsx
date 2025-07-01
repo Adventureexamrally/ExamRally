@@ -100,7 +100,8 @@ const Profile = () => {
             console.error("Failed to fetch UTC time:", error);
             // handle error as needed
           });
-      }, []);
+      }, [utcNow]);
+      const maxDate = utcNow ? utcNow.toISOString().split('T')[0] : '';
   return (
     <div className="flex flex-col md:flex-row">
       <DashBoard handleDrawerToggle={handleDrawerToggle} open={open} setOpen={setOpen} />
@@ -215,7 +216,7 @@ const Profile = () => {
                   placeholder="Enter Date of Birth"
                   required
                   disabled={!isEditing}
-                  max={utcNow.toISOString().split('T')[0]} // 🔒 restrict to today or earlier
+                  max={maxDate} // 🔒 restrict to today or earlier
                   className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>

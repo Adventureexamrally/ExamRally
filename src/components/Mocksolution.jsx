@@ -4,7 +4,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../assets/logo/bg-logo.png';
 import { UserContext } from "../context/UserProvider";
-import { FaChevronRight, FaInfoCircle } from "react-icons/fa";
+import { FaChevronRight, FaCompress, FaExpand, FaInfoCircle } from "react-icons/fa";
+import { Avatar } from "@mui/material";
 
 const Mocksolution = () => {
     const [examData, setExamData] = useState(null);
@@ -432,6 +433,57 @@ const Mocksolution = () => {
             alert("Submission failed.");
         }
     };
+     const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      const docEl = document.documentElement;
+
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen();
+      } else if (docEl.mozRequestFullScreen) {
+        docEl.mozRequestFullScreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, []);
+
+  // 🔸 Attempt to auto-enter fullscreen on mount
+  useEffect(() => {
+    toggleFullScreen(); // This will only work if browser allows
+  }, []);
 
     return (
         <div className="p-1 mock-font ">
@@ -440,6 +492,12 @@ const Mocksolution = () => {
                 <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
                     <h1 className="h3 font-bold mt-3">{show_name}</h1>
                     <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+                       <button
+                                onClick={toggleFullScreen}
+                                className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
+                              >
+                                {isFullscreen ? <FaCompress /> : <FaExpand />}
+                              </button>
                 </div>
 
             </div>
@@ -934,7 +992,23 @@ const Mocksolution = () => {
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
+ <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+              {/* Profile Image and Link */}
+              <div>
+                <Avatar
+                  alt={user?.firstName}
+                  src={user?.profilePicture}
+                  sx={{ width: 30, height: 30 }}
+                />
+              </div>
 
+              {/* Profile Information */}
+              <div>
+                <h1 className=" text-white text-wrap break-words">
+                  {user?.firstName + user?.lastName}
+                </h1>
+              </div>
+            </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Mark</h1>
                             <h1>{resultData?.s_score}</h1>

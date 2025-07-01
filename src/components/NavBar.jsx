@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo/logo.webp";
-import { SignIn, SignedIn, SignedOut, SignInButton, UserButton, SignUp, useUser } from "@clerk/clerk-react";
+import {
+  SignIn,
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+  SignUp,
+  useUser,
+} from "@clerk/clerk-react";
 
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
 import { Avatar } from "@mui/material";
 import User from "./User";
 import Api from "../service/Api";
 import CustomUserMenu from "./CustomUserButton";
-
 
 const NavBar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -21,7 +28,7 @@ const NavBar = () => {
   const fetchPakages = async () => {
     try {
       const response = await Api.get("/packages/get/active");
-      console.log("ji", response.data)
+      console.log("ji", response.data);
       setPackages(response.data);
     } catch (error) {
       console.error(error);
@@ -47,7 +54,9 @@ const NavBar = () => {
   useEffect(() => {
     const sendUserData = async () => {
       if (isLoaded && isSignedIn && user) {
-        const userAlreadySynced = localStorage.getItem(`user_synced_${user.id}`);
+        const userAlreadySynced = localStorage.getItem(
+          `user_synced_${user.id}`
+        );
 
         if (userAlreadySynced) {
           console.log("User already synced");
@@ -79,11 +88,11 @@ const NavBar = () => {
           // Check if user is logging in or signing up
           if (userData.userId) {
             // If the user ID exists, it's a login, call the /auth/login endpoint
-            await Api.post("/auth/login", userData);  // Call login API here
+            await Api.post("/auth/login", userData); // Call login API here
             console.log("User logged in:", userData);
           } else {
             // If the user ID doesn't exist, it's a new signup, call /auth/signup
-            await Api.post("/auth/signup", userData);  // Call signup API here
+            await Api.post("/auth/signup", userData); // Call signup API here
             console.log("User signed up:", userData);
           }
 
@@ -100,15 +109,16 @@ const NavBar = () => {
 
   return (
     <>
-
-      <nav className="bg-green-600 text-white py-1 font-semibold shadow-md py-2">
+      <nav className="bg-green-600 text-white font-semibold shadow-md py-2">
         <div className="container mx-auto flex justify-between items-center px-4">
           {/* Logo */}
 
-
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="hover:text-blue-600 transition duration-300 ">
+            <Link
+              to="/"
+              className="hover:text-blue-600 transition duration-300 "
+            >
               Home
             </Link>
             <div
@@ -119,9 +129,7 @@ const NavBar = () => {
                 setActiveSubMenu(null);
               }}
             >
-              <button
-                className="flex items-center hover:text-blue-600 transition duration-300 text-white"
-              >
+              <button className="flex items-center hover:text-blue-600 transition duration-300 text-white">
                 Exams
                 {isDropdownOpen ? (
                   <FaChevronUp className="ml-2 text-sm" />
@@ -205,6 +213,12 @@ const NavBar = () => {
             >
               Rally Super Pro
             </Link>
+            {/* <Link 
+            to='/homelivetest'
+               className="hover:text-blue-600 transition duration-300"
+            >
+              Live Test
+            </Link> */}
             {/* <Link
               to="/video-course"
               className="hover:text-blue-600 transition duration-300"
@@ -220,10 +234,20 @@ const NavBar = () => {
           </nav>
 
           {/* "Get App" Button */}
-          {/* <button className="bg-[#131656] text-white px-4 py-1 flex flex-col rounded hover:bg-[#131679]   transition duration-300">
-         <span>Get App</span>
-  <span className="text-xs mt-1 blink">Coming Soon </span>
-          </button> */}
+          <Link
+            to="https://play.google.com/store/apps/details?id=io.examrally.in"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button className=" text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
+                alt="Get it on Google Play"
+                className="h-10 w-auto px-5"
+              />
+            </button>
+          </Link>
+
           {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
           {/* <User /> */}
 
@@ -272,9 +296,7 @@ const NavBar = () => {
                 setActiveSubMenu(null);
               }}
             >
-              <button
-                className="flex px-4 py-2 w-full hover:bg-blue-700 hover:text-white transition duration-300"
-              >
+              <button className="flex px-4 py-2 w-full hover:bg-blue-700 hover:text-white transition duration-300">
                 Exams
                 {isDropdownOpen ? (
                   <FaChevronUp className="ml-2 mt-2 text-sm" />
@@ -357,6 +379,12 @@ const NavBar = () => {
             >
               Rally Super Pro
             </Link>
+            {/* <Link 
+            to='/homelivetest'
+              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+            >
+              Live Test
+            </Link> */}
             {/* <Link
               to="/video-course"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
@@ -394,8 +422,16 @@ const NavBar = () => {
                 <CustomUserMenu />
               </SignedIn>
               <p>{!user ? "" : user.firstName}</p>
-              <Link to='https://t.me/examrally'> <i className="bi bi-telegram text-2xl" style={{ color: "	#24A1DE" }}> </i>Join Telegram </Link>
-
+              <Link target="_blank" to="https://t.me/examrally">
+                {" "}
+                <i
+                  className="bi bi-telegram text-2xl"
+                  style={{ color: "	#24A1DE" }}
+                >
+                  {" "}
+                </i>
+                Join Telegram{" "}
+              </Link>
             </div>
           </div>
         )}

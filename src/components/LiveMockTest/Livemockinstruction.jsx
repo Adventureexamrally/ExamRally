@@ -1,18 +1,19 @@
-import markerreview from "../assets/images/markerReview.png";
-import ans from "../assets/images/ans.png";
-import notvisit from "../assets/images/notvisit.png";
-import notans from "../assets/images/notans.png";
-import notandmaeked from "../assets/images/notansMarked.png";
+import markerreview from "../../assets/images/markerReview.png";
+import ans from "../../assets/images/ans.png";
+import notvisit from "../../assets/images/notvisit.png";
+import notans from "../../assets/images/notans.png";
+import notandmaeked from "../../assets/images/notansMarked.png";
 import { Link, useParams } from "react-router-dom";
 import { useContext, useEffect } from "react";
-import Api from "../service/Api";
+// import Api from "../service/Api";
 import { useState } from "react";
-import { UserContext } from "../context/UserProvider";
+import Api from "../../service/Api";
+import { UserContext } from "../../context/UserProvider";
 
 
-window.addEventListener('contextmenu', function (e) {
-  e.preventDefault();
-});
+// window.addEventListener('contextmenu', function (e) {
+//   e.preventDefault();
+// });
 
 // Prevent F12, Ctrl+R, Ctrl+Shift+R, and Ctrl+Shift+I key presses
 window.addEventListener('keydown', function (e) {
@@ -38,7 +39,7 @@ const images = [
   },
 ];
 
-const Instruction = () => {
+const Livemockinstruction = () => {
   const [examData, setExamData] = useState(null);
   const {id}=useParams()
   const { user } = useContext(UserContext);
@@ -56,18 +57,16 @@ const Instruction = () => {
   }, [id]);
 
   return (
-    <>
     <div className="p-4">
       <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
         <h1 className="text-lg font-semibold text-white">Instruction</h1>
         
-     
-      
+   
       </div>
       <p className="text-red-500 fw-bold p-2">The Public Examinations (Prevention of Unfair Means) Act 2024 is in force. The provisions of the Act will be applicable to persons involved in use of unfair means. Accordingly, Candidates will be covered under the extent administrative provisions of the concerned Public Examination Authority. Candidates are advised to not take/give or attempt to take/give any unfair assistance or use or attempt to use any unfair means during the examinations.
       </p>
 <div className="p-2">
-  <h1><strong> {examData?.exam_name}</strong> </h1>
+  <h1> Section : <strong> {examData?.exam_name}</strong> </h1>
 </div>
 
 
@@ -102,22 +101,22 @@ const Instruction = () => {
 
       <div className="mt-4">
         <p className="font-semibold">General Instructions:</p>
-        <ul className="list-decimal list-inside space-y-2 mt-2 mb-14">
+        <ul className="list-decimal list-inside space-y-2 mt-2">
       {
   examData?.time?.toLowerCase() === "composite" ? (
     <li>
-      Total duration of examination is <strong>{examData?.duration}</strong> Min. 
+      Total duration of examination is <strong>{examData?.duration}</strong> Min.
     </li>
   ) : (
-   <>
-   </>
+ <>
+ </>
   )
 }
 
 
           <li>
             The clock will be set at the server. The countdown timer in the top
-            right corner of the screen will display the remaining time available
+            right corner of the scrteen will display the remaining time available
             for you to complete the examination. When the timer reaches zero,
             the examination will end by itself. You will not be required to end
             or submit your examination.
@@ -246,24 +245,16 @@ const Instruction = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-   
-
-      </div >
-      
+        <div className="fixed bottom-1 right-4">
+        <Link to={`/homeliveotherinstruct/${id}/${user?._id}`}>
+  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
+    Next
+  </button>
+</Link>
+        </div>
+      </div>
     </div>
-   <div className="fixed bottom-0 w-full flex justify-center bg-gradient-to-r from-gray-100 to-gray-200 p-3 shadow-lg">
-  <Link 
-    to={`/otherinstruct/${id}/${user?._id}`}
-    className="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-0.5 font-medium text-white hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300"
-  >
-    <span className="relative rounded-md px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
-      Next
-      <i className="bi bi-arrow-right-circle-fill ml-2 group-hover:translate-x-1 transition-transform duration-200"></i>
-    </span>
-  </Link>
-</div>
-    </>
   );
 };
 
-export default Instruction;
+export default Livemockinstruction;

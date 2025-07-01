@@ -102,40 +102,6 @@
   color: #2d3748;
 }
 
-   {/* <p>Metric: {scoreItem.metric}</p>
-              <p>Confidence: {scoreItem.value?.Confidence}</p>
-              <p>Should Replace: {scoreItem.value?.ShouldReplace?.toString()}</p>
-              <p>Correction Type: {scoreItem.value?.CorrectionType}</p> */}
-
-
-                          {/* <button onClick={checkGrammar}>Check Grammar</button>
-
-                          {scoreBreakdown && (
-                            <div>
-                              <h3>Score Breakdown</h3>
-                              <p>Total Score: {scoreBreakdown.totalScore}</p>
-                              <p>
-                                Spelling Score: {scoreBreakdown.spellingScore}
-                              </p>
-                              <p>
-                                Grammar Score: {scoreBreakdown.grammarScore}
-                              </p>
-                              <p>
-                                Word Count Score:{" "}
-                                {scoreBreakdown.wordCountScore}
-                              </p>
-                              <p>
-                                Keyword Score: {scoreBreakdown.keywordScore}
-                              </p>
-                              <p>Total Words: {scoreBreakdown.totalWords}</p>
-                            </div>
-                          )}
-
-                          <div>
-                            <h3>Corrections</h3>
-                            {renderCorrections()}
-                          </div> */}
-
 .score-footer {
   margin-top: 20px;
   padding-top: 15px;

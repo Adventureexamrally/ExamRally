@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "examrally",
+  "short_name": "examrally",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

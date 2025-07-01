@@ -153,6 +153,23 @@ console.warn(year)
 </div>
 
               </div>
+              <div className="mt-2 p-1">
+                   <Link
+                  to="https://play.google.com/store/apps/details?id=io.examrally.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <button className=" text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
+                  
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
+                      alt="Get it on Google Play"
+                      className="h-10 w-auto"
+                    />
+                  </button>
+                </Link>
+              </div>
+             
             </div>
 
             {/* Column 2: Company Links */}

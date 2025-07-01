@@ -1,3 +1,10 @@
+
+  // console.log = () => {};
+  // console.warn = () => {};
+  // console.error = () => {};
+
+
+
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
@@ -42,6 +49,7 @@ const disableUserActions = () => {
   // Disable drag/drop
   window.addEventListener("dragstart", (e) => e.preventDefault());
 };
+
 
 const Root = () => {
   useEffect(() => {
