@@ -12,8 +12,6 @@ import axios from "axios";
 import { fetchUtcNow } from "../../service/timeApi";
 
 const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
-  console.log(data);
-
   const [showDifficulty, setShowDifficulty] = useState({});
   const [expiredate, setExpirydate] = useState();
 
@@ -34,7 +32,6 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   };
   const [resultData, setResultData] = useState(null);
 
-  console.warn("sf", expiredate);
   const { user } = useContext(UserContext);
 
   const navigate = useNavigate();
@@ -189,7 +186,7 @@ useEffect(() => {
   const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
 
   setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
-}, [user, data, utcNow]);
+}, [user, data]);
 
   console.log("check", user?.enrolledCourses);
 

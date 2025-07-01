@@ -196,7 +196,7 @@ const DetailedCategorie = () => {
           console.error("Failed to fetch UTC time:", error);
           // handle error as needed
         });
-    }, [utcNow]);
+    }, []);
   
 useEffect(() => {
   if (!utcNow || !data?._id || (!user?.enrolledCourses && !user?.subscriptions)) return;
@@ -222,7 +222,7 @@ useEffect(() => {
   const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
 
   setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
-}, [user, data, utcNow,isEnrolled,expiredate]);
+}, [user, data,isEnrolled,expiredate]);
 
   console.log("check", user?.enrolledCourses);
 
@@ -332,9 +332,9 @@ useEffect(() => {
 
                 {/* Sidebar Buttons */}
 
-                {link === "currentaffairs" ? (
+                {link === "current-affairs" ? (
                   <div>
-                    <CAmonth />
+                    <CAmonth course={catDetail} />
                   </div>
                 ) : (
                   <>
