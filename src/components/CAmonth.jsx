@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import Api from "../service/Api";
 import { useNavigate } from "react-router-dom";
-import {
-  FaChevronUp,
-  FaChevronDown,
-  FaCloudDownloadAlt,
-} from "react-icons/fa";
+import { FaChevronUp, FaChevronDown, FaCloudDownloadAlt } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
 import { fetchUtcNow } from "../service/timeApi";
 
-const CAmonth = ({course}) => {
+const CAmonth = ({ course }) => {
   const [CA, setCA] = useState([]);
   const navigate = useNavigate();
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -19,7 +15,6 @@ const CAmonth = ({course}) => {
   const [resultData, setResultData] = useState({});
   const [expiredate, setExpirydate] = useState(null);
   console.log("isEnrolled", isEnrolled);
-  
 
   // Get test status from localStorage
   const getTestStatusFromStorage = useCallback((examId) => {
@@ -47,7 +42,9 @@ const CAmonth = ({course}) => {
       .catch((error) => {
         console.error("Failed to fetch UTC time:", error);
       });
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Fetch CA data
@@ -64,7 +61,9 @@ const CAmonth = ({course}) => {
       }
     };
     fetchData();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Check enrollment and fetch results
@@ -94,7 +93,7 @@ const CAmonth = ({course}) => {
         const expireDate = new Date(course.expiryDate);
         const timeDiff = expireDate.getTime() - utcNow.getTime();
         const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-        
+
         if (!isNaN(daysLeft)) {
           setExpirydate(daysLeft);
           return daysLeft >= 0;
@@ -102,9 +101,11 @@ const CAmonth = ({course}) => {
         return false;
       };
 
-      const enrolledFromCourses = user.enrolledCourses?.some(checkExpiry) || false;
-      const enrolledFromSubscriptions = user.subscriptions?.some(checkExpiry) || false;
-      
+      const enrolledFromCourses =
+        user.enrolledCourses?.some(checkExpiry) || false;
+      const enrolledFromSubscriptions =
+        user.subscriptions?.some(checkExpiry) || false;
+
       return enrolledFromCourses || enrolledFromSubscriptions;
     };
 
@@ -116,7 +117,10 @@ const CAmonth = ({course}) => {
       for (const examId of allExamIds) {
         try {
           const res = await Api.get(`/results/${user._id}/${examId}`);
-          if (res.data?.status === "completed" || res.data?.status === "paused") {
+          if (
+            res.data?.status === "completed" ||
+            res.data?.status === "paused"
+          ) {
             results[examId] = {
               ...res.data,
               lastQuestionIndex: res.data.lastVisitedQuestionIndex,
@@ -133,7 +137,9 @@ const CAmonth = ({course}) => {
     };
 
     fetchResults();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [user, CA, utcNow]);
 
   const openNewWindow = useCallback((url) => {
@@ -160,7 +166,10 @@ const CAmonth = ({course}) => {
   return (
     <div className="mt-5 p-4">
       {CA.map((ca) => (
-        <div key={ca.currentAffair.month} className="mb-4 p-3 rounded-lg shadow-md">
+        <div
+          key={ca.currentAffair.month}
+          className="mb-4 p-3 rounded-lg shadow-md"
+        >
           <h2 className="text-xl font-semibold mb-2 text-indigo-700">
             Month: {ca.currentAffair.month}
           </h2>
@@ -172,7 +181,11 @@ const CAmonth = ({course}) => {
               >
                 <span className="font-medium text-gray-800">{week.title}</span>
                 <span>
-                  {expandedWeeks[week.title] ? <FaChevronUp /> : <FaChevronDown />}
+                  {expandedWeeks[week.title] ? (
+                    <FaChevronUp />
+                  ) : (
+                    <FaChevronDown />
+                  )}
                 </span>
               </div>
               {expandedWeeks[week.title] && (
@@ -180,9 +193,10 @@ const CAmonth = ({course}) => {
                   <div className="flex flex-wrap justify-center items-center gap-4">
                     {week.model.map((model) => {
                       const examId = model.exams?.[0];
-                      const testStatus = resultData[examId]?.status || 
-                                       getTestStatusFromStorage(examId)?.status;
-                      
+                      const testStatus =
+                        resultData[examId]?.status ||
+                        getTestStatusFromStorage(examId)?.status;
+
                       return (
                         <div
                           key={model.show_name}
@@ -191,54 +205,78 @@ const CAmonth = ({course}) => {
                           <h3 className="font-semibold mb-2 text-center py-3">
                             {model.show_name}
                           </h3>
-                          <div className="flex flex-row justify-center gap-4">
-                            {model.pdfLink ? (
-                              <a
-                                href={model.pdfLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white py-2 px-4 rounded-lg text-sm text-center font-semibold transition-colors duration-300"
-                              >
-                                <FaCloudDownloadAlt className="m-1 text-sm" /> PDF
-                              </a>
-                            ) : (
-                              <button
-                                disabled
-                                className="flex items-center justify-center bg-gray-200 text-gray-500 py-2 px-4 rounded-lg text-sm text-center font-semibold cursor-not-allowed"
-                              >
-                                <FaCloudDownloadAlt className="m-1" /> PDF
-                              </button>
-                            )}
-                            {isEnrolled && (
-                              <button
-                                className={`py-2 px-4 rounded w-full transition ${
-                                  testStatus === "completed"
-                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                    : testStatus === "paused"
-                                    ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                                    : "bg-blue-500 text-white hover:bg-blue-600"
-                                }`}
-                                onClick={() => {
-                                  if (!isSignedIn) {
-                                    navigate("/sign-in");
-                                    return;
-                                  }
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="flex flex-row justify-center gap-4">
+                              {model.pdfLink ? (
+                                <a
+                                  href={model.pdfLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white py-2 px-4 rounded-lg text-sm text-center font-semibold transition-colors duration-300"
+                                >
+                                  <FaCloudDownloadAlt className="m-1 text-sm" />{" "}
+                                  PDF
+                                </a>
+                              ) : (
+                                <button
+                                  disabled
+                                  className="flex items-center justify-center bg-gray-200 text-gray-500 py-2 px-4 rounded-lg text-sm text-center font-semibold cursor-not-allowed"
+                                >
+                                  <FaCloudDownloadAlt className="m-1" /> PDF
+                                </button>
+                              )}
 
-                                  if (testStatus === "completed") {
-                                    openNewWindow(`/liveresult/${examId}/${user._id}`);
-                                  } else if (testStatus === "paused") {
-                                    openNewWindow(`/mocklivetest/${examId}/${user._id}`);
-                                  } else {
-                                    openNewWindow(`/instruct/${examId}/${user._id}`);
-                                  }
-                                }}
-                              >
-                                {testStatus === "completed"
-                                  ? "View Result"
-                                  : testStatus === "paused"
-                                  ? "Resume"
-                                  : "Take Test"}
-                              </button>
+                              {isEnrolled && model.pdfLink ? (
+                                <button
+                                  className={`py-2 px-4 rounded transition w-full ${
+                                    testStatus === "completed"
+                                      ? "bg-green-500 text-white hover:bg-green-600"
+                                      : testStatus === "paused"
+                                      ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                                      : "bg-blue-500 text-white hover:bg-blue-600"
+                                  }`}
+                                  onClick={() => {
+                                    if (!isSignedIn) {
+                                      navigate("/sign-in");
+                                      return;
+                                    }
+
+                                    if (testStatus === "completed") {
+                                      openNewWindow(
+                                        `/liveresult/${examId}/${user._id}`
+                                      );
+                                    } else if (testStatus === "paused") {
+                                      openNewWindow(
+                                        `/mocklivetest/${examId}/${user._id}`
+                                      );
+                                    } else {
+                                      openNewWindow(
+                                        `/instruct/${examId}/${user._id}`
+                                      );
+                                    }
+                                  }}
+                                >
+                                  {testStatus === "completed"
+                                    ? "View Result"
+                                    : testStatus === "paused"
+                                    ? "Resume"
+                                    : "Take Test"}
+                                </button>
+                              ) : (
+                                <button
+                                  disabled
+                                  className="py-2 px-4 rounded w-full bg-gray-300 text-gray-500 cursor-not-allowed"
+                                >
+                                  Test Disabled
+                                </button>
+                              )}
+                            </div>
+
+                            {!model.pdfLink && (
+                              <p className="text-red-500 text-sm font-medium text-center mt-2">
+                                PDF not available — test is currently disabled
+                                until the content is uploaded.
+                              </p>
                             )}
                           </div>
                         </div>
