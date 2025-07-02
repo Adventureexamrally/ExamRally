@@ -15,6 +15,7 @@ import { Provider } from "react-redux";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { UserProvider } from "./context/UserProvider.jsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
 if (!clerkKey) {
@@ -55,8 +56,9 @@ const Root = () => {
   useEffect(() => {
     disableUserActions();
   }, []);
-
+const queryClient = new QueryClient();
   return (
+    <QueryClientProvider client={queryClient}>
     <Provider store={store}>
       <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
         <UserProvider>
@@ -64,6 +66,7 @@ const Root = () => {
         </UserProvider>
       </ClerkProvider>
     </Provider>
+    </QueryClientProvider>
   );
 };
 
