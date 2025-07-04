@@ -59,8 +59,7 @@ const HomeLivetest = () => {
     fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    if (!user?._id || !utcNow || liveTests.length === 0) return;
+
 
     const fetchTestStatuses = async () => {
       const statusUpdates = {};
@@ -88,7 +87,8 @@ const HomeLivetest = () => {
       
       setResultLiveTests(prev => ({ ...prev, ...statusUpdates }));
     };
-
+  useEffect(() => {
+    if (!user?._id || !utcNow || liveTests.length === 0) return;
     fetchTestStatuses();
   }, [liveTests, user?._id, utcNow]);
 
@@ -101,6 +101,13 @@ const HomeLivetest = () => {
       return null;
     }
   };
+
+useEffect(() => {
+  window.addEventListener("focus", fetchTestStatuses);
+  return () => {
+    window.removeEventListener("focus", fetchTestStatuses);
+  };
+}, []);
 
   const storeTestStatus = (id, { status, lastQuestionIndex, selectedOptions }) => {
     try {
@@ -117,7 +124,17 @@ const HomeLivetest = () => {
       console.error('Error saving to localStorage:', err);
     }
   };
+// And in your main component add this effect:
+useEffect(() => {
+  const handleMessage = (event) => {
+    if (event.data === 'refresh-needed') {
+      fetchTestStatuses();
+    }
+  };
 
+  window.addEventListener('message', handleMessage);
+  return () => window.removeEventListener('message', handleMessage);
+}, []);
   const formatCustomDate = (ds) => {
     if (!ds) return '';
     const d = new Date(ds);
