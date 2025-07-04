@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { fetchUtcNow } from '../../service/timeApi';
 import Api from '../../service/Api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context/UserProvider';
+import { useUser } from '@clerk/clerk-react';
 
 const HomeTotalTest = () => {
   const [liveTests, setLiveTests] = useState([]);
@@ -11,11 +12,24 @@ const HomeTotalTest = () => {
   const [loading, setLoading] = useState(true);
 
   const { user } = useContext(UserContext);
-
+  const { isSignedIn } = useUser();
+  const navigate = useNavigate();
   const hasRallyPro = user?.subscriptions?.some(
     (sub) =>
       sub.courseName === 'Rally Super pro' && sub.status === 'Active'
   );
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event?.data?.action === 'redirect') {
+        window.location.reload(); // or navigate('/homelivetest') if using react-router
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -81,7 +95,29 @@ const HomeTotalTest = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
-  
+  const openNewWindow = (url) => {
+    window.open(
+      url,
+      '_blank',
+      `noopener,noreferrer,width=${screen.width},height=${screen.height}`
+    );
+  };
+
+  const handleActionClick = (path, openInNewWindow = false) => {
+    if (!isSignedIn) {
+      const backdrop = document.querySelector(".modal-backdrop");
+      if (backdrop) backdrop.remove();
+      navigate("/sign-in");
+      return;
+    }
+
+    if (openInNewWindow) {
+      openNewWindow(path);
+    } else {
+      navigate(path);
+    }
+  };
+
   return (
     <div className="container py-5">
       <div className="text-center mb-5">
@@ -118,10 +154,9 @@ const HomeTotalTest = () => {
             </div>
           ) : (
             liveTests.map((test) => {
-              const attempted =
-                resultLiveTests[test._id]?.status === 'completed' ||
-                resultLiveTests[test._id]?.status === 'paused';
-
+              const testStatus = resultLiveTests[test._id]?.status;
+              const isPaused = testStatus === 'paused';
+              const attempted = testStatus === 'completed' || isPaused;
               const showTakeTest = hasRallyPro && !attempted;
               const showViewResult = attempted;
               const hideActions = !hasRallyPro && !attempted;
@@ -147,61 +182,126 @@ const HomeTotalTest = () => {
                       </div>
                     </div>
                     <div className="px-5 pb-5 space-y-2">
-  {/* ✅ Show Take Test only for Rally Super Pro users */}
-  {!hideActions && showTakeTest && hasRallyPro && (
-    <Link
-      to={`/homelivemocktest/${test._id}/${user._id}`}
-      className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
-    >
-      <span className="mr-2">📝</span> Take Test
-    </Link>
-  )}
+                      {/* Take Test (New Window) */}
+                      {!hideActions && showTakeTest && hasRallyPro && (
+                        <button
+                          onClick={() =>
+                            handleActionClick(
+                              `/homeliveinstruct/${test._id}/${user._id}`,
+                              true
+                            )
+                          }
+                          className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
+                        >
+                          <span className="mr-2">📝</span> Take Test
+                        </button>
+                      )}
 
-  {/* ✅ Show View Result only for non-Rally Super Pro users */}
-  {!hideActions && showViewResult && hasRallyPro && (
-    <Link
-      to={`/homeliveresult/${test._id}`}
-      className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-    >
-      <span className="mr-2">📊</span> View Result
-    </Link>
-  )}
-{!hideActions && showViewResult && hasRallyPro && (
-    <Link
-      to={`/homeliveresult/${test._id}`}
-      className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-    >
-      <span className="mr-2">📊</span> View Solution
-    </Link>
-  )}
-  {/* ✅ Bottom View Result link — show only for non-Rally Super Pro users */}
-  {!hasRallyPro && (
-    <div className="text-center text-sm text-gray-400 pt-2">
-      <Link
-        to={`/homeliveresult/${test._id}`}
-        className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-      >
-        <span className="mr-2">📊</span> View Result
-      </Link>
-    </div>
-  )}
-{utcNow && new Date(utcNow) < new Date(formatDate(test.liveSolutionEndDate)) &&  !hasRallyPro && (
-  <div>
-    <h1>
-      Test Solutions are now available! {formatDate(test.liveSolutionEndDate)}
-    </h1>
-    <Link
-      to={`/homeSolution/${test._id}`}
-      className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-    >
-      <span className="mr-2">📊</span> View Solution
-    </Link>
-  </div>
-)}
+                      {/* Resume Test (New Window - Paused Status) */}
+                      {!hideActions && isPaused && hasRallyPro && (
+                        <button
+                          onClick={() =>
+                            handleActionClick(
+                              `/homelivemocktest/${test._id}/${user._id}`,
+                              true
+                            )
+                          }
+                          className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-yellow-500 hover:bg-yellow-600 transition-colors duration-200"
+                        >
+                          <span className="mr-2">⏱</span> Resume Test
+                        </button>
+                      )}
 
+                      {utcNow && test.liveResult && attempted && hasRallyPro && (
+                        !hideActions && showViewResult && !isPaused ? (
+                          new Date(utcNow) > new Date(test.liveResult) ? (
+                            <>
+                              <button
+                                onClick={() => handleActionClick(`/homeliveresult/${test._id}`, false)}
+                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                              >
+                                <span className="mr-2">📊</span> View Result
+                              </button>
+                              <button
+                                onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
+                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200 mt-2"
+                              >
+                                <span className="mr-2">🔍</span> View Solution
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-center text-sm text-gray-500 py-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                                <div className="flex items-center justify-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  Results on {formatDate(test.liveResult)}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
+                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200 mt-2"
+                              >
+                                <span className="mr-2">🔍</span> View Solution
+                              </button>
+                            </>
+                          )
+                        ) : null
+                      )}
 
+                      {/* Non-Pro View Result (New Window) */}
+                      {utcNow && test.liveResult && attempted && !hasRallyPro && (
+                        <>
+                          {new Date(utcNow) > new Date(test.liveResult) ? (
+                            !hasRallyPro && (
+                              <div className="text-center text-sm text-gray-400 pt-2">
+                                <button
+                                  onClick={() =>
+                                    handleActionClick(
+                                      `/homeliveresult/${test._id}`,
+                                      false
+                                    )
+                                  }
+                                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                                >
+                                  <span className="mr-2">📊</span> View Result
+                                </button>
+                              </div>
+                            )
+                          ) : (
+                            <div className="text-center text-sm text-gray-500 py-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                              <div className="flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Results available on {formatDate(test.liveResult)}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
 
-</div>
+                      {/* Non-Pro View Solution (New Window) */}
+                      {utcNow &&
+                        new Date(utcNow) < new Date(test.liveSolutionEndDate) &&
+                        !hasRallyPro && (
+                          <div>
+                            <button
+                              onClick={() =>
+                                handleActionClick(
+                                  `/homeSolution/${test._id}/${user._id}`,
+                                  true
+                                )
+                              }
+                              className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                            >
+                              <span className="mr-2">🔍</span> View Solution
+                            </button>
+                          </div>
+                        )}
+                    </div>
+
 
                   </div>
                 </div>
