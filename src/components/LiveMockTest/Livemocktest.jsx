@@ -53,7 +53,17 @@ console.log(descriptiveData)
     // For some browsers
     return confirmationMessage;
   });
-
+// Add this useEffect to all test components
+useEffect(() => {
+  return () => {
+    // Send refresh message when test window closes
+    setTimeout(() => {
+      if (window.opener) {
+        window.opener.postMessage('refresh-needed', window.location.origin);
+      }
+    }, 100);
+  };
+}, []);
   // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
   window.addEventListener("keydown", function (e) {
     // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
@@ -1611,7 +1621,7 @@ console.log("0",scoreData)
     } catch (e) {
         console.warn("3")
       // If window.close() fails, just navigate in the current window
-      // navigate('/homelivetest');
+      navigate('/homelivetest');
     }
   })
   .catch(() => {
@@ -1756,6 +1766,11 @@ console.log("0",scoreData)
  
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
+      if (window.opener) {
+          console.warn("2")
+        // You can communicate with the opener window if needed
+        window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
+      }
         navigate('/homelivetest');
       }
     }
