@@ -43,16 +43,16 @@ console.log(descriptiveData)
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
   // Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
-  window.addEventListener("beforeunload", function (e) {
-    // Customize the confirmation message
-    var confirmationMessage = "Are you sure you want to leave?";
+  // window.addEventListener("beforeunload", function (e) {
+  //   // Customize the confirmation message
+  //   var confirmationMessage = "Are you sure you want to leave?";
 
-    // Standard for most browsers
-    e.returnValue = confirmationMessage;
+  //   // Standard for most browsers
+  //   e.returnValue = confirmationMessage;
 
-    // For some browsers
-    return confirmationMessage;
-  });
+  //   // For some browsers
+  //   return confirmationMessage;
+  // });
 
   // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
   window.addEventListener("keydown", function (e) {
@@ -916,7 +916,9 @@ console.log(descriptiveData)
     toast.success("Test Completed! Moving to result.");
     await submitExam();
     await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-    navigate(`/liveresult/${id}/${user?._id}`);
+    // navigate(`/liveresult/${id}/${user?._id}`);
+    finishTestAndOpenResult();
+    
   };
 
   const getKeywords = () => {
@@ -1565,22 +1567,27 @@ console.warn(currentState)
           setIsPaused(true);
 
           await submitExam();
+
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
+
+          window.close(); // Close the current window
+
           // Get active packages and find matching package
-          Api.get(`topic-test/livetest/getall`)
-            .then((packagesRes) => {
-              const activePackages = packagesRes.data;
-              const matchingPackage = activePackages.find((pkg) =>
-                pkg.exams.includes(id)
-              );
-              if (matchingPackage) {
-                navigate(`/livetest/${matchingPackage.link_name}`);
-              } else {
-                navigate("/livetest");
-              }
-            })
-            .catch(() => {
-              navigate("/livetest");
-            });
+          // Api.get(`topic-test/livetest/getall`)
+          //   .then((packagesRes) => {
+          //     const activePackages = packagesRes.data;
+          //     const matchingPackage = activePackages.find((pkg) =>
+          //       pkg.exams.includes(id)
+          //     );
+          //     if (matchingPackage) {
+          //       navigate(`/livetest/${matchingPackage.link_name}`);
+          //     } else {
+          //       navigate("/livetest");
+          //     }
+          //   })
+          //   .catch(() => {
+          //     navigate("/livetest");
+          //   });
         } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -1710,7 +1717,8 @@ console.warn(currentState)
     
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-        navigate(`/liveresult/${id}/${user?._id}`);
+        // navigate(`/liveresult/${id}/${user?._id}`);
+        finishTestAndOpenResult();
       }
     }
   };
@@ -1910,6 +1918,26 @@ const popupmodal = () => {
     setShowModal(false);
   };
 
+    const finishTestAndOpenResult = async () => {
+  try {
+    // await submitExam();
+    
+    // Build the result URL
+    const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
+    
+    // Open result in a new window without _blank target
+    // const resultWindow = window.open('', '_self');
+    
+    // resultWindow.location.href = resultUrl;
+        window.open(resultUrl, '_blank');
+
+    // Close the current test window
+    window.close();
+  } catch (error) {
+    console.error("Error finishing test:", error);
+    alert('Failed to submit the exam. Please try again.');
+  }
+};
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>

@@ -306,12 +306,6 @@ const openNewWindow = (url) => {
                                   Results on {formatDate(test.liveResult)}
                                 </div>
                               </div>
-                              <button
-                                onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
-                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200 mt-2"
-                              >
-                                <span className="mr-2">🔍</span> View Solution
-                              </button>
                             </>
                           )
                         ) : null
@@ -350,7 +344,9 @@ const openNewWindow = (url) => {
                       )}
 
                       {/* Non-Pro View Solution (New Window) */}
-                      {utcNow &&
+                     {utcNow &&
+                        test.liveResult &&
+                        new Date(utcNow) > new Date(test.liveResult) && // Added check
                         new Date(utcNow) < new Date(test.liveSolutionEndDate) &&
                         !hasRallyPro && (
                           <div>
