@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { fetchUtcNow } from '../../service/timeApi';
 import Api from '../../service/Api';
 import { Link, useNavigate } from 'react-router-dom';
@@ -53,34 +53,101 @@ const HomeTotalTest = () => {
   }, [user]);
 
   console.log('Live Tests:', liveTests);
-  useEffect(() => {
-    const fetchTestStatuses = async () => {
-      const statusUpdates = {};
 
-      for (const test of liveTests) {
-        try {
-          const res = await Api.get(`/results/${user._id}/${test._id}`);
-          const statusData = res?.data;
-
-          if (statusData && ['completed', 'paused'].includes(statusData?.status)) {
-            statusUpdates[test._id] = {
-              status: statusData.status,
-              lastQuestionIndex: statusData.lastVisitedQuestionIndex,
-              selectedOptions: statusData.selectedOptions,
-            };
-          }
-        } catch (err) {
-          console.warn(`No result or error for test ${test._id}`);
-        }
+const fetchTestStatuses = useCallback(async () => {
+  console.log("Fetching test statuses...");
+  const statusUpdates = {};
+  
+  for (const test of liveTests) {
+    try {
+      const res = await Api.get(`/results/${user._id}/${test._id}`);
+      const statusData = res?.data;
+      console.log("Status data for", test._id, statusData);
+      
+      if (statusData && ['completed', 'paused'].includes(statusData?.status)) {
+        statusUpdates[test._id] = {
+          status: statusData.status,
+          lastQuestionIndex: statusData.lastVisitedQuestionIndex,
+          selectedOptions: statusData.selectedOptions,
+        };
+        storeTestStatus(test._id, statusUpdates[test._id]);
       }
-
-      setResultLiveTests((prev) => ({ ...prev, ...statusUpdates }));
-    };
-
-    if (liveTests.length > 0 && user?._id) {
-      fetchTestStatuses();
+    } catch (err) {
+      console.error(`Error fetching status for test ${test._id}:`, err);
+      const stored = getTestStatusFromStorage(test._id);
+      if (stored) {
+        statusUpdates[test._id] = stored;
+      }
     }
-  }, [liveTests, user]);
+  }
+  
+  console.log("Updating resultLiveTests with:", statusUpdates);
+  setResultLiveTests(prev => {
+    const newState = {...prev, ...statusUpdates};
+    console.log("New resultLiveTests state:", newState);
+    return newState;
+  });
+}, [liveTests, user?._id]); // Add dependencies here
+
+  useEffect(() => {
+    if (!user?._id || !utcNow || liveTests.length === 0) return;
+    fetchTestStatuses();
+  }, [liveTests, user?._id, utcNow]);
+
+  const getTestStatusFromStorage = (id) => {
+    try {
+      const raw = localStorage.getItem('testResults');
+      const all = raw ? JSON.parse(raw) : {};
+      return all[id] || null;
+    } catch {
+      return null;
+    }
+  };
+
+// Add this useEffect to handle focus
+useEffect(() => {
+  window.addEventListener("focus", fetchTestStatuses);
+  return () => {
+    window.removeEventListener("focus", fetchTestStatuses);
+  };
+}, [fetchTestStatuses]);
+
+  const storeTestStatus = (id, { status, lastQuestionIndex, selectedOptions }) => {
+    try {
+      const raw = localStorage.getItem('testResults') || '{}';
+      const all = JSON.parse(raw);
+      all[id] = {
+        status,
+        lastQuestionIndex,
+        selectedOptions,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem('testResults', JSON.stringify(all));
+    } catch (err) {
+      console.error('Error saving to localStorage:', err);
+    }
+  };
+// And in your main component add this effect:
+useEffect(() => {
+  const handleMessage = (event) => {
+    console.log("Received message from parent window:", event.data);
+    console.log("Event origin:", event.origin, "Current origin:", window.location.origin);
+    
+    
+    if (event.origin !== window.location.origin) return;
+    
+    if (event.data === 'test-status-updated') {
+      console.log("Test status updated, refreshing data...");
+      
+      fetchTestStatuses(); // Refresh test statuses
+    }
+  };
+
+  
+  window.addEventListener('message', handleMessage);
+  return () => window.removeEventListener('message', handleMessage);
+}, []);
+
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not specified';
@@ -95,13 +162,13 @@ const HomeTotalTest = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
-  const openNewWindow = (url) => {
-    window.open(
-      url,
-      '_blank',
-      `noopener,noreferrer,width=${screen.width},height=${screen.height}`
-    );
-  };
+const openNewWindow = (url) => {
+  window.open(
+    url,
+    '_blank',
+    `width=${screen.width},height=${screen.height}`
+  );
+};
 
   const handleActionClick = (path, openInNewWindow = false) => {
     if (!isSignedIn) {
@@ -251,7 +318,7 @@ const HomeTotalTest = () => {
                       )}
 
                       {/* Non-Pro View Result (New Window) */}
-                      {utcNow && test.liveResult && attempted && !hasRallyPro && (
+                      {utcNow && test.liveResult && !hasRallyPro && (
                         <>
                           {new Date(utcNow) > new Date(test.liveResult) ? (
                             !hasRallyPro && (
@@ -275,7 +342,7 @@ const HomeTotalTest = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Results available on {formatDate(test.liveResult)}
+                                Results on {formatDate(test.liveResult)}
                               </div>
                             </div>
                           )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Api from '../../service/Api';
 import {
@@ -61,32 +61,41 @@ const HomeLivetest = () => {
 
 
 
-    const fetchTestStatuses = async () => {
-      const statusUpdates = {};
+const fetchTestStatuses = useCallback(async () => {
+  console.log("Fetching test statuses...");
+  const statusUpdates = {};
+  
+  for (const test of liveTests) {
+    try {
+      const res = await Api.get(`/results/${user._id}/${test._id}`);
+      const statusData = res?.data;
+      console.log("Status data for", test._id, statusData);
       
-      for (const test of liveTests) {
-        try {
-          const res = await Api.get(`/results/${user._id}/${test._id}`);
-          const statusData = res?.data;
-          
-          if (statusData && ['completed', 'paused'].includes(statusData?.status)) {
-            statusUpdates[test._id] = {
-              status: statusData.status,
-              lastQuestionIndex: statusData.lastVisitedQuestionIndex,
-              selectedOptions: statusData.selectedOptions,
-            };
-            storeTestStatus(test._id, statusUpdates[test._id]);
-          }
-        } catch (err) {
-          const stored = getTestStatusFromStorage(test._id);
-          if (stored) {
-            statusUpdates[test._id] = stored;
-          }
-        }
+      if (statusData && ['completed', 'paused'].includes(statusData?.status)) {
+        statusUpdates[test._id] = {
+          status: statusData.status,
+          lastQuestionIndex: statusData.lastVisitedQuestionIndex,
+          selectedOptions: statusData.selectedOptions,
+        };
+        storeTestStatus(test._id, statusUpdates[test._id]);
       }
-      
-      setResultLiveTests(prev => ({ ...prev, ...statusUpdates }));
-    };
+    } catch (err) {
+      console.error(`Error fetching status for test ${test._id}:`, err);
+      const stored = getTestStatusFromStorage(test._id);
+      if (stored) {
+        statusUpdates[test._id] = stored;
+      }
+    }
+  }
+  
+  console.log("Updating resultLiveTests with:", statusUpdates);
+  setResultLiveTests(prev => {
+    const newState = {...prev, ...statusUpdates};
+    console.log("New resultLiveTests state:", newState);
+    return newState;
+  });
+}, [liveTests, user?._id]); // Add dependencies here
+
   useEffect(() => {
     if (!user?._id || !utcNow || liveTests.length === 0) return;
     fetchTestStatuses();
@@ -102,12 +111,13 @@ const HomeLivetest = () => {
     }
   };
 
+// Add this useEffect to handle focus
 useEffect(() => {
   window.addEventListener("focus", fetchTestStatuses);
   return () => {
     window.removeEventListener("focus", fetchTestStatuses);
   };
-}, []);
+}, [fetchTestStatuses]);
 
   const storeTestStatus = (id, { status, lastQuestionIndex, selectedOptions }) => {
     try {
@@ -127,14 +137,36 @@ useEffect(() => {
 // And in your main component add this effect:
 useEffect(() => {
   const handleMessage = (event) => {
-    if (event.data === 'refresh-needed') {
-      fetchTestStatuses();
+    console.log("Received message from parent window:", event.data);
+    console.log("Event origin:", event.origin, "Current origin:", window.location.origin);
+    
+    
+    if (event.origin !== window.location.origin) return;
+    
+    if (event.data === 'test-status-updated') {
+      console.log("Test status updated, refreshing data...");
+      
+      fetchTestStatuses(); // Refresh test statuses
     }
   };
 
+  
   window.addEventListener('message', handleMessage);
   return () => window.removeEventListener('message', handleMessage);
 }, []);
+
+// Add localStorage event listener
+// useEffect(() => {
+//   const handleStorageChange = (e) => {
+//     if (e.key === 'testResults') {
+//       fetchTestStatuses();
+//     }
+//   };
+
+//   window.addEventListener('storage', handleStorageChange);
+//   return () => window.removeEventListener('storage', handleStorageChange);
+// }, []);
+
   const formatCustomDate = (ds) => {
     if (!ds) return '';
     const d = new Date(ds);
@@ -164,13 +196,13 @@ useEffect(() => {
   }
 });
 
-  const openNewWindow = (url) => {
-    window.open(
-      url,
-      '_blank',
-      `noopener,noreferrer,width=${screen.width},height=${screen.height}`
-    );
-  };
+const openNewWindow = (url) => {
+  window.open(
+    url,
+    '_blank',
+    `width=${screen.width},height=${screen.height}`
+  );
+};
 
   if (loading) {
     return (
