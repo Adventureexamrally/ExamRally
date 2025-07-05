@@ -78,7 +78,6 @@ console.log(descriptiveData)
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name, setShow_name] = useState("");
   const [t_questions, sett_questions] = useState("");
-
   useEffect(() => {
     // Check if data has already been fetched
     if (!isDataFetched) {
@@ -86,25 +85,27 @@ console.log(descriptiveData)
         .then((res) => {
           if (res.data) {
             setExamData(res.data);
+            console.log("res.data", res.data);
             setIsDataFetched(true);
             setShow_name(res.data.show_name);
             sett_questions(res.data.t_questions); // Mark that data is fetched
-            console.error("kl", res.data);
+            console.log("kl", res.data.show_name);
           }
         })
         .catch((err) => console.error("Error fetching data:", err));
     }
   }, [id]); // Only trigger when `id` changes
 
+  const [getresult, setGetresult] = useState([]);
   // In the useEffect that fetches exam state
   useEffect(() => {
     if (user?._id && id) {
       Api.get(`results/${user?._id}/${id}`)
-        .then((response) => {
+        .then(response => {
           if (response.data) {
             const state = response.data;
-            setGetresult(state);
-            console.error("hello", state);
+            setGetresult(state)
+            console.error("hello",state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
@@ -113,16 +114,12 @@ console.log(descriptiveData)
 
             if (state.section) {
               state.section.forEach((section) => {
-                const questions =
-                  section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
                 questions.forEach((question, questionIndex) => {
                   const absoluteIndex = absoluteIndexCounter++;
 
                   // Set selected option if exists
-                  if (
-                    question.selectedOption !== undefined &&
-                    question.selectedOption !== null
-                  ) {
+                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
                     initialOptions[absoluteIndex] = question.selectedOption;
                   }
 
@@ -147,16 +144,16 @@ console.log(descriptiveData)
 
             // // Show the last visited question, or first question if none visited
             // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-            //     if (visitedQuestionsList.length > 0) {
-            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-            // } else {
-            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-            //   setVisitedQuestions([0]);  // Mark it as visited
-            // }
+        //     if (visitedQuestionsList.length > 0) {
+        //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
+        // } else {
+        //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+        //   setVisitedQuestions([0]);  // Mark it as visited
+        // }
           }
         })
 
-        .catch((error) => console.error("Error fetching exam state:", error));
+        .catch(error => console.error('Error fetching exam state:', error));
     }
   }, [id, user?._id, t_questions, selectedLanguage]);
 
@@ -227,6 +224,7 @@ console.log(descriptiveData)
 
   useEffect(() => {
     const savedState = localStorage.getItem(`examState_${id}`);
+    console.warn(savedState)
     if (savedState) {
       const state = JSON.parse(savedState);
       setClickedQuestionIndex(state.clickedQuestionIndex);
@@ -473,6 +471,7 @@ console.log(descriptiveData)
       return updatedOptions;
     });
   };
+
 
   const handleMarkForReview = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
@@ -737,14 +736,10 @@ console.log(descriptiveData)
         console.log("New Starting Index for Next Section:", newStartingIndex);
 
         setClickedQuestionIndex(newStartingIndex);
-      }else {
-  console.log("Submitting the exam in 7 seconds...");
-
-    submitExam();
-    // checkGrammar();
- // Delay of 7000 milliseconds = 7 seconds
-}
-
+      } else {
+        console.log("Submitting the exam.");
+        submitExam();
+      }
     }
   };
 
@@ -757,12 +752,6 @@ console.log(descriptiveData)
 
   const [dataid, setDataid] = useState(null); // State to store the data
 
-
-
-
-   useEffect(() => {
-    // handleDescriptiveTest();
-  }, []);
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
     if (user?._id) {
@@ -776,7 +765,7 @@ console.log(descriptiveData)
         });
     }
   }, [id]);
-  // console.log("timetakenfromdb:", timeTakenFromDB);
+  console.log("timetakenfromdb:", timeTakenFromDB);
 
   useEffect(() => {
     const totalSectionTime =
@@ -799,7 +788,6 @@ console.log(descriptiveData)
   }, [examData, currentSectionIndex, resultData]);
 
   const updateSectionTime = () => {
-    // console.log("updte seccall");
     if (!examDataSubmission || timeTakenFromDB.length === 0) return;
 
     const {
@@ -814,17 +802,18 @@ console.log(descriptiveData)
       examData?.section[currentSectionIndex]?.t_time * 60 || 0;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
     const timeTakenInSecondsUpdated =
-      (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
-
+    (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
+  
     const previousTimeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
     console.log("currentSectionIndex:", currentSectionIndex);
 
     console.log("Previous time taken for section:", previousTimeTaken);
 
-    const finalTimeTaken = actualTimeTaken;
+    const finalTimeTaken = actualTimeTaken ; 
 
     console.log("Final time taken for section:", finalTimeTaken);
+    console.warn(formattedSections)
 
     const updatedSections = formattedSections.map((section, idx) => {
       if (idx === currentSectionIndex) {
@@ -835,29 +824,27 @@ console.log(descriptiveData)
       }
       return section;
     });
+    console.warn(updatedSections)
 
-  if (user?._id) {
-
-    Api.post(`results/${user._id}/${id}`, {
-      ExamId: id,
-      section: updatedSections,
-      score: totalScore,
-      totalTime: formattedTotalTime,
-      timeTakenInSeconds: timeTakenInSecondsUpdated,
-      takenAt: examStartTime,
-      submittedAt: endTime,
-      status: isPaused ? "paused" : "completed",
-      sectionTimes, // Optional: make sure this matches backend schema
-    })
-      .then((res) => {
-        console.log("Submitted:", res.data);
+    if (user?._id) {
+      Api.post(`results/${user._id}/${id}`, {
+        ExamId: id,
+        section: updatedSections,
+        score: totalScore,
+        totalTime: formattedTotalTime,
+        timeTakenInSeconds: timeTakenInSecondsUpdated,
+        takenAt: examStartTime,
+        submittedAt: endTime,
+        status: isPaused ? "paused" : "completed",
+        sectionTimes, // Optional: make sure this matches backend schema
       })
-      .catch((err) => {
-        console.error("Error submitting:", err);
-      });
-  
-}
-
+        .then((res) => {
+          console.log("Submitted:", res.data);
+        })
+        .catch((err) => {
+          console.error("Error submitting:", err);
+        });
+    }
   };
 
   useEffect(() => {
@@ -908,7 +895,7 @@ console.log(descriptiveData)
     }
   }, [user?._id, id]);
 
-  useEffect(() => {
+ useEffect(() => {
     if (timeminus > 0 && !isPaused) {
       const timerInterval = setInterval(() => {
         settimeminus((prevTime) => {
@@ -1194,27 +1181,6 @@ const calculateScore = async (issues) => {
             : -question?.minus_mark
           : 0;
 
-      // const descriptiveData = {
-      //   // userId: user?._id,
-      //   // examId: id,
-
-      //   // Convert everything to arrays
-      //   text: [text[currentSectionIndex]], // Essay as single-item array
-      //   corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
-      //   scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
-      //     ([key, value]) => ({
-      //       metric: key,
-      //       value: value,
-      //     })
-      //   ), // Convert object to array of {metric, value}
-      //   keywords: [scoreData],
-
-      // expectedWordCount: [expectedWordCount], // Wrap as array
-      //   scoreData: [keywords], // Already array, just check
-      //   date: [new Date().toISOString()], // Optional: wrap date as array too
-      // };
-
-      // console.log(";[", descriptiveData);
       return {
         question: question?.question,
         options: optionsData,
@@ -1230,7 +1196,6 @@ const calculateScore = async (issues) => {
         descriptive: descriptiveData[index] || [],
       };
     });
-    console.log("answersData", answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1358,7 +1323,6 @@ console.warn("check-item",descriptiveData[absoluteIndex])
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionIndex] || [],
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -1411,8 +1375,6 @@ console.warn("check-item",descriptiveData[absoluteIndex])
         };
       })
       .filter(Boolean);
-
-    console.log("Formatted Sections:", formattedSections);
 
     const totalStats = formattedSections.reduce(
       (acc, section) => ({
@@ -1522,6 +1484,17 @@ console.log("0",scoreData)
       setIsPaused(true);
       setPauseCount(pauseCount + 1);
 
+      // Capture current time data before showing the dialog
+      // const now = new Date();
+      // const timeSpent = Math.floor(
+      //   (now - currentSectionStartTimeRef.current) / 1000
+      // );
+
+      // setSectionTimes(prev => ({
+      //   ...prev,
+      //   [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
+      // }));
+
       const now = new Date();
       console.log("Current time:", now);
 
@@ -1555,6 +1528,8 @@ console.log("0",scoreData)
 
         return previous;
       });
+
+      // gh
       // ✅ Reset currentSectionStartTimeRef to now for next session
       currentSectionStartTimeRef.current = now;
       console.log("Reset currentSectionStartTimeRef to:", now);
@@ -1567,7 +1542,7 @@ console.log("0",scoreData)
         currentSectionIndex,
       };
       localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-
+console.warn(currentState)
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
@@ -1732,7 +1707,7 @@ console.log("0",scoreData)
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
-        toast.success("Test Completed! Moving to result.");
+    
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         navigate(`/liveresult/${id}/${user?._id}`);
@@ -1778,69 +1753,56 @@ console.log("0",scoreData)
     return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   };
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
+ const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Function to toggle fullscreen mode
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
-      // If not in fullscreen, enter fullscreen
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.mozRequestFullScreen) {
-        // Firefox
-        document.documentElement.mozRequestFullScreen();
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        // Chrome, Safari
-        document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) {
-        // IE/Edge
-        document.documentElement.msRequestFullscreen();
+      const docEl = document.documentElement;
+
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen();
+      } else if (docEl.mozRequestFullScreen) {
+        docEl.mozRequestFullScreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
       }
-      setIsFullscreen(true);
     } else {
-      // If in fullscreen, exit fullscreen
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if (document.mozCancelFullScreen) {
-        // Firefox
         document.mozCancelFullScreen();
       } else if (document.webkitExitFullscreen) {
-        // Chrome, Safari
         document.webkitExitFullscreen();
       } else if (document.msExitFullscreen) {
-        // IE/Edge
         document.msExitFullscreen();
       }
-      setIsFullscreen(false);
     }
   };
 
-  // Sync state with actual fullscreen changes
+  // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // Safari
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange); // Firefox
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange); // IE/Edge
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "mozfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "MSFullscreenChange",
-        handleFullscreenChange
-      );
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
+  }, []);
+
+  // 🔸 Attempt to auto-enter fullscreen on mount
+  useEffect(() => {
+    toggleFullScreen(); // This will only work if browser allows
   }, []);
 
   const [answeredCount, setAnsweredCount] = useState(0);
@@ -1942,28 +1904,11 @@ console.log("0",scoreData)
     };
   };
 
-  // const renderCorrections = () => {
-  //   return corrections.map((correction, index) => {
-  //     return (
-  //       <div key={index} style={{ marginBottom: "10px" }}>
-  //         <p>
-  //           <strong>Issue:</strong> {correction.MistakeText}
-  //         </p>
-  //         <p>
-  //           <strong>Category:</strong> {correction.TopCategoryIdDescription}
-  //         </p>
-  //         <p>
-  //           <strong>Suggested Correction(s):</strong>
-  //           {correction.Suggestions.map((suggestion, i) => (
-  //             <span key={i} style={{ display: "block" }}>
-  //               {suggestion.Text}
-  //             </span>
-  //           ))}
-  //         </p>
-  //       </div>
-  //     );
-  //   });
-  // };
+
+const popupmodal = () => {
+    setIsPaused(false);
+    setShowModal(false);
+  };
 
   return (
     <div className="mock-font " ref={commonDataRef}>
@@ -2009,11 +1954,11 @@ console.log("0",scoreData)
                       Section Submit
                     </h1>
                     <button
-                      type="button"
-                      className="btn-close"
-                      aria-label="Close"
-                      onClick={() => setShowModal(false)} // Manually hide the modal
-                    ></button>
+              type="button"
+              className="btn-close"
+              aria-label="Close"
+              onClick={popupmodal} // Manually hide the modal
+            ></button>
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -2218,17 +2163,17 @@ console.log("0",scoreData)
                     selectedLanguage?.toLowerCase()
                   ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                     <div
-                      className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                      ${
-                        isFullscreen
-                          ? "h-[80vh] md:h-[80vh]"
-                          : "    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]"
-                      }`}
+                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                  ${isFullscreen
+                        ? 'h-[80vh] md:h-[80vh]'
+                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      }`
+                    }
                       style={{
-                        height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
-                        overflowY: "auto",
-                      }}
-                    >
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+                  >
                       <div
                         className="text-wrap"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
@@ -2242,23 +2187,22 @@ console.log("0",scoreData)
                       />
                     </div>
                   )}
+
                   {/* Right side for Question */}
                   <div
-                    className={`  ${
-                      isFullscreen
-                        ? "h-[80vh] md:h-[80vh]"
-                        : "    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]"
-                    } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${
-                      examData.section[currentSectionIndex]?.questions?.[
+                    className={`   ${isFullscreen
+                      ? 'h-[80vh] md:h-[80vh]'
+                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                    }`}
-                    style={{
-                      height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
-                      overflowY: "auto",
-                    }}
+                      }`}   style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+  
                   >
                     <div>
                       <div
@@ -2377,7 +2321,6 @@ console.log("0",scoreData)
                         </>
                       )}
                     </div>
-
                     <div className="md:flex hidden items-center">
                       <div
                         className={`fixed top-1/2 ${
@@ -2396,17 +2339,18 @@ console.log("0",scoreData)
                 </div>
               ) : (
                 <div
-                  className="d-flex justify-content-center align-items-center"
-                  style={{ height: "100vh" }} // Full viewport height
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-primary"
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
                 >
-                  <div
-                    className="spinner-border text-primary"
-                    role="status"
-                    style={{ width: "3rem", height: "3rem" }}
-                  >
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
+                  <span className="visually-hidden">Loading...</span>
                 </div>
+              </div>
+              
               )}
             </>
           ) : (
@@ -2417,24 +2361,19 @@ console.log("0",scoreData)
         </div>
 
         {/* Sidebar */}
-        {/* Sidebar */}
+
         <div
           className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
-        ${isMobileMenuOpen ? "translate-x-0  w-3/4 " : "translate-x-full "}
-        ${
-          closeSideBar
-            ? "md:translate-x-full md:w-0 border-0"
-            : "md:translate-x-0 md:w-1/4"
-        }
- ${
-   isFullscreen
-     ? "h-[87vh] md:h-[87vh]"
-     : "h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]"
- } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-          style={{
-            height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
-            overflowY: "auto",
-          }}
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+ ${isFullscreen
+              ? 'h-[87vh] md:h-[87vh]'
+              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
+            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+            style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
         >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -2552,11 +2491,11 @@ console.log("0",scoreData)
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
+                  }if (selectedOptions[fullIndex] == null) {
+                    className="notansImg";
                   }
-                  if (selectedOptions[fullIndex] == null) {
-                    className = "notansImg";
-                  }
-                } else if (visitedQuestions.includes(fullIndex)) {
+                }
+                 else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
                 } else {
                   className = "notVisitImg";
@@ -2624,7 +2563,7 @@ console.log("0",scoreData)
           <div className="flex justify-center md:w-[20%]">
             <center>
               <button
-                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700 mt-2 md:mt-0 px-7"
+                className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
                 onClick={handleSubmitSection}
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"

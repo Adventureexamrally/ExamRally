@@ -1569,6 +1569,11 @@ console.warn(currentState)
     };
   };
 
+  const popupmodal = () => {
+    setIsPaused(false);
+    setShowModal(false);
+  };
+
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
@@ -1616,7 +1621,7 @@ console.warn(currentState)
               type="button"
               className="btn-close"
               aria-label="Close"
-              onClick={() => setShowModal(false)} // Manually hide the modal
+              onClick={popupmodal} // Manually hide the modal
             ></button>
                   </div>
                   <div className="modal-body">
