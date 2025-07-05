@@ -39,16 +39,16 @@ const Test = () => {
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
   // Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
-  window.addEventListener("beforeunload", function (e) {
-    // Customize the confirmation message
-    var confirmationMessage = "Are you sure you want to leave?";
+  // window.addEventListener("beforeunload", function (e) {
+  //   // Customize the confirmation message
+  //   var confirmationMessage = "Are you sure you want to leave?";
 
-    // Standard for most browsers
-    e.returnValue = confirmationMessage;
+  //   // Standard for most browsers
+  //   e.returnValue = confirmationMessage;
 
-    // For some browsers
-    return confirmationMessage;
-  });
+  //   // For some browsers
+  //   return confirmationMessage;
+  // });
 
   // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
   window.addEventListener("keydown", function (e) {
@@ -1298,23 +1298,25 @@ console.warn(currentState)
           setIsPaused(true);
 
           await submitExam();
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
 
+          window.close(); // Close the current window
           // Get active packages and navigate
-          Api.get("packages/get/active")
-            .then((packagesRes) => {
-              const activePackages = packagesRes.data;
-              const matchingPackage = activePackages.find((pkg) =>
-                pkg.exams.includes(id)
-              );
-              if (matchingPackage) {
-                navigate(`/top-trending-exams/${matchingPackage.link_name}`);
-              } else {
-                navigate("/top-trending-exams");
-              }
-            })
-            .catch(() => {
-              navigate("/top-trending-exams");
-            });
+          // Api.get("packages/get/active")
+          //   .then((packagesRes) => {
+          //     const activePackages = packagesRes.data;
+          //     const matchingPackage = activePackages.find((pkg) =>
+          //       pkg.exams.includes(id)
+          //     );
+          //     if (matchingPackage) {
+          //       navigate(`/top-trending-exams/${matchingPackage.link_name}`);
+          //     } else {
+          //       navigate("/top-trending-exams");
+          //     }
+          //   })
+          //   .catch(() => {
+          //     navigate("/top-trending-exams");
+          //   });
         } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -1375,7 +1377,8 @@ console.warn(currentState)
     
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-        navigate(`/result/${id}/${user?._id}`);
+        // navigate(`/result/${id}/${user?._id}`);
+        finishTestAndOpenResult()
       }
     }
   };
@@ -1574,6 +1577,26 @@ console.warn(currentState)
     setShowModal(false);
   };
 
+  const finishTestAndOpenResult = async () => {
+  try {
+    // await submitExam();
+    
+    // Build the result URL
+    const resultUrl = `${window.location.origin}/result/${id}/${user?._id}`;
+    
+    // Open result in a new window without _blank target
+    // const resultWindow = window.open('', '_self');
+    
+    // resultWindow.location.href = resultUrl;
+        window.open(resultUrl, '_blank');
+
+    // Close the current test window
+    window.close();
+  } catch (error) {
+    console.error("Error finishing test:", error);
+    alert('Failed to submit the exam. Please try again.');
+  }
+};
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
