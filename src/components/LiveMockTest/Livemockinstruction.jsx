@@ -116,7 +116,7 @@ const Livemockinstruction = () => {
 
           <li>
             The clock will be set at the server. The countdown timer in the top
-            right corner of the scrteen will display the remaining time available
+            right corner of the screen will display the remaining time available
             for you to complete the examination. When the timer reaches zero,
             the examination will end by itself. You will not be required to end
             or submit your examination.
@@ -245,12 +245,23 @@ const Livemockinstruction = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-        <div className="fixed bottom-1 right-4">
-        <Link to={`/homeliveotherinstruct/${id}/${user?._id}`}>
+        {/* <div className="fixed bottom-1 right-4">
+        <Link to={`/otherins/${id}/${user?._id}`}>
   <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
     Next
   </button>
 </Link>
+        </div> */}
+         <div className="fixed bottom-0 w-full flex justify-center bg-gradient-to-r from-gray-100 to-gray-200 p-3 shadow-lg">
+          <Link 
+            to={`/homeliveotherinstruct/${id}/${user?._id}`}
+            className="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-0.5 font-medium text-white hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300"
+          >
+            <span className="relative rounded-md px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
+              Next
+              <i className="bi bi-arrow-right-circle-fill ml-2 group-hover:translate-x-1 transition-transform duration-200"></i>
+            </span>
+          </Link>
         </div>
       </div>
     </div>

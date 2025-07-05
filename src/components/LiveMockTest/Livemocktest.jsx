@@ -43,27 +43,27 @@ console.log(descriptiveData)
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
   // Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
-  window.addEventListener("beforeunload", function (e) {
-    // Customize the confirmation message
-    var confirmationMessage = "Are you sure you want to leave?";
+  // window.addEventListener("beforeunload", function (e) {
+  //   // Customize the confirmation message
+  //   var confirmationMessage = "Are you sure you want to leave?";
 
-    // Standard for most browsers
-    e.returnValue = confirmationMessage;
+  //   // Standard for most browsers
+  //   e.returnValue = confirmationMessage;
 
-    // For some browsers
-    return confirmationMessage;
-  });
+  //   // For some browsers
+  //   return confirmationMessage;
+  // });
 // Add this useEffect to all test components
-useEffect(() => {
-  return () => {
-    // Send refresh message when test window closes
-    setTimeout(() => {
-      if (window.opener) {
-        window.opener.postMessage('refresh-needed', window.location.origin);
-      }
-    }, 100);
-  };
-}, []);
+// useEffect(() => {
+//   return () => {
+//     // Send refresh message when test window closes
+//     setTimeout(() => {
+//       if (window.opener) {
+//         window.opener.postMessage('refresh-needed', window.location.origin);
+//       }
+//     }, 100);
+//   };
+// }, []);
   // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
   window.addEventListener("keydown", function (e) {
     // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
@@ -938,7 +938,8 @@ useEffect(() => {
     handleSubmitSection();
     await submitExam();
     await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-    navigate('homelivetest');
+    closeAndNotifyParent();
+    // navigate('homelivetest');
   };
 
   const getKeywords = () => {
@@ -1599,44 +1600,45 @@ console.log("0",scoreData)
           setIsPaused(true);
 
           await submitExam();
+          closeAndNotifyParent();
           // Get active packages and find matching package
-         Api.get(`topic-test/livetest/getall`)
-  .then((packagesRes) => {
-    const activePackages = packagesRes.data;
-    const matchingPackage = activePackages.find((pkg) =>
-      pkg.exams.includes(id)
-    );
+  //        Api.get(`topic-test/livetest/getall`)
+  // .then((packagesRes) => {
+  //   const activePackages = packagesRes.data;
+  //   const matchingPackage = activePackages.find((pkg) =>
+  //     pkg.exams.includes(id)
+  //   );
     
     // Try to close the current tab
-    try {
-      // This will only work if the tab was opened by JavaScript (window.open)
-      window.close();
-      console.warn("1")
-      // If we want to do something in the opener window
-      if (window.opener) {
-          console.warn("2")
-        // You can communicate with the opener window if needed
-        window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
-      }
-    } catch (e) {
-        console.warn("3")
-      // If window.close() fails, just navigate in the current window
-      navigate('/homelivetest');
-    }
-  })
-  .catch(() => {
-    try {
-      window.close();
-        console.warn("4")
-      if (window.opener) {
-          console.warn("5")
-        window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
-      }
-    } catch (e) {
-        console.warn("6")
-      navigate('/homelivetest');
-    }
-  });
+    // try {
+    //   // This will only work if the tab was opened by JavaScript (window.open)
+    //   window.close();
+    //   console.warn("1")
+    //   // If we want to do something in the opener window
+    //   if (window.opener) {
+    //       console.warn("2")
+    //     // You can communicate with the opener window if needed
+    //     window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
+    //   }
+    // } catch (e) {
+    //     console.warn("3")
+    //   // If window.close() fails, just navigate in the current window
+    //   navigate('/homelivetest');
+    // }
+  // })
+  // .catch(() => {
+  //   try {
+  //     window.close();
+  //       console.warn("4")
+  //     if (window.opener) {
+  //         console.warn("5")
+  //       window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
+  //     }
+  //   } catch (e) {
+  //       console.warn("6")
+  //     navigate('/homelivetest');
+  //   }
+  // });
         } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -1728,6 +1730,22 @@ console.log("0",scoreData)
   // const navigate = useNavigate(); // For programmatic navigation
 
   // Function to show the toast and move to the next section (or result if last section)
+  // Add this function
+const closeAndNotifyParent = () => {
+  if (window.opener) {
+    console.log("Closing the window and notifying parent");
+    window.opener.postMessage('test-status-updated', window.location.origin);
+    
+    // Allow time for message to send before closing
+    setTimeout(() => {
+      window.close();
+    }, 500);
+  } else {
+    console.log("Closing the window without parent notification");
+    navigate('/homelivetest');
+  }
+};
+
   const handleSectionCompletion = async () => {
     handleDescriptiveTest();
     console.log("handleSectionCompletion called");
@@ -1766,12 +1784,13 @@ console.log("0",scoreData)
  
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-      if (window.opener) {
-          console.warn("2")
-        // You can communicate with the opener window if needed
-        window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
-      }
-        navigate('/homelivetest');
+        closeAndNotifyParent();
+      // if (window.opener) {
+      //     console.warn("2")
+      //   // You can communicate with the opener window if needed
+      //   window.opener.postMessage({ action: 'redirect', url: '/homelivetest' }, '*');
+      // }
+      //   navigate('/homelivetest');
       }
     }
   };
@@ -2048,7 +2067,7 @@ console.log("0",scoreData)
                       type="button"
                       className="btn-close"
                       aria-label="Close"
-                      onClick={() => setShowModal(false)} // Manually hide the modal
+                      onClick={() => {setShowModal(false), setIsPaused(false)}} // Manually hide the modal
                     ></button>
                   </div>
                   <div className="modal-body">
