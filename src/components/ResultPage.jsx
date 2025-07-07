@@ -174,7 +174,7 @@ const ResultPage = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Mark Scored</p>
-              <p className="text-xl font-bold">{overall.totalScore}</p>
+              <p className="text-xl font-bold"> {typeof overall.totalScore === 'number' ? overall.totalScore.toFixed(2) : '0.00'}</p>
             </div>
           </div>
         </div>
@@ -266,14 +266,18 @@ const ResultPage = () => {
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
             <div className="flex items-center">
               <FaCheckCircle className="mr-2" />
-              <p className="font-medium">Cutoff Cleared: {overall.totalScore} / {exam.cutoff_mark}</p>
+              <p className="font-medium">Cutoff Cleared: {typeof overall.totalScore === 'number' 
+          ? overall.totalScore.toFixed(2) 
+          : '0.00'} / {exam.cutoff_mark}</p>
             </div>
           </div>
         ) : (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
             <div className="flex items-center">
               <FaTimesCircle className="mr-2" />
-              <p className="font-medium">Cutoff Not Reached:  {overall.totalScore} / {exam.cutoff_mark}</p>
+              <p className="font-medium">Cutoff Not Reached: {typeof overall.totalScore === 'number' 
+          ? overall.totalScore.toFixed(2) 
+          : '0.00'} / {exam.cutoff_mark}</p>
             </div>
           </div>
         )}
@@ -308,7 +312,7 @@ const ResultPage = () => {
               {sections.map((sect, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
                   <td className="px-6 py-4 whitespace-nowrap text-md fw-bold font-medium text-blue-900">{sect.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.s_score}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800"> {typeof sect.s_score === 'number' ? sect.s_score.toFixed(2) : '0.00'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
@@ -328,7 +332,7 @@ const ResultPage = () => {
               ))}
               <tr className="">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">Overall</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{overall.totalScore}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900"> {typeof overall.totalScore === 'number' ? overall.totalScore.toFixed(2) : '0.00'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{overall.totalAnswered}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{overall.totalNotAnswered}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{overall.totalCorrect}</td>
