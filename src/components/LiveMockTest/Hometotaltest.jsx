@@ -231,9 +231,14 @@ const openNewWindow = (url) => {
               return (
                 <div key={test._id} className="group">
                   <div className="h-full bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl border border-gray-100">
-                    <div className="bg-gradient-to-r from-[#131656] to-[#4f46e5] p-4 text-white">
-                      <h3 className="text-md font-bold">{test.show_name}</h3>
-                    </div>
+                   <div className="bg-gradient-to-r from-[#131656] to-[#4f46e5] p-4 text-white animate-gradient-x">
+  <h3 className="text-md font-bold flex items-center">
+    <span className="animate-pulse mr-2"><i className="bi bi-claude"></i></span>
+    {test.show_name}
+    <span className="animate-pulse ml-2"><i className="bi bi-claude"></i></span>
+
+  </h3>
+</div>
 
                     <div className="p-5">
                       <div className="flex items-start mb-2">
@@ -282,20 +287,22 @@ const openNewWindow = (url) => {
                       {utcNow && test.liveResult && attempted && hasRallyPro && (
                         !hideActions && showViewResult && !isPaused ? (
                           new Date(utcNow) > new Date(test.liveResult) ? (
-                            <>
-                              <button
-                                onClick={() => handleActionClick(`/homeliveresult/${test._id}`, false)}
-                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-                              >
-                                <span className="mr-2">📊</span> View Result
-                              </button>
-                              <button
-                                onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
-                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200 mt-2"
-                              >
-                                <span className="mr-2">🔍</span> View Solution
-                              </button>
-                            </>
+                         <div className='d-flex flex-col sm:flex-row gap-2 sm:gap-4'>
+  <button
+    onClick={() => handleActionClick(`/homeliveresult/${test._id}`, false)}
+    className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-800 hover:bg-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+  >
+    <span className="mr-2 text-lg">📊</span> 
+    <span className="font-medium">Result</span>
+  </button>
+  <button
+    onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
+    className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+  >
+    <span className="mr-2 text-lg">🔍</span> 
+    <span className="font-medium">Solution</span>
+  </button>
+</div>
                           ) : (
                             <>
                               <div className="text-center text-sm text-gray-500 py-3 bg-yellow-50 rounded-lg border border-yellow-100">
