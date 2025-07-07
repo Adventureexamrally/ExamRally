@@ -236,37 +236,55 @@ const Test = () => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
       updatedOptions[clickedQuestionIndex] = index;
+      // Find current section
+      const currentSection = examData.section[currentSectionIndex];
+      // Find relative question index
+      const relativeIndex = clickedQuestionIndex - startingIndex;
+      const currentQuestion = currentSection.questions[selectedLanguage.toLowerCase()][relativeIndex];
+
+      // Use section-specific marks
+      const plus_mark = currentSection.plus_mark;
+      const minus_mark = currentSection.minus_mark;
+
+      let mark = 0;
+      if (currentQuestion.answer === index) {
+        mark = plus_mark;
+      } else {
+        mark = -minus_mark;
+      }
 
       // Update the database with the new selection
-      Api.post(`results/${user?._id}/${id}`, {
+      const result=Api.post(`results/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
+        mark
       });
+console.log("handle option change result",result);
 
       return updatedOptions;
     });
 
-    let mark = 0;
+    // let mark = 0;
 
     // Check if the selected option matches the correct answer
-    if (correctAnswerIndex === index) {
-      mark = 1.0; // Correct answer gets 1 mark
-      console.log("Correct Answer", correctAnswerIndex === index);
-    } else {
-      mark = -0.25; // Incorrect answer gets -0.25 mark
-    }
+    // if (correctAnswerIndex === index) {
+    //   mark = 1.0; // Correct answer gets 1 mark
+    //   console.log("Correct Answer", correctAnswerIndex === index);
+    // } else {
+    //   mark = -0.25; // Incorrect answer gets -0.25 mark
+    // }
 
     // Send the selected option along with the question data to the API
-    const currentQuestionData = {
-      question: currentQuestion?.question,
-      options: currentQuestion?.options,
-      correctOption: currentQuestion?.answer,
-      selectedOption: currentQuestion?.options[index], // Store the selected option
-      isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
-      markforreview: markedForReview.includes(clickedQuestionIndex),
-      ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
-    };
+    // const currentQuestionData = {
+    //   question: currentQuestion?.question,
+    //   options: currentQuestion?.options,
+    //   correctOption: currentQuestion?.answer,
+    //   selectedOption: currentQuestion?.options[index], // Store the selected option
+    //   isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
+    //   markforreview: markedForReview.includes(clickedQuestionIndex),
+    //   ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
+    // };
   };
 
   const [questionStartTime, setQuestionStartTime] = useState(new Date());
@@ -982,8 +1000,26 @@ const Test = () => {
     ).length;
 
     const answersData = selectedOptions.map((selectedOption, index) => {
-      const question =
-        currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+        // Find which section this question belongs to
+    let sectionIndex = 0;
+    let questionIndexInSection = 0;
+    let currentSection;
+
+        // Find the section and relative index for this question
+    let count = 0;
+    examData.section.forEach((section, sIndex) => {
+      const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+      if (index >= count && index < count + questions.length) {
+        sectionIndex = sIndex;
+        questionIndexInSection = index - count;
+        currentSection = section;
+      }
+      count += questions.length;
+    });
+
+    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+
+      // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
 
       const optionsData = question?.options?.map((option, optionIndex) => ({
@@ -996,12 +1032,20 @@ const Test = () => {
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
       const notVisited = isVisited === 1 ? 0 : 1;
 
-      const questionScore =
-        selectedOption !== undefined
-          ? selectedOption === question?.answer
-            ? question?.plus_mark
-            : -question?.minus_mark
-          : 0;
+      // const questionScore =
+      //   selectedOption !== undefined
+      //     ? selectedOption === question?.answer
+      //       ? question?.plus_mark
+      //       : -question?.minus_mark
+      //     : 0;
+
+          // Use section-specific marks
+    const questionScore = selectedOption !== null
+      ? selectedOption === question.answer
+        ? currentSection.plus_mark
+        : -currentSection.minus_mark
+      : 0;
+console.log("ques score",questionScore);
 
       return {
         question: question?.question,
@@ -1017,6 +1061,7 @@ const Test = () => {
         score: questionScore,
       };
     });
+console.log("answers dataaaaa",answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1055,12 +1100,11 @@ const Test = () => {
             const selectedOption = selectedOptions[absoluteIndex];
             const isVisited = visitedQuestions.includes(absoluteIndex) ? 1 : 0;
             const notVisited = isVisited ? 0 : 1;
-            const questionScore =
-              selectedOption !== undefined
-                ? selectedOption === question.answer
-                  ? section.plus_mark
-                  : -section.minus_mark
-                : 0;
+            const questionScore = selectedOption !== undefined
+              ? selectedOption === question.answer
+                ? section.plus_mark
+                : -section.minus_mark
+              : 0;
 
             return {
               question: question.question,
@@ -1077,19 +1121,29 @@ const Test = () => {
             };
           }
         );
+console.log("section answers data",sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
-          (q) => q.correct === 1
-        ).length;
-        const attemptedCount = sectionAnswersData.filter(
-          (q) => q.selectedOption !== undefined
-        ).length;
-        const incorrectCount = sectionAnswered - correctCount;
-        const sectionScore = correctCount * 1 - incorrectCount * 0.25;
-        const secaccuracy =
-          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
-        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
-        const skippedQuestions = sectionVisited - sectionAnswered;
+  (q) => q.correct === 1
+).length;
+
+const attemptedCount = sectionAnswersData.filter(
+  (q) => q.selectedOption !== undefined
+).length;
+
+const incorrectCount = sectionAnswered - correctCount;
+
+// Use section-specific marks instead of hardcoded values
+const sectionScore = 
+  (correctCount * section.plus_mark) - 
+  (incorrectCount * section.minus_mark);
+
+const secaccuracy =
+  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+
+console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+
+const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
