@@ -32,8 +32,9 @@ const Test = () => {
   const { user } = useContext(UserContext);
 
   const location = useLocation();
-  const selectedLanguage = location.state?.language || "English";
+  const  currentLanguage= location.state?.language || "English";
   // Fetch exam data
+const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -373,6 +374,10 @@ console.log("handle option change result",result);
 
           // Transform the data
           const transformedData = {
+            bilingual_status:res.data.bilingual_status,
+            english_status:res.data.english_status,
+            hindi_status:res.data.hindi_status,
+            tamil_status:res.data.tamil_status,
             section: res.data.section.map((section) => ({
               name: section.name,
               t_question: section.t_question,
@@ -1871,7 +1876,33 @@ console.warn(currentState)
                 <h3>
                   Question No: {clickedQuestionIndex + 1}/{t_questions}
                 </h3>
+
                 <h1 className="flex flex-wrap md:flex-row">
+                                    {/* Language dropdown added here */}
+                  {examData && (
+                    <div className="flex items-center mx-2">
+                      <select
+                        value={selectedLanguage}
+                        onChange={(e) => setselectedLanguage(e.target.value)}
+                        className="border rounded p-1"
+                      >
+                        {console.log("e from option",examData)}
+                        {examData?.bilingual_status ? (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                          </>
+                        ) : (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                  )}
+
                   <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
                     Qn Time : {formatTime(questionTime)}
                   </span>
