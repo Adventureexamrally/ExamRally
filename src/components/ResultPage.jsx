@@ -570,7 +570,7 @@ const ResultPage = () => {
 
       {/* Percentile Analysis */}
       <div className="mb-8">
-        <Percentile allScores={allScores} overallScore={overall.totalScore} initialPercentile={percentile} totelmark={overall.totelmark}/>
+        <Percentile allScores={allScores} overallScore= {typeof overall.totalScore === 'number' ? overall.totalScore.toFixed(2) : '0.00'} initialPercentile={percentile} totelmark={overall.totelmark}/>
       </div>
 
       {/* Result Animation */}

@@ -26,8 +26,9 @@ console.warn(currentSectionStartTimeRef)
   const { user } = useContext(UserContext);
 
   const location = useLocation();
-  const selectedLanguage = location.state?.language || "English";
+  const  currentLanguage= location.state?.language || "English";
   // Fetch exam data
+const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -227,12 +228,29 @@ console.warn(currentSectionStartTimeRef)
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
       updatedOptions[clickedQuestionIndex] = index;
+      // Find current section
+      const currentSection = examData.section[currentSectionIndex];
+      // Find relative question index
+      const relativeIndex = clickedQuestionIndex - startingIndex;
+      const currentQuestion = currentSection.questions[selectedLanguage.toLowerCase()][relativeIndex];
+
+      // Use section-specific marks
+      const plus_mark = currentSection.plus_mark;
+      const minus_mark = currentSection.minus_mark;
+
+      let mark = 0;
+      if (currentQuestion.answer === index) {
+        mark = plus_mark;
+      } else {
+        mark = -minus_mark;
+      }
 
       // Update the database with the new selection
       Api.post(`PDFresults/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
+        mark
       });
 
       return updatedOptions;
@@ -241,23 +259,23 @@ console.warn(currentSectionStartTimeRef)
     let mark = 0;
 
     // Check if the selected option matches the correct answer
-    if (correctAnswerIndex === index) {
-      mark = 1.0; // Correct answer gets 1 mark
-      console.log("Correct Answer", correctAnswerIndex === index);
-    } else {
-      mark = -0.25; // Incorrect answer gets -0.25 mark
-    }
+    // if (correctAnswerIndex === index) {
+    //   mark = 1.0; // Correct answer gets 1 mark
+    //   console.log("Correct Answer", correctAnswerIndex === index);
+    // } else {
+    //   mark = -0.25; // Incorrect answer gets -0.25 mark
+    // }
 
     // Send the selected option along with the question data to the API
-    const currentQuestionData = {
-      question: currentQuestion?.question,
-      options: currentQuestion?.options,
-      correctOption: currentQuestion?.answer,
-      selectedOption: currentQuestion?.options[index], // Store the selected option
-      isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
-      markforreview: markedForReview.includes(clickedQuestionIndex),
-      ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
-    };
+    // const currentQuestionData = {
+    //   question: currentQuestion?.question,
+    //   options: currentQuestion?.options,
+    //   correctOption: currentQuestion?.answer,
+    //   selectedOption: currentQuestion?.options[index], // Store the selected option
+    //   isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
+    //   markforreview: markedForReview.includes(clickedQuestionIndex),
+    //   ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
+    // };
   };
 
   const [questionStartTime, setQuestionStartTime] = useState(new Date());
@@ -346,6 +364,10 @@ console.warn(currentSectionStartTimeRef)
 
           // Transform the data
           const transformedData = {
+              bilingual_status:res.data.bilingual_status,
+            english_status:res.data.english_status,
+            hindi_status:res.data.hindi_status,
+            tamil_status:res.data.tamil_status,
             section: res.data.section.map((section) => ({
               name: section.name,
               t_question: section.t_question,
@@ -876,6 +898,7 @@ console.warn(currentSectionStartTimeRef)
   };
 
   const submitExam = () => {
+    updateSectionTime()
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -966,8 +989,26 @@ console.warn(currentSectionStartTimeRef)
     ).length;
 
     const answersData = selectedOptions.map((selectedOption, index) => {
-      const question =
-        currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+        // Find which section this question belongs to
+    let sectionIndex = 0;
+    let questionIndexInSection = 0;
+    let currentSection;
+
+        // Find the section and relative index for this question
+    let count = 0;
+    examData.section.forEach((section, sIndex) => {
+      const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+      if (index >= count && index < count + questions.length) {
+        sectionIndex = sIndex;
+        questionIndexInSection = index - count;
+        currentSection = section;
+      }
+      count += questions.length;
+    });
+
+    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+
+      // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
 
       const optionsData = question?.options?.map((option, optionIndex) => ({
@@ -980,12 +1021,20 @@ console.warn(currentSectionStartTimeRef)
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
       const notVisited = isVisited === 1 ? 0 : 1;
 
-      const questionScore =
-        selectedOption !== undefined
-          ? selectedOption === question?.answer
-            ? question?.plus_mark
-            : -question?.minus_mark
-          : 0;
+      // const questionScore =
+      //   selectedOption !== undefined
+      //     ? selectedOption === question?.answer
+      //       ? question?.plus_mark
+      //       : -question?.minus_mark
+      //     : 0;
+
+          // Use section-specific marks
+    const questionScore = selectedOption !== null
+      ? selectedOption === question.answer
+        ? currentSection.plus_mark
+        : -currentSection.minus_mark
+      : 0;
+console.log("ques score",questionScore);
 
       return {
         question: question?.question,
@@ -1001,6 +1050,7 @@ console.warn(currentSectionStartTimeRef)
         score: questionScore,
       };
     });
+console.log("answers dataaaaa",answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1039,12 +1089,11 @@ console.warn(currentSectionStartTimeRef)
             const selectedOption = selectedOptions[absoluteIndex];
             const isVisited = visitedQuestions.includes(absoluteIndex) ? 1 : 0;
             const notVisited = isVisited ? 0 : 1;
-            const questionScore =
-              selectedOption !== undefined
-                ? selectedOption === question.answer
-                  ? section.plus_mark
-                  : -section.minus_mark
-                : 0;
+            const questionScore = selectedOption !== undefined
+              ? selectedOption === question.answer
+                ? section.plus_mark
+                : -section.minus_mark
+              : 0;
 
             return {
               question: question.question,
@@ -1061,19 +1110,29 @@ console.warn(currentSectionStartTimeRef)
             };
           }
         );
+console.log("section answers data",sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
-          (q) => q.correct === 1
-        ).length;
-        const attemptedCount = sectionAnswersData.filter(
-          (q) => q.selectedOption !== undefined
-        ).length;
-        const incorrectCount = sectionAnswered - correctCount;
-        const sectionScore = correctCount * 1 - incorrectCount * 0.25;
-        const secaccuracy =
-          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
-        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
-        const skippedQuestions = sectionVisited - sectionAnswered;
+  (q) => q.correct === 1
+).length;
+
+const attemptedCount = sectionAnswersData.filter(
+  (q) => q.selectedOption !== undefined
+).length;
+
+const incorrectCount = sectionAnswered - correctCount;
+
+// Use section-specific marks instead of hardcoded values
+const sectionScore = 
+  (correctCount * section.plus_mark) - 
+  (incorrectCount * section.minus_mark);
+
+const secaccuracy =
+  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+
+console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+
+const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
@@ -1148,10 +1207,17 @@ console.warn(currentSectionStartTimeRef)
           notVisitedQuestions: sectionSummary.notVisitedQuestions,
           s_accuracy: secaccuracy,
           skipped: skippedQuestions,
-          timeTaken:
-            resultData?.section?.[currentSectionIndex]?.timeTaken ??
-            sectionTimes?.[sectionIndex] ??
-            0,
+          timeTaken: (() => {
+            const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
+            const time2 = sectionTimes?.[sectionIndex];
+        
+            if (typeof time1 === 'number' && typeof time2 === 'number') {
+              return time1 + time2;
+            }
+        
+            return time1 ?? time2 ?? 0;
+          })()
+      
         };
       })
       .filter(Boolean);
@@ -1788,6 +1854,31 @@ console.warn(currentSectionStartTimeRef)
                   Question No: {clickedQuestionIndex + 1}/{t_questions}
                 </h3>
                 <h1 className="flex flex-wrap md:flex-row">
+                                    {/* Language dropdown added here */}
+                  {examData && (
+                    <div className="flex items-center mx-2">
+                      <select
+                        value={selectedLanguage}
+                        onChange={(e) => setselectedLanguage(e.target.value)}
+                        className="border rounded p-1"
+                      >
+                        {console.log("e from option",examData)}
+                        {examData?.bilingual_status ? (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                          </>
+                        ) : (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                  )}
+
                   <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
                     Qn Time : {formatTime(questionTime)}
                   </span>

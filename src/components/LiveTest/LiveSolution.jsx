@@ -3,7 +3,7 @@ import Api from "../../service/Api";
 import "react-toastify/dist/ReactToastify.css";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../../assets/logo/bg-logo.png';
-import { FaChevronRight, FaInfoCircle } from "react-icons/fa";
+import { FaChevronRight, FaInfoCircle, FaExpand, FaCompress } from "react-icons/fa";
 import { UserContext } from "../../context/UserProvider";
 import { Avatar } from "@mui/material";
 
@@ -18,8 +18,9 @@ const LiveSolution = () => {
     const [ansmarkforrev, setAnsmarkforrev] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const location = useLocation();
-    const selectedLanguage = location.state?.language || "English";
-    // Fetch exam data
+ const  currentLanguage= location.state?.language || "English";
+  // Fetch exam data
+const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
     const [isToggled, setIsToggled] = useState(false);
     const [isDataFetched, setIsDataFetched] = useState(false);
 
@@ -35,53 +36,196 @@ const LiveSolution = () => {
     const navigate = useNavigate();
     // exams/getExam/67c5900a09a3bf8c7f605d71
     const { user } = useContext(UserContext);
+    const startingIndex = examData?.section
+        ?.slice(0, currentSectionIndex)
+        .reduce(
+            (acc, section) =>
+                acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+            0
+        ) || 0;
+
+    // Reset clickedQuestionIndex when section changes
     useEffect(() => {
+        setClickedQuestionIndex(startingIndex);
+    }, [currentSectionIndex, startingIndex]);
 
-        if (!user?._id) return; // Don't run if user is not loaded yet
+    // // Fetch exam data
+    // useEffect(() => {
+    //     if (!user?._id) return;
 
-        Api.get(`results/${user?._id}/${id}`)
+    //     Api.get(`results/${user?._id}/${id}`)
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 //   setExamData(res.data);
+    //                 console.log(res.data);
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+    // }, [id, user]);
 
-            .then((res) => {
-                if (res.data) {
-                    setExamData(res.data);
-                    console.log(res.data);
+    // useEffect(() => {
+    //     if (!isDataFetched) {
+    //         Api.get(`exams/getExam/${id}`)
+    //             .then((res) => {
+    //                 if (res.data) {
+    //                     setExamData(res.data);
+    //                     console.log("dd", res.data);
+    //                     setIsDataFetched(true);
+    //                     setShow_name(res.data.show_name);
+    //                     setExam_name(res.data.exam_name);
+    //                     setTest_type(res.data.test_type);
+    //                     setTest_name(res.data.test_name);
+    //                     setDescription(res.data.description);
+    //                     sett_questions(res.data.t_questions);
+    //                 }
+    //             })
+    //             .catch((err) => console.error("Error fetching data:", err));
+    //     }
+    // }, [id]);
+    // useEffect(() => {
+
+    //     if (!user?._id) return; // Don't run if user is not loaded yet
+
+    //     Api.get(`results/${user?._id}/${id}`)
+
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 // setExamData(res.data);
+    //                 console.log(res.data);
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+
+    // }, [id, user]);
+
+    // useEffect(() => {
+    //     // Check if data has already been fetched
+    //     if (!isDataFetched) {
+    //         Api.get(`exams/getExam/${id}`)
+    //             .then((res) => {
+    //                 if (res.data) {
+    //                     setExamData(res.data);
+    //                     console.log("dd", res.data)
+    //                     setIsDataFetched(true);
+    //                     setShow_name(res.data.show_name);
+    //                     setExam_name(res.data.exam_name);
+    //                     setTest_type(res.data.test_type);
+    //                     setTest_name(res.data.test_name);
+    //                     setDescription(res.data.description);
+
+    //                     sett_questions(res.data.t_questions)
+    //                     console.error("kl", res.data.t_questions);
+    //                 }
+    //             })
+    //             .catch((err) => console.error("Error fetching data:", err));
+    //     }
+    // }, [id]);
+
+    const fetchMergedExamData = async (userId, examId) => {
+        try {
+            const [examRes, resultRes] = await Promise.all([
+                Api.get(`exams/getExam/${examId}`),
+                Api.get(`results/${userId}/${examId}`),
+            ]);
+
+            const exam = examRes.data;
+            const result = resultRes.data;
+
+            // Update state variables
+            setShow_name(exam.show_name);
+            setExam_name(exam.exam_name);
+            setTest_type(exam.test_type);
+            setTest_name(exam.test_name);
+            setDescription(exam.description);
+            sett_questions(exam.t_questions);
+
+            // Create mapping of result sections by name
+            const resultSectionsMap = new Map();
+            (result?.section || []).forEach(sec => {
+                if (sec.name) {
+                    resultSectionsMap.set(sec.name, sec);
                 }
-            })
-            .catch((err) => console.error("Error fetching data:", err));
+            });
 
-    }, [id, user]);
+            // Merge sections by matching name
+            const mergedSections = (exam?.section || []).map(examSec => {
+                // Find matching result section by name
+                const resultSec = resultSectionsMap.get(examSec.name) || {};
 
-    useEffect(() => {
-        // Check if data has already been fetched
-        if (!isDataFetched) {
-            Api.get(`exams/getExam/${id}`)
-                .then((res) => {
-                    if (res.data) {
-                        setExamData(res.data);
-                        console.log("dd", res.data);
+                // Helper function to merge questions by index for a specific language
+                const mergeQuestionsByLang = (lang) => {
+                    return (examSec?.questions?.[lang] || []).map((q, qIndex) => {
+                        const resultQ = (resultSec?.questions?.[lang] || [])[qIndex] || {};
+                        return {
+                            ...q,
+                            selectedOption: resultQ.selectedOption ?? null,
+                            isVisited: resultQ.isVisited ?? 0,
+                            NotVisited: resultQ.NotVisited ?? 0,
+                            q_on_time: resultQ.q_on_time ?? null,
+                        };
+                    });
+                };
 
-                        setIsDataFetched(true);
-                        setShow_name(res.data.show_name) // Mark that data is fetched
-                        setExam_name(res.data.exam_name);
-                        setTest_type(res.data.test_type);
-                        setTest_name(res.data.test_name);
-                        setDescription(res.data.description);
-                        sett_questions(res.data.t_questions)
-                        console.error("kl", res.data.t_question);
-                    }
-                })
-                .catch((err) => console.error("Error fetching data:", err));
+                return {
+                    ...examSec,
+                    s_blueprint: resultSec.s_blueprint || examSec.s_blueprint || [],
+                    questions: {
+                        english: mergeQuestionsByLang('english'),
+                        hindi: mergeQuestionsByLang('hindi'),
+                        tamil: mergeQuestionsByLang('tamil'),
+                    },
+                    s_score: resultSec.s_score ?? 0,
+                    correct: resultSec.correct ?? 0,
+                    incorrect: resultSec.incorrect ?? 0,
+                    Attempted: resultSec.Attempted ?? 0,
+                    Not_Attempted: resultSec.Not_Attempted ?? 0,
+                    s_accuracy: resultSec.s_accuracy ?? 0,
+                    timeTaken: resultSec.timeTaken ?? 0,
+                    s_order: examSec.s_order,  // Keep original section order
+                };
+            });
+
+            // Create final merged exam data
+            const examData = {
+                   bilingual_status:exam.bilingual_status,
+            english_status:exam.english_status,
+            hindi_status:exam.hindi_status,
+            tamil_status:exam.tamil_status,
+                show_name: exam.show_name || exam.exam_name || "",
+                userId: result.userId,
+                ExamId: result.ExamId,
+                section: mergedSections,
+                descriptive: result?.descriptive || [],
+                o_accuracy: result?.o_accuracy ?? 0,
+                o_score: result?.o_score ?? 0,
+                Rank: result?.Rank ?? null,
+                Percentile: result?.Percentile ?? null,
+                takenAt: result?.takenAt ?? null,
+                submittedAt: result?.submittedAt ?? null,
+                status: result?.status || "not started",
+                timeTakenInSeconds: result?.timeTakenInSeconds ?? 0,
+                createdAt: result?.createdAt,
+                updatedAt: result?.updatedAt,
+            };
+
+            return examData;
+        } catch (error) {
+            console.error("Error merging exam and result:", error);
+            throw error;
         }
-    }, [id]);
+    };
+    useEffect(() => {
+        if (!user?._id && !id) return;
 
-    const startingIndex =
-        examData?.section
-            ?.slice(0, currentSectionIndex)
-            .reduce(
-                (acc, section) =>
-                    acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
-                0
-            ) || 0;
+        const loadExam = async () => {
+            const data = await fetchMergedExamData(user?._id, id);
+            console.log("examdata", data);
+
+            setExamData(data);
+        };
+
+        loadExam();
+    }, [user?._id, id]);
 
     // Mark a question as visited when clicked
     useEffect(() => {
@@ -140,41 +284,42 @@ const LiveSolution = () => {
     const [resultsBySection, setResultsBySection] = useState([]);
 
     // Update the useEffect that fetches results
-    useEffect(() => {
-        if (!user?._id) return;
+    // useEffect(() => {
+    //     if (!user?._id) return;
 
-        Api.get(`results/${user?._id}/${id}`)
-            .then((res) => {
-                if (res.data) {
-                    setExamData(res.data);
-                    // Store results for all sections
-                    setResultsBySection(res.data.section.map(section => ({
-                        correct: section.correct,
-                        incorrect: section.incorrect,
-                        skipped: section.skipped,
-                        Attempted: section.Attempted,
-                        Not_Attempted: section.Not_Attempted,
-                        s_score: section.s_score,
-                        unseen: section.NotVisited
-                    })));
+    //     Api.get(`results/${user?._id}/${id}`)
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 setExamsData(res.data);
+    //                 // Store results for all sections
+    //                 setResultsBySection(res.data.section.map(section => ({
+    //                     correct: section.correct,
+    //                     incorrect: section.incorrect,
+    //                     skipped: section.skipped,
+    //                     Attempted: section.Attempted,
+    //                     Not_Attempted: section.Not_Attempted,
+    //                     s_score: section.s_score,
+    //                     unseen: section.NotVisited
+    //                 })));
 
-                    // Also set current section's data
-                    const currentSectionData = res.data.section[currentSectionIndex];
-                    if (currentSectionData) {
-                        setResultData({
-                            correct: currentSectionData.correct,
-                            incorrect: currentSectionData.incorrect,
-                            skipped: currentSectionData.skipped,
-                            Attempted: currentSectionData.Attempted,
-                            Not_Attempted: currentSectionData.Not_Attempted,
-                            s_score: currentSectionData.s_score,
-                            unseen: currentSectionData.NotVisited
-                        });
-                    }
-                }
-            })
-            .catch((err) => console.error("Error fetching data:", err));
-    }, [id, user]);
+    //                 // Also set current section's data
+    //                 const currentSectionData = res.data.section[currentSectionIndex];
+    //                 if (currentSectionData) {
+    //                     setResultData({
+    //                         correct: currentSectionData.correct,
+    //                         incorrect: currentSectionData.incorrect,
+    //                         skipped: currentSectionData.skipped,
+    //                         Attempted: currentSectionData.Attempted,
+    //                         Not_Attempted: currentSectionData.Not_Attempted,
+    //                         s_score: currentSectionData.s_score,
+    //                         unseen: currentSectionData.NotVisited
+    //                     });
+    //                 }
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+    // }, [id, user]);
+
 
     // Update this when section changes
     useEffect(() => {
@@ -182,10 +327,11 @@ const LiveSolution = () => {
             setResultData(resultsBySection[currentSectionIndex]);
         }
     }, [currentSectionIndex, resultsBySection]);
-
     const [questionStartTime, setQuestionStartTime] = useState(new Date());
     const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
     const [isClicked, setIsClicked] = useState(false); // State to track if the radio button was clicked
+
+
 
     // Update question time when user switches questions
 
@@ -330,6 +476,7 @@ const LiveSolution = () => {
         }
     }, [examData, currentSectionIndex]);
 
+
     const reasons = [
         "Incorrect Question",
         "Incorrect Answer",
@@ -382,7 +529,57 @@ const LiveSolution = () => {
             alert("Submission failed.");
         }
     };
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            const docEl = document.documentElement;
+
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen();
+            } else if (docEl.mozRequestFullScreen) {
+                docEl.mozRequestFullScreen();
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            } else if (docEl.msRequestFullscreen) {
+                docEl.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    };
+
+    // Listen for fullscreen changes
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+        document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+        };
+    }, []);
+
+    // 🔸 Attempt to auto-enter fullscreen on mount
+    useEffect(() => {
+        toggleFullScreen(); // This will only work if browser allows
+    }, []);
 
     return (
         <div className="p-1 mock-font ">
@@ -391,6 +588,12 @@ const LiveSolution = () => {
                 <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
                     <h1 className="h3 font-bold mt-3">{show_name}</h1>
                     <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+                    <button
+                        onClick={toggleFullScreen}
+                        className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
+                    >
+                        {isFullscreen ? <FaCompress /> : <FaExpand />}
+                    </button>
                 </div>
 
             </div>
@@ -515,6 +718,29 @@ const LiveSolution = () => {
 
 
                                 <div className="flex justify-center items-center ">
+                                                      {examData && (
+                    <div className="flex items-center mx-2">
+                      <select
+                        value={selectedLanguage}
+                        onChange={(e) => setselectedLanguage(e.target.value)}
+                        className="border rounded p-1"
+                      >
+                        {console.log("e from option",examData)}
+                        {examData?.bilingual_status ? (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                          </>
+                        ) : (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                  )}
                                     <h3>
                                         Question Time:
                                         {examData?.section[currentSectionIndex]?.questions?.[
@@ -542,17 +768,17 @@ const LiveSolution = () => {
                                 </div>
                             </div>
                             {examData?.section[currentSectionIndex] ? (
-                                <div className="flex flex-col md:flex-row p-0">
+                                <div className="flex flex-col md:flex-row p-0" >
                                     {/* Left side for Common Data */}
                                     {examData.section[currentSectionIndex]?.questions?.[
                                         selectedLanguage?.toLowerCase()
                                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                             <div
-                                                className="md:w-[50%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300"
-                                                  style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+                                                className="md:w-[80%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300"
+                                                style={{
+                                                    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                                    overflowY: 'auto'
+                                                }}
                                             >
                                                 <div
                                                     className="text-wrap"
@@ -574,24 +800,15 @@ const LiveSolution = () => {
 
                                     {/* Right side for Question */}
                                     <div
-                                        className={`mb-24 md:mb-0 p-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                                            selectedLanguage?.toLowerCase()
-                                        ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                                            ? "md:w-[50%]"
-                                            : "md:w-full" // Make it full width when no common data
-                                            }`}  style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+                                        className="w-full p-3 mb-24 md:mb-0 flex flex-col md:flex-row justify-between"
+                                        style={{
+                                            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                            overflowY: 'auto'
+                                        }}
                                     >
-                                        {/* <style>
-                                        {`
-                                          /* Chrome, Safari, and Opera 
-                                          div::-webkit-scrollbar {
-                                            display: none;
-                                          }
-                                        `}
-                                      </style> */}
+                                        {/* Content with dynamic height */}
+
+
                                         <div>
 
                                             <div
@@ -710,7 +927,7 @@ const LiveSolution = () => {
                                                 <>
                                                     <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
                                                     <div
-                                                        className=" text-wrap"
+                                                        className="text-wrap"
                                                         style={{
                                                             whiteSpace: "normal",
                                                             wordWrap: "break-word",
@@ -736,7 +953,7 @@ const LiveSolution = () => {
                                                             selectedLanguage?.toLowerCase()
                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
                                                             <div
-                                                                className=" text-wrap mb-2"
+                                                                className="text-wrap mb-2"
                                                                 style={{
                                                                     whiteSpace: "normal",
                                                                     wordWrap: "break-word",
@@ -752,6 +969,7 @@ const LiveSolution = () => {
                                                         ) : (
                                                             <p>No explanation available</p>
                                                         )}
+
                                                         <div className="text-center pb-10">
                                                             <button
                                                                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
@@ -817,6 +1035,7 @@ const LiveSolution = () => {
                                                             </div>
                                                         )}
 
+
                                                     </>
                                                 )}
                                             </div>
@@ -837,17 +1056,17 @@ const LiveSolution = () => {
                                 </div>
                             ) : (
                                 <div
-                                className="d-flex justify-content-center align-items-center"
-                                style={{ height: '100vh' }} // Full viewport height
-                              >
-                                <div
-                                  className="spinner-border text-primary"
-                                  role="status"
-                                  style={{ width: '3rem', height: '3rem' }}
+                                    className="d-flex justify-content-center align-items-center"
+                                    style={{ height: '100vh' }} // Full viewport height
                                 >
-                                  <span className="visually-hidden">Loading...</span>
+                                    <div
+                                        className="spinner-border text-primary"
+                                        role="status"
+                                        style={{ width: '3rem', height: '3rem' }}
+                                    >
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
                                 </div>
-                              </div>
                             )}
                         </>
                     ) : (
@@ -866,10 +1085,10 @@ const LiveSolution = () => {
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
         fixed top-14 right-0 z-40 md:static shadow-sm md:block `}
-                     style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+                    style={{
+                        height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                        overflowY: 'auto'
+                    }}
                 >
                     {isMobileMenuOpen && (
                         <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -892,40 +1111,40 @@ const LiveSolution = () => {
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
- <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
-              {/* Profile Image and Link */}
-              <div>
-                <Avatar
-                  alt={user?.firstName}
-                  src={user?.profilePicture}
-                  sx={{ width: 30, height: 30 }}
-                />
-              </div>
+                        <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+                            {/* Profile Image and Link */}
+                            <div>
+                                <Avatar
+                                    alt={user?.firstName}
+                                    src={user?.profilePicture}
+                                    sx={{ width: 30, height: 30 }}
+                                />
+                            </div>
 
-              {/* Profile Information */}
-              <div>
-                <h1 className=" text-white text-wrap break-words">
-                  {user?.firstName + user?.lastName}
-                </h1>
-              </div>
-            </div>
+                            {/* Profile Information */}
+                            <div>
+                                <h1 className=" text-white text-wrap break-words">
+                                    {user?.firstName + user?.lastName}
+                                </h1>
+                            </div>
+                        </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Mark</h1>
-                            <h1>{resultData?.s_score}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.s_score}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Attempted</h1>
-                            <h1>{resultData?.Attempted}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.Attempted}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Correct</h1>
-                            <h1>{resultData?.correct}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.correct}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>InCorrect</h1>
-                            <h1>{resultData?.incorrect}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.incorrect}</h1>
                         </div>
-                        
+
 
 
 
@@ -987,8 +1206,8 @@ const LiveSolution = () => {
                                                     setVisitedQuestions(prev => [...prev, startingIndex + index]);
                                                 }
 
-setCheck(null);
-        setIsClicked(false);
+                                                setCheck(null);
+                                                setIsClicked(false);
 
                                             }}
                                             className={`fw-bold flex align-items-center justify-content-center ${className}`}
@@ -999,7 +1218,7 @@ setCheck(null);
                                 );
                             })}
                         </div>
-
+                        {/* 
 
 
 
@@ -1032,13 +1251,13 @@ setCheck(null);
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
 
             {/* Footer Buttons */}
-          <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
+            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
                 <div className="d-flex justify-content-around w-[85%]">
                     {/* Previous Button */}
                     <button
@@ -1063,6 +1282,5 @@ setCheck(null);
         </div >
     );
 };
-
 
 export default LiveSolution;
