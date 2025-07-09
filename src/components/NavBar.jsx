@@ -228,15 +228,19 @@ const NavBar = () => {
               Rally Super Pro
             </Link>
 
-      {/* <Link
-      to='/homelivetest'
-      className="hover:text-blue-600 transition duration-300"
-    >
-      Live Test 
-    </Link>
-       {liveTests.length > 0 && (
-    <span className=" text-xs text-[#131656] rounded blink">New</span>
-  )} */}
+     <Link
+  to='/homelivetest'
+  className="hover:text-blue-600 transition duration-300 flex items-center gap-1"
+>
+  Live Test
+   {liveTests.length > 0 && (
+    <span className="ml-1 bg-[#131656] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
+      New
+    </span>
+  )}
+</Link>
+
+     
 
             {/* <Link
               to="/video-course"
@@ -399,7 +403,7 @@ const NavBar = () => {
               Rally Super Pro
             </Link>
 
-      {/* <Link
+      <Link
       to='/homelivetest'
       className="block px-4 py-2 transition duration-300 flex items-center gap-2 hover:bg-blue-700 hover:text-white"
     >
@@ -408,7 +412,7 @@ const NavBar = () => {
          {liveTests.length > 0 && (
     <span className=" text-xs text-[#131656] rounded blink hover:text-white">New</span>
   )}
-      </Link> */}
+      </Link>
 
             {/* <Link
               to="/video-course"
