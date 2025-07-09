@@ -16,10 +16,22 @@ const PdfExamSolution = () => {
     const [markedForReview, setMarkedForReview] = useState([]);
     const [ansmarkforrev, setAnsmarkforrev] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const location = useLocation();
-    const currentLanguage = location.state?.language || "English";
-    // Fetch exam data
-    const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+  const location = useLocation();
+  const  selectedLanguage= location.state?.language || "English";
+  
+  // Fetch exam data
+// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+const [displayLanguage, setDisplayLanguage] = useState(null);
+
+useEffect(() => {
+  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+  if (sectionName === "english language") {
+    setDisplayLanguage("English");
+  } else {
+    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+  }
+}, [currentSectionIndex, examData]);
+
     const [isToggled, setIsToggled] = useState(false);
     const [isDataFetched, setIsDataFetched] = useState(false);
 
@@ -656,29 +668,29 @@ const PdfExamSolution = () => {
 
 
                                 <div className="flex justify-center items-center ">
-                                    {examData && (
-                                        <div className="flex items-center mx-2">
-                                            <select
-                                                value={selectedLanguage}
-                                                onChange={(e) => setselectedLanguage(e.target.value)}
-                                                className="border rounded p-1"
-                                            >
-                                                {console.log("e from option", examData)}
-                                                {examData?.bilingual_status ? (
-                                                    <>
-                                                        {examData?.english_status && <option value="English">English</option>}
-                                                        {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        {examData?.english_status && <option value="English">English</option>}
-                                                        {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                                                        {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                                                    </>
-                                                )}
-                                            </select>
-                                        </div>
-                                    )}
+                {examData &&
+                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                    <div className="flex items-center mx-2">
+                      <select
+                        value={displayLanguage || selectedLanguage}
+                        onChange={(e) => setDisplayLanguage(e.target.value)}
+                        className="border rounded p-1"
+                      >
+                        {examData?.bilingual_status ? (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                          </>
+                        ) : (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                )}
                                     <h3>
                                         Question Time:
                                         {examData?.section[currentSectionIndex]?.questions?.[
@@ -728,7 +740,7 @@ const PdfExamSolution = () => {
                                                         __html:
                                                             examData.section[currentSectionIndex]
                                                                 ?.questions?.[
-                                                                selectedLanguage?.toLowerCase()
+                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                             ]?.[clickedQuestionIndex - startingIndex]
                                                                 ?.common_data || "No common data available",
                                                     }}
@@ -758,7 +770,7 @@ const PdfExamSolution = () => {
                                                 dangerouslySetInnerHTML={{
                                                     __html:
                                                         examData.section[currentSectionIndex]?.questions?.[
-                                                            selectedLanguage?.toLowerCase()
+                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                         ]?.[clickedQuestionIndex - startingIndex]?.question || "No question available",
                                                 }}
                                             />
@@ -768,7 +780,7 @@ const PdfExamSolution = () => {
                                                     selectedLanguage?.toLowerCase()
                                                 ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
                                                     const question = examData.section[currentSectionIndex]?.questions?.[
-                                                        selectedLanguage?.toLowerCase()
+                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                     ]?.[clickedQuestionIndex - startingIndex];
 
                                                     const selectedOption = question?.selectedOption;
@@ -873,7 +885,7 @@ const PdfExamSolution = () => {
                                                         dangerouslySetInnerHTML={{
                                                             __html:
                                                                 examData.section[currentSectionIndex]?.questions[
-                                                                    selectedLanguage?.toLowerCase()
+                                                            (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                                 ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                         }}
                                                     />
@@ -899,7 +911,7 @@ const PdfExamSolution = () => {
                                                                 dangerouslySetInnerHTML={{
                                                                     __html:
                                                                         examData.section[currentSectionIndex]?.questions[
-                                                                            selectedLanguage?.toLowerCase()
+                                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                                 }}
                                                             />
@@ -1187,6 +1199,7 @@ const PdfExamSolution = () => {
                     </div>
                 </div>
             </div>
+
 
             {/* Footer Buttons */}
             <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
