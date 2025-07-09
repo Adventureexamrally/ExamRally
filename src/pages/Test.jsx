@@ -32,9 +32,20 @@ const Test = () => {
   const { user } = useContext(UserContext);
 
   const location = useLocation();
-  const  currentLanguage= location.state?.language || "English";
+  const  selectedLanguage= location.state?.language || "English";
+  
   // Fetch exam data
-const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+const [displayLanguage, setDisplayLanguage] = useState(null);
+
+useEffect(() => {
+  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+  if (sectionName === "english language") {
+    setDisplayLanguage("English");
+  } else {
+    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+  }
+}, [currentSectionIndex, examData]);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -152,7 +163,7 @@ const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
 
         .catch(error => console.error('Error fetching exam state:', error));
     }
-  }, [id, user?._id, t_questions, selectedLanguage]);
+  }, [id, user?._id, t_questions]);
 
   const commonDataRef = useRef(null);
 
@@ -1879,14 +1890,14 @@ console.warn(currentState)
 
                 <h1 className="flex flex-wrap md:flex-row">
                                     {/* Language dropdown added here */}
-                  {examData && (
+                {examData &&
+                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
                     <div className="flex items-center mx-2">
                       <select
-                        value={selectedLanguage}
-                        onChange={(e) => setselectedLanguage(e.target.value)}
+                        value={displayLanguage || selectedLanguage}
+                        onChange={(e) => setDisplayLanguage(e.target.value)}
                         className="border rounded p-1"
                       >
-                        {console.log("e from option",examData)}
                         {examData?.bilingual_status ? (
                           <>
                             {examData?.english_status && <option value="English">English</option>}
@@ -1901,7 +1912,8 @@ console.warn(currentState)
                         )}
                       </select>
                     </div>
-                  )}
+                )}
+
 
                   <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
                     Qn Time : {formatTime(questionTime)}
@@ -1952,7 +1964,7 @@ console.warn(currentState)
                         dangerouslySetInnerHTML={{
                           __html:
                             examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
+                             (displayLanguage|| selectedLanguage)?.toLowerCase()
                             ]?.[clickedQuestionIndex - startingIndex]
                               ?.common_data || "No common data available",
                         }}
@@ -1983,7 +1995,7 @@ console.warn(currentState)
                         dangerouslySetInnerHTML={{
                           __html:
                             examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
+                               (displayLanguage|| selectedLanguage)?.toLowerCase()
                             ]?.[clickedQuestionIndex - startingIndex]
                               ?.question || "No question available",
                         }}
@@ -1994,7 +2006,7 @@ console.warn(currentState)
                       ]?.[clickedQuestionIndex - startingIndex]?.options ? (
                         <div>
                           {examData.section[currentSectionIndex]?.questions?.[
-                            selectedLanguage?.toLowerCase()
+                            (displayLanguage|| selectedLanguage)?.toLowerCase()
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
