@@ -98,7 +98,7 @@ useEffect(() => {
     .catch(error => {
       console.error("Failed to fetch UTC time:", error);
     });
-}, []);
+}, [Today]);
 
 // Show modal logic - runs only when 'Today' is set
 useEffect(() => {
