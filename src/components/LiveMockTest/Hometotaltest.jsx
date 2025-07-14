@@ -317,13 +317,13 @@ const openNewWindow = (url) => {
                           )
                         ) : null
                       )}
-
+<div className='flex flex-col sm:flex-row gap-2 sm:gap-4'>
                       {/* Non-Pro View Result (New Window) */}
                       {utcNow && test.liveResult && !hasRallyPro && (
                         <>
                           {new Date(utcNow) > new Date(test.liveResult) ? (
                             !hasRallyPro && (
-                              <div className="text-center text-sm text-gray-400 pt-2">
+                              <div>
                                 <button
                                   onClick={() =>
                                     handleActionClick(
@@ -333,7 +333,7 @@ const openNewWindow = (url) => {
                                   }
                                   className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
                                 >
-                                  <span className="mr-2">📊</span> View Result
+                                  <span className="mr-2">📊</span> Result
                                 </button>
                               </div>
                             )
@@ -364,14 +364,16 @@ const openNewWindow = (url) => {
                                   true
                                 )
                               }
-                              className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                             
+                              // className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
                             >
-                              <span className="mr-2">🔍</span> View Solution
+                              <span className="mr-2">🔍</span>Solution
                             </button>
                           </div>
                         )}
                     </div>
-
+</div>
 
                   </div>
                 </div>

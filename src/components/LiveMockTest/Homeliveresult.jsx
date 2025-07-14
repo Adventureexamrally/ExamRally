@@ -46,7 +46,7 @@ console.warn(data)
     <div className="results-container">
       <div className="results-header">
         <h1>Live Competition Results</h1>
-        <div className="results-count">{results.length} Participants</div>
+        <div className="results-count"> Toppers</div>
       </div>
 
       <div className="results-list">
@@ -58,12 +58,15 @@ console.warn(data)
             </div>
             
             <div className="participant-info">
-              <div className="participant-email">{result.email}</div>
+              <div className="participant-email">{result.fullName}</div>
             </div>
             
-            <div className={`score-display ${result.o_score > 0 ? 'positive' : 'negative'}`}>
-              {result.o_score > 0 ? '+' : ''}{result.o_score}
-            </div>
+            <div className={`score-display ${
+  result.o_score == null ? '' : result.o_score > 0 ? 'positive' : 'negative'
+}`}>
+  {result.o_score == null ? 'N/A' : `${result.o_score > 0 ? '+' : ''}${result.o_score}`}
+</div>
+
           </div>
         ))}
       </div>
