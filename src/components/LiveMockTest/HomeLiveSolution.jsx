@@ -1,13 +1,14 @@
 import { useContext, useEffect, useState } from "react";
+import Api from "../../service/Api";
 import "react-toastify/dist/ReactToastify.css";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from '../../assets/logo/bg-logo.png';
-import { FaChevronRight, FaInfoCircle, FaCompress, FaExpand, } from "react-icons/fa";
-import Api from "../../service/Api";
+import { FaChevronRight, FaInfoCircle, FaExpand, FaCompress } from "react-icons/fa";
 import { UserContext } from "../../context/UserProvider";
 import { Avatar } from "@mui/material";
 
-const PdfExamSolution = () => {
+
+const HomeLiveSolution = () => {
     const [examData, setExamData] = useState(null);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
@@ -60,11 +61,83 @@ useEffect(() => {
         setClickedQuestionIndex(startingIndex);
     }, [currentSectionIndex, startingIndex]);
 
+    // // Fetch exam data
+    // useEffect(() => {
+    //     if (!user?._id) return;
+
+    //     Api.get(`results/${user?._id}/${id}`)
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 //   setExamData(res.data);
+    //                 console.log(res.data);
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+    // }, [id, user]);
+
+    // useEffect(() => {
+    //     if (!isDataFetched) {
+    //         Api.get(`exams/getExam/${id}`)
+    //             .then((res) => {
+    //                 if (res.data) {
+    //                     setExamData(res.data);
+    //                     console.log("dd", res.data);
+    //                     setIsDataFetched(true);
+    //                     setShow_name(res.data.show_name);
+    //                     setExam_name(res.data.exam_name);
+    //                     setTest_type(res.data.test_type);
+    //                     setTest_name(res.data.test_name);
+    //                     setDescription(res.data.description);
+    //                     sett_questions(res.data.t_questions);
+    //                 }
+    //             })
+    //             .catch((err) => console.error("Error fetching data:", err));
+    //     }
+    // }, [id]);
+    // useEffect(() => {
+
+    //     if (!user?._id) return; // Don't run if user is not loaded yet
+
+    //     Api.get(`results/${user?._id}/${id}`)
+
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 // setExamData(res.data);
+    //                 console.log(res.data);
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+
+    // }, [id, user]);
+
+    // useEffect(() => {
+    //     // Check if data has already been fetched
+    //     if (!isDataFetched) {
+    //         Api.get(`exams/getExam/${id}`)
+    //             .then((res) => {
+    //                 if (res.data) {
+    //                     setExamData(res.data);
+    //                     console.log("dd", res.data)
+    //                     setIsDataFetched(true);
+    //                     setShow_name(res.data.show_name);
+    //                     setExam_name(res.data.exam_name);
+    //                     setTest_type(res.data.test_type);
+    //                     setTest_name(res.data.test_name);
+    //                     setDescription(res.data.description);
+
+    //                     sett_questions(res.data.t_questions)
+    //                     console.error("kl", res.data.t_questions);
+    //                 }
+    //             })
+    //             .catch((err) => console.error("Error fetching data:", err));
+    //     }
+    // }, [id]);
+
     const fetchMergedExamData = async (userId, examId) => {
         try {
             const [examRes, resultRes] = await Promise.all([
-                Api.get(`pdf-exams/getExam/${examId}`),
-                Api.get(`PDFresults/${userId}/${examId}`),
+                Api.get(`exams/getExam/${examId}`),
+                Api.get(`results/${userId}/${examId}`),
             ]);
 
             const exam = examRes.data;
@@ -266,17 +339,6 @@ useEffect(() => {
             setResultData(resultsBySection[currentSectionIndex]);
         }
     }, [currentSectionIndex, resultsBySection]);
-
-
-
-
-
-
-
-
-
-
-
     const [questionStartTime, setQuestionStartTime] = useState(new Date());
     const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
     const [isClicked, setIsClicked] = useState(false); // State to track if the radio button was clicked
@@ -1228,4 +1290,5 @@ useEffect(() => {
     );
 };
 
-export default PdfExamSolution;
+
+export default HomeLiveSolution;

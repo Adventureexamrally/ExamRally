@@ -107,6 +107,20 @@ const NavBar = () => {
     sendUserData();
   }, [isLoaded, isSignedIn, user]);
 
+
+   const [liveTests, setLiveTests] = useState([]);
+
+  useEffect(() => {
+    Api.get('exams/live-test')
+      .then(response => {
+        const filteredTests = response.data.liveTest.filter(test => test.livetest === true);
+        setLiveTests(filteredTests);
+      })
+      .catch(error => {
+        console.error('Error fetching live test data:', error);
+      });
+  }, []);
+
   return (
     <>
       <nav className="bg-green-600 text-white font-semibold shadow-md py-2">
@@ -213,12 +227,21 @@ const NavBar = () => {
             >
               Rally Super Pro
             </Link>
-            {/* <Link 
-            to='/homelivetest'
-               className="hover:text-blue-600 transition duration-300"
-            >
-              Live Test
-            </Link> */}
+
+     <Link
+  to='/homelivetest'
+  className="hover:text-blue-600 transition duration-300 flex items-center gap-1"
+>
+  Live Test
+   {liveTests.length > 0 && (
+    <span className="ml-1 bg-[#131656] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
+      New
+    </span>
+  )}
+</Link>
+
+     
+
             {/* <Link
               to="/video-course"
               className="hover:text-blue-600 transition duration-300"
@@ -379,12 +402,18 @@ const NavBar = () => {
             >
               Rally Super Pro
             </Link>
-            {/* <Link 
-            to='/homelivetest'
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
-            >
-              Live Test
-            </Link> */}
+
+      <Link
+      to='/homelivetest'
+      className="block px-4 py-2 transition duration-300 flex items-center gap-2 hover:bg-blue-700 hover:text-white"
+    >
+      Live Test 
+
+         {liveTests.length > 0 && (
+    <span className=" text-xs text-[#131656] rounded blink hover:text-white">New</span>
+  )}
+      </Link>
+
             {/* <Link
               to="/video-course"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"

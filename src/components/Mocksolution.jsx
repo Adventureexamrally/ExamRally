@@ -9,7 +9,6 @@ import { Avatar } from "@mui/material";
 
 const Mocksolution = () => {
     const [examData, setExamData] = useState(null);
-    const [examDatas, setExamsData] = useState(null);
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState([]);
@@ -17,9 +16,22 @@ const Mocksolution = () => {
     const [markedForReview, setMarkedForReview] = useState([]);
     const [ansmarkforrev, setAnsmarkforrev] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const location = useLocation();
-    const selectedLanguage = location.state?.language || "English";
-    // Fetch exam data
+  const location = useLocation();
+  const  selectedLanguage= location.state?.language || "English";
+  
+  // Fetch exam data
+// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+const [displayLanguage, setDisplayLanguage] = useState(null);
+
+useEffect(() => {
+  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+  if (sectionName === "english language") {
+    setDisplayLanguage("English");
+  } else {
+    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+  }
+}, [currentSectionIndex, examData]);
+
     const [isToggled, setIsToggled] = useState(false);
     const [isDataFetched, setIsDataFetched] = useState(false);
 
@@ -120,6 +132,111 @@ const Mocksolution = () => {
     //     }
     // }, [id]);
 
+    const fetchMergedExamData = async (userId, examId) => {
+        try {
+            const [examRes, resultRes] = await Promise.all([
+                Api.get(`exams/getExam/${examId}`),
+                Api.get(`results/${userId}/${examId}`),
+            ]);
+
+            const exam = examRes.data;
+            const result = resultRes.data;
+
+            // Update state variables
+            setShow_name(exam.show_name);
+            setExam_name(exam.exam_name);
+            setTest_type(exam.test_type);
+            setTest_name(exam.test_name);
+            setDescription(exam.description);
+            sett_questions(exam.t_questions);
+
+            // Create mapping of result sections by name
+            const resultSectionsMap = new Map();
+            (result?.section || []).forEach(sec => {
+                if (sec.name) {
+                    resultSectionsMap.set(sec.name, sec);
+                }
+            });
+
+            // Merge sections by matching name
+            const mergedSections = (exam?.section || []).map(examSec => {
+                // Find matching result section by name
+                const resultSec = resultSectionsMap.get(examSec.name) || {};
+
+                // Helper function to merge questions by index for a specific language
+                const mergeQuestionsByLang = (lang) => {
+                    return (examSec?.questions?.[lang] || []).map((q, qIndex) => {
+                        const resultQ = (resultSec?.questions?.[lang] || [])[qIndex] || {};
+                        return {
+                            ...q,
+                            selectedOption: resultQ.selectedOption ?? null,
+                            isVisited: resultQ.isVisited ?? 0,
+                            NotVisited: resultQ.NotVisited ?? 0,
+                            q_on_time: resultQ.q_on_time ?? null,
+                        };
+                    });
+                };
+
+                return {
+                    ...examSec,
+                    s_blueprint: resultSec.s_blueprint || examSec.s_blueprint || [],
+                    questions: {
+                        english: mergeQuestionsByLang('english'),
+                        hindi: mergeQuestionsByLang('hindi'),
+                        tamil: mergeQuestionsByLang('tamil'),
+                    },
+                    s_score: resultSec.s_score ?? 0,
+                    correct: resultSec.correct ?? 0,
+                    incorrect: resultSec.incorrect ?? 0,
+                    Attempted: resultSec.Attempted ?? 0,
+                    Not_Attempted: resultSec.Not_Attempted ?? 0,
+                    s_accuracy: resultSec.s_accuracy ?? 0,
+                    timeTaken: resultSec.timeTaken ?? 0,
+                    s_order: examSec.s_order,  // Keep original section order
+                };
+            });
+
+            // Create final merged exam data
+            const examData = {
+                bilingual_status: exam.bilingual_status,
+                english_status: exam.english_status,
+                hindi_status: exam.hindi_status,
+                tamil_status: exam.tamil_status,
+                show_name: exam.show_name || exam.exam_name || "",
+                userId: result.userId,
+                ExamId: result.ExamId,
+                section: mergedSections,
+                descriptive: result?.descriptive || [],
+                o_accuracy: result?.o_accuracy ?? 0,
+                o_score: result?.o_score ?? 0,
+                Rank: result?.Rank ?? null,
+                Percentile: result?.Percentile ?? null,
+                takenAt: result?.takenAt ?? null,
+                submittedAt: result?.submittedAt ?? null,
+                status: result?.status || "not started",
+                timeTakenInSeconds: result?.timeTakenInSeconds ?? 0,
+                createdAt: result?.createdAt,
+                updatedAt: result?.updatedAt,
+            };
+
+            return examData;
+        } catch (error) {
+            console.error("Error merging exam and result:", error);
+            throw error;
+        }
+    };
+    useEffect(() => {
+        if (!user?._id && !id) return;
+
+        const loadExam = async () => {
+            const data = await fetchMergedExamData(user?._id, id);
+            console.log("examdata", data);
+
+            setExamData(data);
+        };
+
+        loadExam();
+    }, [user?._id, id]);
 
     // Mark a question as visited when clicked
     useEffect(() => {
@@ -214,60 +331,6 @@ const Mocksolution = () => {
     //         .catch((err) => console.error("Error fetching data:", err));
     // }, [id, user]);
 
-    useEffect(() => {
-  if (!user?._id || isDataFetched) return;
-
-  Promise.all([
-    Api.get(`exams/getExam/${id}`),
-    Api.get(`results/${user._id}/${id}`)
-  ])
-    .then(([examRes, resultRes]) => {
-      // ----- Exam Data -----
-      const exam = examRes.data;
-      if (exam) {
-        setExamData(exam);
-        console.log("dd", exam);
-        setIsDataFetched(true);
-        setShow_name(exam.show_name);
-        setExam_name(exam.exam_name);
-        setTest_type(exam.test_type);
-        setTest_name(exam.test_name);
-        setDescription(exam.description);
-        sett_questions(exam.t_questions);
-        console.error("kl", exam.t_question); // 🔸 Note: typo still preserved as per your request
-      }
-
-      // ----- Result Data -----
-      const result = resultRes.data;
-      if (result) {
-        setExamsData(result);
-
-        setResultsBySection(result.section.map(section => ({
-          correct: section.correct,
-          incorrect: section.incorrect,
-          skipped: section.skipped,
-          Attempted: section.Attempted,
-          Not_Attempted: section.Not_Attempted,
-          s_score: section.s_score,
-          unseen: section.NotVisited
-        })));
-
-        const currentSectionData = result.section[currentSectionIndex];
-        if (currentSectionData) {
-          setResultData({
-            correct: currentSectionData.correct,
-            incorrect: currentSectionData.incorrect,
-            skipped: currentSectionData.skipped,
-            Attempted: currentSectionData.Attempted,
-            Not_Attempted: currentSectionData.Not_Attempted,
-            s_score: currentSectionData.s_score,
-            unseen: currentSectionData.NotVisited
-          });
-        }
-      }
-    })
-    .catch((err) => console.error("Error fetching exam or result:", err));
-}, [id, user]);
 
     // Update this when section changes
     useEffect(() => {
@@ -677,6 +740,29 @@ const Mocksolution = () => {
 
 
                                 <div className="flex justify-center items-center ">
+                {examData &&
+                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                    <div className="flex items-center mx-2">
+                      <select
+                        value={displayLanguage || selectedLanguage}
+                        onChange={(e) => setDisplayLanguage(e.target.value)}
+                        className="border rounded p-1"
+                      >
+                        {examData?.bilingual_status ? (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                          </>
+                        ) : (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                )}
                                     <h3>
                                         Question Time:
                                         {examData?.section[currentSectionIndex]?.questions?.[
@@ -726,7 +812,7 @@ const Mocksolution = () => {
                                                         __html:
                                                             examData.section[currentSectionIndex]
                                                                 ?.questions?.[
-                                                                selectedLanguage?.toLowerCase()
+                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                             ]?.[clickedQuestionIndex - startingIndex]
                                                                 ?.common_data || "No common data available",
                                                     }}
@@ -756,17 +842,17 @@ const Mocksolution = () => {
                                                 dangerouslySetInnerHTML={{
                                                     __html:
                                                         examData.section[currentSectionIndex]?.questions?.[
-                                                            selectedLanguage?.toLowerCase()
+                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                         ]?.[clickedQuestionIndex - startingIndex]?.question || "No question available",
                                                 }}
                                             />
 
                                             {
-                                                examDatas?.section[currentSectionIndex]?.questions?.[
+                                                examData?.section[currentSectionIndex]?.questions?.[
                                                     selectedLanguage?.toLowerCase()
                                                 ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
-                                                    const question = examDatas.section[currentSectionIndex]?.questions?.[
-                                                        selectedLanguage?.toLowerCase()
+                                                    const question = examData.section[currentSectionIndex]?.questions?.[
+                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                     ]?.[clickedQuestionIndex - startingIndex];
 
                                                     const selectedOption = question?.selectedOption;
@@ -871,7 +957,7 @@ const Mocksolution = () => {
                                                         dangerouslySetInnerHTML={{
                                                             __html:
                                                                 examData.section[currentSectionIndex]?.questions[
-                                                                    selectedLanguage?.toLowerCase()
+                                                            (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                                 ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                         }}
                                                     />
@@ -897,7 +983,7 @@ const Mocksolution = () => {
                                                                 dangerouslySetInnerHTML={{
                                                                     __html:
                                                                         examData.section[currentSectionIndex]?.questions[
-                                                                            selectedLanguage?.toLowerCase()
+                                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
                                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                                 }}
                                                             />
@@ -1066,29 +1152,29 @@ const Mocksolution = () => {
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Mark</h1>
-                            <h1>{resultData?.s_score}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.s_score}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Attempted</h1>
-                            <h1>{resultData?.Attempted}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.Attempted}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>Correct</h1>
-                            <h1>{resultData?.correct}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.correct}</h1>
                         </div>
                         <div className="d-flex justify-content-between p-1">
                             <h1>InCorrect</h1>
-                            <h1>{resultData?.incorrect}</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.incorrect}</h1>
                         </div>
 
 
 
 
                         <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-                            {examDatas?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
+                            {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
                                 // Calculate the actual question number including previous sections
                                 const actualQuestionNumber = startingIndex + index + 1;
-                                const currentQuestion = examDatas.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
+                                const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
                                 const answer = currentQuestion?.answer;
 
 
@@ -1127,6 +1213,10 @@ const Mocksolution = () => {
                                         className = "notVisitImg";
                                     }
                                 }
+
+                                // if (resultData?.section.isVisited - resultData?.section.Attempted){
+                                //     className = "skipImg"; // Skipped question - visited but no answer selected
+                                // }
                                 return (
                                     <div key={index}>
                                         <span
@@ -1150,6 +1240,34 @@ const Mocksolution = () => {
                                 );
                             })}
                         </div>
+                        {/* 
+                        <div className="mt-3 bg-gray-100">
+                            <div className="container mt-3">
+                                <div className="row align-items-center">
+                                    <div className="col-6">
+                                        <div className="smanswerImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.correct}</div>
+                                        <p>Correct</p>
+                                    </div>
+                                    <div className="col-6">
+                                        <div className="smnotansImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.incorrect}</div>
+                                        <p>Wrong</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="container mt-3">
+                                <div className="row align-items-center">
+                                    <div className="col-6">
+                                        <div className="smnotVisitImg  text-black fw-bold flex align-items-center justify-content-center">{resultData?.unseen}</div>
+                                        <p>Unseen</p>
+                                    </div>
+                                    <div className="col-6">
+                                        <div className="smskipimg  text-white fw-bold flex align-items-center justify-content-center">{resultData.skipped}</div>
+                                        <p>Skipped</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

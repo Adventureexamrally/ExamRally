@@ -78,7 +78,8 @@
 
 .rank-crown {
   position: absolute;
-  top: -15px;
+  top: -20px;
+  right: 18%;
   width: 40px;
   height: 30px;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%23FFD700" d="M576 136c0 22.09-17.91 40-40 40h-69.61l-57.39 224.1c-1.84 7.18-8.25 12.29-15.66 12.29H162.66c-7.41 0-13.82-5.11-15.66-12.29L89.61 176H40c-22.09 0-40-17.91-40-40s17.91-40 40-40h480C558.09 96 576 113.9 576 136z"/></svg>');
@@ -160,4 +161,17 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Profile Picture */
+.participant-avatar {
+  margin: 0 1.5rem;
+}
+
+.profile-picture {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ecf0f1;
 }

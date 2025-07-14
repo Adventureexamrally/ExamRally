@@ -26,23 +26,34 @@ console.warn(currentSectionStartTimeRef)
   const { user } = useContext(UserContext);
 
   const location = useLocation();
-  const selectedLanguage = location.state?.language || "English";
+  const  selectedLanguage= location.state?.language || "English";
+  
   // Fetch exam data
+// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+const [displayLanguage, setDisplayLanguage] = useState(null);
 
+useEffect(() => {
+  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+  if (sectionName === "english language") {
+    setDisplayLanguage("English");
+  } else {
+    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+  }
+}, [currentSectionIndex, examData]);
   const { id } = useParams();
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
   // Prevent page refresh on F5, Ctrl+R, and Ctrl+Shift+R
-  window.addEventListener("beforeunload", function (e) {
-    // Customize the confirmation message
-    var confirmationMessage = "Are you sure you want to leave?";
+  // window.addEventListener("beforeunload", function (e) {
+  //   // Customize the confirmation message
+  //   var confirmationMessage = "Are you sure you want to leave?";
 
-    // Standard for most browsers
-    e.returnValue = confirmationMessage;
+  //   // Standard for most browsers
+  //   e.returnValue = confirmationMessage;
 
-    // For some browsers
-    return confirmationMessage;
-  });
+  //   // For some browsers
+  //   return confirmationMessage;
+  // });
 
   // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
   window.addEventListener("keydown", function (e) {
@@ -144,7 +155,7 @@ console.warn(currentSectionStartTimeRef)
 
         .catch(error => console.error('Error fetching exam state:', error));
     }
-  }, [id, user?._id, t_questions, selectedLanguage]);
+  }, [id, user?._id, t_questions]);
 
 
   const commonDataRef = useRef(null);
@@ -227,12 +238,29 @@ console.warn(currentSectionStartTimeRef)
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
       updatedOptions[clickedQuestionIndex] = index;
+      // Find current section
+      const currentSection = examData.section[currentSectionIndex];
+      // Find relative question index
+      const relativeIndex = clickedQuestionIndex - startingIndex;
+      const currentQuestion = currentSection.questions[selectedLanguage.toLowerCase()][relativeIndex];
+
+      // Use section-specific marks
+      const plus_mark = currentSection.plus_mark;
+      const minus_mark = currentSection.minus_mark;
+
+      let mark = 0;
+      if (currentQuestion.answer === index) {
+        mark = plus_mark;
+      } else {
+        mark = -minus_mark;
+      }
 
       // Update the database with the new selection
       Api.post(`PDFresults/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
+        mark
       });
 
       return updatedOptions;
@@ -241,23 +269,23 @@ console.warn(currentSectionStartTimeRef)
     let mark = 0;
 
     // Check if the selected option matches the correct answer
-    if (correctAnswerIndex === index) {
-      mark = 1.0; // Correct answer gets 1 mark
-      console.log("Correct Answer", correctAnswerIndex === index);
-    } else {
-      mark = -0.25; // Incorrect answer gets -0.25 mark
-    }
+    // if (correctAnswerIndex === index) {
+    //   mark = 1.0; // Correct answer gets 1 mark
+    //   console.log("Correct Answer", correctAnswerIndex === index);
+    // } else {
+    //   mark = -0.25; // Incorrect answer gets -0.25 mark
+    // }
 
     // Send the selected option along with the question data to the API
-    const currentQuestionData = {
-      question: currentQuestion?.question,
-      options: currentQuestion?.options,
-      correctOption: currentQuestion?.answer,
-      selectedOption: currentQuestion?.options[index], // Store the selected option
-      isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
-      markforreview: markedForReview.includes(clickedQuestionIndex),
-      ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
-    };
+    // const currentQuestionData = {
+    //   question: currentQuestion?.question,
+    //   options: currentQuestion?.options,
+    //   correctOption: currentQuestion?.answer,
+    //   selectedOption: currentQuestion?.options[index], // Store the selected option
+    //   isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
+    //   markforreview: markedForReview.includes(clickedQuestionIndex),
+    //   ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
+    // };
   };
 
   const [questionStartTime, setQuestionStartTime] = useState(new Date());
@@ -346,6 +374,10 @@ console.warn(currentSectionStartTimeRef)
 
           // Transform the data
           const transformedData = {
+              bilingual_status:res.data.bilingual_status,
+            english_status:res.data.english_status,
+            hindi_status:res.data.hindi_status,
+            tamil_status:res.data.tamil_status,
             section: res.data.section.map((section) => ({
               name: section.name,
               t_question: section.t_question,
@@ -871,10 +903,12 @@ console.warn(currentSectionStartTimeRef)
     toast.success("Test Completed! Moving to result.");
     await submitExam();
     await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-    navigate(`/pdf/result/${id}/${user?._id}`);
+    // navigate(`/pdf/result/${id}/${user?._id}`);
+    finishTestAndOpenResult();
   };
 
   const submitExam = () => {
+    updateSectionTime()
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -965,8 +999,26 @@ console.warn(currentSectionStartTimeRef)
     ).length;
 
     const answersData = selectedOptions.map((selectedOption, index) => {
-      const question =
-        currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
+        // Find which section this question belongs to
+    let sectionIndex = 0;
+    let questionIndexInSection = 0;
+    let currentSection;
+
+        // Find the section and relative index for this question
+    let count = 0;
+    examData.section.forEach((section, sIndex) => {
+      const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+      if (index >= count && index < count + questions.length) {
+        sectionIndex = sIndex;
+        questionIndexInSection = index - count;
+        currentSection = section;
+      }
+      count += questions.length;
+    });
+
+    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+
+      // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
 
       const optionsData = question?.options?.map((option, optionIndex) => ({
@@ -979,12 +1031,20 @@ console.warn(currentSectionStartTimeRef)
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
       const notVisited = isVisited === 1 ? 0 : 1;
 
-      const questionScore =
-        selectedOption !== undefined
-          ? selectedOption === question?.answer
-            ? question?.plus_mark
-            : -question?.minus_mark
-          : 0;
+      // const questionScore =
+      //   selectedOption !== undefined
+      //     ? selectedOption === question?.answer
+      //       ? question?.plus_mark
+      //       : -question?.minus_mark
+      //     : 0;
+
+          // Use section-specific marks
+    const questionScore = selectedOption !== null
+      ? selectedOption === question.answer
+        ? currentSection.plus_mark
+        : -currentSection.minus_mark
+      : 0;
+console.log("ques score",questionScore);
 
       return {
         question: question?.question,
@@ -1000,6 +1060,7 @@ console.warn(currentSectionStartTimeRef)
         score: questionScore,
       };
     });
+console.log("answers dataaaaa",answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1038,12 +1099,11 @@ console.warn(currentSectionStartTimeRef)
             const selectedOption = selectedOptions[absoluteIndex];
             const isVisited = visitedQuestions.includes(absoluteIndex) ? 1 : 0;
             const notVisited = isVisited ? 0 : 1;
-            const questionScore =
-              selectedOption !== undefined
-                ? selectedOption === question.answer
-                  ? section.plus_mark
-                  : -section.minus_mark
-                : 0;
+            const questionScore = selectedOption !== undefined
+              ? selectedOption === question.answer
+                ? section.plus_mark
+                : -section.minus_mark
+              : 0;
 
             return {
               question: question.question,
@@ -1060,19 +1120,29 @@ console.warn(currentSectionStartTimeRef)
             };
           }
         );
+console.log("section answers data",sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
-          (q) => q.correct === 1
-        ).length;
-        const attemptedCount = sectionAnswersData.filter(
-          (q) => q.selectedOption !== undefined
-        ).length;
-        const incorrectCount = sectionAnswered - correctCount;
-        const sectionScore = correctCount * 1 - incorrectCount * 0.25;
-        const secaccuracy =
-          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
-        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
-        const skippedQuestions = sectionVisited - sectionAnswered;
+  (q) => q.correct === 1
+).length;
+
+const attemptedCount = sectionAnswersData.filter(
+  (q) => q.selectedOption !== undefined
+).length;
+
+const incorrectCount = sectionAnswered - correctCount;
+
+// Use section-specific marks instead of hardcoded values
+const sectionScore = 
+  (correctCount * section.plus_mark) - 
+  (incorrectCount * section.minus_mark);
+
+const secaccuracy =
+  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+
+console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+
+const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
@@ -1147,10 +1217,17 @@ console.warn(currentSectionStartTimeRef)
           notVisitedQuestions: sectionSummary.notVisitedQuestions,
           s_accuracy: secaccuracy,
           skipped: skippedQuestions,
-          timeTaken:
-            resultData?.section?.[currentSectionIndex]?.timeTaken ??
-            sectionTimes?.[sectionIndex] ??
-            0,
+          timeTaken: (() => {
+            const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
+            const time2 = sectionTimes?.[sectionIndex];
+        
+            if (typeof time1 === 'number' && typeof time2 === 'number') {
+              return time1 + time2;
+            }
+        
+            return time1 ?? time2 ?? 0;
+          })()
+      
         };
       })
       .filter(Boolean);
@@ -1274,7 +1351,11 @@ console.warn(currentSectionStartTimeRef)
           setIsPaused(true);
 
           await submitExam();
-          navigate('/pdf-course');
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
+
+          window.close(); // Close the current window
+
+          // navigate('/pdf-course');
 
         } else {
           setIsPaused(false);
@@ -1336,7 +1417,8 @@ console.warn(currentSectionStartTimeRef)
         toast.success("Test Completed! Moving to result.");
         await submitExam();
         await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
-        navigate(`/pdf/result/${id}`);
+        // navigate(`/pdf/result/${id}`);
+        finishTestAndOpenResult();
       }
     }
   };
@@ -1543,6 +1625,27 @@ console.warn(currentSectionStartTimeRef)
     };
   };
 
+    const finishTestAndOpenResult = async () => {
+  try {
+    // await submitExam();
+    
+    // Build the result URL
+    const resultUrl = `${window.location.origin}/pdf/result/${id}/${user?._id}`;
+    
+    // Open result in a new window without _blank target
+    // const resultWindow = window.open('', '_self');
+    
+    // resultWindow.location.href = resultUrl;
+        window.open(resultUrl, '_blank');
+
+    // Close the current test window
+    window.close();
+  } catch (error) {
+    console.error("Error finishing test:", error);
+    alert('Failed to submit the exam. Please try again.');
+  }
+};
+
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
@@ -1587,7 +1690,7 @@ console.warn(currentSectionStartTimeRef)
               type="button"
               className="btn-close"
               aria-label="Close"
-              onClick={() => setShowModal(false)} // Manually hide the modal
+              onClick={() => {setShowModal(false),setIsPaused(false)}} // Manually hide the modal
             ></button>
                   </div>
                   <div className="modal-body">
@@ -1760,7 +1863,34 @@ console.warn(currentSectionStartTimeRef)
                 <h3>
                   Question No: {clickedQuestionIndex + 1}/{t_questions}
                 </h3>
+
                 <h1 className="flex flex-wrap md:flex-row">
+                                    {/* Language dropdown added here */}
+                {examData &&
+                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                    <div className="flex items-center mx-2">
+                      <select
+                        value={displayLanguage || selectedLanguage}
+                        onChange={(e) => setDisplayLanguage(e.target.value)}
+                        className="border rounded p-1"
+                      >
+                        {examData?.bilingual_status ? (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                          </>
+                        ) : (
+                          <>
+                            {examData?.english_status && <option value="English">English</option>}
+                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                          </>
+                        )}
+                      </select>
+                    </div>
+                )}
+
+
                   <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
                     Qn Time : {formatTime(questionTime)}
                   </span>
@@ -1788,44 +1918,52 @@ console.warn(currentSectionStartTimeRef)
 
               {examData?.section[currentSectionIndex] ? (
                 <div className="flex flex-col md:flex-row p-0">
-              {/* Left side for Common Data */}
-              {examData.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                <div 
-                  className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                      ${isFullscreen 
-      ? 'h-[80vh] md:h-[80vh]' 
-      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-    }`
-                  } 
-                  style={{ overflowY: 'auto'}}
-                >
+                  {/* Left side for Common Data */}
+                  {examData.section[currentSectionIndex]?.questions?.[
+                    selectedLanguage?.toLowerCase()
+                  ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                    <div
+                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                  ${isFullscreen
+                        ? 'h-[80vh] md:h-[80vh]'
+                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      }`
+                    }
+                      style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+                  >
                       <div
                         className="text-wrap"
                         style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                         dangerouslySetInnerHTML={{
                           __html:
                             examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
+                             (displayLanguage|| selectedLanguage)?.toLowerCase()
                             ]?.[clickedQuestionIndex - startingIndex]
                               ?.common_data || "No common data available",
                         }}
                       />
                     </div>
                   )}
-  {/* Right side for Question */}
-  <div 
-                  className={`  ${isFullscreen 
-      ? 'h-[80vh] md:h-[80vh]' 
-      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-    } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                     selectedLanguage?.toLowerCase()
-                     ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                      ? "md:w-[50%]"
+
+                  {/* Right side for Question */}
+                  <div
+                    className={`   ${isFullscreen
+                      ? 'h-[80vh] md:h-[80vh]'
+                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                        selectedLanguage?.toLowerCase()
+                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                        ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                          }`}                style={{  overflowY:'auto' }}
-              >
+                      }`}   style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+  
+                  >
                     <div>
                       <div
                         className="text-wrap mb-2"
@@ -1833,7 +1971,7 @@ console.warn(currentSectionStartTimeRef)
                         dangerouslySetInnerHTML={{
                           __html:
                             examData.section[currentSectionIndex]?.questions?.[
-                              selectedLanguage?.toLowerCase()
+                               (displayLanguage|| selectedLanguage)?.toLowerCase()
                             ]?.[clickedQuestionIndex - startingIndex]
                               ?.question || "No question available",
                         }}
@@ -1844,38 +1982,39 @@ console.warn(currentSectionStartTimeRef)
                       ]?.[clickedQuestionIndex - startingIndex]?.options ? (
                         <div>
                           {examData.section[currentSectionIndex]?.questions?.[
-                            selectedLanguage?.toLowerCase()
+                            (displayLanguage|| selectedLanguage)?.toLowerCase()
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
                             <div key={index} className="p-1 rounded-lg m-2 ">
-                              <input
-                                type="radio"
-                                id={`option-${index}`}
-                                name="exam-option"
-                                value={index}
-                                checked={
-                                  selectedOptions[clickedQuestionIndex] ===
-                                  index
-                                }
-                                onChange={() => {
-                                  console.log("Selected Option Index:", index);
-                                  handleOptionChange(index);
-                                }}
-                                 style={{
-                                                                    accentColor: "#3B82F6", // Blue color for radio button
-                                                                    width: "1.2rem",
-                                                                    height: "1.2rem",
-                                                                    
-                                                                }}
-                              />{" "}
-                              &nbsp;&nbsp;
-                              <label
-                                htmlFor={`option-${index}`}
-                                dangerouslySetInnerHTML={{
-                                  __html: option || "No option available",
-                                }}
-                              />
+                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+  <input
+    type="radio"
+    className="p-5"
+    id={`option-${index}`}
+    name="exam-option"
+    value={index}
+    checked={selectedOptions[clickedQuestionIndex] === index}
+    onChange={() => {
+      console.log("Selected Option Index:", index);
+      handleOptionChange(index);
+    }}
+    style={{
+      accentColor: "#3B82F6",
+      width: "1.2rem",
+      height: "1.2rem",
+      marginRight: "8px",
+      marginTop: "0px" // Remove vertical offset
+    }}
+  />
+  <label
+    htmlFor={`option-${index}`}
+    dangerouslySetInnerHTML={{
+      __html: option || "No option available",
+    }}
+  />
+</div>
+
                             </div>
                           ))}
                         </div>
@@ -1912,6 +2051,7 @@ console.warn(currentSectionStartTimeRef)
                   <span className="visually-hidden">Loading...</span>
                 </div>
               </div>
+              
               )}
             </>
           ) : (
@@ -1921,19 +2061,21 @@ console.warn(currentSectionStartTimeRef)
           )}
         </div>
 
-{/* Sidebar */}
+        {/* Sidebar */}
 
-
-<div
-      className={`mb-14 pb-7 bg-light transform transition-transform duration-300 md:-mt-10 border
+        <div
+          className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
         ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
         ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
-      ${isFullscreen 
-      ? 'h-[87vh] md:h-[87vh]' 
-      : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-    } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-      style={{  overflowY: 'auto' }}
-    >
+ ${isFullscreen
+              ? 'h-[87vh] md:h-[87vh]'
+              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
+            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+            style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+        >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
               <svg
@@ -2053,7 +2195,8 @@ console.warn(currentSectionStartTimeRef)
                   }if (selectedOptions[fullIndex] == null) {
                     className="notansImg";
                   }
-                } else if (visitedQuestions.includes(fullIndex)) {
+                }
+                 else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
                 } else {
                   className = "notVisitImg";

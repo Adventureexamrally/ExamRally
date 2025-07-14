@@ -63,6 +63,7 @@ import Livemockinstruction from "./components/LiveMockTest/Livemockinstruction";
 import Livemockotherinstruct from "./components/LiveMockTest/Livemockotherinstruct";
 import Livemocktest from "./components/LiveMockTest/Livemocktest";
 import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
+import HomeLiveSolution from "./components/LiveMockTest/HomeLiveSolution";
 
 
 
@@ -97,7 +98,7 @@ useEffect(() => {
     .catch(error => {
       console.error("Failed to fetch UTC time:", error);
     });
-}, []);
+}, [Today]);
 
 // Show modal logic - runs only when 'Today' is set
 useEffect(() => {
@@ -142,7 +143,7 @@ useEffect(() => {
     "/result", "/liveresult", "/pdf/instruction", "/pdf/otherinstruct", 
     "/pdf/mocktest", "/pdf/result", "/pdf/mocksolution",
     "/homeliveinstruct","/homeliveotherinstruct",
-    "/homelivemocktest" 
+    "/homelivemocktest" ,"/homeSolution"
   ].some(path => location.pathname.startsWith(path));
 
   const { user } = useContext(UserContext);
@@ -209,7 +210,7 @@ useEffect(() => {
             {isLoading && (
                <div
                 className="d-flex justify-content-center align-items-center"
-                style={{ height: '100vh' }} // Full viewport height
+                // style={{ height: '100vh' }} // Full viewport height
               >
                 <div
                   className="spinner-border text-green-500 fw-bold "
@@ -303,11 +304,12 @@ useEffect(() => {
         <Route path="/All-Packages" element={<Packages />} />
         {/* <Route path="/All-Archivers" element={<AllArch />} /> */}
 
- {/* <Route path="/homelivetest" element={<HomeLivetest/>}/> */}
- {/* <Route path="/homeliveinstruct/:id/:userId" element={<Livemockinstruction />} />
-<Route path="/homeliveotherinstruct/:id/:userId" element={<Livemockotherinstruct />} />
-<Route path="/homelivemocktest/:id/:userId" element={<Livemocktest />} />
-<Route path="/homeliveresult/:id" element={<Homeliveresult/>} /> */}
+          <Route path="/homelivetest" element={<HomeLivetest/>}/>
+          <Route path="/homeliveinstruct/:id/:userId" element={<Livemockinstruction />} />
+          <Route path="/homeliveotherinstruct/:id/:userId" element={<Livemockotherinstruct />} />
+          <Route path="/homelivemocktest/:id/:userId" element={<Livemocktest />} />
+          <Route path="/homeliveresult/:id" element={<Homeliveresult/>} />
+          <Route path='/homeSolution/:id/:userId' element={<HomeLiveSolution />} />
 
 
         <Route path="*" element={<NotFound />} />
