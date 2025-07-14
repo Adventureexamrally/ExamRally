@@ -232,13 +232,13 @@ const openNewWindow = (url) => {
                 <div key={test._id} className="group">
                   <div className="h-full bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl border border-gray-100">
                    <div className="bg-gradient-to-r from-[#131656] to-[#4f46e5] p-4 text-white animate-gradient-x">
-  <h3 className="text-md font-bold flex items-center">
-    <span className="animate-pulse mr-2"><i className="bi bi-claude"></i></span>
-    {test.show_name}
-    <span className="animate-pulse ml-2"><i className="bi bi-claude"></i></span>
+                    <h3 className="text-md font-bold flex items-center justify-center text-center">
+                      <span className="animate-pulse mr-2"><i className="bi bi-claude"></i></span>
+                      {test.show_name}
+                      <span className="animate-pulse ml-2"><i className="bi bi-claude"></i></span>
 
-  </h3>
-</div>
+                    </h3>
+                  </div>
 
                     <div className="p-5">
                       <div className="flex items-start mb-2">
@@ -317,7 +317,7 @@ const openNewWindow = (url) => {
                           )
                         ) : null
                       )}
-<div className='flex flex-col sm:flex-row gap-2 sm:gap-4'>
+<div className='flex flex-col gap-2 sm:gap-4'>
                       {/* Non-Pro View Result (New Window) */}
                       {utcNow && test.liveResult && !hasRallyPro && (
                         <>
