@@ -234,7 +234,7 @@ const NavBar = () => {
 >
   Live Test
    {liveTests.length > 0 && (
-    <span className="ml-1 bg-[#131656] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
+    <span className="ml-1 bg-[#7E57C2] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
       New
     </span>
   )}
@@ -410,7 +410,7 @@ const NavBar = () => {
       Live Test 
 
          {liveTests.length > 0 && (
-    <span className=" text-xs text-[#131656] rounded blink hover:text-white">New</span>
+    <span className="ml-1 bg-[#7E57C2] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">New</span>
   )}
       </Link>
 

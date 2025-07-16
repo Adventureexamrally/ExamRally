@@ -1447,8 +1447,8 @@ console.warn(currentState)
     
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-        // navigate(`/result/${id}/${user?._id}`);
-        finishTestAndOpenResult()
+        navigate(`/result/${id}/${user?._id}`);
+        // finishTestAndOpenResult()
       }
     }
   };
