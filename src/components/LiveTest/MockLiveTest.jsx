@@ -51,7 +51,6 @@ useEffect(() => {
   }
 }, [currentSectionIndex, examData]);
 
-console.log(descriptiveData)
   const { id } = useParams();
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
@@ -271,17 +270,18 @@ console.log(descriptiveData)
       }
 
       // Update the database with the new selection
-      Api.post(`results/${user?._id}/${id}`, {
+      const result=Api.post(`results/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
         mark
       });
+console.log("handle option change result",result);
 
       return updatedOptions;
     });
 
-    let mark = 0;
+    // let mark = 0;
 
     // Check if the selected option matches the correct answer
     // if (correctAnswerIndex === index) {
@@ -310,8 +310,7 @@ console.log(descriptiveData)
     if (!examStartTime) {
       setExamStartTime(new Date()); // Store when the exam starts
     }
-
-0  }, []);
+  }, []);
 
   useEffect(() => {
     if (questionStartTime) {
@@ -667,8 +666,7 @@ console.log(descriptiveData)
 
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
-    handleDescriptiveTest();
-    updateSectionTime();
+  
     console.log("Handling section submission...");
     setIsPaused(true); // Pause the timer
     // Save current section time before modal
@@ -676,6 +674,11 @@ console.log(descriptiveData)
     const timeSpent = Math.floor(
       (now - currentSectionStartTimeRef.current) / 1000
     );
+
+    setSectionTimes((prev) => ({
+      ...prev,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
+    }));
 
     // Reset timer for accuracy
     currentSectionStartTimeRef.current = new Date();
@@ -746,7 +749,8 @@ console.log(descriptiveData)
       );
       return [...updatedData, sectionSummary];
     });
-
+    
+    updateSectionTime();
     // Display modal
     setShowModal(true);
     console.log("Modal shown:", showModal);
@@ -945,16 +949,13 @@ console.log(descriptiveData)
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]);
+  
+ const handleTimerEnd = async () => {
+  handleSubmitSection(); // 1. Submits the section
+  await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
+  handleSectionCompletion(); // 4. Calls this after 1 second
+};
 
-  const handleTimerEnd = async () => {
-    handleSubmitSection();
-    toast.success("Test Completed! Moving to result.");
-    await submitExam();
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-    // navigate(`/liveresult/${id}/${user?._id}`);
-    finishTestAndOpenResult();
-    
-  };
 
   const getKeywords = () => {
     const keywordString =
@@ -1094,20 +1095,8 @@ const calculateScore = async (issues) => {
   console.log("Expected Word Count:", expectedWordCount);
 };
 
-
-  const submitExam = async (
-    issues,
-    scoreBreakdown,
-    keywords,
-    scoreData,
-    expectedWordCount
-  ) => {
-    await checkGrammar();
-        updateSectionTime()
-  // await handleDescriptiveTest()
-    // console.log("Score Data:", scoreData);
-    console.log("inside ", descriptiveData);
-
+  const submitExam = () => {
+    updateSectionTime()
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -1215,8 +1204,7 @@ const calculateScore = async (issues) => {
       count += questions.length;
     });
 
-  const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[questionIndexInSection] || null;
-    console.log("question",question);
+    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
 
       // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
@@ -1231,6 +1219,14 @@ const calculateScore = async (issues) => {
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
       const notVisited = isVisited === 1 ? 0 : 1;
 
+      // const questionScore =
+      //   selectedOption !== undefined
+      //     ? selectedOption === question?.answer
+      //       ? question?.plus_mark
+      //       : -question?.minus_mark
+      //     : 0;
+
+          // Use section-specific marks
     const questionScore = selectedOption !== null
       ? selectedOption === question.answer
         ? currentSection.plus_mark
@@ -1297,22 +1293,7 @@ console.log("answers dataaaaa",answersData);
                 ? section.plus_mark
                 : -section.minus_mark
               : 0;
-            // const descriptiveData = {
-            //   text: [text[currentSectionIndex]], // Essay as single-item array
-            //   corrections: Array.isArray(corrections) ? corrections : [], // Already array, safe fallback
-            //   scoreBreakdown: Object.entries(scoreBreakdown || {}).map(
-            //     ([key, value]) => ({
-            //       metric: key,
-            //       value: value,
-            //     })
-            //   ), // Convert object to array of {metric, value}
-            //   scoreData: scoreData,
 
-            //   expectedWordCount: [expectedWordCount], // Wrap as array
-            //   keywords: keywords, // Already array, just check
-            //   date: [new Date().toISOString()], // Optional: wrap date as array too
-            // };
-console.warn("check-item",descriptiveData[absoluteIndex])
             return {
               
               descriptive: descriptiveData[absoluteIndex],
@@ -1330,30 +1311,29 @@ console.warn("check-item",descriptiveData[absoluteIndex])
             };
           }
         );
- // ✅ This line makes sure descriptive is stored in a global flat array
-        answersData.push(...sectionAnswersData);
-        console.log("answerdata ", answersData);
-                  const correctCount = sectionAnswersData.filter(
-            (q) => q.correct === 1
-          ).length;
+console.log("section answers data",sectionAnswersData);
 
-          const attemptedCount = sectionAnswersData.filter(
-            (q) => q.selectedOption !== undefined
-          ).length;
+        const correctCount = sectionAnswersData.filter(
+  (q) => q.correct === 1
+).length;
 
-          const incorrectCount = sectionAnswered - correctCount;
+const attemptedCount = sectionAnswersData.filter(
+  (q) => q.selectedOption !== undefined
+).length;
 
-          // Use section-specific marks instead of hardcoded values
-          const sectionScore = 
-            (correctCount * section.plus_mark) - 
-            (incorrectCount * section.minus_mark);
+const incorrectCount = sectionAnswered - correctCount;
 
-          const secaccuracy =
-            sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+// Use section-specific marks instead of hardcoded values
+const sectionScore = 
+  (correctCount * section.plus_mark) - 
+  (incorrectCount * section.minus_mark);
 
-          console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+const secaccuracy =
+  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
 
-          const skippedQuestions = sectionVisited - sectionAnswered;
+console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+
+const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
@@ -1400,7 +1380,7 @@ console.warn("check-item",descriptiveData[absoluteIndex])
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-               descriptive: descriptiveData[sectionIndex],
+              descriptive: descriptiveData[sectionIndex],
             })),
             tamil: section.questions.tamil.map((question, index) => ({
               question: question?.question,
@@ -1430,10 +1410,17 @@ console.warn("check-item",descriptiveData[absoluteIndex])
           notVisitedQuestions: sectionSummary.notVisitedQuestions,
           s_accuracy: secaccuracy,
           skipped: skippedQuestions,
-          timeTaken:
-            resultData?.section?.[sectionIndex]?.timeTaken ??
-            sectionTimes?.[sectionIndex] ??
-            0,
+          timeTaken: (() => {
+            const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
+            const time2 = sectionTimes?.[sectionIndex];
+        
+            if (typeof time1 === 'number' && typeof time2 === 'number') {
+              return time1 + time2;
+            }
+        
+            return time1 ?? time2 ?? 0;
+          })()
+      
         };
       })
       .filter(Boolean);
@@ -1972,13 +1959,12 @@ console.warn(currentState)
     };
   };
 
-
-const popupmodal = () => {
+  const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
   };
 
-    const finishTestAndOpenResult = async () => {
+  const finishTestAndOpenResult = async () => {
   try {
     // await submitExam();
     
