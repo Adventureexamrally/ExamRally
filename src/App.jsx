@@ -72,7 +72,7 @@ import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
 import HomeLiveSolution from "./components/LiveMockTest/HomeLiveSolution";
 
 const Onesignal = (user) => {
-  if (typeof window === "undefined") return;
+  // if (typeof window === "undefined") return;
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(async function (OneSignal) {
