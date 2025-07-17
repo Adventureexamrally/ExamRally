@@ -71,33 +71,32 @@ import Livemocktest from "./components/LiveMockTest/Livemocktest";
 import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
 import HomeLiveSolution from "./components/LiveMockTest/HomeLiveSolution";
 
-const Onesignal = (user)=>{
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function (OneSignal) {
+const Onesignal = (user) => {
+  if (typeof window === "undefined" || !window.OneSignalDeferred) return;
+
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async function (OneSignal) {
     await OneSignal.init({
       appId: "d25c3e90-f22a-4283-afc2-02156b046e1f",
       notifyButton: {
-        enable: true, // optional: shows a bell icon
+        enable: true,
       },
     });
 
-    // Ask for notification permission (only once)
     const permission = await OneSignal.Notification.permission;
     if (permission !== "granted") {
-      await OneSignal.showSlidedownPrompt(); // show browser prompt
+      await OneSignal.showSlidedownPrompt();
     }
 
-    // Set user information
-    if (user.email) {
-      // await OneSignal.sendTags({ userId: user.id });
-      // await OneSignal.sendTags({ email: user.email });
+    if (user?.email) {
       await OneSignal.setEmail(user.email);
     }
-    if (user.phoneNumber) {
-      await OneSignal.sendTags({ phone: user.phone });
+
+    if (user?.phoneNumber) {
+      await OneSignal.sendTags({ phone: user.phoneNumber });
     }
   });
-}
+};
 
 function App() {
   return (
@@ -117,7 +116,11 @@ function MainApp() {
   const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
   const [utcNow, setUtcNow] = useState(null);
   const [Today, setToday] = useState(null);
-  Onesignal(user);
+    useEffect(() => {
+    if (user) {
+      Onesignal(user);
+    }
+  }, [user]); 
   // Fetch UTC time from server
   useEffect(() => {
     fetchUtcNow()
