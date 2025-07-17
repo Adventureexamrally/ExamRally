@@ -72,7 +72,7 @@ import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
 import HomeLiveSolution from "./components/LiveMockTest/HomeLiveSolution";
 
 const Onesignal = (user) => {
-  if (typeof window === "undefined" || !window.OneSignalDeferred) return;
+  if (typeof window === "undefined") return;
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(async function (OneSignal) {
@@ -83,20 +83,34 @@ const Onesignal = (user) => {
       },
     });
 
+    // Wait for user to grant permission
     const permission = await OneSignal.Notification.permission;
     if (permission !== "granted") {
-      await OneSignal.showSlidedownPrompt();
+      await OneSignal.showSlidedownPrompt(); // show browser prompt
     }
 
+    // Set user email
     if (user?.email) {
-      await OneSignal.setEmail(user.email);
+      try {
+        console.log("Setting OneSignal email:", user.email);
+        await OneSignal.User.Email.set(user.email);
+      } catch (e) {
+        console.error("Failed to set OneSignal email:", e);
+      }
     }
 
+    // Set phone as a tag
     if (user?.phoneNumber) {
-      await OneSignal.sendTags({ phone: user.phoneNumber });
+      try {
+        console.log("Setting OneSignal phone tag:", user.phoneNumber);
+        await OneSignal.User.Tag.set("phone", user.phoneNumber);
+      } catch (e) {
+        console.error("Failed to set OneSignal phone tag:", e);
+      }
     }
   });
 };
+
 
 function App() {
   return (
