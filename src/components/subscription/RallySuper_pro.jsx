@@ -64,6 +64,10 @@ const RallySuper_pro = () => {
         (course) =>
           course.courseName?.trim().toLowerCase() ===
           data.subscriptionType?.trim().toLowerCase()
+      )|| user.enrolledCourses?.find(
+        (course) =>
+          course.courseName?.trim().toLowerCase() ===
+          data.subscriptionType?.trim().toLowerCase()
       );
 
       if (matchedCourse) {

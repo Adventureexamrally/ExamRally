@@ -28,10 +28,12 @@ const CustomUserMenu = () => {
     setOpen(false);
   };
 
-  const handleSignOut = () => {
-    handleMenuItemClick();
-    signOut();
-  };
+const handleSignOut = async () => {
+  handleMenuItemClick();
+  localStorage.clear(); // ✅ Clear all localStorage data
+  await signOut();      // ✅ Ensure signOut waits until clear is done
+};
+
 
   const handleOpenProfile = () => {
     handleMenuItemClick();
