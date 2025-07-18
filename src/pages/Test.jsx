@@ -1447,8 +1447,8 @@ console.warn(currentState)
     
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-        // navigate(`/result/${id}/${user?._id}`);
-        finishTestAndOpenResult()
+        navigate(`/result/${id}/${user?._id}`);
+        // finishTestAndOpenResult()
       }
     }
   };
@@ -1673,6 +1673,9 @@ console.warn(currentState)
         <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
           <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
           <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+               <h1 className=" text-center text-black bg-gray-100 p-1">
+              Time Left:{formatTime(timeminus)}
+            </h1>
           {/* Fullscreen Toggle Button */}
           <button
             onClick={toggleFullScreen}

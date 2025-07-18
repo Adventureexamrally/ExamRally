@@ -60,7 +60,11 @@ const Rally_pro = () => {
 
   useEffect(() => {
     if (user && data) {
-      const matchedCourse = user. subscriptions?.find(
+      const matchedCourse = user.subscriptions?.find(
+        (course) =>
+          course.courseName?.trim().toLowerCase() ===
+          data.subscriptionType?.trim().toLowerCase()
+      ) || user.enrolledCourses?.find(
         (course) =>
           course.courseName?.trim().toLowerCase() ===
           data.subscriptionType?.trim().toLowerCase()
