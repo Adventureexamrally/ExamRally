@@ -21,8 +21,12 @@ const Test = () => {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sectionTimes, setSectionTimes] = useState({});
-const currentSectionStartTimeRef = useRef(new Date());  // Add this at top with other hooks
-console.warn(currentSectionStartTimeRef)
+  const currentSectionStartTimeRef = useRef(new Date()); // Add this at top with other hooks
+
+const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
+const timerRef = useRef(null);
+
+
   const { user } = useContext(UserContext);
 
   const location = useLocation();
@@ -40,6 +44,7 @@ useEffect(() => {
     setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
   }
 }, [currentSectionIndex, examData]);
+
   const { id } = useParams();
   const navigate = useNavigate();
   // Prevent page refresh on F5 and refresh button click
@@ -86,6 +91,8 @@ useEffect(() => {
         .then((res) => {
           if (res.data) {
             setExamData(res.data);
+            console.log("Exam Data:", res.data);
+            
             setIsDataFetched(true);
             setShow_name(res.data.show_name)
             sett_questions(res.data.t_questions) // Mark that data is fetched
@@ -100,18 +107,39 @@ useEffect(() => {
   // In the useEffect that fetches exam state
   useEffect(() => {
     if (user?._id && id) {
-      Api.get(`results/${user?._id}/${id}`)
+      Api.get(`PDFresults/${user?._id}/${id}`)
         .then(response => {
           if (response.data) {
             const state = response.data;
-            setGetresult(state)
+            // setGetresult(state)
             console.error("hello",state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
             let markedForReviewList = [];
             let absoluteIndexCounter = 0;
-
+  // Parse question times from backend
+          const questionTimesFromDB = {};
+          let absoluteIndex = 0;
+          
+          state.section.forEach((section) => {
+            const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+            console.log("Questions:", questions);
+            
+            questions.forEach((question) => {
+              if (question.q_on_time) {
+                console.log("Question time:", question.q_on_time);
+                
+                // Parse time string "minutes:seconds" to total seconds
+                const [minutes, seconds] = question.q_on_time.split(':').map(Number);
+                questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
+              }
+              absoluteIndex++;
+            });
+          });
+          console.log("Question times from DB:", questionTimesFromDB);
+          
+          setQuestionTimes(questionTimesFromDB);
             if (state.section) {
               state.section.forEach((section) => {
                 const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
@@ -223,6 +251,7 @@ useEffect(() => {
 
   useEffect(() => {
     const savedState = localStorage.getItem(`examState_${id}`);
+    console.warn(savedState)
     if (savedState) {
       const state = JSON.parse(savedState);
       setClickedQuestionIndex(state.clickedQuestionIndex);
@@ -266,7 +295,7 @@ useEffect(() => {
       return updatedOptions;
     });
 
-    let mark = 0;
+    // let mark = 0;
 
     // Check if the selected option matches the correct answer
     // if (correctAnswerIndex === index) {
@@ -322,7 +351,7 @@ useEffect(() => {
           (now - currentSectionStartTimeRef.current) / 1000
         );
 
-      setSectionTimes(prev => ({
+        setSectionTimes((prev) => ({
           ...prev,
           [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent,
         }));
@@ -374,7 +403,7 @@ useEffect(() => {
 
           // Transform the data
           const transformedData = {
-              bilingual_status:res.data.bilingual_status,
+            bilingual_status:res.data.bilingual_status,
             english_status:res.data.english_status,
             hindi_status:res.data.hindi_status,
             tamil_status:res.data.tamil_status,
@@ -479,6 +508,7 @@ useEffect(() => {
     });
   };
 
+
   const handleMarkForReview = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
@@ -489,34 +519,56 @@ useEffect(() => {
   const [showModal, setShowModal] = useState(false);
   const [sectionSummaryData, setSectionSummaryData] = useState([]);
 
-  const handleNextClick = () => {
-    updateSectionTime();
-    if (
-      examData &&
-      examData.section[currentSectionIndex] &&
-      examData.section[currentSectionIndex].questions?.[
-        selectedLanguage?.toLowerCase()
-      ]
-    ) {
-      const totalQuestions =
-        examData.section[currentSectionIndex].questions[
-          selectedLanguage?.toLowerCase()
-        ]?.length;
+  // const handleNextClick = () => {
+  //   updateSectionTime();
+  //   if (
+  //     examData &&
+  //     examData.section[currentSectionIndex] &&
+  //     examData.section[currentSectionIndex].questions?.[
+  //       selectedLanguage?.toLowerCase()
+  //     ]
+  //   ) {
+  //     const totalQuestions =
+  //       examData.section[currentSectionIndex].questions[
+  //         selectedLanguage?.toLowerCase()
+  //       ]?.length;
 
-      if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-        // Save current question time before moving to next
-        setQuestionTimes((prevTimes) => ({
-          ...prevTimes,
-          [clickedQuestionIndex]: questionTime,
-        }));
-        setClickedQuestionIndex(clickedQuestionIndex + 1);
-        setQuestionTime(0);
-      } else {
-        // If it's the last question, reset to the first question
-        setClickedQuestionIndex(startingIndex);
-      }
+  //     if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+  //       // Save current question time before moving to next
+  //       setQuestionTimes((prevTimes) => ({
+  //         ...prevTimes,
+  //         [clickedQuestionIndex]: questionTime,
+  //       }));
+  //       setClickedQuestionIndex(clickedQuestionIndex + 1);
+  //       setQuestionTime(0);
+  //     } else {
+  //       // If it's the last question, reset to the first question
+  //       setClickedQuestionIndex(startingIndex);
+  //     }
+  //   }
+  // };
+const handleNextClick = () => {
+  updateSectionTime();
+
+  if (
+    examData &&
+    examData.section[currentSectionIndex] &&
+    examData.section[currentSectionIndex].questions?.[
+      selectedLanguage?.toLowerCase()
+    ]
+  ) {
+    const totalQuestions =
+      examData.section[currentSectionIndex].questions[
+        selectedLanguage?.toLowerCase()
+      ]?.length;
+
+    if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+      setClickedQuestionIndex(clickedQuestionIndex + 1);
+    } else {
+      setClickedQuestionIndex(startingIndex);
     }
-  };
+  }
+};
 
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
@@ -535,18 +587,18 @@ useEffect(() => {
 
   // let questionTimerInterval;
 
-  useEffect(() => {
-    // setQuestionTime(0);
-    setQuestionTimerActive(true);
-    // Reset time when switching questions
-    if (questionTimerActive && !isPaused) {
-      questionTimerRef.current = setInterval(() => {
-        setQuestionTime((prev) => prev + 1);
-      }, 1000);
-    }
+  // useEffect(() => {
+  //   // setQuestionTime(0);
+  //   setQuestionTimerActive(true);
+  //   // Reset time when switching questions
+  //   if (questionTimerActive && !isPaused) {
+  //     questionTimerRef.current = setInterval(() => {
+  //       setQuestionTime((prev) => prev + 1);
+  //     }, 1000);
+  //   }
 
-    return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
-  }, [questionTimerActive, isPaused]);
+  //   return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
+  // }, [questionTimerActive, isPaused]);
 
   const datatime = examData?.duration ?? 0;
   const [timeLeft, setTimeLeft] = useState(datatime * 60);
@@ -637,20 +689,58 @@ useEffect(() => {
   };
 
   // Your submitExam function with the necessary modifications
-  const handleSubmitSection = () => {
-    updateSectionTime();
-    console.log("Handling section submission...");
-    setIsPaused(true); // Pause the timer
-    // Save current section time before modal
-    const now = new Date();
-    const timeSpent = Math.floor(
-      (now - currentSectionStartTimeRef.current) / 1000
-    );
+const handleSubmitSection = () => {
+   updateSectionTime();
+  const now = new Date();
+  const questionsForSection =
+    examData?.section[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ] || [];
+  const sectionStartIndex = startingIndex;
+  const sectionEndIndex = sectionStartIndex + questionsForSection.length - 1;
 
-    setSectionTimes((prev) => ({
+  // ─── 2) If we were actually on a question in *this* section, save its time ───
+  if (
+    questionStartTime !== null &&
+    clickedQuestionIndex !== null &&
+    clickedQuestionIndex >= sectionStartIndex &&
+    clickedQuestionIndex <= sectionEndIndex
+  ) {
+    const now = new Date();
+    const secondsSpent = Math.floor((now.getTime() - questionStartTime.getTime()) / 1000);
+    setQuestionTimes((prev) => ({
       ...prev,
-      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
+      [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
     }));
+  }
+
+  // Stop question timer and clear interval
+if (timerRef.current) {
+  clearInterval(timerRef.current);
+  timerRef.current = null;
+}
+
+// Clear the current questionStartTime
+setQuestionStartTime(null);
+
+// Make sure you pause visually as well
+setIsPaused(true);
+
+
+  // ─── 3) Always clear the question start time so we don’t double‑count ───
+  setQuestionStartTime(null);
+  console.log("Handling section submission...");
+  setIsPaused(true); // ⏸️ Pause the timer
+
+  // ✅ Save section-level time
+  const timeSpent = Math.floor(
+    (now - currentSectionStartTimeRef.current) / 1000
+  );
+  setSectionTimes((prev) => ({
+    ...prev,
+    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
+  }));
+  currentSectionStartTimeRef.current = new Date(); // Reset for next section
 
     // Reset timer for accuracy
     currentSectionStartTimeRef.current = new Date();
@@ -713,12 +803,14 @@ useEffect(() => {
       totalQuestions,
     };
     console.log("Section Summary:", sectionSummary);
+    console.log(questionTimes);
 
     // Store section summary
     setSectionSummaryData((prevData) => {
-      const newData = [...prevData, sectionSummary];
-      console.log("Updated Section Summary Data:", newData);
-      return newData;
+      const updatedData = prevData.filter(
+        (data) => data.sectionName !== sectionSummary.sectionName
+      );
+      return [...updatedData, sectionSummary];
     });
 
     // Display modal
@@ -764,7 +856,7 @@ useEffect(() => {
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
     if (user?._id) {
-      Api.get(`PDFresults/${user?._id}/${id}`)
+      Api.get(`results/${user?._id}/${id}`)
         .then((response) => {
           // Set the fetched data to state
           setDataid(response.data._id);
@@ -936,6 +1028,10 @@ useEffect(() => {
 
       return updated;
     });
+  setQuestionTimes(prev => ({
+    ...prev,
+    [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
+  }));
 
     if (
       !examData ||
@@ -1016,7 +1112,7 @@ useEffect(() => {
       count += questions.length;
     });
 
-    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[questionIndexInSection];
 
       // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
@@ -1264,31 +1360,30 @@ const skippedQuestions = sectionVisited - sectionAnswered;
     });
   };
 
-  const handlePauseResume = () => {
-    if (pauseCount < 1) {
-      clearInterval(questionTimerRef.current);
-      setIsPaused(true);
-      setPauseCount(pauseCount + 1);
+const handlePauseResume = () => {
+  if (pauseCount < 1) {
+    clearInterval(questionTimerRef.current);
+    setIsPaused(true);
+    setPauseCount(pauseCount + 1);
 
-      // Capture current time data before showing the dialog
-      // const now = new Date();
-      // const timeSpent = Math.floor(
-      //   (now - currentSectionStartTimeRef.current) / 1000
-      // );
+    const now = new Date();
 
-      // setSectionTimes(prev => ({
-      //   ...prev,
-      //   [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
-      // }));
+    // ✅ Save current question time
+    if (questionStartTime && clickedQuestionIndex !== null) {
+      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+      setQuestionTimes((prev) => ({
+        ...prev,
+        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+      }));
+      setQuestionStartTime(null);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
 
-      const now = new Date();
-      console.log("Current time:", now);
-
-      // ✅ Calculate time spent in seconds on the current section
-      const timeSpent = Math.floor(
-        (now - currentSectionStartTimeRef.current) / 1000
-      );
-      console.log("Time spent in current section (seconds):", timeSpent);
+    // ✅ Save section time
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+       console.log("Time spent in current section (seconds):", timeSpent);
 
       // ✅ Safely update the sectionTimes state
       setSectionTimes((prev) => {
@@ -1313,57 +1408,65 @@ const skippedQuestions = sectionVisited - sectionAnswered;
         console.log("Updated sectionTimes object to return:", previous);
 
         return previous;
-      });
+      });    currentSectionStartTimeRef.current = now;
 
-      // gh
-      // ✅ Reset currentSectionStartTimeRef to now for next session
-      currentSectionStartTimeRef.current = now;
-      console.log("Reset currentSectionStartTimeRef to:", now);
-      // ✅ Save exam state to localStorage before showing dialog
-      const currentState = {
-        clickedQuestionIndex,
-        selectedOptions,
-        visitedQuestions,
-        markedForReview,
-        currentSectionIndex,
-      };
-      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
+    // ✅ Store current exam state
+    const currentState = {
+      clickedQuestionIndex,
+      selectedOptions,
+      visitedQuestions,
+      markedForReview,
+      currentSectionIndex,
+    };
+    localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
-      Swal.fire({
-        title: "Pause Exam",
-        text: "Do you want to quit the exam?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, Quit",
-        cancelButtonText: "No, Resume",
-        position: "center",
-        width: "100vw",
-        height: "100vh",
-        padding: "100",
-        customClass: {
-          container: "swal-full-screen",
-          popup: "swal-popup-full-height",
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          setIsPaused(true);
-
-          await submitExam();
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-
-          window.close(); // Close the current window
-
-          // navigate('/pdf-course');
-
-        } else {
+    Swal.fire({
+      title: "Pause Exam",
+      text: "Do you want to quit the exam?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, Quit",
+      cancelButtonText: "No, Resume",
+      position: "center",
+      width: "100vw",
+      height: "100vh",
+      padding: "100",
+      customClass: {
+        container: "swal-full-screen",
+        popup: "swal-popup-full-height",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsPaused(true);
+        await submitExam();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        window.close();
+      } else {
           setIsPaused(false);
           setPauseCount(0);
+
+          // ⏳ Get updated time for current question from state AFTER pause update
+          setQuestionTimes((prev) => {
+            const updatedTime = prev?.[clickedQuestionIndex] || 0;
+            setQuestionTime(updatedTime); // 👈 resume from latest
+            setQuestionStartTime(new Date()); // reset base time for further tracking
+
+            // 🔁 Restart interval
+            if (timerRef.current) clearInterval(timerRef.current);
+            timerRef.current = setInterval(() => {
+              setQuestionTime((prev) => prev + 1);
+            }, 1000);
+
+            return prev; // Important: preserve state
+          });
         }
-      });
-    }
-  };
+
+    });
+  }
+};
+
 
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
@@ -1461,69 +1564,56 @@ const skippedQuestions = sectionVisited - sectionAnswered;
     return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   };
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
+ const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Function to toggle fullscreen mode
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
-      // If not in fullscreen, enter fullscreen
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.mozRequestFullScreen) {
-        // Firefox
-        document.documentElement.mozRequestFullScreen();
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        // Chrome, Safari
-        document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) {
-        // IE/Edge
-        document.documentElement.msRequestFullscreen();
+      const docEl = document.documentElement;
+
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen();
+      } else if (docEl.mozRequestFullScreen) {
+        docEl.mozRequestFullScreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
       }
-      setIsFullscreen(true);
     } else {
-      // If in fullscreen, exit fullscreen
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if (document.mozCancelFullScreen) {
-        // Firefox
         document.mozCancelFullScreen();
       } else if (document.webkitExitFullscreen) {
-        // Chrome, Safari
         document.webkitExitFullscreen();
       } else if (document.msExitFullscreen) {
-        // IE/Edge
         document.msExitFullscreen();
       }
-      setIsFullscreen(false);
     }
   };
 
-  // Sync state with actual fullscreen changes
+  // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // Safari
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange); // Firefox
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange); // IE/Edge
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "mozfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "MSFullscreenChange",
-        handleFullscreenChange
-      );
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
+  }, []);
+
+  // 🔸 Attempt to auto-enter fullscreen on mount
+  useEffect(() => {
+    toggleFullScreen(); // This will only work if browser allows
   }, []);
 
   const [answeredCount, setAnsweredCount] = useState(0);
@@ -1625,6 +1715,23 @@ const skippedQuestions = sectionVisited - sectionAnswered;
     };
   };
 
+  const popupmodal = () => {
+    setIsPaused(false);
+    setShowModal(false);
+      // Resume timer for current question
+  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+  setQuestionTime(existingTime);
+  setQuestionStartTime(new Date());
+
+  if (timerRef.current) clearInterval(timerRef.current);
+
+  timerRef.current = setInterval(() => {
+    setQuestionTime((prev) => prev + 1);
+  }, 1000);
+
+  console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
+  };
+
     const finishTestAndOpenResult = async () => {
   try {
     // await submitExam();
@@ -1646,12 +1753,55 @@ const skippedQuestions = sectionVisited - sectionAnswered;
   }
 };
 
+// When question changes
+// 💡 When question changes
+useEffect(() => {
+  const now = new Date();
+
+  // 1️⃣ Save time for previous question
+  if (previousQuestionIndex !== null && questionStartTime) {
+    const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+    setQuestionTimes(prev => ({
+      ...prev,
+      [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
+    }));
+  }
+
+  // 2️⃣ Clear previous timer
+  if (timerRef.current) clearInterval(timerRef.current);
+console.log("q",questionTimes,clickedQuestionIndex);
+
+  // 3️⃣ Start timer for current question
+  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+  console.log("Existing time for question:", existingTime);
+  
+  setQuestionTime(existingTime);
+  setQuestionStartTime(now);
+console.log(questionTime);
+
+  // 4️⃣ Live increment every second
+  timerRef.current = setInterval(() => {
+    setQuestionTime(prev => prev + 1);
+  }, 1000);
+
+  // 5️⃣ Track previous index for next time
+  setPreviousQuestionIndex(clickedQuestionIndex);
+
+  return () => clearInterval(timerRef.current);
+}, [clickedQuestionIndex]);
+
+
+console.log(questionTime);
+
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
         <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
           <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
           <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+               <h1 className=" text-center text-black bg-gray-100 p-1">
+              Time Left:{formatTime(timeminus)}
+            </h1>
           {/* Fullscreen Toggle Button */}
           <button
             onClick={toggleFullScreen}
@@ -1683,14 +1833,17 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               <div className="modal-dialog modal-xl">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h1 className="modal-title fs-5 text-green-500" id="staticBackdropLabel">
+                    <h1
+                      className="modal-title fs-5 text-green-500"
+                      id="staticBackdropLabel"
+                    >
                       Section Submit
                     </h1>
                     <button
               type="button"
               className="btn-close"
               aria-label="Close"
-              onClick={() => {setShowModal(false),setIsPaused(false)}} // Manually hide the modal
+              onClick={popupmodal} // Manually hide the modal
             ></button>
                   </div>
                   <div className="modal-body">
@@ -2212,7 +2365,7 @@ const skippedQuestions = sectionVisited - sectionAnswered;
                       onClick={() => {
                         console.log("Clicked question index:", fullIndex);
                         setClickedQuestionIndex(fullIndex);
-                        setQuestionTime(0);
+                        // setQuestionTime(0);
                       }}
                       className={`fw-bold flex align-items-center justify-content-center ${className}`}
                     >
@@ -2264,7 +2417,7 @@ const skippedQuestions = sectionVisited - sectionAnswered;
           <div className="flex justify-center md:w-[20%]">
             <center>
               <button
-                className="btn bg-blue-500 text-white fw-bold hover:bg-blue-700 mt-2 md:mt-0 px-7"
+                className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
                 onClick={handleSubmitSection}
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"

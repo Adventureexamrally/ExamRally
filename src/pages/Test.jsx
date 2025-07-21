@@ -29,6 +29,10 @@ const Test = () => {
   const [sectionTimes, setSectionTimes] = useState({});
   const currentSectionStartTimeRef = useRef(new Date()); // Add this at top with other hooks
 
+const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
+const timerRef = useRef(null);
+
+
   const { user } = useContext(UserContext);
 
   const location = useLocation();
@@ -119,7 +123,28 @@ useEffect(() => {
             // let visitedQuestionsList = [];
             let markedForReviewList = [];
             let absoluteIndexCounter = 0;
-
+  // Parse question times from backend
+          const questionTimesFromDB = {};
+          let absoluteIndex = 0;
+          
+          state.section.forEach((section) => {
+            const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+            console.log("Questions:", questions);
+            
+            questions.forEach((question) => {
+              if (question.q_on_time) {
+                console.log("Question time:", question.q_on_time);
+                
+                // Parse time string "minutes:seconds" to total seconds
+                const [minutes, seconds] = question.q_on_time.split(':').map(Number);
+                questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
+              }
+              absoluteIndex++;
+            });
+          });
+          console.log("Question times from DB:", questionTimesFromDB);
+          
+          setQuestionTimes(questionTimesFromDB);
             if (state.section) {
               state.section.forEach((section) => {
                 const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
@@ -504,34 +529,56 @@ console.log("handle option change result",result);
   const [showModal, setShowModal] = useState(false);
   const [sectionSummaryData, setSectionSummaryData] = useState([]);
 
-  const handleNextClick = () => {
-    updateSectionTime();
-    if (
-      examData &&
-      examData.section[currentSectionIndex] &&
-      examData.section[currentSectionIndex].questions?.[
-        selectedLanguage?.toLowerCase()
-      ]
-    ) {
-      const totalQuestions =
-        examData.section[currentSectionIndex].questions[
-          selectedLanguage?.toLowerCase()
-        ]?.length;
+  // const handleNextClick = () => {
+  //   updateSectionTime();
+  //   if (
+  //     examData &&
+  //     examData.section[currentSectionIndex] &&
+  //     examData.section[currentSectionIndex].questions?.[
+  //       selectedLanguage?.toLowerCase()
+  //     ]
+  //   ) {
+  //     const totalQuestions =
+  //       examData.section[currentSectionIndex].questions[
+  //         selectedLanguage?.toLowerCase()
+  //       ]?.length;
 
-      if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-        // Save current question time before moving to next
-        setQuestionTimes((prevTimes) => ({
-          ...prevTimes,
-          [clickedQuestionIndex]: questionTime,
-        }));
-        setClickedQuestionIndex(clickedQuestionIndex + 1);
-        setQuestionTime(0);
-      } else {
-        // If it's the last question, reset to the first question
-        setClickedQuestionIndex(startingIndex);
-      }
+  //     if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+  //       // Save current question time before moving to next
+  //       setQuestionTimes((prevTimes) => ({
+  //         ...prevTimes,
+  //         [clickedQuestionIndex]: questionTime,
+  //       }));
+  //       setClickedQuestionIndex(clickedQuestionIndex + 1);
+  //       setQuestionTime(0);
+  //     } else {
+  //       // If it's the last question, reset to the first question
+  //       setClickedQuestionIndex(startingIndex);
+  //     }
+  //   }
+  // };
+const handleNextClick = () => {
+  updateSectionTime();
+
+  if (
+    examData &&
+    examData.section[currentSectionIndex] &&
+    examData.section[currentSectionIndex].questions?.[
+      selectedLanguage?.toLowerCase()
+    ]
+  ) {
+    const totalQuestions =
+      examData.section[currentSectionIndex].questions[
+        selectedLanguage?.toLowerCase()
+      ]?.length;
+
+    if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+      setClickedQuestionIndex(clickedQuestionIndex + 1);
+    } else {
+      setClickedQuestionIndex(startingIndex);
     }
-  };
+  }
+};
 
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
@@ -550,18 +597,18 @@ console.log("handle option change result",result);
 
   // let questionTimerInterval;
 
-  useEffect(() => {
-    // setQuestionTime(0);
-    setQuestionTimerActive(true);
-    // Reset time when switching questions
-    if (questionTimerActive && !isPaused) {
-      questionTimerRef.current = setInterval(() => {
-        setQuestionTime((prev) => prev + 1);
-      }, 1000);
-    }
+  // useEffect(() => {
+  //   // setQuestionTime(0);
+  //   setQuestionTimerActive(true);
+  //   // Reset time when switching questions
+  //   if (questionTimerActive && !isPaused) {
+  //     questionTimerRef.current = setInterval(() => {
+  //       setQuestionTime((prev) => prev + 1);
+  //     }, 1000);
+  //   }
 
-    return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
-  }, [questionTimerActive, isPaused]);
+  //   return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
+  // }, [questionTimerActive, isPaused]);
 
   const datatime = examData?.duration ?? 0;
   const [timeLeft, setTimeLeft] = useState(datatime * 60);
@@ -652,20 +699,57 @@ console.log("handle option change result",result);
   };
 
   // Your submitExam function with the necessary modifications
-  const handleSubmitSection = () => {
-  
-    console.log("Handling section submission...");
-    setIsPaused(true); // Pause the timer
-    // Save current section time before modal
-    const now = new Date();
-    const timeSpent = Math.floor(
-      (now - currentSectionStartTimeRef.current) / 1000
-    );
+const handleSubmitSection = () => {
+  const now = new Date();
+  const questionsForSection =
+    examData?.section[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ] || [];
+  const sectionStartIndex = startingIndex;
+  const sectionEndIndex = sectionStartIndex + questionsForSection.length - 1;
 
-    setSectionTimes((prev) => ({
+  // ─── 2) If we were actually on a question in *this* section, save its time ───
+  if (
+    questionStartTime !== null &&
+    clickedQuestionIndex !== null &&
+    clickedQuestionIndex >= sectionStartIndex &&
+    clickedQuestionIndex <= sectionEndIndex
+  ) {
+    const now = new Date();
+    const secondsSpent = Math.floor((now.getTime() - questionStartTime.getTime()) / 1000);
+    setQuestionTimes((prev) => ({
       ...prev,
-      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
+      [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
     }));
+  }
+
+  // Stop question timer and clear interval
+if (timerRef.current) {
+  clearInterval(timerRef.current);
+  timerRef.current = null;
+}
+
+// Clear the current questionStartTime
+setQuestionStartTime(null);
+
+// Make sure you pause visually as well
+setIsPaused(true);
+
+
+  // ─── 3) Always clear the question start time so we don’t double‑count ───
+  setQuestionStartTime(null);
+  console.log("Handling section submission...");
+  setIsPaused(true); // ⏸️ Pause the timer
+
+  // ✅ Save section-level time
+  const timeSpent = Math.floor(
+    (now - currentSectionStartTimeRef.current) / 1000
+  );
+  setSectionTimes((prev) => ({
+    ...prev,
+    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
+  }));
+  currentSectionStartTimeRef.current = new Date(); // Reset for next section
 
     // Reset timer for accuracy
     currentSectionStartTimeRef.current = new Date();
@@ -728,6 +812,7 @@ console.log("handle option change result",result);
       totalQuestions,
     };
     console.log("Section Summary:", sectionSummary);
+    console.log(questionTimes);
 
     // Store section summary
     setSectionSummaryData((prevData) => {
@@ -953,6 +1038,10 @@ console.log("handle option change result",result);
 
       return updated;
     });
+  setQuestionTimes(prev => ({
+    ...prev,
+    [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
+  }));
 
     if (
       !examData ||
@@ -1281,31 +1370,30 @@ const skippedQuestions = sectionVisited - sectionAnswered;
     });
   };
 
-  const handlePauseResume = () => {
-    if (pauseCount < 1) {
-      clearInterval(questionTimerRef.current);
-      setIsPaused(true);
-      setPauseCount(pauseCount + 1);
+const handlePauseResume = () => {
+  if (pauseCount < 1) {
+    clearInterval(questionTimerRef.current);
+    setIsPaused(true);
+    setPauseCount(pauseCount + 1);
 
-      // Capture current time data before showing the dialog
-      // const now = new Date();
-      // const timeSpent = Math.floor(
-      //   (now - currentSectionStartTimeRef.current) / 1000
-      // );
+    const now = new Date();
 
-      // setSectionTimes(prev => ({
-      //   ...prev,
-      //   [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent
-      // }));
+    // ✅ Save current question time
+    if (questionStartTime && clickedQuestionIndex !== null) {
+      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+      setQuestionTimes((prev) => ({
+        ...prev,
+        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+      }));
+      setQuestionStartTime(null);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
 
-      const now = new Date();
-      console.log("Current time:", now);
-
-      // ✅ Calculate time spent in seconds on the current section
-      const timeSpent = Math.floor(
-        (now - currentSectionStartTimeRef.current) / 1000
-      );
-      console.log("Time spent in current section (seconds):", timeSpent);
+    // ✅ Save section time
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+       console.log("Time spent in current section (seconds):", timeSpent);
 
       // ✅ Safely update the sectionTimes state
       setSectionTimes((prev) => {
@@ -1330,70 +1418,65 @@ const skippedQuestions = sectionVisited - sectionAnswered;
         console.log("Updated sectionTimes object to return:", previous);
 
         return previous;
-      });
+      });    currentSectionStartTimeRef.current = now;
 
-      // gh
-      // ✅ Reset currentSectionStartTimeRef to now for next session
-      currentSectionStartTimeRef.current = now;
-      console.log("Reset currentSectionStartTimeRef to:", now);
-      // ✅ Save exam state to localStorage before showing dialog
-      const currentState = {
-        clickedQuestionIndex,
-        selectedOptions,
-        visitedQuestions,
-        markedForReview,
-        currentSectionIndex,
-      };
-      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-console.warn(currentState)
-      Swal.fire({
-        title: "Pause Exam",
-        text: "Do you want to quit the exam?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, Quit",
-        cancelButtonText: "No, Resume",
-        position: "center",
-        width: "100vw",
-        height: "100vh",
-        padding: "100",
-        customClass: {
-          container: "swal-full-screen",
-          popup: "swal-popup-full-height",
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          setIsPaused(true);
+    // ✅ Store current exam state
+    const currentState = {
+      clickedQuestionIndex,
+      selectedOptions,
+      visitedQuestions,
+      markedForReview,
+      currentSectionIndex,
+    };
+    localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
-          await submitExam();
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-
-          window.close(); // Close the current window
-          // Get active packages and navigate
-          // Api.get("packages/get/active")
-          //   .then((packagesRes) => {
-          //     const activePackages = packagesRes.data;
-          //     const matchingPackage = activePackages.find((pkg) =>
-          //       pkg.exams.includes(id)
-          //     );
-          //     if (matchingPackage) {
-          //       navigate(`/top-trending-exams/${matchingPackage.link_name}`);
-          //     } else {
-          //       navigate("/top-trending-exams");
-          //     }
-          //   })
-          //   .catch(() => {
-          //     navigate("/top-trending-exams");
-          //   });
-        } else {
+    Swal.fire({
+      title: "Pause Exam",
+      text: "Do you want to quit the exam?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, Quit",
+      cancelButtonText: "No, Resume",
+      position: "center",
+      width: "100vw",
+      height: "100vh",
+      padding: "100",
+      customClass: {
+        container: "swal-full-screen",
+        popup: "swal-popup-full-height",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsPaused(true);
+        await submitExam();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        window.close();
+      } else {
           setIsPaused(false);
           setPauseCount(0);
+
+          // ⏳ Get updated time for current question from state AFTER pause update
+          setQuestionTimes((prev) => {
+            const updatedTime = prev?.[clickedQuestionIndex] || 0;
+            setQuestionTime(updatedTime); // 👈 resume from latest
+            setQuestionStartTime(new Date()); // reset base time for further tracking
+
+            // 🔁 Restart interval
+            if (timerRef.current) clearInterval(timerRef.current);
+            timerRef.current = setInterval(() => {
+              setQuestionTime((prev) => prev + 1);
+            }, 1000);
+
+            return prev; // Important: preserve state
+          });
         }
-      });
-    }
-  };
+
+    });
+  }
+};
+
 
   // Trigger submission on timeLeft = 0 or when exam is submitted
   // useEffect(() => {
@@ -1645,6 +1728,18 @@ console.warn(currentState)
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
+      // Resume timer for current question
+  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+  setQuestionTime(existingTime);
+  setQuestionStartTime(new Date());
+
+  if (timerRef.current) clearInterval(timerRef.current);
+
+  timerRef.current = setInterval(() => {
+    setQuestionTime((prev) => prev + 1);
+  }, 1000);
+
+  console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
   };
 
   const finishTestAndOpenResult = async () => {
@@ -1667,6 +1762,47 @@ console.warn(currentState)
     alert('Failed to submit the exam. Please try again.');
   }
 };
+
+// When question changes
+// 💡 When question changes
+useEffect(() => {
+  const now = new Date();
+
+  // 1️⃣ Save time for previous question
+  if (previousQuestionIndex !== null && questionStartTime) {
+    const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+    setQuestionTimes(prev => ({
+      ...prev,
+      [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
+    }));
+  }
+
+  // 2️⃣ Clear previous timer
+  if (timerRef.current) clearInterval(timerRef.current);
+console.log("q",questionTimes,clickedQuestionIndex);
+
+  // 3️⃣ Start timer for current question
+  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+  console.log("Existing time for question:", existingTime);
+  
+  setQuestionTime(existingTime);
+  setQuestionStartTime(now);
+console.log(questionTime);
+
+  // 4️⃣ Live increment every second
+  timerRef.current = setInterval(() => {
+    setQuestionTime(prev => prev + 1);
+  }, 1000);
+
+  // 5️⃣ Track previous index for next time
+  setPreviousQuestionIndex(clickedQuestionIndex);
+
+  return () => clearInterval(timerRef.current);
+}, [clickedQuestionIndex]);
+
+
+console.log(questionTime);
+
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
@@ -2239,7 +2375,7 @@ console.warn(currentState)
                       onClick={() => {
                         console.log("Clicked question index:", fullIndex);
                         setClickedQuestionIndex(fullIndex);
-                        setQuestionTime(0);
+                        // setQuestionTime(0);
                       }}
                       className={`fw-bold flex align-items-center justify-content-center ${className}`}
                     >
