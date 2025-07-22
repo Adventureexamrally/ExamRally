@@ -13,7 +13,7 @@ import { fetchUtcNow } from "../service/timeApi";
 
 const PackageCoupon = ({ pkg, setShowModal }) => {
   const { isSignedIn } = useUser();
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   const { refreshUser } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
   const [accessDuration, setAccessDuration] = useState("");
-  const [utcNow, setUtcNow] = useState(null);
+ 
 
   // Calculate access duration based on package validity
   useEffect(() => {
@@ -35,21 +35,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
     }
   }, [pkg.duration, pkg.expiryDays]);
 
-  // Fetch UTC time from server
-  useEffect(() => {
-    const fetchTime = async () => {
-      try {
-        const globalDate = await fetchUtcNow();
-        setUtcNow(globalDate);
-        console.log("Server UTC Date:", globalDate.toISOString());
-      } catch (error) {
-        console.error("Failed to fetch UTC time:", error);
-        // Fallback to client time if server time fails
-        setUtcNow(new Date());
-      }
-    };
-    fetchTime();
-  }, []);
+
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {

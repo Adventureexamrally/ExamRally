@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaDesktop, FaArrowRight, FaCheck, FaStar } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Api from '../../service/Api';
 import { useUser } from '@clerk/clerk-react';
 import PdfCoupon from './pdfCoupon';
-import { fetchUtcNow } from '../../service/timeApi';
+import { UserContext } from '../../context/UserProvider';
 
 const PdfCourseHome = () => {
+  const { utcNow } = useContext(UserContext);
   const [data, setAlldata] = useState([]);
   const navigate = useNavigate();
       const [showmodel,setshowmodel]=useState(false)
@@ -23,20 +24,6 @@ const PdfCourseHome = () => {
     const response = await Api.get(`pdfcourseDetails`);
     setAlldata(response.data[0]);
   };
-   const [utcNow, setUtcNow] = useState(null);
-      
-  // 1. Fetch UTC time from server
-   useEffect(() => {
-      fetchUtcNow()
-        .then(globalDate => {
-          setUtcNow(globalDate);
-          console.warn("Server UTC Date:", globalDate.toISOString());
-        })
-        .catch(error => {
-          console.error("Failed to fetch UTC time:", error);
-          // handle error as needed
-        });
-    }, []);
 
 
   const getSubscriptionEndDate = (months) => {

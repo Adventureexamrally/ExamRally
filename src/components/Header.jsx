@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import logo from "../assets/logo/logo.png";
 import { Link } from "react-router-dom";
 import {
@@ -14,29 +14,19 @@ import CustomUserMenu from "./CustomUserButton";
 import offer from "../assets/images/offer.png";
 import Api from "../service/Api";
 import { motion } from "framer-motion";
-import { fetchUtcNow } from "../service/timeApi";
+
+import { UserContext } from "../context/UserProvider";
 
 const Header = () => {
   const { isSignedIn, user, isLoaded } = useUser();
+  const { utcNow } = useContext(UserContext);
   const [currentTime, setCurrentTime] = useState("");
 
   const [offer, setOffer] = useState(null);
   const [countdown, setCountdown] = useState("");
 
-  const [utcNow, setUtcNow] = useState(null);
 
-  // 1. Fetch UTC time from server
-  useEffect(() => {
-    fetchUtcNow()
-      .then((globalDate) => {
-        setUtcNow(globalDate);
-        console.warn("Server UTC Date:", globalDate.toISOString());
-      })
-      .catch((error) => {
-        console.error("Failed to fetch UTC time:", error);
-        // handle error as needed
-      });
-  }, []);
+ 
   useEffect(() => {
     const fetchOffer = async () => {
       try {

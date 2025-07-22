@@ -1,40 +1,51 @@
-import React, { useEffect } from 'react'
-import { createContext, useState } from 'react';
-import Api from '../service/Api';
+// src/context/UserContext.js
+import React, { useEffect, useState, createContext } from 'react';
+import Api from '../service/Api'
 import { useUser } from '@clerk/clerk-react';
+import { fetchUtcNow } from '../service/timeApi'; // 👈 your existing time fetcher
 
-export  const UserContext = createContext();
+export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const { isSignedIn, user: clerkUser, isLoaded } = useUser(); // get Clerk user
+  const [utcNow, setUtcNow] = useState(null); // 👈 Add UTC state
 
+  const { isSignedIn, user: clerkUser, isLoaded } = useUser();
 
-    const fetchUserDetails = async () => {
-      try {
-        const clerkId = clerkUser.id;
-        const email = clerkUser.emailAddresses[0]?.emailAddress;
-        console.log("clerkId",clerkUser);
-        
+  // 🔁 Fetch user details from backend
+  const fetchUserDetails = async () => {
+    try {
+      const clerkId = clerkUser.id;
+      const email = clerkUser.emailAddresses[0]?.emailAddress;
 
-        const res = await Api.get(`/auth/getUserDetails/${clerkId}/${email}`);
-        console.log("res",res.data);
-        
-        setUser(res.data);
-        console.log("Fetched user from backend:", res.data);
-      } catch (err) {
-        console.error("Error fetching user details:", err);
-      }
-    };
+      const res = await Api.get(`/auth/getUserDetails/${clerkId}/${email}`);
+      setUser(res.data);
+      console.log("Fetched user from backend:", res.data);
+    } catch (err) {
+      console.error("Error fetching user details:", err);
+    }
+  };
+
+  // 🕒 Fetch UTC time once when signed in
+  const fetchUtcTimeOnce = async () => {
+    try {
+      const time = await fetchUtcNow("UserProvider");
+      setUtcNow(time);
+      console.log("Fetched UTC time:", time.toISOString());
+    } catch (err) {
+      console.error("Failed to fetch UTC time:", err);
+    }
+  };
+
   useEffect(() => {
-    // Only run once Clerk has loaded and user is signed in
     if (!isLoaded || !isSignedIn) return;
     fetchUserDetails();
+    fetchUtcTimeOnce(); // 👈 Fetch once only when user is loaded
   }, [isLoaded, isSignedIn, clerkUser]);
+
   return (
-    <UserContext.Provider value={{ user, setUser, refreshUser: fetchUserDetails }}>
+    <UserContext.Provider value={{ user, setUser, refreshUser: fetchUserDetails, utcNow }}>
       {children}
     </UserContext.Provider>
   );
 };
-

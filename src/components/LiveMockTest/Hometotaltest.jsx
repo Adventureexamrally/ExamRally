@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { fetchUtcNow } from '../../service/timeApi';
 import Api from '../../service/Api';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context/UserProvider';
@@ -8,10 +7,10 @@ import { useUser } from '@clerk/clerk-react';
 const HomeTotalTest = () => {
   const [liveTests, setLiveTests] = useState([]);
   const [resultLiveTests, setResultLiveTests] = useState({});
-  const [utcNow, setUtcNow] = useState(null);
+ 
   const [loading, setLoading] = useState(true);
 
-  const { user } = useContext(UserContext);
+  const { user,utcNow } = useContext(UserContext);
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
   const hasRallyPro = user?.subscriptions?.some(
@@ -36,7 +35,7 @@ const HomeTotalTest = () => {
       try {
         const [testsRes, currentTime] = await Promise.all([
           Api.get('exams/live-test'),
-          fetchUtcNow(),
+    
         ]);
         const testsData = testsRes.data;
         setLiveTests(Array.isArray(testsData.result) ? testsData.result : []);

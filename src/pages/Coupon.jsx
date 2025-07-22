@@ -9,7 +9,7 @@ import { fetchUtcNow } from '../service/timeApi';
 
 const Coupon = ({ data, setshowmodel }) => {
   const { isSignedIn } = useUser();
-  const { user, refreshUser } = useContext(UserContext);
+  const { user, refreshUser, utcNow } = useContext(UserContext);
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
@@ -18,21 +18,9 @@ const Coupon = ({ data, setshowmodel }) => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
-  const [utcNow, setUtcNow] = useState(null);
 
-  // Fetch server time for coupon validation
-  useEffect(() => {
-    const fetchTime = async () => {
-      try {
-        const globalDate = await fetchUtcNow();
-        setUtcNow(globalDate);
-      } catch (error) {
-        console.error("Failed to fetch UTC time:", error);
-        setUtcNow(new Date()); // Fallback to client time
-      }
-    };
-    fetchTime();
-  }, []);
+
+ 
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
