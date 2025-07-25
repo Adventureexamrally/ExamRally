@@ -10,7 +10,7 @@ import { fetchUtcNow } from '../service/timeApi';
 const TrendingPackages = () => {
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   const [trending, setTrending] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
@@ -39,20 +39,9 @@ const TrendingPackages = () => {
   };
 
   const [packagesWithEnrollment, setPackagesWithEnrollment] = useState([]);
-    const [utcNow, setUtcNow] = useState(null);
+   
     
-  // 1. Fetch UTC time from server
-   useEffect(() => {
-      fetchUtcNow()
-        .then(globalDate => {
-          setUtcNow(globalDate);
-          console.warn("Server UTC Date:", globalDate.toISOString());
-        })
-        .catch(error => {
-          console.error("Failed to fetch UTC time:", error);
-          // handle error as needed
-        });
-    }, [data, user]);
+ 
 
 useEffect(() => {
   if (!data.length) return;

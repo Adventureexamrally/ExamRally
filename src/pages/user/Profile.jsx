@@ -3,9 +3,9 @@ import DashBoard from './DashBoard';
 import { FaEdit } from 'react-icons/fa';
 import { useUser } from '@clerk/clerk-react';
 import Api from '../../service/Api';
-import { fetchUtcNow } from '../../service/timeApi';
-
+import { UserContext } from "../../context/UserProvider";
 const Profile = () => {
+    const { user, utcNow } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [userDetails, setUserDetails] = useState({
     firstName: '',
@@ -87,20 +87,7 @@ const Profile = () => {
     }
   };
 
-    const [utcNow, setUtcNow] = useState(null);
-      
-    // 1. Fetch UTC time from server
-     useEffect(() => {
-        fetchUtcNow()
-          .then(globalDate => {
-            setUtcNow(globalDate);
-            console.warn("Server UTC Date:", globalDate.toISOString());
-          })
-          .catch(error => {
-            console.error("Failed to fetch UTC time:", error);
-            // handle error as needed
-          });
-      }, [utcNow]);
+  
       const maxDate = utcNow ? utcNow.toISOString().split('T')[0] : '';
   return (
     <div className="flex flex-col md:flex-row">

@@ -22,7 +22,6 @@ import 'aos/dist/aos.css';
 import { IoMdLock } from 'react-icons/io';
 import { UserContext } from '../../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
-import { fetchUtcNow } from '../../service/timeApi';
 import Hometotaltest from './Hometotaltest';
 import { Helmet } from 'react-helmet';
 
@@ -30,18 +29,17 @@ const HomeLivetest = () => {
   const [liveTests, setLiveTests] = useState([]);
   const [resultLiveTests, setResultLiveTests] = useState({});
   const [loading, setLoading] = useState(true);
-  const [utcNow, setUtcNow] = useState(null);
 
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const [testsRes, currentTime] = await Promise.all([
           Api.get('exams/live-test'),
-          fetchUtcNow(),
+      
         ]);
         
         // Extract liveTest array from response

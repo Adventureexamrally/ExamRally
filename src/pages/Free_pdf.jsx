@@ -14,7 +14,7 @@ const Free_pdf = () => {
   const [ad, setAD] = useState([]);
   const [pdfs, setPdfs] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState('');
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   const [responseId, setResponseId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedpdf, setSelectedPackage] = useState(null);
@@ -30,20 +30,8 @@ const Free_pdf = () => {
   const { isSignedIn } = useUser();
 
   const [categories, setCategories] = useState([]);
-     const [utcNow, setUtcNow] = useState(null);
       
-  // 1. Fetch UTC time from server
-   useEffect(() => {
-      fetchUtcNow()
-        .then(globalDate => {
-          setUtcNow(globalDate);
-          console.warn("Server UTC Date:", globalDate.toISOString());
-        })
-        .catch(error => {
-          console.error("Failed to fetch UTC time:", error);
-          // handle error as needed
-        });
-    }, []);
+ 
 
   useEffect(() => {
     const fetchCategories = async () => {

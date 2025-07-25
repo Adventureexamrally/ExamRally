@@ -58,7 +58,7 @@ const Packagename = () => {
 
   const [resultData, setResultData] = useState(null);
 
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   // console.log(user)
 const fetchPackageContent = async () => {
   try {
@@ -279,20 +279,8 @@ useEffect(() => {
   
   const status = true;
 
-  const [utcNow, setUtcNow] = useState(null);
   
 // 1. Fetch UTC time from server
- useEffect(() => {
-    fetchUtcNow()
-      .then(globalDate => {
-        setUtcNow(globalDate);
-        console.warn("Server UTC Date:", globalDate.toISOString());
-      })
-      .catch(error => {
-        console.error("Failed to fetch UTC time:", error);
-        // handle error as needed
-      });
-  }, [utcNow]);
 
 
 useEffect(() => {

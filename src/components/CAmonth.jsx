@@ -3,15 +3,13 @@ import Api from "../service/Api";
 import { useNavigate } from "react-router-dom";
 import { FaChevronUp, FaChevronDown, FaCloudDownloadAlt } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
-import { fetchUtcNow } from "../service/timeApi";
 
 const CAmonth = ({ course }) => {
   const [CA, setCA] = useState([]);
   const navigate = useNavigate();
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [expandedWeeks, setExpandedWeeks] = useState({});
-  const [utcNow, setUtcNow] = useState(null);
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   const [resultData, setResultData] = useState({});
   const [expiredate, setExpirydate] = useState(null);
   console.log("isEnrolled", isEnrolled);
@@ -31,22 +29,6 @@ const CAmonth = ({ course }) => {
   const isSignedIn = !!user?._id;
 
   // Fetch UTC time
-  useEffect(() => {
-    let isMounted = true;
-    fetchUtcNow()
-      .then((globalDate) => {
-        if (isMounted) {
-          setUtcNow(globalDate);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to fetch UTC time:", error);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   // Fetch CA data
   useEffect(() => {
     let isMounted = true;

@@ -63,7 +63,6 @@ import PopupModal from "./components/PopupModal";
 import { useUser } from "@clerk/clerk-react";
 import { UserContext } from "./context/UserProvider";
 import Api from "./service/Api";
-import { fetchUtcNow } from "./service/timeApi";
 import HomeLivetest from "./components/LiveMockTest/HomeLivetest";
 import Livemockinstruction from "./components/LiveMockTest/Livemockinstruction";
 import Livemockotherinstruct from "./components/LiveMockTest/Livemockotherinstruct";
@@ -121,14 +120,13 @@ function App() {
 }
 
 function MainApp() {
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
 
   const location = useLocation();
   const [showModalji, setShowModalji] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const hasUserSubmittedData = localStorage.getItem("userDataSubmitted");
-  const [utcNow, setUtcNow] = useState(null);
   const [Today, setToday] = useState(null);
     useEffect(() => {
     if (user) {
@@ -136,18 +134,6 @@ function MainApp() {
     }
   }, [user]); 
   // Fetch UTC time from server
-  useEffect(() => {
-    fetchUtcNow()
-      .then((globalDate) => {
-        setUtcNow(globalDate);
-        const serverDateStr = globalDate.toISOString().split("T")[0];
-        setToday(serverDateStr);
-        console.warn("Server UTC Date:", serverDateStr);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch UTC time:", error);
-      });
-  }, [Today]);
 
   // Show modal logic - runs only when 'Today' is set
   useEffect(() => {

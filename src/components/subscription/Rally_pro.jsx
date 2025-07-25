@@ -15,27 +15,16 @@ const Rally_pro = () => {
   const [expired, setExpired] = useState(false);
   const [daysLeft, setDaysLeft] = useState(null);
 
-  const { user } = useContext(UserContext);
+  const { user,utcNow } = useContext(UserContext);
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchSubscription();
   }, []);
-     const [utcNow, setUtcNow] = useState(null);
       
   // 1. Fetch UTC time from server
-   useEffect(() => {
-      fetchUtcNow()
-        .then(globalDate => {
-          setUtcNow(globalDate);
-          console.warn("Server UTC Date:", globalDate.toISOString());
-        })
-        .catch(error => {
-          console.error("Failed to fetch UTC time:", error);
-          // handle error as needed
-        });
-    }, []);
+
 
   const fetchSubscription = async () => {
     try {

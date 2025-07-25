@@ -50,7 +50,7 @@ const DetailedCategorie = () => {
       setActiveSection(subMenuData[0]);
     }
   });
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   console.log("iyhuj", user);
   async function run() {
     try {
@@ -183,20 +183,9 @@ const DetailedCategorie = () => {
   };
 
   const [isEnrolled, setIsEnrolled] = useState(false);
-   const [utcNow, setUtcNow] = useState(null);
+  
   const status = true;
 
-   useEffect(() => {
-      fetchUtcNow()
-        .then(globalDate => {
-          setUtcNow(globalDate);
-          console.warn("Server UTC Date:", globalDate.toISOString());
-        })
-        .catch(error => {
-          console.error("Failed to fetch UTC time:", error);
-          // handle error as needed
-        });
-    }, []);
   
 useEffect(() => {
   if (!utcNow || !data?._id || (!user?.enrolledCourses && !user?.subscriptions)) return;
