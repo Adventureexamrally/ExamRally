@@ -33,13 +33,13 @@ const HomeTotalTest = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [testsRes, currentTime] = await Promise.all([
+        const [testsRes] = await Promise.all([
           Api.get('exams/live-test'),
     
         ]);
         const testsData = testsRes.data;
         setLiveTests(Array.isArray(testsData.result) ? testsData.result : []);
-        setUtcNow(currentTime);
+        // setUtcNow(currentTime);
       } catch (err) {
         console.error('Error fetching live tests:', err);
         setLiveTests([]);
