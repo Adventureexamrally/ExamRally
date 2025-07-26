@@ -24,6 +24,7 @@ import { UserContext } from '../../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import Hometotaltest from './Hometotaltest';
 import { Helmet } from 'react-helmet';
+import { toast, ToastContainer } from 'react-toastify';
 
 const HomeLivetest = () => {
   const [liveTests, setLiveTests] = useState([]);
@@ -37,7 +38,7 @@ const HomeLivetest = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [testsRes, currentTime] = await Promise.all([
+        const [testsRes] = await Promise.all([
           Api.get('exams/live-test'),
       
         ]);
@@ -46,8 +47,7 @@ const HomeLivetest = () => {
         const testsData = testsRes.data;
         setLiveTests(Array.isArray(testsData.liveTest) ? testsData.liveTest : []);
 
-        setUtcNow(currentTime);
-        console.warn('Server UTC Time:', currentTime.toISOString());
+
       } catch (err) {
         console.error('Error fetching data:', err);
         setLiveTests([]);
@@ -219,6 +219,29 @@ const openNewWindow = (url) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+    const handleEnroll = async (test) => {
+    if (!isSignedIn) {
+      navigate('/sign-in');
+      return;
+    }
+    
+    
+    try {
+      const response = await Api.post('/enroll', {
+        userId: user?._id,
+        examId: test?._id
+      });
+      console.log("Enrollment response:", response.data);
+      const message = response.data?.message || 'Enrollment successful';
+      toast.success(message);
+    } catch (error) {
+      const message = error.response?.data?.message || 'Enrollment failed';
+      console.log("Enrollment error:", message);
+      
+      toast.warning(message)
+    } 
+  };
+
   const faqs = [
     {
       question: "How can I attempt a live test?",
@@ -268,6 +291,9 @@ const openNewWindow = (url) => {
     free mock test for bank exams, latest pattern bank exam tests" />
 
 </Helmet>
+<ToastContainer 
+  position="top-right"
+  autoClose={3000}  />
 <header className=" text-green-500 py-6 shadow-lg">
   <div className="container mx-auto px-4">
     <div className="max-w-4xl mx-auto text-center">
@@ -344,9 +370,9 @@ const openNewWindow = (url) => {
 
       if (start > utcNow) {
         // Test has not started yet
-        buttonText = 'Coming Soon';
-        isButtonDisabled = true;
-        buttonColor = 'secondary';
+      buttonText = 'Enroll Now';
+      isButtonDisabled = false;
+      buttonColor = 'primary';
       } else {
         // Test has started or is ongoing
         buttonText = 'Take Test';
@@ -447,8 +473,14 @@ const openNewWindow = (url) => {
                 variant={isButtonDisabled ? 'outlined' : 'contained'}
                 color={buttonColor}
                 disabled={isButtonDisabled}
-                onClick={handleClick}
-                startIcon={isButtonDisabled && <IoMdLock />}
+                onClick={() => {
+                    if (start > utcNow) {
+                      handleEnroll(test);
+                    } else {
+                      handleClick();
+                    }
+                  }}                
+                  startIcon={isButtonDisabled && <IoMdLock />}
                 size="medium"
                 sx={{
                   fontWeight: 'bold',
