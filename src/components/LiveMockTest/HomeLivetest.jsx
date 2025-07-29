@@ -53,7 +53,7 @@ const HomeLivetest = () => {
         console.error('Error fetching data:', err);
         setLiveTests([]);
       } finally {
-        setLoading(false);
+        // setLoading(false);
         AOS.init({ duration: 2000 });
         AOS.refresh();
       }
@@ -77,6 +77,8 @@ const HomeLivetest = () => {
         }
       } catch (error) {
         console.error('Error fetching enrolled exams:', error);
+      }finally{
+         setLoading(false);
       }
     };
 
@@ -396,8 +398,8 @@ const HomeLivetest = () => {
               if (start > utcNow) {
                 if (isEnrolled) {
                   buttonText = 'Enrolled';
-                  buttonColor = 'success';
-                  isButtonDisabled = true;
+                  // buttonColor = 'success';
+                  // isButtonDisabled = true;
                 } else {
                   buttonText = 'Enroll Now';
                   isButtonDisabled = false;
@@ -510,16 +512,30 @@ const HomeLivetest = () => {
                             handleClick();
                           }
                         }}
-                        startIcon={isButtonDisabled && <IoMdLock />}
+                        // startIcon={isButtonDisabled && <IoMdLock />}
                         size="medium"
                         sx={{
                           fontWeight: 'bold',
                           py: 1.5,
                           borderRadius: 2,
                           textTransform: 'none',
-                          fontSize: '0.9rem'
+                          fontSize: '0.9rem',
+                          ...(buttonText === 'Enrolled' && {
+                            color: 'success.main',              // green text
+                            border: '1px solid',                // thick visible border
+                            borderColor: 'primary.main',        // blue MUI primary border
+                            backgroundColor: 'transparent',     // no fill
+                            // '&:hover': {
+                            //   backgroundColor: 'rgba(76, 175, 80, 0.12)', // ✅ green hover (same as success.light)
+                            //   borderColor: 'primary.main'
+                            // },
+                            '&:focus': {
+                              boxShadow: 'none'
+                            }
+                          })
                         }}
                       >
+
                         {buttonText}
                       </Button>
                     </CardContent>
