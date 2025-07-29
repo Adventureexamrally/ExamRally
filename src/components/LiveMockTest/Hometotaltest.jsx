@@ -322,7 +322,7 @@ const HomeTotalTest = () => {
                             onClick={() => navigate('/sign-in')}
                             className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
                           >
-                            View Results
+                            <span className="mr-2">📊</span>View Results
                           </button>
                         )}
 
@@ -363,7 +363,7 @@ const HomeTotalTest = () => {
                           test.liveResult &&
                           new Date(utcNow) > new Date(test.liveResult) && // Added check
                           new Date(utcNow) < new Date(test.liveSolutionEndDate) &&
-                          !hasRallyPro && (
+                          !hasRallyPro  && attempted && (
                             <div>
                               <button
                                 onClick={() =>
