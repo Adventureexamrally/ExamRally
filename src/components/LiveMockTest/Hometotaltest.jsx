@@ -7,10 +7,10 @@ import { useUser } from '@clerk/clerk-react';
 const HomeTotalTest = () => {
   const [liveTests, setLiveTests] = useState([]);
   const [resultLiveTests, setResultLiveTests] = useState({});
- 
+
   const [loading, setLoading] = useState(true);
 
-  const { user,utcNow } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
   const hasRallyPro = user?.subscriptions?.some(
@@ -35,7 +35,7 @@ const HomeTotalTest = () => {
       try {
         const [testsRes] = await Promise.all([
           Api.get('exams/live-test'),
-    
+
         ]);
         const testsData = testsRes.data;
         setLiveTests(Array.isArray(testsData.result) ? testsData.result : []);
@@ -53,40 +53,40 @@ const HomeTotalTest = () => {
 
   console.log('Live Tests:', liveTests);
 
-const fetchTestStatuses = useCallback(async () => {
-  console.log("Fetching test statuses...");
-  const statusUpdates = {};
-  
-  for (const test of liveTests) {
-    try {
-      const res = await Api.get(`/results/${user._id}/${test._id}`);
-      const statusData = res?.data;
-      console.log("Status data for", test._id, statusData);
-      
-      if (statusData && ['completed', 'paused'].includes(statusData?.status)) {
-        statusUpdates[test._id] = {
-          status: statusData.status,
-          lastQuestionIndex: statusData.lastVisitedQuestionIndex,
-          selectedOptions: statusData.selectedOptions,
-        };
-        storeTestStatus(test._id, statusUpdates[test._id]);
-      }
-    } catch (err) {
-      console.error(`Error fetching status for test ${test._id}:`, err);
-      const stored = getTestStatusFromStorage(test._id);
-      if (stored) {
-        statusUpdates[test._id] = stored;
+  const fetchTestStatuses = useCallback(async () => {
+    console.log("Fetching test statuses...");
+    const statusUpdates = {};
+
+    for (const test of liveTests) {
+      try {
+        const res = await Api.get(`/results/${user._id}/${test._id}`);
+        const statusData = res?.data;
+        console.log("Status data for", test._id, statusData);
+
+        if (statusData && ['completed', 'paused'].includes(statusData?.status)) {
+          statusUpdates[test._id] = {
+            status: statusData.status,
+            lastQuestionIndex: statusData.lastVisitedQuestionIndex,
+            selectedOptions: statusData.selectedOptions,
+          };
+          storeTestStatus(test._id, statusUpdates[test._id]);
+        }
+      } catch (err) {
+        console.error(`Error fetching status for test ${test._id}:`, err);
+        const stored = getTestStatusFromStorage(test._id);
+        if (stored) {
+          statusUpdates[test._id] = stored;
+        }
       }
     }
-  }
-  
-  console.log("Updating resultLiveTests with:", statusUpdates);
-  setResultLiveTests(prev => {
-    const newState = {...prev, ...statusUpdates};
-    console.log("New resultLiveTests state:", newState);
-    return newState;
-  });
-}, [liveTests, user?._id]); // Add dependencies here
+
+    console.log("Updating resultLiveTests with:", statusUpdates);
+    setResultLiveTests(prev => {
+      const newState = { ...prev, ...statusUpdates };
+      console.log("New resultLiveTests state:", newState);
+      return newState;
+    });
+  }, [liveTests, user?._id]); // Add dependencies here
 
   useEffect(() => {
     if (!user?._id || !utcNow || liveTests.length === 0) return;
@@ -103,13 +103,13 @@ const fetchTestStatuses = useCallback(async () => {
     }
   };
 
-// Add this useEffect to handle focus
-useEffect(() => {
-  window.addEventListener("focus", fetchTestStatuses);
-  return () => {
-    window.removeEventListener("focus", fetchTestStatuses);
-  };
-}, [fetchTestStatuses]);
+  // Add this useEffect to handle focus
+  useEffect(() => {
+    window.addEventListener("focus", fetchTestStatuses);
+    return () => {
+      window.removeEventListener("focus", fetchTestStatuses);
+    };
+  }, [fetchTestStatuses]);
 
   const storeTestStatus = (id, { status, lastQuestionIndex, selectedOptions }) => {
     try {
@@ -126,26 +126,26 @@ useEffect(() => {
       console.error('Error saving to localStorage:', err);
     }
   };
-// And in your main component add this effect:
-useEffect(() => {
-  const handleMessage = (event) => {
-    console.log("Received message from parent window:", event.data);
-    console.log("Event origin:", event.origin, "Current origin:", window.location.origin);
-    
-    
-    if (event.origin !== window.location.origin) return;
-    
-    if (event.data === 'test-status-updated') {
-      console.log("Test status updated, refreshing data...");
-      
-      fetchTestStatuses(); // Refresh test statuses
-    }
-  };
+  // And in your main component add this effect:
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.log("Received message from parent window:", event.data);
+      console.log("Event origin:", event.origin, "Current origin:", window.location.origin);
 
-  
-  window.addEventListener('message', handleMessage);
-  return () => window.removeEventListener('message', handleMessage);
-}, []);
+
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data === 'test-status-updated') {
+        console.log("Test status updated, refreshing data...");
+
+        fetchTestStatuses(); // Refresh test statuses
+      }
+    };
+
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
 
   const formatDate = (dateString) => {
@@ -161,13 +161,13 @@ useEffect(() => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
-const openNewWindow = (url) => {
-  window.open(
-    url,
-    '_blank',
-    `width=${screen.width},height=${screen.height}`
-  );
-};
+  const openNewWindow = (url) => {
+    window.open(
+      url,
+      '_blank',
+      `width=${screen.width},height=${screen.height}`
+    );
+  };
 
   const handleActionClick = (path, openInNewWindow = false) => {
     if (!isSignedIn) {
@@ -230,14 +230,14 @@ const openNewWindow = (url) => {
               return (
                 <div key={test._id} className="group">
                   <div className="h-full bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl border border-gray-100">
-                   <div className="bg-gradient-to-r from-[#131656] to-[#4f46e5] p-4 text-white animate-gradient-x">
-                    <h3 className="text-md font-bold flex items-center justify-center text-center">
-                      <span className="animate-pulse mr-2"><i className="bi bi-claude"></i></span>
-                      {test.show_name}
-                      <span className="animate-pulse ml-2"><i className="bi bi-claude"></i></span>
+                    <div className="bg-gradient-to-r from-[#131656] to-[#4f46e5] p-4 text-white animate-gradient-x">
+                      <h3 className="text-md font-bold flex items-center justify-center text-center">
+                        <span className="animate-pulse mr-2"><i className="bi bi-claude"></i></span>
+                        {test.show_name}
+                        <span className="animate-pulse ml-2"><i className="bi bi-claude"></i></span>
 
-                    </h3>
-                  </div>
+                      </h3>
+                    </div>
 
                     <div className="p-5">
                       <div className="flex items-start mb-2">
@@ -286,22 +286,22 @@ const openNewWindow = (url) => {
                       {utcNow && test.liveResult && attempted && hasRallyPro && (
                         !hideActions && showViewResult && !isPaused ? (
                           new Date(utcNow) > new Date(test.liveResult) ? (
-                         <div className='d-flex flex-col sm:flex-row gap-2 sm:gap-4'>
-  <button
-    onClick={() => handleActionClick(`/homeliveresult/${test._id}`, false)}
-    className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-800 hover:bg-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-  >
-    <span className="mr-2 text-lg">📊</span> 
-    <span className="font-medium">Result</span>
-  </button>
-  <button
-    onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
-    className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-  >
-    <span className="mr-2 text-lg">🔍</span> 
-    <span className="font-medium">Solution</span>
-  </button>
-</div>
+                            <div className='d-flex flex-col sm:flex-row gap-2 sm:gap-4'>
+                              <button
+                                onClick={() => handleActionClick(`/homeliveresult/${test._id}`, false)}
+                                className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-800 hover:bg-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                              >
+                                <span className="mr-2 text-lg">📊</span>
+                                <span className="font-medium">Result</span>
+                              </button>
+                              <button
+                                onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
+                                className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                              >
+                                <span className="mr-2 text-lg">🔍</span>
+                                <span className="font-medium">Solution</span>
+                              </button>
+                            </div>
                           ) : (
                             <>
                               <div className="text-center text-sm text-gray-500 py-3 bg-yellow-50 rounded-lg border border-yellow-100">
@@ -316,63 +316,72 @@ const openNewWindow = (url) => {
                           )
                         ) : null
                       )}
-<div className='flex flex-col gap-2 sm:gap-4'>
-                      {/* Non-Pro View Result (New Window) */}
-                      {utcNow && test.liveResult && !hasRallyPro && (
-                        <>
-                          {new Date(utcNow) > new Date(test.liveResult) ? (
-                            !hasRallyPro && (
-                              <div>
-                                <button
-                                  onClick={() =>
-                                    handleActionClick(
-                                      `/homeliveresult/${test._id}`,
-                                      false
-                                    )
-                                  }
-                                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-                                >
-                                  <span className="mr-2">📊</span> Result
-                                </button>
+                      <div className='flex flex-col gap-2 sm:gap-4'>
+                        {!isSignedIn && (
+                          <button
+                            onClick={() => navigate('/sign-in')}
+                            className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                          >
+                            View Results
+                          </button>
+                        )}
+
+                        {/* Non-Pro View Result (New Window) */}
+                        {utcNow && test.liveResult && !hasRallyPro && (
+                          <>
+                            {new Date(utcNow) > new Date(test.liveResult) ? (
+                              !hasRallyPro && (
+                                <div>
+                                  <button
+                                    onClick={() =>
+                                      handleActionClick(
+                                        `/homeliveresult/${test._id}`,
+                                        false
+                                      )
+                                    }
+                                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                                  >
+                                    <span className="mr-2">📊</span> Result
+                                  </button>
+                                </div>
+                              )
+                            ) : (
+                              <div className="text-center text-sm text-gray-500 py-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                                <div className="flex items-center justify-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  Results on {formatDate(test.liveResult)}
+                                </div>
                               </div>
-                            )
-                          ) : (
-                            <div className="text-center text-sm text-gray-500 py-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                              <div className="flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Results on {formatDate(test.liveResult)}
-                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {/* Non-Pro View Solution (New Window) */}
+                        {utcNow &&
+                          test.liveResult &&
+                          new Date(utcNow) > new Date(test.liveResult) && // Added check
+                          new Date(utcNow) < new Date(test.liveSolutionEndDate) &&
+                          !hasRallyPro && (
+                            <div>
+                              <button
+                                onClick={() =>
+                                  handleActionClick(
+                                    `/homeSolution/${test._id}/${user._id}`,
+                                    true
+                                  )
+                                }
+                                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+
+                              // className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
+                              >
+                                <span className="mr-2">🔍</span>Solution
+                              </button>
                             </div>
                           )}
-                        </>
-                      )}
-
-                      {/* Non-Pro View Solution (New Window) */}
-                     {utcNow &&
-                        test.liveResult &&
-                        new Date(utcNow) > new Date(test.liveResult) && // Added check
-                        new Date(utcNow) < new Date(test.liveSolutionEndDate) &&
-                        !hasRallyPro && (
-                          <div>
-                            <button
-                              onClick={() =>
-                                handleActionClick(
-                                  `/homeSolution/${test._id}/${user._id}`,
-                                  true
-                                )
-                              }
-                                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-                             
-                              // className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
-                            >
-                              <span className="mr-2">🔍</span>Solution
-                            </button>
-                          </div>
-                        )}
+                      </div>
                     </div>
-</div>
 
                   </div>
                 </div>
