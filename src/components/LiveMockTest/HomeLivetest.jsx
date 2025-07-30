@@ -53,7 +53,7 @@ const HomeLivetest = () => {
         console.error('Error fetching data:', err);
         setLiveTests([]);
       } finally {
-        // setLoading(false);
+        setLoading(false);
         AOS.init({ duration: 2000 });
         AOS.refresh();
       }
@@ -65,7 +65,10 @@ const HomeLivetest = () => {
 
   useEffect(() => {
     const fetchEnrolledExams = async () => {
-      if (!isSignedIn || !user?._id) return;
+      // if (!isSignedIn || !user?._id) {
+      //   setLoading(false); // Ensure loading stops even if not signed in
+      //   return;
+      // }
 
       try {
         const response = await Api.get(`/enroll/enrolled-exams/${user._id}`);
@@ -77,8 +80,8 @@ const HomeLivetest = () => {
         }
       } catch (error) {
         console.error('Error fetching enrolled exams:', error);
-      }finally{
-         setLoading(false);
+      } finally {
+        // setLoading(false);
       }
     };
 

@@ -286,20 +286,25 @@ const HomeTotalTest = () => {
                       {utcNow && test.liveResult && attempted && hasRallyPro && (
                         !hideActions && showViewResult && !isPaused ? (
                           new Date(utcNow) > new Date(test.liveResult) ? (
-                            <div className='d-flex flex-col sm:flex-row gap-2 sm:gap-4'>
+                            <div className='flex flex-col  gap-2 sm:gap-4'>
                               <button
                                 onClick={() => handleActionClick(`/homeliveresult/${test._id}`, false)}
-                                className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-800 hover:bg-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="flex-1 flex items-center justify-center px-4 py-2 rounded-lg shadow-sm text-white bg-indigo-800 hover:bg-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                               >
-                                <span className="mr-2 text-lg">📊</span>
-                                <span className="font-medium">Result</span>
+                                {/* <span className="mr-2 text-lg">📊</span>
+                                <span className="font-medium">Result</span> */}
+                                     <span className="mr-2">🏆</span> Leader Board
+
                               </button>
                               <button
-                                onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
-                                className="flex-1 flex items-center justify-center px-4 py-3 rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                // onClick={() => handleActionClick(`/homeSolution/${test._id}/${user._id}`, true)}
+                                 onClick={() => handleActionClick(`/HomeliveresultPage/${test._id}/${user._id}`, true)}
+                                className="flex-1 flex items-center justify-center px-4 py-2 rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                               >
-                                <span className="mr-2 text-lg">🔍</span>
-                                <span className="font-medium">Solution</span>
+                                {/* <span className="mr-2 text-lg">🔍</span>
+                                <span className="font-medium">Solution</span> */}
+                                <span className="mr-2 text-lg">📊</span>
+                                <span className="font-medium">view Result</span>
                               </button>
                             </div>
                           ) : (
@@ -322,7 +327,9 @@ const HomeTotalTest = () => {
                             onClick={() => navigate('/sign-in')}
                             className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
                           >
-                            <span className="mr-2">📊</span>View Results
+                            {/* <span className="mr-2">📊</span>View Results */}
+                             <span className="mr-2">🏆</span> Leader Board
+
                           </button>
                         )}
 
@@ -341,7 +348,9 @@ const HomeTotalTest = () => {
                                     }
                                     className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
                                   >
-                                    <span className="mr-2">📊</span> Result
+                                    {/* <span className="mr-2">📊</span> Result */}
+                                    <span className="mr-2">🏆</span> Leader Board
+
                                   </button>
                                 </div>
                               )
@@ -366,17 +375,14 @@ const HomeTotalTest = () => {
                           !hasRallyPro  && attempted && (
                             <div>
                               <button
-                                onClick={() =>
-                                  handleActionClick(
-                                    `/homeSolution/${test._id}/${user._id}`,
-                                    true
-                                  )
-                                }
+                                 onClick={() => handleActionClick(`/HomeliveresultPage/${test._id}/${user._id}`, true)}
                                 className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
 
                               // className="w-full flex items-center justify-center px-4 py-2 mt-2 border border-transparent rounded-lg shadow-sm text-white bg-[#131656] hover:bg-[#0e1142] transition-colors duration-200"
                               >
-                                <span className="mr-2">🔍</span>Solution
+                                {/* <span className="mr-2">🔍</span>Solution */}
+                                 <span className="mr-2">📊</span>View Result
+
                               </button>
                             </div>
                           )}
