@@ -11,6 +11,7 @@ import { fetchUtcNow } from "../../service/timeApi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { CircularProgress } from "@mui/material";
 
 const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   const [showDifficulty, setShowDifficulty] = useState({});
@@ -225,6 +226,8 @@ const [loadingTests, setLoadingTests] = useState({});
   // Updated fetchTestStatuses
 const fetchTestStatuses = useCallback(async (testId) => {
   if (testId) {
+    console.log(`Fetching status for test ${testId}`);
+    
     setLoadingTests(prev => ({ ...prev, [testId]: true }));
   }
 
@@ -259,12 +262,13 @@ const fetchTestStatuses = useCallback(async (testId) => {
   }, [fetchTestStatuses]);
 
     // Add focus listener
-  useEffect(() => {
-    const handleFocus = () => fetchTestStatuses();
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [fetchTestStatuses]);
+  // useEffect(() => {
+  //   const handleFocus = () => fetchTestStatuses();
+  //   window.addEventListener("focus", handleFocus);
+  //   return () => window.removeEventListener("focus", handleFocus);
+  // }, [fetchTestStatuses]);
   
+  console.warn("Results Data:", loadingTests);
   return (
     <div
       className="modal fade"
@@ -404,6 +408,7 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                         ? "bg-green-500 text-white hover:bg-green-600"
                                         : "bg-green-500 text-white hover:bg-green-600"
                                     }`}
+
                                     onClick={() => {
                                       if (!isSignedIn) {
                                         const backdrop = document.querySelector(".modal-backdrop");
@@ -423,14 +428,20 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                         openNewWindow(`/instruct/${test._id}/${user?._id}`);
                                       }
                                     }}
+                                     disabled={loadingTests[test._id]}
+
                                   >
-                                      {loadingTests[test._id]
-    ? "Loading..."
-    : (resultsData?.[test._id]?.status === "completed" || getTestStatusFromStorage(test._id)?.status === "completed")
-      ? "View Result"
-      : (resultsData?.[test._id]?.status === "paused" || getTestStatusFromStorage(test._id)?.status === "paused")
-        ? "Resume"
-        : "Take Test"}
+                                       {loadingTests[test._id] ? (
+                                        <>
+                                          <CircularProgress size={18} thickness={4} color="inherit" />
+                                        </>
+                                      ) : (
+                                        (resultsData?.[test._id]?.status === "completed" || getTestStatusFromStorage(test._id)?.status === "completed")
+                                          ? "View Result"
+                                          : (resultsData?.[test._id]?.status === "paused" || getTestStatusFromStorage(test._id)?.status === "paused")
+                                            ? "Resume"
+                                            : "Take Test"
+                                      )}
                                   </button>
                                 )}
                               </div>
