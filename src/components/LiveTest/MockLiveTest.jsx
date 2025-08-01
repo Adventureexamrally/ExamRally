@@ -2041,8 +2041,11 @@ const handlePauseResume = () => {
     
   // if (window.opener) {
     console.log("Closing the window and notifying parent");
-    window.opener.postMessage('test-status-updated', window.location.origin);
-    
+    window.opener.postMessage({
+      type: 'test-status-updated',
+      testId: id
+    }, window.location.origin);   
+     
             window.open(resultUrl, '_blank');
 
     // Allow time for message to send before closing
