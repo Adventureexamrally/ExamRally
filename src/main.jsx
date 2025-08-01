@@ -1,7 +1,7 @@
 
-  console.log = () => {};
-  console.warn = () => {};
-  console.error = () => {};
+  // console.log = () => {};
+  // console.warn = () => {};
+  // console.error = () => {};
 
 
 
@@ -23,38 +23,11 @@ if (!clerkKey) {
 }
 
 // Add user interaction restrictions
-const disableUserActions = () => {
-  // Disable right-click
-  window.addEventListener("contextmenu", (e) => e.preventDefault());
-
-  // Disable keyboard shortcuts
-  window.addEventListener("keydown", (e) => {
-    if (
-      (e.ctrlKey && ["a", "c", "x", "v", "s", "u", "p"].includes(e.key.toLowerCase())) || // Ctrl+A, C, X, V, S, U, P
-      (e.key === "PrintScreen") ||
-      (e.metaKey && ["a", "c", "x", "v", "s", "p"].includes(e.key.toLowerCase())) // Cmd+A, etc. for Mac
-    ) {
-      e.preventDefault();
-      alert("This action is disabled.");
-    }
-  });
-
-  // Try to block Print Screen (limited to detection only)
-  window.addEventListener("keyup", (e) => {
-    if (e.key === "PrintScreen") {
-      navigator.clipboard.writeText("Screenshot blocked");
-      alert("Screenshots are disabled.");
-    }
-  });
-
-  // Disable drag/drop
-  window.addEventListener("dragstart", (e) => e.preventDefault());
-};
 
 
 const Root = () => {
   useEffect(() => {
-    disableUserActions();
+    // disableUserActions();
   }, []);
 const queryClient = new QueryClient({
     defaultOptions: {
