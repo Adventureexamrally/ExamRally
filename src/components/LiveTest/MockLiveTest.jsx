@@ -1671,7 +1671,7 @@ const handlePauseResume = () => {
         setIsPaused(true);
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        window.close();
+        closeAndNotifyParent()
       } else {
           setIsPaused(false);
           setPauseCount(0);
@@ -2037,12 +2037,26 @@ const handlePauseResume = () => {
     
     // Open result in a new window without _blank target
     // const resultWindow = window.open('', '_self');
+    console.log("openerr",window.opener);
     
-    // resultWindow.location.href = resultUrl;
-        window.open(resultUrl, '_blank');
+  // if (window.opener) {
+    console.log("Closing the window and notifying parent");
+    window.opener.postMessage('test-status-updated', window.location.origin);
+    
+            window.open(resultUrl, '_blank');
+
+    // Allow time for message to send before closing
+    setTimeout(() => {
+      window.close();
+    }, 300);
+  // } else {
+  //   console.log("Closing the window without parent notification");
+  //       window.open(resultUrl, '_blank');
+  // }
+        // window.open(resultUrl, '_blank');
 
     // Close the current test window
-    window.close();
+    // window.close();
   } catch (error) {
     console.error("Error finishing test:", error);
     alert('Failed to submit the exam. Please try again.');
@@ -2086,6 +2100,23 @@ console.log(questionTime);
 
 console.log(questionTime);
 
+  const closeAndNotifyParent = () => {
+  if (window.opener) {
+    console.log("Closing the window and notifying parent");
+    window.opener.postMessage({
+      type: 'test-status-updated',
+      testId: id
+    }, window.location.origin);
+    
+    // Allow time for message to send before closing
+    setTimeout(() => {
+      window.close();
+    }, 300);
+  } else {
+    console.log("Closing the window without parent notification");
+    navigate('/');
+  }
+};
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>

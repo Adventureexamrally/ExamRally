@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { BsQuestionSquare } from "react-icons/bs";
 import { IoMdLock } from "react-icons/io";
 import { MdOutlineAccessTime } from "react-icons/md";
@@ -8,7 +8,7 @@ import { useUser } from "@clerk/clerk-react";
 import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
 import { fetchUtcNow } from "../../service/timeApi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -18,6 +18,8 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
   const { id } = useParams();
+  const queryClient = useQueryClient(); // Add this
+const [loadingTests, setLoadingTests] = useState({});
 
   // Fetch UTC time
   const { 
@@ -36,7 +38,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
       const res = await Api.get(`/results/${user?._id}/${testId}`);
       return res.data;
     } catch (err) {
-      console.error(`Error fetching result for test ${testId}:`, err);
+      // console.error(`Error fetching result for test ${testId}:`, err);
       return null;
     }
   };
@@ -159,7 +161,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
     window.open(
       url,
       "_blank",
-      `noopener,noreferrer,width=${width},height=${height}`
+      `width=${width},height=${height}`
     );
   };
 
@@ -218,6 +220,51 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
     );
   }
 
+  
+  // Add this function
+  // Updated fetchTestStatuses
+const fetchTestStatuses = useCallback(async (testId) => {
+  if (testId) {
+    setLoadingTests(prev => ({ ...prev, [testId]: true }));
+  }
+
+  try {
+    await queryClient.refetchQueries({
+      queryKey: ['testResults', user?._id],
+      exact: true,
+      refetchType: 'active',
+    });
+  } finally {
+    if (testId) {
+      setLoadingTests(prev => ({ ...prev, [testId]: false }));
+    }
+  }
+}, [queryClient, user?._id]);
+
+
+  // Add message listener
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.warn("Received message in modal:", event.data);
+      console.warn("Event origin:", event.origin , "Current origin:", window.location.origin);
+      
+      if (event.origin !== window.location.origin) return;
+      if (event.data.type === 'test-status-updated') {
+        fetchTestStatuses(event.data.testId);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [fetchTestStatuses]);
+
+    // Add focus listener
+  useEffect(() => {
+    const handleFocus = () => fetchTestStatuses();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [fetchTestStatuses]);
+  
   return (
     <div
       className="modal fade"
@@ -377,13 +424,13 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
                                       }
                                     }}
                                   >
-                                    {(resultsData?.[test._id]?.status === "completed" || 
-                                      getTestStatusFromStorage(test._id)?.status === "completed")
-                                      ? "View Result"
-                                      : (resultsData?.[test._id]?.status === "paused" || 
-                                        getTestStatusFromStorage(test._id)?.status === "paused")
-                                      ? "Resume"
-                                      : "Take Test"}
+                                      {loadingTests[test._id]
+    ? "Loading..."
+    : (resultsData?.[test._id]?.status === "completed" || getTestStatusFromStorage(test._id)?.status === "completed")
+      ? "View Result"
+      : (resultsData?.[test._id]?.status === "paused" || getTestStatusFromStorage(test._id)?.status === "paused")
+        ? "Resume"
+        : "Take Test"}
                                   </button>
                                 )}
                               </div>

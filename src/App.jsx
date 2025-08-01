@@ -69,6 +69,7 @@ import Livemockotherinstruct from "./components/LiveMockTest/Livemockotherinstru
 import Livemocktest from "./components/LiveMockTest/Livemocktest";
 import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
 import HomeLiveSolution from "./components/LiveMockTest/HomeLiveSolution";
+import HomeLiveResultPage from "./components/LiveMockTest/HomeLiveResult2";
 
 const Onesignal = (user) => {
   // if (typeof window === "undefined") return;
@@ -191,6 +192,7 @@ function MainApp() {
     "/homeliveotherinstruct",
     "/homelivemocktest",
     "/homeSolution",
+    "/HomeliveresultPage"
   ].some((path) => location.pathname.startsWith(path));
 
   useEffect(() => {
@@ -376,6 +378,7 @@ function MainApp() {
           path="/homeSolution/:id/:userId"
           element={<HomeLiveSolution />}
         />
+         <Route path="/HomeliveresultPage/:id/:userId" element={<HomeLiveResultPage />} />
 
         <Route path="*" element={<NotFound />} />
         <Route
