@@ -85,7 +85,7 @@ const LiveTest = () => {
 
   async function run() {
     try {
-      const response = await Api.get(`topic-test/livetest/getall`);
+      const response = await Api.get(`topic-test/livetest/getall/active`);
       console.log("livetest", response.data);
       setAlldata(response.data);
       // Filter data based on subscriptionType

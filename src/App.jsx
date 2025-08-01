@@ -70,6 +70,7 @@ import Livemocktest from "./components/LiveMockTest/Livemocktest";
 import Homeliveresult from "./components/LiveMockTest/Homeliveresult";
 import HomeLiveSolution from "./components/LiveMockTest/HomeLiveSolution";
 import HomeLiveResultPage from "./components/LiveMockTest/HomeLiveResult2";
+import Subvideocourse from "./pages/Subvideocourse";
 
 const Onesignal = (user) => {
   // if (typeof window === "undefined") return;
@@ -326,6 +327,7 @@ function MainApp() {
         <Route path="/pdf-course/:level" element={<PdfCourse />} />
 
         <Route path="/video-course" element={<VideoCourse />} />
+        <Route path="/videocourse/:sub/:id" element={<Subvideocourse/>} />
         <Route path="/pdf" element={<ProtectedRoute />}>
           <Route path="instruction/:id/:userId" element={<PdfInstruction />} />
           <Route path="mocktest/:id/:userId" element={<PdfTest />} />
