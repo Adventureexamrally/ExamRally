@@ -1,312 +1,224 @@
-import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
-import Api from '../service/Api';
+import React, { useEffect, useRef, useState } from "react";
+import { Helmet } from "react-helmet";
+import { Link } from "react-router-dom";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import Api from "../service/Api";
 
 const VideoCourse = () => {
-  const [seo, setSeo] = useState([])
-  const [ad, setAD] = useState([])
-
+  const [seo, setSeo] = useState([]);
+  const [ad, setAD] = useState([]);
+  const [grouptopic, setGroupTopic] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const carouselRef = useRef();
+  const [isAtStart, setIsAtStart] = useState(true);
+  const [isAtEnd, setIsAtEnd] = useState(false);
 
-
-
-
-  const data = [
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Quantitative Aptitude for Beginners"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Advanced Quantitative Aptitude Techniques"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Mastering Time and Work Problems in Quantitative Aptitude"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Understanding Number Series in Quantitative Aptitude"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Speed and Distance Tricks for Quantitative Aptitude"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Profit and Loss: Quick Methods"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Algebra Simplified for Competitive Exams"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Percentage and Ratio Mastery"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Probability: Key Concepts and Formulas"
-    },
-    {
-      "topic": "Quantitative Aptitude",
-      "title": "Quantitative Aptitude for Bank Exams"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Basic Reasoning Ability Skills"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Logical Reasoning for Competitive Exams"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Syllogism Simplified for Competitive Exams"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Blood Relations and Direction Sense Tips"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Verbal Reasoning Puzzles"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Non-Verbal Reasoning: A Complete Guide"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Seating Arrangement and Puzzle Solving"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Analogy and Classification Techniques"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Critical Thinking for Reasoning Ability"
-    },
-    {
-      "topic": "Reasoning Ability",
-      "title": "Reasoning Ability for Government Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Basic English Grammar for Competitive Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Advanced Vocabulary for English Proficiency"
-    },
-    {
-      "topic": "English",
-      "title": "English Comprehension: Tips and Tricks"
-    },
-    {
-      "topic": "English",
-      "title": "Sentence Improvement for English Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Common English Idioms and Phrases"
-    },
-    {
-      "topic": "English",
-      "title": "English Tenses Explained"
-    },
-    {
-      "topic": "English",
-      "title": "Cloze Test Preparation for English"
-    },
-    {
-      "topic": "English",
-      "title": "English for Bank Exams"
-    },
-    {
-      "topic": "English",
-      "title": "Antonyms and Synonyms Mastery"
-    },
-    {
-      "topic": "English",
-      "title": "English Language Skills for Competitive Exams"
-    },
-    {
-      "topic": "Computer",
-      "title": "Introduction to Computers for Competitive Exams"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Basics for Beginners"
-    },
-    {
-      "topic": "Computer",
-      "title": "Understanding Operating Systems"
-    },
-    {
-      "topic": "Computer",
-      "title": "Microsoft Office: MS Word, Excel, PowerPoint"
-    },
-    {
-      "topic": "Computer",
-      "title": "Internet Basics and Networking"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Security and Basics of Cyber Security"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Memory and Storage Devices"
-    },
-    {
-      "topic": "Computer",
-      "title": "Basic Programming and Algorithms"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Applications in Competitive Exams"
-    },
-    {
-      "topic": "Computer",
-      "title": "Computer Knowledge for Government Exams"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Indian History: Key Events and Dates"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Geography: Capitals, Rivers, and Mountains"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Famous Landmarks of the World"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Important Days and Events in India"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Famous Personalities in Indian History"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Culture and Heritage of India"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Science and Technology for Static GK"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Important Government Schemes and Policies"
-    },
-    {
-      "topic": "Static GK",
-      "title": "Awards and Honors in India"
-    },
-    {
-      "topic": "Static GK",
-      "title": "World Geography: Countries and Capitals"
+  // Data fetching
+  useEffect(() => {
+    async function run() {
+      const response2 = await Api.get(`/get-Specific-page/video-course`);
+      setSeo(response2.data);
+      const response3 = await Api.get(`/blog-Ad/getbypage/video-course`);
+      setAD(response3.data);
     }
-  ]
+    run();
+  }, []);
 
+  useEffect(() => {
+    const fetchGroupsAndCourses = async () => {
+      try {
+        const groupResponse = await Api.get("video-courses/groups");
+        setGroupTopic(groupResponse.data);
+        const courseResponse = await Api.get("video-courses/video-course/main-page");
+        setCourses(courseResponse.data);
+        // const courselink=await Api.get("topic-test/livetest/getall")
+        // console.log("courselink",courselink.data.link_name);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchGroupsAndCourses();
+  }, []);
 
-  // Extract unique topics from the data
-  const uniqueTopics = [...new Set(data.map(pdf => pdf.topic))];
-
-  // Function to handle topic click
-  const handleTopicClick = (topic) => {
-    if (selectedTopic === topic) {
-      setSelectedTopic(null); // Toggle visibility
-    } else {
-      setSelectedTopic(topic);
+  // Carousel scroll handlers
+  const scrollToPrevious = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    }
+  };
+  const scrollToNext = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    }
+  };
+  const checkScroll = () => {
+    if (carouselRef.current) {
+      setIsAtStart(carouselRef.current.scrollLeft === 0);
+      setIsAtEnd(
+        Math.ceil(carouselRef.current.scrollLeft + carouselRef.current.offsetWidth) >=
+        carouselRef.current.scrollWidth
+      );
     }
   };
   useEffect(() => {
-    run()
+    if (carouselRef.current) {
+      carouselRef.current.addEventListener("scroll", checkScroll);
+      checkScroll();
+      return () => carouselRef.current?.removeEventListener("scroll", checkScroll);
+    }
   }, []);
-  async function run() {
-    const response2 = await Api.get(`/get-Specific-page/video-course`);
-    setSeo(response2.data);
-    console.log(response2.data);
 
-    const response3 = await Api.get(`/blog-Ad/getbypage/video-course`);
-    setAD(response3.data)
-  }
+  const handleTopicSelect = (topic) => setSelectedTopic(topic);
 
-  console.log(seo);
+  // Filtering
+  const filteredCourses = selectedTopic
+    ? courses.filter((course) => course.group === selectedTopic)
+    : courses;
 
   return (
     <>
       <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
-        <title>{seo[0]?.seoData?.title}</title>
+        <title>{seo[0]?.seoData?.title || "Video courses"}</title>
         <meta name="description" content={seo[0]?.seoData?.description} />
         <meta name="keywords" content={seo[0]?.seoData?.keywords} />
         <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
         <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
         <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                ))} */}
-
       </Helmet>
-      <h2 className="text-2xl m-2 font-bold text-center text-green-600">Video Course</h2>
+      <section className="py-2">
+        <h2 className="text-3xl m-2 font-extrabold text-center text-green-600">Video Courses</h2>
+      </section>
 
-      <div className="flex container">
-        <div className={`flex m-2 w-full ${ad.length > 0 ? "md:w-4/5" : "md:full "}`}>
-          <div>
-            {uniqueTopics.map((topic) => (
-              <div
-                key={topic}
-                className="m-2 cursor-pointer text-xl font-bold p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-400"
-                onClick={() => handleTopicClick(topic)}
+      {/* Topic Carousel */}
+      <div className="relative border-b border-gray-200 py-4 mb-10 bg-gray-50">
+        <div className="container mx-auto px-2 sm:px-4 flex items-center">
+          <button
+            onClick={scrollToPrevious}
+            className={`absolute left-2 z-10 p-2 rounded-full bg-white shadow transition-all top-1/2 -translate-y-1/2
+             ${isAtStart ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-100"}`}
+            disabled={isAtStart}
+            aria-label="Scroll Left"
+          >
+            <FaChevronLeft className="w-5 h-5 text-green-700" />
+          </button>
+          <div
+            ref={carouselRef}
+            className="flex overflow-x-auto gap-3 pb-1 px-14 sm:px-24 no-scrollbar scroll-smooth w-full select-none"
+            style={{
+              scrollSnapType: "x mandatory",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            <span
+              className={`py-2 px-6 mx-0.5 cursor-pointer rounded-full whitespace-nowrap flex items-center shadow
+                transition-all duration-200 text-sm sm:text-base ${
+                  !selectedTopic
+                    ? "bg-gradient-to-r from-green-600 to-green-800 text-white font-semibold"
+                    : "text-gray-700 bg-white border hover:bg-gray-100"
+                }`}
+              onClick={() => handleTopicSelect(null)}
+            >
+              All Topics
+            </span>
+            {grouptopic.map((title) => (
+              <span
+                key={title._id}
+                className={`py-2 px-6 mx-0.5 cursor-pointer rounded-full whitespace-nowrap flex items-center shadow
+                  transition-all duration-200 text-sm sm:text-base ${
+                    selectedTopic === title.topic
+                      ? "bg-gradient-to-r from-green-600 to-green-800 text-white font-semibold"
+                      : "text-gray-700 bg-white border hover:bg-gray-100"
+                  }`}
+                onClick={() => handleTopicSelect(title.topic)}
               >
-                <h1>{topic}</h1>
-              </div>
+                {title.topic}
+              </span>
             ))}
           </div>
-
-          {/* Topic Titles */}
-          <div className="flex flex-wrap justify-evenly w-full">
-            {data
-              .filter((pdf) => !selectedTopic||pdf.topic === selectedTopic)
-              .map((pdf, index) => (
-                <div key={index} className="m-2 shadow-md p-4 border rounded-lg bg-white w-full md:w-1/4">
-                     <center>
-                  <img src="" alt="not found" width={200} height={100} className="mx-auto mb-3" />
-                  <h2 className="text-lg text-center">{pdf.title}</h2>
-                 
-                  <button className='bg-green-500 mt-3 p-2 text-white rounded-md w-full'>Watch Video</button>
-                  </center>
-                </div>
-              ))}
-          </div>
-
+          <button
+            onClick={scrollToNext}
+            className={`absolute right-2 z-10 p-2 rounded-full bg-white shadow transition-all top-1/2 -translate-y-1/2
+             ${isAtEnd ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-100"}`}
+            disabled={isAtEnd}
+            aria-label="Scroll Right"
+          >
+            <FaChevronRight className="w-5 h-5 text-green-700" />
+          </button>
         </div>
+      </div>
 
-        {ad.length > 0 &&
-          <div className="w-1/5 hidden md:block">
-            <div>
-
-              {ad.map((item) => (
-                <div className='m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300'>
-                  <Link to={item.link_name}>
-                    <img src={item.photo} alt="Not Found" className='rounded-md' /></Link >
-                </div>
-              ))}
+      {/* Main Content */}
+      <div className="container mx-auto flex flex-col md:flex-row gap-4 mb-10 px-2 sm:px-0">
+        {/* Courses grid */}
+   <main className="flex-1 min-w-0">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {filteredCourses.length > 0 ? (
+      filteredCourses.map((course) => (
+        <article
+          key={course._id}
+          className="p-4 border border-gray-200 rounded-xl shadow hover:shadow-xl transition-shadow duration-200 bg-white flex flex-col"
+        >
+          <div className="flex-1 flex flex-col sm:flex-row gap-4 justify-between items-center">
+            {/* Course Info */}
+            <div className="flex-1 w-full">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+                {course.title}
+              </h3>
+              <Link 
+                to={`/videocourse/${course.subject}/${course._id}`}
+                className="inline-block mt-2" // Added for better button alignment
+              >
+                <button 
+                  className="text-white font-semibold py-2 px-5 rounded bg-green-500 hover:bg-green-700 transition-colors w-full sm:w-auto"
+                  aria-label={`View ${course.title} course`}
+                >
+                  View Course
+                </button>
+              </Link>
+            </div>
+            
+            {/* Logo & Author */}
+            <div className="flex flex-col items-center mt-3 sm:mt-0 w-full sm:w-24">
+              <img
+                src={course.logo || "/placeholder.png"}
+                alt={`${course.title} logo` || "Course logo"}
+                className="w-20 h-20 object-contain bg-gray-100 border rounded"
+                loading="lazy"
+                width="80"
+                height="80"
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                By {course.author_data?.[0]?.name || "Unknown Author"}
+              </p>
             </div>
           </div>
-        }
-      </div >
+        </article>
+      ))
+    ) : (
+      <div className="col-span-full text-center py-12 text-lg text-gray-500">
+        No courses found.
+      </div>
+    )}
+  </div>
+</main>
+        {/* Sidebar Ads (only md and up) */}
+        {ad.length > 0 && (
+          <aside className="hidden md:block md:w-64">
+            <h4 className="font-semibold text-gray-600 mb-2 text-center">Sponsored</h4>
+            {ad.map((item) => (
+              <div key={item._id} className="m-4 hover:scale-105 hover:shadow-lg transition-transform duration-300">
+                <Link to={item.link_name}>
+                  <img src={item.photo} alt="Ad" className="rounded-md shadow" />
+                </Link>
+              </div>
+            ))}
+          </aside>
+        )}
+      </div>
     </>
   );
 };
-
 
 export default VideoCourse;
