@@ -46,6 +46,7 @@ const Subvideocourse = () => {
         ]);
         setSubtopic(topicRes.data);
         setCourseData(courseRes.data);
+        console.log("courseData", courseRes.data);
         setData(courseRes.data); // For Coupon Modal
       } catch (error) {
         console.error("Failed to fetch course data:", error);
@@ -94,37 +95,53 @@ const Subvideocourse = () => {
         <div className="w-full md:w-4/5">
           {/* Author Info */}
           <div className="flex flex-col md:flex-row justify-between items-start mb-8">
-            <div className="w-full md:w-2/3">
-              <h1 className="text-3xl font-bold mb-4 text-[#131656]">{courseData.title}</h1>
-              {courseData.author_data?.map((author) => (
-                <div key={author._id} className="p-4 rounded">
-                  <p className="font-bold text-green">
-                    <span className="text-[#131656]">Author:</span> {author.name}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {author.designation && (
-                      <p className="font-medium text-sm bg-[#0000FF] rounded text-white px-2 py-1">
-                        {author.designation}
-                      </p>
-                    )}
-                    {author.description?.map((desc, i) => (
-                      <p key={i} className="font-medium text-sm bg-[#0000FF] rounded text-white px-2 py-1">
-                        {desc.title}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
+          <div className="w-full md:w-2/3">
+  <h1 className="text-3xl font-bold mb-6 text-[#131656]">{courseData.title}</h1>
+  
+  {courseData.author_data?.map((author) => (
+    <div key={author._id} className="flex flex-col md:flex-row gap-6 mb-8 p-6 bg-white rounded-lg shadow-md">
+      {/* Author Image */}
+      <div className="flex-shrink-0 mx-auto md:mx-0">
+        <img
+          src={author.image}
+          alt={author.name}
+          className="w-40 h-40 object-cover rounded-lg border-2 border-[#131656]"
+        />
+      </div>
+      
+      {/* Author Details */}
+      <div className="flex-grow">
+        <div className="mb-4">
+          <p className="text-lg font-semibold text-[#131656]">
+            <span className="font-bold text-green-600">Author:</span> {author.name}
+          </p>
+        </div>
+        
+        {/* Designation and Description */}
+        <div className="flex flex-wrap gap-3">
+          {author.designation && (
+            <span className="px-3 py-1 bg-[#0000FF] text-white text-sm font-medium rounded-full">
+              {author.designation}
+            </span>
+          )}
+          
+          {author.description?.map((desc, i) => (
+            <span 
+              key={i} 
+              className="px-3 py-1 bg-[#0000FF] text-white text-sm font-medium rounded-full"
+            >
+              {desc.title}
+            </span>
+          ))}
+        </div>
+        
+        {/* Additional author information can go here */}
+      </div>
+    </div>
+  ))}
+</div>
             {/* Right side: Course Logo */}
-            <div className="w-full md:w-1/3 flex justify-center md:justify-end">
-              <img
-                src={courseData.logo}
-                alt={courseData.title}
-                className="w-48 h-auto"
-              />
-            </div>
+        
           </div>
 
           {/* Course Highlights */}
@@ -249,6 +266,7 @@ const Subvideocourse = () => {
         videos={currentVideo}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        data={courseData}
       />
     </div>
   );
