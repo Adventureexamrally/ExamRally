@@ -11,20 +11,20 @@ import {
   useUser,
 } from "@clerk/clerk-react";
 import CustomUserMenu from "./CustomUserButton";
-import offerImage from "../assets/images/offer.png";  // Rename this to avoid naming conflict
+import offerImage from "../assets/images/offer.png"; // Renamed to avoid conflict
 import Api from "../service/Api";
 import { motion } from "framer-motion";
-
 import { UserContext } from "../context/UserProvider";
 
 const Header = () => {
   const { isSignedIn, user, isLoaded } = useUser();
-  const { utcNow } = useContext(UserContext);
-  const [currentTime, setCurrentTime] = useState("");
+  const { utcNow } = useContext(UserContext); // Make sure utcNow is in the correct format (Date)
   const [currentOffer, setCurrentOffer] = useState(null); // Renamed offer state
   const [countdown, setCountdown] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date()); // Add state to track the current time
 
   useEffect(() => {
+    // Fetch the active offer from the API
     const fetchOffer = async () => {
       try {
         const response = await Api.get("offers/active");
@@ -38,36 +38,41 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (!currentOffer || !utcNow) return;
-
+    // Update current time every second
     const interval = setInterval(() => {
-      const updatedUtcNow = new Date(utcNow.getTime() + 1000); // increment time by 1 second
-
-      const end = new Date(currentOffer.endDateTime);
-      const start = new Date(currentOffer.startDateTime);
-      const now = new Date(updatedUtcNow.getTime() + 1000); // simulate next second
-
-      if (now < start) {
-        setCountdown("");
-        return;
-      }
-
-      if (now > end) {
-        setCountdown("");
-        setCurrentOffer(null);
-        return;
-      }
-
-      const timeDiff = end - now;
-      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-      setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      setCurrentTime(prevTime => new Date(prevTime.getTime() + 1000)); // Increment time by 1 second
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [currentOffer, utcNow]);
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
+
+  useEffect(() => {
+    // Recalculate countdown whenever current time or offer changes
+    if (!currentOffer) return;
+
+    const end = new Date(currentOffer.endDateTime);
+    const start = new Date(currentOffer.startDateTime);
+    const now = currentTime;
+
+    if (now < start) {
+      setCountdown(""); // Offer hasn't started yet
+      return;
+    }
+
+    if (now > end) {
+      setCountdown(""); // Offer has ended
+      setCurrentOffer(null); // Clear the offer
+      return;
+    }
+
+    const timeDiff = end - now;
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+    setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+  }, [currentTime, currentOffer]); // Depend on currentTime and currentOffer to recalculate countdown
 
   return (
     <header className="bg-white shadow-md">
