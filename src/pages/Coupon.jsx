@@ -27,7 +27,7 @@ const Coupon = ({ data, setshowmodel }) => {
       if (window.Razorpay) return resolve(true);
       
       const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
       script.onload = () => resolve(true);
       script.onerror = () => {
@@ -140,7 +140,7 @@ const Coupon = ({ data, setshowmodel }) => {
             await Api.post('/orders/verify-payment', {
               userId: user._id,
               courseId: data._id,
-              courseName: data?.name || data?.Title,
+              courseName: data?.name || data?.Title || data?.title,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
