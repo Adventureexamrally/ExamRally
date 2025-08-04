@@ -1,30 +1,33 @@
-import React, { useEffect, useState, useRef,useContext } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import Videojs from './Videojs';
-
 import { UserContext } from '../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from "react-router-dom";
-const SubvideoModal = ({ videos = [], onClose, isOpen }) => {
+
+const SubvideoModal = ({ videos = [], onClose, isOpen,data }) => {
+  console.log(data);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const playerRef = useRef(null);
-  const { user } = useContext(UserContext);
+  const { user, utcNow } = useContext(UserContext);
   const { isSignedIn } = useUser();
+  const navigate = useNavigate();
 
-
-    const navigate = useNavigate(); // use navigate hook
+  const [expireDate, setExpireDate] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
 
   useEffect(() => {
     if (!isSignedIn && selectedVideo) {
       navigate('/sign-in');
     }
-  }, [isSignedIn, selectedVideo, navigate]); 
+  }, [isSignedIn, selectedVideo, navigate]);
+
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.key === "Escape") {
         onClose();
       }
     };
-    
+
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
       document.body.style.overflow = 'hidden';
@@ -36,20 +39,38 @@ const SubvideoModal = ({ videos = [], onClose, isOpen }) => {
     };
   }, [onClose, isOpen]);
 
+ useEffect(() => {
+    if (!utcNow || (!user?.enrolledCourses && !user?.subscriptions)) return;
+
+    const checkExpiry = (course) => {
+      const expireDate = new Date(course?.expiryDate);
+      const timeDiff = expireDate.getTime() - utcNow.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+
+      if (
+        !isNaN(daysLeft) &&
+        daysLeft >= 0 &&
+        course?.courseId?.includes(data._id)
+      ) {
+        setExpireDate(daysLeft); // Set days left
+        return true;
+      }
+
+      return false;
+    };
+
+    const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+    const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
+
+    setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+  }, [user, data, utcNow]);
+
+  console.log(isEnrolled);
+
   const handlePlayerReady = (player) => {
     playerRef.current = player;
-
-    player.on('waiting', () => {
-      console.log('player is waiting');
-    });
-
-    player.on('dispose', () => {
-      console.log('player will dispose');
-    });
-  };
-
-  const backtolist = () => {
-    setSelectedVideo(null);
+    player.on('waiting', () => console.log('player is waiting'));
+    player.on('dispose', () => console.log('player will dispose'));
   };
 
   const handleBackdropClick = (e) => {
@@ -57,13 +78,15 @@ const SubvideoModal = ({ videos = [], onClose, isOpen }) => {
       onClose();
     }
   };
-const handleDownloadClick = (pdfLink) => {
-  if (isSignedIn) {
-    window.open(pdfLink, '_blank');
-  } else {
-    navigate('/sign-in');
-  }
-};
+
+  const handleDownloadClick = (pdfLink) => {
+    if (isSignedIn) {
+      window.open(pdfLink, '_blank');
+    } else {
+      navigate('/sign-in');
+    }
+  };
+
   const handleVideoSelect = (video) => {
     setSelectedVideo(video);
   };
@@ -80,7 +103,6 @@ const handleDownloadClick = (pdfLink) => {
       aria-labelledby="modal-title"
     >
       <div className="relative bg-white rounded-lg shadow-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Close Button (Only shown when video list is visible) */}
         {!selectedVideo && (
           <button
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl font-light focus:outline-none transition-colors z-10"
@@ -97,7 +119,7 @@ const handleDownloadClick = (pdfLink) => {
               {selectedVideo.title}
             </h2>
             <div className="aspect-w-16 aspect-h-9 mb-4">
-              <Videojs 
+              <Videojs
                 options={{
                   autoplay: true,
                   controls: true,
@@ -114,40 +136,88 @@ const handleDownloadClick = (pdfLink) => {
                   }
                 }}
                 onReady={handlePlayerReady}
-                backtolist={backtolist}
+                backtolist={selectedVideo => setSelectedVideo(null)}
+
               />
             </div>
+            <button onClick={() => setSelectedVideo(null)} className="text-blue-600 hover:underline">← Back to list</button>
           </div>
         ) : (
           <div className="p-6">
-           
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {videos.map((video) => {
+{videos.map((video) => {
+  const liveDate = new Date(video.live_date);
+  const showDate = video.live_date ? new Date(video.live_date) : null;
   const isFree = video.type === 'free';
+  const isPaid = video.type === 'paid';
+  const isUserEnrolled = isEnrolled;
+  const utcNow = new Date(); // Current time
+
+  let isLocked = false;
+  let showDateText = 'Coming Soon';
+
+if (isFree) {
+  isLocked = utcNow < liveDate;
+  if (video.show_date) {
+    showDateText = isLocked
+      ? `Available from ${liveDate.toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        })}`
+      : '';
+  } else {
+    showDateText = 'Coming Soon';
+  }
+} else if (isPaid) {
+  if (!isUserEnrolled) {
+    isLocked = true;
+    showDateText = 'Purchase Required';
+  } else {
+    isLocked = utcNow < liveDate;
+    if (video.show_date) {
+      showDateText = isLocked
+        ? `Available from ${liveDate.toLocaleString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+          })}`
+        : '';
+    } else {
+      showDateText = 'Coming Soon';
+    }
+  }
+}
+
 
   return (
     <div
       key={video._id}
-      className={`relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ${
-        !isFree ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
-      }`}
-      onClick={() => {
-        if (isFree) handleVideoSelect(video);
-      }}
-      tabIndex="0"
-      role="button"
-      aria-label={`Play video: ${video.title}`}
-      onKeyDown={(e) => isFree && e.key === 'Enter' && handleVideoSelect(video)}
+      className="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
     >
-      {/* Lock overlay for paid */}
-      {!isFree && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <span className="text-white text-lg font-semibold">🔒 Locked</span>
+      {isLocked && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10 text-white">
+          <span className="text-lg font-semibold">🔒 Locked</span>
+          <span className="text-sm mt-1">{showDateText}</span>
         </div>
       )}
 
-      {/* Thumbnail & play icon */}
-      <div className="relative pt-[56.25%] bg-gray-100">
+      <div
+        className="relative pt-[56.25%] bg-gray-100 cursor-pointer"
+        onClick={() => {
+          if (!isLocked) handleVideoSelect(video);
+        }}
+        tabIndex={!isLocked ? 0 : -1}
+        role="button"
+        aria-label={`Play video: ${video.title}`}
+        onKeyDown={(e) => !isLocked && e.key === 'Enter' && handleVideoSelect(video)}
+      >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center p-4">
             <div className="w-16 h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center shadow-md mx-auto mb-3">
@@ -164,65 +234,42 @@ const handleDownloadClick = (pdfLink) => {
         </div>
       </div>
 
-      {/* Text content */}
       <div className="p-6">
         <h3 className="text-xl font-bold mb-3 text-gray-800 line-clamp-2">
           {video.title}
         </h3>
         <div className="mb-4 space-y-2 text-gray-600">
-          <p className="flex items-start">
-            <strong className="w-20 flex-shrink-0">Subject:</strong> 
-            <span className="flex-grow">{video.subject}</span>
-          </p>
-          <p className="flex items-start">
-            <strong className="w-20 flex-shrink-0">Topic:</strong> 
-            <span className="flex-grow">{video.topic}</span>
-          </p>
-          {video.sub_topic && (
-            <p className="flex items-start">
-              <strong className="w-20 flex-shrink-0">Sub-topic:</strong> 
-              <span className="flex-grow">{video.sub_topic}</span>
-            </p>
-          )}
+          <p><strong>Subject:</strong> {video.subject}</p>
+          <p><strong>Topic:</strong> {video.topic}</p>
+          {video.sub_topic && <p><strong>Sub-topic:</strong> {video.sub_topic}</p>}
         </div>
 
-        {/* PDF Download */}
-       {video.pdf_link ? (
-  <div className="mt-4 flex justify-center">
-    <button
-      onClick={() => isFree ? handleDownloadClick(video.pdf_link) : null}
-      disabled={!isFree}
-      className={`inline-flex items-center px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-        isFree
-          ? 'bg-blue-600 text-white hover:bg-blue-700'
-          : 'bg-gray-400 text-white cursor-not-allowed'
-      }`}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 mr-2"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-          clipRule="evenodd"
-        />
-      </svg>
-      {isFree ? 'Download PDF' : 'PDF Locked'}
-    </button>
-  </div>
-) : (
-  <div className="mt-4 flex justify-center">
-    <span className="text-gray-600 btn disabled border-2 border-green-600">Coming Soon...</span>
-  </div>
-)}
-
+        {video.pdf_link ? (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => isFree ? handleDownloadClick(video.pdf_link) : null}
+              disabled={!isFree}
+              className={`inline-flex items-center px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                isFree ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-400 text-white cursor-not-allowed'
+              }`}
+            >
+              Download PDF
+            </button>
+          </div>
+        ) : (<button
+  disabled
+  className="mt-4 px-4 py-2 bg-gray-300 text-gray-600 rounded cursor-not-allowed text-sm mx-auto block"
+>
+  PDF - Coming Soon...
+</button>
+ )}
       </div>
     </div>
   );
 })}
+
+
+
 
             </div>
           </div>

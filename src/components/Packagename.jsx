@@ -445,6 +445,7 @@ const storeTestStatus = (testId, status, lastQuestionIndex = null, selectedOptio
 useEffect(() => {
   if (user?._id) {
     data?.exams?.forEach((test) => {
+      if(test?._id){
       // First try to get from API
       Api.get(`/results/${user?._id}/${test._id}`)
         .then((res) => {
@@ -481,6 +482,7 @@ useEffect(() => {
             }));
           }
         });
+      }
     });
   }
 }, [data?.exams, user?._id]);
@@ -887,15 +889,7 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : !utcNow || (isEnrolled && expiredate === undefined) ? (
-  // ⏳ Loading state while checking enrollment/expiry
-  <button
-    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-    disabled
-  >
-    Loading...
-  </button>
-) : isEnrolled && new Date(test.live_date) > utcNow ? (
+)  : isEnrolled && new Date(test.live_date) > utcNow ? (
   // 🚧 Coming Soon: Enrolled, but test not yet live
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
@@ -1049,14 +1043,6 @@ useEffect(() => {
       <IoMdLock />
       Locked
     </div>
-  </button>
-) : !utcNow || (isEnrolled && expiredate === undefined) ? (
-  // ⏳ Loading state while checking enrollment/expiry
-  <button
-    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-    disabled
-  >
-    Loading...
   </button>
 ) : isEnrolled && new Date(test.live_date) > utcNow ? (
   // 🚧 Coming Soon: Enrolled, but test not yet live
@@ -1215,15 +1201,7 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : !utcNow || (isEnrolled && expiredate === undefined) ? (
-  // ⏳ Loading state while checking enrollment/expiry
-  <button
-    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-    disabled
-  >
-    Loading...
-  </button>
-) : isEnrolled && new Date(test.live_date) > utcNow ? (
+) :  isEnrolled && new Date(test.live_date) > utcNow ? (
   // 🚧 Coming Soon: Enrolled, but test not yet live
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
