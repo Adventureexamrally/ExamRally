@@ -3,6 +3,7 @@ import Api from "../service/Api";
 import { useNavigate } from "react-router-dom";
 import { FaChevronUp, FaChevronDown, FaCloudDownloadAlt } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
+import { CircularProgress } from "@mui/material";
 
 const CAmonth = ({ course }) => {
   const [CA, setCA] = useState([]);
@@ -12,6 +13,7 @@ const CAmonth = ({ course }) => {
   const { user, utcNow } = useContext(UserContext);
   const [resultData, setResultData] = useState({});
   const [expiredate, setExpirydate] = useState(null);
+  const [loadingTests, setLoadingTests] = useState({}); // Track loading state per exam
   console.log("isEnrolled", isEnrolled);
 
   // Get test status from localStorage
@@ -124,14 +126,65 @@ const CAmonth = ({ course }) => {
     };
   }, [user, CA, utcNow]);
 
+  // Refetch single test status
+  const fetchSingleResult = useCallback(
+    async (examId) => {
+      if (!user?._id) return;
+
+      try {
+        const res = await Api.get(`/results/${user._id}/${examId}`);
+        if (
+          res.data?.status === "completed" ||
+          res.data?.status === "paused"
+        ) {
+          setResultData((prev) => ({
+            ...prev,
+            [examId]: {
+              ...res.data,
+              lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+              selectedOptions: res.data.selectedOptions,
+            },
+          }));
+        }
+      } catch (err) {
+        console.error(`Error fetching result for exam ${examId}:`, err);
+      }
+    },
+    [user]
+  );
+
+  // Handle postMessage events
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.log("Received message:", event.data);
+      
+      // Ensure message is from same origin
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data && event.data.type === "test-status-updated") {
+        const examId = event.data.testId;
+        if (examId) {
+          console.log(`Updating test status for exam ${examId}`);
+          
+          // Set loading state and refetch result
+          setLoadingTests((prev) => ({ ...prev, [examId]: true }));
+          fetchSingleResult(examId).finally(() => {
+            setLoadingTests((prev) => ({ ...prev, [examId]: false }));
+          });
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [fetchSingleResult]);
+
   const openNewWindow = useCallback((url) => {
     const width = window.screen.width;
     const height = window.screen.height;
-    window.open(
-      url,
-      "_blank",
-      `noopener,noreferrer,width=${width},height=${height}`
-    );
+    window.open(url, "_blank", `width=${width},height=${height}`);
   }, []);
 
   const toggleWeek = useCallback((weekTitle) => {
@@ -210,7 +263,7 @@ const CAmonth = ({ course }) => {
 
                               {isEnrolled && model.pdfLink ? (
                                 <button
-                                  className={`py-2 px-4 rounded transition w-full ${
+                                  className={`py-2 px-4 rounded transition w-full flex items-center justify-center ${
                                     testStatus === "completed"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : testStatus === "paused"
@@ -237,12 +290,21 @@ const CAmonth = ({ course }) => {
                                       );
                                     }
                                   }}
+                                  disabled={loadingTests[examId]}
                                 >
-                                  {testStatus === "completed"
-                                    ? "View Result"
-                                    : testStatus === "paused"
-                                    ? "Resume"
-                                    : "Take Test"}
+                                  {loadingTests[examId] ? (
+                                    <CircularProgress
+                                      size={18}
+                                      thickness={4}
+                                      color="inherit"
+                                    />
+                                  ) : testStatus === "completed" ? (
+                                    "View Result"
+                                  ) : testStatus === "paused" ? (
+                                    "Resume"
+                                  ) : (
+                                    "Take Test"
+                                  )}
                                 </button>
                               ) : (
                                 <button
