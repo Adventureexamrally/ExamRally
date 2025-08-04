@@ -2029,7 +2029,7 @@ const handlePauseResume = () => {
   };
 
   const finishTestAndOpenResult = async () => {
-  try {
+  // try {
     // await submitExam();
     
     // Build the result URL
@@ -2039,7 +2039,7 @@ const handlePauseResume = () => {
     // const resultWindow = window.open('', '_self');
     console.log("openerr",window.opener);
     
-  // if (window.opener) {
+  if (window.opener) {
     console.log("Closing the window and notifying parent");
     window.opener.postMessage({
       type: 'test-status-updated',
@@ -2052,18 +2052,20 @@ const handlePauseResume = () => {
     setTimeout(() => {
       window.close();
     }, 300);
-  // } else {
-  //   console.log("Closing the window without parent notification");
-  //       window.open(resultUrl, '_blank');
-  // }
+  } else {
+    console.log("Closing the window without parent notification");
+    window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
+  }
         // window.open(resultUrl, '_blank');
 
     // Close the current test window
     // window.close();
-  } catch (error) {
-    console.error("Error finishing test:", error);
-    alert('Failed to submit the exam. Please try again.');
-  }
+  // } catch (error) {
+  //   console.error("Closing the window without notifying parent:", error);
+  //   // alert('Failed to submit the exam. Please try again.');
+  //   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
+
+  // }
 };
 
 useEffect(() => {

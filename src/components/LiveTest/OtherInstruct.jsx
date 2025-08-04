@@ -2,27 +2,30 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Api from "../../service/Api";
 import { UserContext } from "../../context/UserProvider";
+import { FaSpinner } from "react-icons/fa6";
 
 const OtherInstruct = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(""); // Default language
     const [examData, setExamData] = useState(null);
     const {id} = useParams()
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
 
   const { user } = useContext(UserContext);
 
   const navigate = useNavigate();
   useEffect(() => {
-    // Check if data has already been fetched
-      Api.get(`exams/getExam/${id}`)
-        .then((res) => {
-          if (res.data) {
-            setExamData(res.data);
-            console.log("kl", res.data);
-          }
-        })
-        .catch((err) => console.error("Error fetching data:", err));
-  }, [id]); 
+    setIsLoading(true); // Set loading when starting
+    Api.get(`exams/getExam/${id}`)
+      .then((res) => {
+        if (res.data) {
+          setExamData(res.data);
+        }
+      })
+      .catch((err) => console.error("Error fetching data:", err))
+      .finally(() => setIsLoading(false)); // Always stop loading
+  }, [id]);
+
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
@@ -51,6 +54,15 @@ const handleNextClick = () => {
   const handlePreviousClick = () => {
     navigate(`/instruct/${id}/${user?._id}`);
   };
+
+  // Show loading spinner while data is loading
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+           <FaSpinner className="animate-spin mr-2" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
