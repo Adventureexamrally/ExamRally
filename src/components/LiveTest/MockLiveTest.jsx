@@ -2459,49 +2459,109 @@ console.log(questionTime);
                         }}
                       />
 
-                      {examData.section[currentSectionIndex]?.questions?.[
+                        {examData.section[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.options ? (
+                      ]?.[clickedQuestionIndex - startingIndex]
+                        ?.question_type === "descriptive" ? (
                         <div>
-                          {examData.section[currentSectionIndex]?.questions?.[
-                            (displayLanguage|| selectedLanguage)?.toLowerCase()
-                          ]?.[
-                            clickedQuestionIndex - startingIndex
-                          ]?.options.map((option, index) => (
-                            <div key={index} className="p-1 rounded-lg m-2 ">
-                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-  <input
-    type="radio"
-    className="p-5"
-    id={`option-${index}`}
-    name="exam-option"
-    value={index}
-    checked={selectedOptions[clickedQuestionIndex] === index}
-    onChange={() => {
-      console.log("Selected Option Index:", index);
-      handleOptionChange(index);
-    }}
-    style={{
-      accentColor: "#3B82F6",
-      width: "1.2rem",
-      height: "1.2rem",
-      marginRight: "8px",
-      marginTop: "0px" // Remove vertical offset
-    }}
-  />
-  <label
-    htmlFor={`option-${index}`}
-    dangerouslySetInnerHTML={{
-      __html: option || "No option available",
-    }}
-  />
-</div>
-
-                            </div>
-                          ))}
+                          <textarea
+                            value={
+                              descriptiveData?.[currentSectionIndex]
+                                ?.text?.[0] || ""
+                            }
+                            onChange={handleChange}
+                            onKeyDown={preventShortcuts}
+                            onCopy={(e) => e.preventDefault()}
+                            onCut={(e) => e.preventDefault()}
+                            onPaste={(e) => e.preventDefault()}
+                            disabled={limitReached}
+                            placeholder="Enter your text..."
+                            rows="6"
+                            cols="100"
+                            style={{
+                              width: "100%",
+                              height: "350px",
+                              padding: "10px",
+                              fontSize: "1rem",
+                              borderRadius: "8px",
+                              border: "1px solid #ccc",
+                              resize: "none",
+                              backgroundColor: limitReached
+                                ? "#f5f5f5"
+                                : "#fff",
+                            }}
+                          />
+                          <div
+                            className="fw-bold text-right"
+                            style={{
+                              marginTop: "8px",
+                              color: limitReached ? "red" : "#555",
+                            }}
+                          >
+                            {limitReached
+                              ? "Word limit reached"
+                              : countType === "decrement"
+                              ? `Words remaining: ${Math.max(
+                                  words - wordCounto,
+                                  0
+                                )} / ${words}`
+                              : `Words used: ${wordCounto} / ${words}`}
+                          </div>
                         </div>
                       ) : (
-                        <p>No options available</p>
+                        <>
+                          {examData.section[currentSectionIndex]?.questions?.[
+                            (displayLanguage|| selectedLanguage)?.toLowerCase()
+                          ]?.[clickedQuestionIndex - startingIndex]?.options ? (
+                            <div>
+                              {examData.section[
+                                currentSectionIndex
+                              ]?.questions?.[selectedLanguage?.toLowerCase()]?.[
+                                clickedQuestionIndex - startingIndex
+                              ]?.options.map((option, index) => (
+                                <div key={index} className="p-1 rounded-lg m-2">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      marginBottom: "10px",
+                                    }}
+                                  >
+                                    <input
+                                    className="p-5"
+                                      type="radio"
+                                      id={`option-${index}`}
+                                      name="exam-option"
+                                      value={index}
+                                      checked={
+                                        selectedOptions[
+                                          clickedQuestionIndex
+                                        ] === index
+                                      }
+                                      onChange={() => handleOptionChange(index)}
+                                      style={{
+                                        accentColor: "#3B82F6",
+                                        width: "1.2rem",
+                                        height: "1.2rem",
+                                        marginRight: "8px",
+                                        marginTop: "0px", // Remove vertical offset
+                                      }}
+                                    />
+                                    &nbsp;&nbsp;
+                                    <label
+                                      htmlFor={`option-${index}`}
+                                      dangerouslySetInnerHTML={{
+                                        __html: option || "No option available",
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p>No options available</p>
+                          )}
+                        </>
                       )}
                     </div>
                     <div className="md:flex hidden items-center">
