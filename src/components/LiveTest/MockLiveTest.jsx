@@ -34,7 +34,16 @@ const MockLiveTest = () => {
   const [scoreBreakdown, setScoreBreakdown] = useState(null);
   const { user } = useContext(UserContext);
   const [wordCount, setWordCount] = useState(0);
-  const [descriptiveData, setDescriptiveData] = useState([]);
+  const [descriptiveData, setDescriptiveData] = useState(
+  examData?.section?.map(() => ({
+    text: [""],
+    corrections: [],
+    scoreBreakdown: null,
+    scoreData: {},
+    keywords: [],
+    wordCount: 0
+  })) || []
+);
   const location = useLocation();
   const  selectedLanguage= location.state?.language || "English";
   const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
@@ -886,7 +895,6 @@ setIsPaused(true);
         });
     }
   }, [id]);
-  console.log("timetakenfromdb:", timeTakenFromDB);
 
   useEffect(() => {
     const totalSectionTime =
@@ -896,7 +904,6 @@ setIsPaused(true);
     const timeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
 
-    console.log("Time taken from DB:", timeTaken);
 
     // Store timeTaken in an array at the index of currentSectionIndex
     settimeTakenFromDB(timeTaken);
@@ -1068,34 +1075,40 @@ const checkGrammar = async (currentText) => {
 
     console.log("🔍 Checking grammar for text:", textToCheck);
 
+    // Encode the parameters
+    const encodedParams = new URLSearchParams();
+    encodedParams.set("text", textToCheck);
+    encodedParams.set("language", "en-US");
+
     const response = await axios.post(
-      "https://ginger4.p.rapidapi.com/correction",
-      textToCheck,
+      "https://grammarbot.p.rapidapi.com/check",
+      encodedParams,
       {
-        params: {
-          lang: "US",
-          generateRecommendations: "false",
-          flagInfomralLanguage: "true",
-        },
         headers: {
           "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
-          "x-rapidapi-host": "ginger4.p.rapidapi.com",
-          "Content-Type": "text/plain",
+          "x-rapidapi-host": "grammarbot.p.rapidapi.com",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
 
-    const issues = response?.data?.GingerTheDocumentResult?.Corrections || [];
+    const issues = response?.data?.matches || [];
     console.log("✅ Grammar issues found:", issues);
 
-    // Update local state
-    setCorrections(issues);
-    const scoreData = calculateScore(issues); // This should return a score breakdown object
-    const scoreBreakdown = issues?.[0]?.Suggestions || [];
+    // Placeholder for custom logic
+    const scoreData = calculateScore(issues); // You must define this function
+    const scoreBreakdown = issues.map((issue) => ({
+      message: issue.message,
+      suggestion: issue.replacements?.[0]?.value || "No suggestion",
+      offset: issue.offset,
+      length: issue.length,
+      context: issue.context,
+    }));
 
-    setScoreBreakdown(scoreBreakdown);
+    // Update local state (you can remove if this isn't React code)
+    setCorrections?.(issues);
+    setScoreBreakdown?.(scoreBreakdown);
 
-    // Return structured data for use in the caller
     return {
       corrections: issues,
       scoreBreakdown,
@@ -1110,7 +1123,6 @@ const checkGrammar = async (currentText) => {
     };
   }
 };
-
   // Grammar check function
 const calculateScore = async (issues) => {
   const keywords = getKeywords();
@@ -1450,6 +1462,7 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
+              descriptive: descriptiveData[sectionIndex],
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -2102,8 +2115,6 @@ console.log(questionTime);
 
   return () => clearInterval(timerRef.current);
 }, [clickedQuestionIndex]);
-
-console.log(questionTime);
 
   const closeAndNotifyParent = () => {
   if (window.opener) {
