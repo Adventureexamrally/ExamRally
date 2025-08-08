@@ -872,7 +872,14 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
-
+<div className="flex justify-between items-center py-2 px-4 text-center">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700">
+      <span className="font-semibold text-gray-600">Language</span>: {test.show_language}
+    </p>
+  </div>
+</div>
                                 {/* Check if the current date is greater than or equal to live_date */}
 
                         {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
@@ -1028,6 +1035,14 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                                <div className="flex justify-between items-center py-2 px-4 text-center">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700">
+      <span className="font-semibold text-gray-600">Language</span>: {test.show_language}
+    </p>
+  </div>
+</div>
                                 {/* Check if the current date is greater than or equal to live_date */}
 
                                     {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
@@ -1185,6 +1200,14 @@ useEffect(() => {
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                            <div className="flex justify-between items-center py-2 px-4 text-center">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700">
+      <span className="font-semibold text-gray-600">Language</span>: {test.show_language}
+    </p>
+  </div>
+</div>
                             {/* Check if the current date is greater than or equal to live_date */}
 
                                  {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 

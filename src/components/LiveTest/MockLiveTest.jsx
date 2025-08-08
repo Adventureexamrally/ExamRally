@@ -99,6 +99,7 @@ useEffect(() => {
 
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name, setShow_name] = useState("");
+  const [duration, setDuration] = useState(0);
   const [t_questions, sett_questions] = useState("");
   useEffect(() => {
     // Check if data has already been fetched
@@ -110,6 +111,7 @@ useEffect(() => {
             console.log("res.data", res.data);
             setIsDataFetched(true);
             setShow_name(res.data.show_name);
+            // setDuration(res.data.duration);
             sett_questions(res.data.t_questions); // Mark that data is fetched
             console.log("kl", res.data.show_name);
           }
@@ -333,6 +335,28 @@ console.log("handle option change result",result);
     //   ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
     // };
   };
+
+  // At the top of your component
+const [activeTimer, setActiveTimer] = useState(null); // 'question' or 'section'
+
+// Cleanup all timers on unmount
+useEffect(() => {
+  return () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  };
+}, []);
+
+useEffect(() => {
+  console.log('Timer setup for:', activeTimer);
+  // ... timer setup code ...
+
+  return () => {
+    console.log('Cleaning up timer');
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+}, [clickedQuestionIndex]);
 
   const [questionStartTime, setQuestionStartTime] = useState(new Date());
   const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
@@ -767,15 +791,13 @@ const handleSubmitSection = () => {
     }
   }, [id]);
 
+
   useEffect(() => {
     const totalSectionTime =
       examData?.section[currentSectionIndex]?.t_time * 60;
-
     // Get time taken from resultData
     const timeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-
-
     // Store timeTaken in an array at the index of currentSectionIndex
     settimeTakenFromDB(timeTaken);
 
@@ -785,6 +807,7 @@ const handleSubmitSection = () => {
     // Set remaining time
     settimeminus(remainingTime);
   }, [examData, currentSectionIndex, resultData]);
+
 
   const updateSectionTime = () => {
     if (!examDataSubmission || timeTakenFromDB.length === 0) return;
@@ -856,6 +879,7 @@ const handleSubmitSection = () => {
     sectionTimes,
     timeminus,
     examData,
+    duration,
     isPaused,
     timeTakenFromDB,
   ]);
@@ -1808,12 +1832,77 @@ const handleChange = (e) => {
     }
   };
 
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
-  };
+  // const formatTime = (time) => {
+  //   const minutes = Math.floor(time / 60);
+  //   const seconds = time % 60;
+  //   return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+  // };
 
+  
+  
+  const [descriptiveTimeLeft, setDescriptiveTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+
+
+const formatTime = (timeInSeconds) => {
+  const minutes = Math.floor(timeInSeconds / 60);
+  const seconds = timeInSeconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
+// // Initialize timer on first render and when question changes
+useEffect(() => {
+ 
+
+  // Only start timer for descriptive questions
+  if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
+    // Reset timer to 30 minutes when new descriptive question is shown
+    setDescriptiveTimeLeft(30 * 60);
+    
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setDescriptiveTimeLeft(prev => {
+        if (prev <= 0) {
+          clearInterval(timerRef.current);
+          handleSubmitSection(); // Auto-submit when time runs out
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  // // Cleanup function to clear timer when component unmounts
+  // return () => {
+  //   if (timerRef.current) {
+  //     clearInterval(timerRef.current);
+  //   }
+  // };
+}, [ examData]); // Dependencies for when to reset timer
+
+
+// // Add this useEffect to handle the countdown
+// useEffect(() => {
+//   if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
+//     const timer = setInterval(() => {
+//       setDescriptiveTimeLeft(prev => {
+//         if (prev <= 0) {
+//           clearInterval(timer);
+//           handleSubmitSection(); // Auto-submit when time runs out
+//           return 0;
+//         }
+//         return prev - 1;
+//       });
+//     }, 1000);
+
+//     return () => clearInterval(timer);
+//   }
+// }, [currentSectionIndex, clickedQuestionIndex, descriptiveTimeLeft]);
+
+//   useEffect(() => {
+//     const compositetime = examData?.duration * 60;
+//     console.log("Composite time:", compositetime);
+//     setDuration(compositetime);
+//   }, [examData, currentSectionIndex, duration, descriptiveTimeLeft]);
  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullScreen = () => {
@@ -2021,6 +2110,18 @@ const handleChange = (e) => {
   // }
 };
 
+
+useEffect(() => {
+  // Timer interval setup
+  timerRef.current = setInterval(() => {
+    setQuestionTime(prev => prev + 1);
+  }, 1000);
+
+  return () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+}, []);
+
 useEffect(() => {
   const now = new Date();
 
@@ -2076,21 +2177,32 @@ console.log(questionTime);
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-        <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
-          <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
-          <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-               <h1 className=" text-center text-black bg-gray-100 p-2">
-              Time Left:{formatTime(timeminus)}
-            </h1>
-          {/* Fullscreen Toggle Button */}
-          <button
-            onClick={toggleFullScreen}
-            className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-          >
-            {/* Show the appropriate icon based on fullscreen state */}
-            {isFullscreen ? <FaCompress /> : <FaExpand />}
-          </button>
-        </div>
+       <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
+  {/* Show Name */}
+  <h1 className="mt-3 text-sm md:text-xl font-bold">{show_name}</h1>
+
+  {/* Logo */}
+  <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+
+  {/* Timer Display */}
+  {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
+    <h1 className="text-center text-black bg-gray-100 p-2">
+      Time Left: {formatTime(descriptiveTimeLeft)}
+    </h1>
+  ) : (
+    <h1 className="text-center text-black bg-gray-100 p-2">
+      Time Left: {formatTime(timeminus)}
+    </h1>
+  )}
+  {/* Fullscreen Toggle Button */}
+  <button
+    onClick={toggleFullScreen}
+    className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
+  >
+    {isFullscreen ? <FaCompress /> : <FaExpand />}
+  </button>
+</div>
+
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
         <div>
@@ -2211,6 +2323,17 @@ console.log(questionTime);
                           ? " font-medium underline"
                           : ""
                       }`}
+        onClick={() => {
+      const newStartingIndex = examData.section
+        .slice(0, index)
+        .reduce(
+          (acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+          0
+        );
+      setCurrentSectionIndex(index);
+      setClickedQuestionIndex(newStartingIndex);
+    }}
+
               >
                 {section.name}
                 <div className="relative group ml-2 d-inline-block">
@@ -2606,9 +2729,15 @@ console.log(questionTime);
                 </h1>
               </div>
             </div>
-            <h1 className=" text-center text-black bg-gray-100 p-2">
-              Time Left:{formatTime(timeminus)}
-            </h1>
+          {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
+    <h1 className="text-center text-black bg-gray-100 p-2">
+      Time Left: {formatTime(descriptiveTimeLeft)}
+    </h1>
+  ) : (
+    <h1 className="text-center text-black bg-gray-100 p-2">
+      Time Left: {formatTime(timeminus)}
+    </h1>
+  )}
             <center>
               <button
                 onClick={handlePauseResume}
