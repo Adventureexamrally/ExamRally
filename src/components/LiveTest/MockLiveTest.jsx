@@ -39,7 +39,7 @@ const MockLiveTest = () => {
     text: [""],
     corrections: [],
     scoreBreakdown: null,
-    scoreData: {},
+    scoreData: [],
     keywords: [],
     wordCount: 0
   })) || []
@@ -719,159 +719,30 @@ const handleNextClick = () => {
 
   // Your submitExam function with the necessary modifications
 const handleSubmitSection = () => {
-  const now = new Date();
-  const questionsForSection =
-    examData?.section[currentSectionIndex]?.questions?.[
-      selectedLanguage?.toLowerCase()
-    ] || [];
-  const sectionStartIndex = startingIndex;
-  const sectionEndIndex = sectionStartIndex + questionsForSection.length - 1;
+  // Save current descriptive answer
+  handleDescriptiveTest();
 
-  // ─── 2) If we were actually on a question in *this* section, save its time ───
-  if (
-    questionStartTime !== null &&
-    clickedQuestionIndex !== null &&
-    clickedQuestionIndex >= sectionStartIndex &&
-    clickedQuestionIndex <= sectionEndIndex
-  ) {
-    const now = new Date();
-    const secondsSpent = Math.floor((now.getTime() - questionStartTime.getTime()) / 1000);
-    setQuestionTimes((prev) => ({
-      ...prev,
-      [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
-    }));
-  }
-
-  // Stop question timer and clear interval
-if (timerRef.current) {
-  clearInterval(timerRef.current);
-  timerRef.current = null;
-}
-
-// Clear the current questionStartTime
-setQuestionStartTime(null);
-
-// Make sure you pause visually as well
-setIsPaused(true);
-
-
-  // ─── 3) Always clear the question start time so we don’t double‑count ───
-  setQuestionStartTime(null);
-  console.log("Handling section submission...");
-  setIsPaused(true); // ⏸️ Pause the timer
-
-  // ✅ Save section-level time
-  const timeSpent = Math.floor(
-    (now - currentSectionStartTimeRef.current) / 1000
-  );
-  setSectionTimes((prev) => ({
-    ...prev,
-    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-  }));
-  currentSectionStartTimeRef.current = new Date(); // Reset for next section
-
-    // Reset timer for accuracy
-    currentSectionStartTimeRef.current = new Date();
-    const currentSection = examData?.section[currentSectionIndex];
-    console.log("Current Section:", currentSection);
-
-    if (!currentSection) {
-      console.log("No current section found. Exiting function.");
-      return;
-    }
-
-    // Get the questions for the current section and selected language
-    const questions =
-      currentSection.questions?.[selectedLanguage?.toLowerCase()];
-    console.log("Questions for the selected language:", questions);
-
-    if (!questions) {
-      console.log("No questions for the selected language. Exiting function.");
-      return; // If no questions for the selected language, return early.
-    }
-
-    // Total questions in the current section
-    const totalQuestions = questions.length;
-    console.log("Total Questions in Section:", totalQuestions);
-
-    // Calculate answered and unanswered questions
-    const answeredQuestions = selectedOptions
-      .slice(startingIndex, startingIndex + totalQuestions)
-      .filter((option) => option !== null).length;
-    console.log("Answered Questions Count:", answeredQuestions);
-
-    const notAnsweredQuestions = totalQuestions - answeredQuestions;
-    console.log("Not Answered Questions Count:", notAnsweredQuestions);
-
-    // Calculate visited and not visited questions
-    const visitedQuestionsCount = visitedQuestions.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
-    console.log("Visited Questions Count:", visitedQuestionsCount);
-
-    const notVisitedQuestions = totalQuestions - visitedQuestionsCount;
-    console.log("Not Visited Questions Count:", notVisitedQuestions);
-
-    // Calculate marked for review questions
-    const reviewedQuestions = markedForReview.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
-    console.log("Reviewed Questions Count:", reviewedQuestions);
-
-    // Set the section summary
-    const sectionSummary = {
-      sectionName: currentSection.name, // Add the section name
-      answeredQuestions,
-      notAnsweredQuestions,
-      visitedQuestionsCount,
-      notVisitedQuestions,
-      reviewedQuestions,
-      totalQuestions,
-    };
-    console.log("Section Summary:", sectionSummary);
-    console.log(questionTimes);
-
-    // Store section summary
-    setSectionSummaryData((prevData) => {
-      const updatedData = prevData.filter(
-        (data) => data.sectionName !== sectionSummary.sectionName
-      );
-      return [...updatedData, sectionSummary];
-    });
-    
-    updateSectionTime();
-    // Display modal
-    setShowModal(true);
-    console.log("Modal shown:", showModal);
-
-    // If modal is shown, and you're ready to go to the next section or submit the exam
-    if (showModal) {
-      console.log("Modal is shown, checking for next section or submission.");
-
-      if (currentSectionIndex < examData.section.length - 1) {
-        console.log("Moving to the next section.");
-        setCurrentSectionIndex((prev) => prev + 1);
-
-        // Move to the first question of the next section
-        const newStartingIndex = examData?.section
-          ?.slice(0, currentSectionIndex + 1)
-          .reduce(
-            (acc, section) =>
-              acc +
-              section.questions?.[selectedLanguage?.toLowerCase()]?.length,
-            0
-          );
-        console.log("New Starting Index for Next Section:", newStartingIndex);
-
-        setClickedQuestionIndex(newStartingIndex);
-      } else {
-        console.log("Submitting the exam.");
-        submitExam();
-      }
-    }
+  // Then proceed with section submission
+  updateSectionTime();
+  
+  // Calculate section summary
+  const currentSection = examData?.section[currentSectionIndex];
+  const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
+  
+  const sectionSummary = {
+    sectionName: currentSection.name,
+    answeredQuestions: questions.filter((q, index) => selectedOptions[index] !== null).length,
+    notAnsweredQuestions: questions.filter((q, index) => selectedOptions[index] === null).length,
+    visitedQuestionsCount: questions.filter((q, index) => selectedOptions[index] !== null || q.visited).length,
+    notVisitedQuestions: questions.filter((q, index) => !q.visited).length,
+    reviewedQuestions: questions.filter((q, index) => q.reviewed).length,
+    totalQuestions: questions.length,
+    descriptiveData: descriptiveData[currentSectionIndex]
   };
+
+  setSectionSummaryData(prev => [...prev, sectionSummary]);
+  setShowModal(true);
+};
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
@@ -1004,12 +875,12 @@ setIsPaused(true);
 
               return {
                 text: [descriptiveQuestion?.text?.[0] || ""],
-                // corrections: [],
-                // scoreBreakdown: [],
-                // scoreData: [],
-                // expectedWordCount: [descriptiveQuestion?.wordCount || 0],
-                // keywords: descriptiveQuestion?.keywords || [],
-                // date: [new Date().toISOString()],
+                corrections: descriptiveQuestion?.corrections || [],
+                scoreBreakdown: descriptiveQuestion?.scoreBreakdown || [],
+                scoreData: descriptiveQuestion?.scoreData || [],
+                expectedWordCount: [descriptiveQuestion?.wordCount || 0],
+                keywords: descriptiveQuestion?.keywords || [],
+                date: [new Date().toISOString()],
               };
             }
           );
@@ -1060,30 +931,33 @@ setIsPaused(true);
 
 
   // ✅ Check grammar for the current section's text
-const checkGrammar = async (currentText) => {
+// Update your checkGrammar function
+const checkGrammar = async (text) => {
   try {
-    const textToCheck = currentText?.trim();
-
-    if (!textToCheck) {
-      console.warn("⚠️ No text provided for grammar check.");
+    // Validate input
+    if (typeof text !== 'string') {
+      console.warn("Invalid text input for grammar check:", text);
       return {
         corrections: [],
-        scoreBreakdown: {},
-        scoreData: {},
+        scoreBreakdown: null,
+        scoreData: calculateScore("", [])
       };
     }
 
-    console.log("🔍 Checking grammar for text:", textToCheck);
+    const textToCheck = text.trim();
+    if (!textToCheck) {
+      return {
+        corrections: [],
+        scoreBreakdown: null,
+        scoreData: calculateScore("", [])
+      };
+    }
 
-    // Encode the parameters
-    const encodedParams = new URLSearchParams();
-    encodedParams.set("text", textToCheck);
-    encodedParams.set("language", "en-US");
-
+    // Rest of your grammar check API call
     const response = await axios.post(
       "https://grammarbot.p.rapidapi.com/check",
-      encodedParams,
-      {
+      new URLSearchParams({ text: textToCheck, language: "en-US" }),
+       {
         headers: {
           "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
           "x-rapidapi-host": "grammarbot.p.rapidapi.com",
@@ -1092,104 +966,155 @@ const checkGrammar = async (currentText) => {
       }
     );
 
-    const issues = response?.data?.matches || [];
-    console.log("✅ Grammar issues found:", issues);
-
-    // Placeholder for custom logic
-    const scoreData = calculateScore(issues); // You must define this function
-    const scoreBreakdown = issues.map((issue) => ({
-      message: issue.message,
-      suggestion: issue.replacements?.[0]?.value || "No suggestion",
-      offset: issue.offset,
-      length: issue.length,
-      context: issue.context,
-    }));
-
-    // Update local state (you can remove if this isn't React code)
-    setCorrections?.(issues);
-    setScoreBreakdown?.(scoreBreakdown);
+    const corrections = response?.data?.matches || [];
+    const scoreData = calculateScore(textToCheck, corrections);
 
     return {
-      corrections: issues,
-      scoreBreakdown,
-      scoreData,
+      corrections,
+      scoreBreakdown: corrections.map(issue => ({
+        message: issue.message,
+        suggestion: issue.replacements?.[0]?.value || '',
+        offset: issue.offset,
+        length: issue.length,
+        context: issue.context,
+        type: issue.rule?.issueType?.toLowerCase().includes('spelling') ? 
+              'spelling' : 'grammar'
+      })),
+      scoreData
     };
   } catch (error) {
-    console.error("❌ Grammar check failed:", error?.response?.data || error.message);
+    console.error("Grammar check failed:", error);
     return {
       corrections: [],
-      scoreBreakdown: {},
-      scoreData: {},
+      scoreBreakdown: null,
+      scoreData: calculateScore(text?.toString() || "", [])
     };
   }
 };
   // Grammar check function
-const calculateScore = async (issues) => {
+// const calculateScore = async (issues) => {
+//   const keywords = getKeywords();
+//   const expectedWordCount =
+//     examData?.section?.[currentSectionIndex]?.questions?.[
+//       selectedLanguage?.toLowerCase()
+//     ]?.[0]?.words_limit || 100;
+
+//   const currentText =
+//     descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+
+//   let spellingErrors = 0;
+//   let grammarErrors = 0;
+
+//   // Count spelling vs grammar issues
+//   issues.forEach((issue) => {
+//     const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
+//     if (category.includes("capitalization") || category.includes("spelling")) {
+//       spellingErrors++;
+//     } else {
+//       grammarErrors++;
+//     }
+//   });
+
+// //   // Word count
+//   const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
+
+//   // Score calculations
+//   const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+//   const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
+//   const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
+
+//   // Keyword match score
+//   let matchedKeywords = 0;
+//   const lowerText = currentText.toLowerCase();
+//   keywords.forEach((kw) => {
+//     if (lowerText.includes(kw)) matchedKeywords++;
+//   });
+//   const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
+
+//   // Total score
+//   const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
+
+//   const scoreData = {
+//     spellingScore,
+//     grammarScore,
+//     wordCountScore,
+//     keywordScore,
+//     totalScore: Math.round(totalScore),
+//     totalWords,
+//   };
+
+//   setScoreData(scoreData);
+
+//   if (currentSectionIndex === examData?.section?.length - 1) {
+//     await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
+//   }
+
+//   // Debug logs
+//   console.log("✅ Score Data:", scoreData);
+//   console.log("Text:", currentText);
+//   console.log("Issues:", issues);
+//   console.log("Keywords:", keywords);
+//   console.log("Expected Word Count:", expectedWordCount);
+
+  
+// };
+
+
+const calculateScore = (text, corrections = []) => {
+  // Ensure text is a string
+  const textToScore = typeof text === 'string' ? text : '';
+  
   const keywords = getKeywords();
-  const expectedWordCount =
-    examData?.section?.[currentSectionIndex]?.questions?.[
-      selectedLanguage?.toLowerCase()
-    ]?.[0]?.words_limit || 100;
+  const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[
+    selectedLanguage?.toLowerCase()
+  ]?.[0]?.words_limit || 100;
 
-  const currentText =
-    descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+  // Classify and validate corrections
+  const validCorrections = Array.isArray(corrections) ? corrections : [];
+  const issues = validCorrections.map(issue => ({
+    ...issue,
+    type: (issue?.rule?.issueType?.toLowerCase() || '').includes('spelling') ? 
+          'spelling' : 'grammar',
+    message: issue.message || 'Unknown issue',
+    suggestion: issue?.replacements?.[0]?.value || ''
+  }));
 
-  let spellingErrors = 0;
-  let grammarErrors = 0;
+  // Count errors
+  const spellingErrors = issues.filter(i => i.type === 'spelling').length;
+  const grammarErrors = issues.filter(i => i.type === 'grammar').length;
 
-  // Count spelling vs grammar issues
-  issues.forEach((issue) => {
-    const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
-    if (category.includes("capitalization") || category.includes("spelling")) {
-      spellingErrors++;
-    } else {
-      grammarErrors++;
-    }
-  });
+  // Calculate word count safely
+  const wordCount = textToScore.trim().split(/\s+/).filter(w => w.trim().length > 0).length;
 
-  // Word count
-  const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
+  // Calculate scores with bounds checking
+  const spellingScore = Math.max(0, Math.min(35, 35 - (spellingErrors * 2)));
+  const grammarScore = Math.max(0, Math.min(35, 35 - (grammarErrors * 2)));
+  const wordCountScore = Math.max(0, Math.min(20, Math.round((wordCount / expectedWordCount) * 20)));
+  
+  // Keyword matching
+  const matchedKeywords = keywords.filter(kw => 
+    textToScore.toLowerCase().includes(kw.toLowerCase())
+  ).length;
+  const keywordScore = keywords.length > 0 
+    ? Math.round((matchedKeywords / keywords.length) * 10)
+    : 0;
 
-  // Score calculations
-  const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
-  const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
-  const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
-
-  // Keyword match score
-  let matchedKeywords = 0;
-  const lowerText = currentText.toLowerCase();
-  keywords.forEach((kw) => {
-    if (lowerText.includes(kw)) matchedKeywords++;
-  });
-  const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
-
-  // Total score
-  const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
-
-  const scoreData = {
+  return {
     spellingScore,
     grammarScore,
     wordCountScore,
     keywordScore,
-    totalScore: Math.round(totalScore),
-    totalWords,
+    totalScore: Math.min(100, spellingScore + grammarScore + wordCountScore + keywordScore),
+    totalWords: wordCount,
+    spellingErrors,
+    grammarErrors,
+    matchedKeywords,
+    keywordCount: keywords.length,
+    expectedWordCount,
+    issues
   };
-
-  setScoreData(scoreData);
-
-  if (currentSectionIndex === examData?.section?.length - 1) {
-    await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
-  }
-
-  // Debug logs
-  console.log("✅ Score Data:", scoreData);
-  console.log("Text:", currentText);
-  console.log("Issues:", issues);
-  console.log("Keywords:", keywords);
-  console.log("Expected Word Count:", expectedWordCount);
 };
-
-  const submitExam = () => {
+  const submitExam =async () => {
     updateSectionTime()
     console.log("submitExam called");
     const now = new Date();
@@ -1232,6 +1157,11 @@ const calculateScore = async (issues) => {
     }
 
     const currentSection = examData.section[currentSectionIndex];
+        for (let i = 0; i < examData?.section?.length; i++) {
+      await handleDescriptiveTest(i);
+    }
+
+
     const endTime = new Date();
     const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
     const formattedTotalTime = formatTime(timeTakenInSeconds);
@@ -1330,6 +1260,7 @@ const calculateScore = async (issues) => {
         : -currentSection.minus_mark
       : 0;
 console.log("ques score",questionScore);
+
 
       return {
         question: question?.question,
@@ -1462,7 +1393,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionIndex],
+            descriptive: descriptiveData[sectionStartIndex + index] || {
+              text: [""],
+              corrections: [],
+              scoreBreakdown: null,
+              scoreData: [],
+              keywords: [],
+              wordCount: 0
+            },
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -1478,7 +1416,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionIndex],
+              descriptive: descriptiveData[sectionStartIndex + index] || {
+                text: [""],
+                corrections: [],
+                scoreBreakdown: null,
+                scoreData: [],
+                keywords: [],
+                wordCount: 0
+              },
             })),
             tamil: section.questions.tamil.map((question, index) => ({
               question: question?.question,
@@ -1494,7 +1439,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionIndex],
+              descriptive: descriptiveData[sectionStartIndex + index] || {
+                text: [""],
+                corrections: [],
+                scoreBreakdown: null,
+                scoreData: [],
+                keywords: [],
+                wordCount: 0
+              },
             })),
           },
 
@@ -1555,71 +1507,61 @@ const skippedQuestions = sectionVisited - sectionAnswered;
     });
   };
 
-  const handleDescriptiveTest = async () => {
-  console.warn("▶ Function started: handleDescriptiveTest");
-
-  const prevText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
-  console.warn("📌 Previous text retrieved:", prevText);
-
-  const currentText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
-  console.warn("📌 Current text retrieved:", currentText);
-console.log("0",scoreData)
-  // Run first grammar check
-  const grammarResult = await checkGrammar(currentText);
-  console.warn("✅ Grammar check results received",grammarResult);
-
-  const corrections = grammarResult?.corrections || [];
-  const scoreBreakdown = grammarResult?.scoreBreakdown || {};
-  // const scoreData = grammarResult?.scoreData || {};
-  
-  console.warn("🔧 Corrections:", corrections);
-  console.warn("📊 Score Breakdown:", scoreBreakdown);
-  console.warn("📈 Score Data:", scoreData[currentSectionIndex]);
-
-  const keywords = getKeywords(currentText);
-  console.warn("🔑 Extracted keywords:", keywords);
-
-  const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.words_limit;
-  console.warn("🔢 Expected word count:", expectedWordCount);
-
-  const currentDescriptiveData = {
-    corrections: Array.isArray(corrections) ? corrections : [],
-    scoreBreakdown: Object.entries(scoreBreakdown).map(([metric, value]) => ({ metric, value })),
-    scoreData: scoreData,
-    expectedWordCount: [expectedWordCount],
-    keywords: keywords,
-    date: [new Date().toISOString()],
-    text: [currentText],
-  };
-
-  console.warn("📦 Constructed currentDescriptiveData:", currentDescriptiveData);
-
-  // Update state
-  setDescriptiveData((prev) => {
-    console.warn("🛠 Updating descriptiveData state...");
-    const updated = [...prev];
-    updated[currentSectionIndex] = {
-      ...updated[currentSectionIndex],
-      ...currentDescriptiveData,
-    };
-    console.warn("🆕 Updated descriptiveData at index", currentSectionIndex, ":", updated[currentSectionIndex]);
-    return updated;
-  });
-
-  console.warn("🕒 Scheduling second grammar check after delay...");
-
-  setTimeout(async () => {
-    const newText = currentText;
-    console.warn("⏰ Timeout triggered. Rechecking grammar...");
-
-    if (prevText !== newText) {
-      console.warn("✏️ Text has changed. Running grammar check again...");
-      await checkGrammar(newText);
-    } else {
-      console.warn("🔁 Text hasn't changed. Running grammar check anyway...");
-      await checkGrammar(currentText);
+const handleDescriptiveTest = async (sectionIndex = currentSectionIndex) => {
+  try {
+    const currentText = descriptiveData?.[sectionIndex]?.text?.[0] || "";
+    
+    // Skip empty text
+    if (!currentText.trim()) {
+      return {
+        corrections: [],
+        scoreData: calculateScore("", []),
+        scoreBreakdown: null
+      };
     }
-  }, 200);
+
+    const { corrections, scoreData, scoreBreakdown } = await checkGrammar(currentText);
+    
+    // Update state immutably
+    setDescriptiveData(prev => {
+      const newData = [...prev];
+      
+      // Initialize section data if it doesn't exist
+      if (!newData[sectionIndex]) {
+        newData[sectionIndex] = {
+          text: [""],
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: null,
+          keywords: [],
+          wordCount: 0
+        };
+      }
+      
+      // Update the specific section's data
+      newData[sectionIndex] = {
+        ...newData[sectionIndex],
+        text: [currentText],
+        corrections,
+        scoreBreakdown,
+        scoreData,
+        wordCount: scoreData?.totalWords || 0
+      };
+      
+      return newData;
+    });
+
+    // Update corrections and score data
+    if (sectionIndex === currentSectionIndex) {
+      setCorrections(corrections);
+      setScoreData(scoreData);
+    }
+
+    return { corrections, scoreData, scoreBreakdown };
+  } catch (error) {
+    console.error(`Error in section ${sectionIndex} descriptive test:`, error);
+    return null;
+  }
 };
 
 
@@ -1727,47 +1669,45 @@ const handlePauseResume = () => {
   }, [examData, currentSectionIndex, selectedLanguage]);
   // console.log("Set Text Value", "", text[currentSectionIndex]);
 
-  const handleChange = (e) => {
-    let inputText = e.target.value;
-    let wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+const handleChange = (e) => {
+  const inputText = e.target.value;
+  const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+  const currentCount = wordsArray.length;
+  
+  setWordCounto(currentCount);
 
-    const currentCount = wordsArray.length;
-    setWordCounto(currentCount);
+  const limitReached = 
+    (countType === "decrement" && currentCount >= words) ||
+    (countType === "increment" && currentCount >= words);
+  setLimitReached(limitReached);
 
-    const limitReached =
-      (countType === "decrement" && currentCount >= words) ||
-      (countType === "increment" && currentCount >= words);
-    setLimitReached(limitReached);
-
-    if (countType === "decrement" && currentCount > words) {
-      wordsArray = wordsArray.slice(0, words);
-      inputText = wordsArray.join(" ");
-    }
-
-    // const updatedText = [...text];
-    // updatedText[currentSectionIndex] = inputText;
-    // setText(updatedText);
-
-   setDescriptiveData((prev) => {
-  const updated = [...prev];
-
-  // If the index is undefined, initialize it
-  if (!updated[currentSectionIndex]) {
-    updated[currentSectionIndex] = {};
+  let finalText = inputText;
+  if (countType === "decrement" && currentCount > words) {
+    finalText = wordsArray.slice(0, words).join(" ");
   }
 
-  updated[currentSectionIndex] = {
-    ...updated[currentSectionIndex],
-    text: [inputText],
-  };
-
-  // console.warn("Updated descriptiveData at index", currentSectionIndex, updated[currentSectionIndex]);
-
-  return updated;
-});
-
-  };
-
+  setDescriptiveData(prev => {
+    const updated = [...prev];
+    if (!updated[currentSectionIndex]) {
+      updated[currentSectionIndex] = {
+        text: [""],
+        corrections: [],
+        scoreBreakdown: null,
+        scoreData: [],
+        keywords: [],
+        wordCount: 0
+      };
+    }
+    
+    updated[currentSectionIndex] = {
+      ...updated[currentSectionIndex],
+      text: [finalText],
+      wordCount: currentCount
+    };
+    
+    return updated;
+  });
+};
   const preventShortcuts = (e) => {
     if (
       (e.ctrlKey || e.metaKey) &&

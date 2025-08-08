@@ -313,94 +313,94 @@ const LiveResult = () => {
 
                             {/* Score Breakdown */}
                             <div className="space-y-6 mt-4">
-                              {item.corrections?.map((correction, idx) => (
-                                <div
-                                  key={idx}
-                                  className="relative p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                                >
-                                  <div className="relative z-10">
-                                    <div className="flex items-center mb-4">
-                                      <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
-                                        <svg
-                                          className="w-6 h-6 text-blue-800 animate-pulse"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                          />
-                                        </svg>
-                                      </div>
-                                      <h3 className="text-xl font-bold text-gray-800">
-                                        Correction #{idx + 1}
-                                      </h3>
-                                    </div>
+                      {item.corrections?.map((correction, idx) => (
+  <div
+    key={idx}
+    className="relative p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+  >
+    <div className="relative z-10">
+      <div className="flex items-center mb-4">
+        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+          <svg
+            className="w-6 h-6 text-blue-800 animate-pulse"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <h3 className="text-xl font-bold text-gray-800">
+          Correction #{idx + 1}
+        </h3>
+      </div>
 
-                                    <div className="space-y-3 pl-16">
-                                      <div className="flex">
-                                        <span className="w-32 font-medium text-gray-600">
-                                          Type:
-                                        </span>
-                                        <span className="text-gray-800 font-medium">
-                                          {correction.TopCategoryIdDescription || "N/A"}
-                                        </span>
-                                      </div>
+      <div className="space-y-3 pl-16">
+        <div className="flex">
+          <span className="w-32 font-medium text-gray-600">Message:</span>
+          <span className="text-gray-800 font-medium">
+            {correction.message || "N/A"}
+          </span>
+        </div>
 
-                                      <div className="flex">
-                                        <span className="w-32 font-medium text-gray-600">
-                                          Mistake:
-                                        </span>
-                                        <span className="text-gray-800">
-                                          {correction.MistakeText || "N/A"}
-                                        </span>
-                                      </div>
+        <div className="flex">
+          <span className="w-32 font-medium text-gray-600">Mistake:</span>
+          <span className="text-gray-800">
+            {correction.context?.sentence?.substring(
+              correction.context?.offset,
+              correction.context?.offset + correction.context?.length
+            ) || "N/A"}
+          </span>
+        </div>
 
-                                      {correction.Suggestions && (
-                                        <div className="pt-3">
-                                          <h4 className="flex items-center text-lg font-semibold text-gray-700 mb-2">
-                                            <svg
-                                              className="w-5 h-5 text-blue-800 mr-2"
-                                              fill="none"
-                                              stroke="currentColor"
-                                              viewBox="0 0 24 24"
-                                            >
-                                              <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                              />
-                                            </svg>
-                                            Suggestions
-                                          </h4>
+        {correction.replacements?.length > 0 && (
+          <div className="pt-3">
+            <h4 className="flex items-center text-lg font-semibold text-gray-700 mb-2">
+              <svg
+                className="w-5 h-5 text-blue-800 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Suggestions
+            </h4>
 
-                                          <ul className="space-y-2">
-                                            {correction.Suggestions.map((sugg, i) => (
-                                              <li
-                                                key={i}
-                                                className="pl-6 py-2 border-l-4 border-blue-200 bg-blue-50 rounded-r-lg transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:translate-x-1"
-                                              >
-                                                <div className="flex items-start">
-                                                  <span className="flex-shrink-0 w-5 h-5 mt-0.5 mr-2 text-blue-800">
-                                                    <i className="bi bi-stars"></i>
-                                                  </span>
-                                                  <span className="text-gray-700">
-                                                    {sugg.Text || sugg.i || "N/A"}
-                                                  </span>
-                                                </div>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
+            <ul className="space-y-2">
+              {correction.replacements.map((sugg, i) => (
+                <li
+                  key={i}
+                  className="pl-6 py-2 border-l-4 border-blue-200 bg-blue-50 rounded-r-lg transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:translate-x-1"
+                >
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 w-5 h-5 mt-0.5 mr-2 text-blue-800">
+                      <i className="bi bi-stars"></i>
+                    </span>
+                    <span className="text-gray-700">
+                      {sugg.value || "N/A"}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+))}
+
                             </div>
                           </div>
                         ))}
