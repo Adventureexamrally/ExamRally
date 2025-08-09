@@ -339,7 +339,7 @@ const fetchTestStatuses = useCallback(async (testId) => {
   <p className="font-medium">Questions</p>
   <p className="flex items-center gap-1">
     <BsQuestionSquare size={20} color="orange" />
-    {test.section.reduce((total, section) => total + section.t_question, 0)}
+       {test.t_questions}
   </p>
 </div>
 
@@ -347,7 +347,7 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       <FaTachometerAlt size={20} color="green" />
-                                      {test.section.reduce((total, section) => total + section.t_mark, 0)}
+                                        {test.t_marks}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -357,7 +357,8 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                         size={20}
                                         color="red"
                                       />
-                                     {test.section.reduce((total, section) => total + section.t_time, 0)} Min
+                                      {/* {test.} */}
+                                     {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
