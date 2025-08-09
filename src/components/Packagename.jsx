@@ -872,11 +872,12 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
-<div className="flex justify-between items-center py-2 px-4 text-center">
+<div className="flex justify-center items-center py-2 px-4 text-center w-full">
   <div className="flex items-center gap-2">
     <i className="bi bi-translate text-gray-500"></i>
-    <p className="font-medium text-gray-700">
-      <span className="font-semibold text-gray-600">Language</span>: {test.show_language}
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
     </p>
   </div>
 </div>
@@ -1035,11 +1036,12 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                                <div className="flex justify-between items-center py-2 px-4 text-center">
+                               <div className="flex justify-center items-center py-2 px-4 text-center w-full">
   <div className="flex items-center gap-2">
     <i className="bi bi-translate text-gray-500"></i>
-    <p className="font-medium text-gray-700">
-      <span className="font-semibold text-gray-600">Language</span>: {test.show_language}
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
     </p>
   </div>
 </div>
@@ -1200,11 +1202,12 @@ useEffect(() => {
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                            <div className="flex justify-between items-center py-2 px-4 text-center">
+                           <div className="flex justify-center items-center py-2 px-4 text-center w-full">
   <div className="flex items-center gap-2">
     <i className="bi bi-translate text-gray-500"></i>
-    <p className="font-medium text-gray-700">
-      <span className="font-semibold text-gray-600">Language</span>: {test.show_language}
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
     </p>
   </div>
 </div>
