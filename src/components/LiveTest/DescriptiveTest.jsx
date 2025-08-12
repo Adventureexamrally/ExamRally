@@ -15,7 +15,6 @@ import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
 import { Avatar } from "@mui/material";
 import axios from "axios";
-import { use } from "react";
 const DescriptiveTest = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -102,7 +101,6 @@ useEffect(() => {
   const [show_name, setShow_name] = useState("");
   const [duration, setDuration] = useState(0);
   const [t_questions, sett_questions] = useState("");
-  const [t_mark,setMark]=useState(" ");
   useEffect(() => {
     // Check if data has already been fetched
     if (!isDataFetched) {
@@ -112,17 +110,17 @@ useEffect(() => {
             setExamData(res.data);
             console.log("res.data", res.data);
             setIsDataFetched(true);
-
+            
             setShow_name(res.data.show_name);
             // setDuration(res.data.duration);
             sett_questions(res.data.t_questions); // Mark that data is fetched
-            setMark(res.data.t_marks);
             console.log("kl", res.data.show_name);
           }
         })
         .catch((err) => console.error("Error fetching data:", err));
     }
-  }, [id]); 
+  }, [id]); // Only trigger when `id` changes
+
   const [getresult, setGetresult] = useState([]);
   // In the useEffect that fetches exam state
   useEffect(() => {
@@ -606,23 +604,43 @@ useEffect(() => {
 const handleNextClick = () => {
   updateSectionTime();
 
-  if (
-    examData &&
-    examData.section[currentSectionIndex] &&
-    examData.section[currentSectionIndex].questions?.[
-      selectedLanguage?.toLowerCase()
-    ]
-  ) {
-    const totalQuestions =
-      examData.section[currentSectionIndex].questions[
-        selectedLanguage?.toLowerCase()
-      ]?.length;
+  // Save current descriptive answer
+  handleDescriptiveTest();
 
-    if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-      setClickedQuestionIndex(clickedQuestionIndex + 1);
+  if (!examData || !examData.section) return;
+
+  const currentSectionQuestions = 
+    examData.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()] || [];
+  
+  const isLastQuestionInSection = 
+    clickedQuestionIndex - startingIndex >= currentSectionQuestions.length - 1;
+
+  if (isLastQuestionInSection) {
+    // If it's the last question in the current section
+    if (currentSectionIndex < examData.section.length - 1) {
+      // Move to next section
+      const nextSectionIndex = currentSectionIndex + 1;
+      const nextSectionStartingIndex = examData.section
+        .slice(0, nextSectionIndex)
+        .reduce(
+          (acc, section) => 
+            acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+          0
+        );
+
+      setCurrentSectionIndex(nextSectionIndex);
+      setClickedQuestionIndex(nextSectionStartingIndex);
     } else {
-      setClickedQuestionIndex(startingIndex);
+    //   // If it's the last question of the last section, stay on this question
+    //   // Or you could wrap around to the first question
+    //   setClickedQuestionIndex(0);
+    //   setCurrentSectionIndex(0);
+    handleSectionCompletion();
+    console.log("Welcome our Coding...")
     }
+  } else {
+    // Move to next question in current section
+    setClickedQuestionIndex(clickedQuestionIndex + 1);
   }
 };
 
@@ -1537,8 +1555,7 @@ const skippedQuestions = sectionVisited - sectionAnswered;
 const handleDescriptiveTest = async (sectionIndex = currentSectionIndex) => {
   try {
     const currentText = descriptiveData?.[sectionIndex]?.text?.[0] || "";
-    console.log("Current text:", descriptiveData?.[sectionIndex]);
-
+    
     // Skip empty text
     if (!currentText.trim()) {
       return {
@@ -1763,7 +1780,7 @@ const handleChange = (e) => {
   const handleSectionCompletion = async () => {
     handleDescriptiveTest();
     console.log("handleSectionCompletion called");
-    setIsPaused(false);
+  await  setIsPaused(false);
 
     if (true) {
       console.log("Section is complete");
@@ -2005,99 +2022,108 @@ useEffect(() => {
   const [markedForReviewCount, setMarkedForReviewCount] = useState(0);
   const [answeredAndMarkedCount, setAnsweredAndMarkedCount] = useState(0);
 
-  useEffect(() => {
-    const calculateCounts = () => {
-      let answered = 0;
-      let notAnswered = 0;
-      let notVisited = 0;
-      let markedForReviewCount = 0;
-      let answeredAndMarked = 0;
-
-      examData?.section[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
-      ]?.forEach((_, index) => {
-        const fullIndex = startingIndex + index;
-
-        const isAnswered = selectedOptions[fullIndex] !== null;
-        const isVisited = visitedQuestions.includes(fullIndex);
-        const isMarked = markedForReview.includes(fullIndex);
-
-        if (isMarked && isAnswered) {
-          answeredAndMarked++; // ✅ Answered + Marked
-        } else if (isMarked && !isAnswered) {
-          markedForReviewCount++; // ✅ Just Marked
-        } else if (isAnswered) {
-          answered++; // ✅ Only Answered
-        } else if (isVisited) {
-          notAnswered++; // ✅ Visited but Not Answered
-        } else {
-          notVisited++; // ✅ Not Visited at all
-        }
-      });
-
-      setAnsweredCount(answered);
-      setNotAnsweredCount(notAnswered);
-      setNotVisitedCount(notVisited);
-      setMarkedForReviewCount(markedForReviewCount);
-      setAnsweredAndMarkedCount(answeredAndMarked);
-    };
-
-    calculateCounts();
-  }, [
-    selectedOptions,
-    visitedQuestions,
-    markedForReview,
-    examData,
-    currentSectionIndex,
-    selectedLanguage,
-    startingIndex,
-  ]);
-
-  const getSectionCounts = (
-    section,
-    selectedOptions,
-    visitedQuestions,
-    markedForReview,
-    selectedLanguage,
-    startingIndex
-  ) => {
+useEffect(() => {
+  const calculateCounts = () => {
     let answered = 0;
     let notAnswered = 0;
     let notVisited = 0;
     let markedForReviewCount = 0;
     let answeredAndMarked = 0;
 
-    const questions = section?.questions?.[selectedLanguage?.toLowerCase()];
+    examData?.section?.forEach((section, sectionIndex) => {
+      const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+      
+      questions?.forEach((_, questionIndex) => {
+        const fullIndex = examData.section
+          .slice(0, sectionIndex)
+          .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) + questionIndex;
 
-    questions?.forEach((_, index) => {
-      const fullIndex = startingIndex + index;
+        // Check for descriptive answer
+        const hasAnswer = descriptiveData?.[sectionIndex]?.text?.[0]?.trim() !== "" && 
+                         descriptiveData?.[sectionIndex]?.text?.[0] !== undefined;
+        
+        const isVisited = visitedQuestions.includes(fullIndex);
+        const isMarked = markedForReview.includes(fullIndex);
 
-      const isAnswered = selectedOptions[fullIndex] !== null;
-      const isVisited = visitedQuestions.includes(fullIndex);
-      const isMarked = markedForReview.includes(fullIndex);
-
-      if (isMarked && isAnswered) {
-        answeredAndMarked++;
-      } else if (isMarked && !isAnswered) {
-        markedForReviewCount++;
-      } else if (isAnswered) {
-        answered++;
-      } else if (isVisited) {
-        notAnswered++;
-      } else {
-        notVisited++;
-      }
+        if (isMarked && hasAnswer) {
+          answeredAndMarked++;
+        } else if (isMarked && !hasAnswer) {
+          markedForReviewCount++;
+        } else if (hasAnswer) {
+          answered++;
+        } else if (isVisited) {
+          notAnswered++;
+        } else {
+          notVisited++;
+        }
+      });
     });
 
-    return {
-      answered,
-      notAnswered,
-      notVisited,
-      markedForReviewCount,
-      answeredAndMarked,
-    };
+    setAnsweredCount(answered);
+    setNotAnsweredCount(notAnswered);
+    setNotVisitedCount(notVisited);
+    setMarkedForReviewCount(markedForReviewCount);
+    setAnsweredAndMarkedCount(answeredAndMarked);
   };
 
+  calculateCounts();
+}, [
+  descriptiveData, // Added to dependencies
+  visitedQuestions,
+  markedForReview,
+  examData,
+  selectedLanguage,
+]);
+
+const getSectionCounts = (
+  section,
+  sectionIndex,
+  visitedQuestions,
+  markedForReview,
+  selectedLanguage
+) => {
+  let answered = 0;
+  let notAnswered = 0;
+  let notVisited = 0;
+  let markedForReviewCount = 0;
+  let answeredAndMarked = 0;
+
+  const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+  const startingIndex = examData.section
+    .slice(0, sectionIndex)
+    .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+
+  questions?.forEach((_, questionIndex) => {
+    const fullIndex = startingIndex + questionIndex;
+    
+    // Check for descriptive answer
+    const hasAnswer = descriptiveData?.[sectionIndex]?.text?.[0]?.trim() !== "" && 
+                     descriptiveData?.[sectionIndex]?.text?.[0] !== undefined;
+    
+    const isVisited = visitedQuestions.includes(fullIndex);
+    const isMarked = markedForReview.includes(fullIndex);
+
+    if (isMarked && hasAnswer) {
+      answeredAndMarked++;
+    } else if (isMarked && !hasAnswer) {
+      markedForReviewCount++;
+    } else if (hasAnswer) {
+      answered++;
+    } else if (isVisited) {
+      notAnswered++;
+    } else {
+      notVisited++;
+    }
+  });
+
+  return {
+    answered,
+    notAnswered,
+    notVisited,
+    markedForReviewCount,
+    answeredAndMarked,
+  };
+};
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
@@ -2733,49 +2759,50 @@ console.log(questionTime);
               </div>
             </div>
 
-            <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-              {examData?.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.map((_, index) => {
-                const fullIndex = startingIndex + index;
-                const currentSection = examData.section[currentSectionIndex];
-                const timeFormatted = formatTime(timeLeft);
+        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+  {examData?.section[currentSectionIndex]?.questions?.[
+    selectedLanguage?.toLowerCase()
+  ]?.map((_, index) => {
+    const fullIndex = startingIndex + index;
+    const currentSection = examData.section[currentSectionIndex];
+    const timeFormatted = formatTime(timeLeft);
 
-                let className = "";
-                if (selectedOptions[fullIndex] !== null) {
-                  className = "answerImg";
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " mdansmarkedImg";
-                  }if (selectedOptions[fullIndex] == null) {
-                    className="notansImg";
-                  }
-                }
-                 else if (visitedQuestions.includes(fullIndex)) {
-                  className = "notansImg";
-                } else {
-                  className = "notVisitImg";
-                }
+    let className = "";
+    
+    // Check if the question has been answered (for descriptive questions)
+    const hasAnswer = descriptiveData?.[currentSectionIndex]?.text?.[0]?.trim() !== "" && 
+                     descriptiveData?.[currentSectionIndex]?.text?.[0] !== undefined;
+    
+    if (hasAnswer) {
+      className = "answerImg";
+      if (markedForReview.includes(fullIndex)) {
+        className += " mdansmarkedImg";
+      }
+    } else if (visitedQuestions.includes(fullIndex)) {
+      className = "notansImg";
+    } else {
+      className = "notVisitImg";
+    }
 
-                if (markedForReview.includes(fullIndex)) {
-                  className += " reviewed mdmarkedImg";
-                }
+    if (markedForReview.includes(fullIndex)) {
+      className += " reviewed mdmarkedImg";
+    }
 
-                return (
-                  <div key={fullIndex}>
-                    <span
-                      onClick={() => {
-                        console.log("Clicked question index:", fullIndex);
-                        setClickedQuestionIndex(fullIndex);
-                        // setQuestionTime(0);
-                      }}
-                      className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                    >
-                      {fullIndex + 1}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+    return (
+      <div key={fullIndex}>
+        <span
+          onClick={() => {
+            console.log("Clicked question index:", fullIndex);
+            setClickedQuestionIndex(fullIndex);
+          }}
+          className={`fw-bold flex align-items-center justify-content-center ${className}`}
+        >
+          {fullIndex + 1}
+        </span>
+      </div>
+    );
+  })}
+</div>
           </div>
         </div>
       </div>
@@ -2801,10 +2828,9 @@ console.log(questionTime);
                 <span className="block md:hidden">Clear</span>
                 <span className="hidden md:block"> Clear Response</span>
               </button>
-            </div>
-            {examData?.section?.[currentSectionIndex]?.questions?.[
-              selectedLanguage?.toLowerCase()
-            ]?.length > 0 && (
+           </div>
+            {examData?.section?.length > 0 && (
+          
               <button
                 onClick={handleNextClick}
                 className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
