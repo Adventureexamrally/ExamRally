@@ -263,7 +263,7 @@ useEffect(() => {
         setCurrentSectionIndex(0);
 
         // Calculate the starting question index (first question of the first section)
-        const startingIndex = 0; // First question of the first section
+        const startingIndex = clickedQuestionIndex; // First question of the first section
         setClickedQuestionIndex(startingIndex);
 
         // Optionally, reset other states if needed
@@ -271,7 +271,7 @@ useEffect(() => {
         setIsClicked(false); // Reset clicked status for the question
 
         // Reset all tracking states
-        setVisitedQuestions([0]); // Clear visited questions
+        setVisitedQuestions([clickedQuestionIndex]); // Clear visited questions
         setMarkedForReview([]); // Clear marked for review
         setAnsmarkforrev([]); // Clear answered and marked for review
         setQuestionTimes({});
