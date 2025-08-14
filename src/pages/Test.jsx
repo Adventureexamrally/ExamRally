@@ -1806,7 +1806,7 @@ console.log(questionTime);
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-        <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
+        <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
           <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
           <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
                <h1 className=" text-center text-black bg-gray-100 p-1">
@@ -2259,7 +2259,7 @@ console.log(questionTime);
           )}
 
           <div className="container">
-            <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+            <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
               {/* Profile Image and Link */}
               <div>
                 <Avatar
@@ -2341,7 +2341,7 @@ console.log(questionTime);
                 </p>
               </div>
             </div>
-
+ <h1 className="mt-1 mb-1 text-sm  text-white bg-blue-500 p-1">Section : {examData?.section[currentSectionIndex]?.name}</h1>
             <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
               {examData?.section[currentSectionIndex]?.questions?.[
                 selectedLanguage?.toLowerCase()

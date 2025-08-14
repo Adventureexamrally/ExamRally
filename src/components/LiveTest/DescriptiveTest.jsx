@@ -2238,7 +2238,7 @@ console.log(questionTime);
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-       <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-around items-center">
+       <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
   {/* Show Name */}
   <h1 className="mt-3 text-sm md:text-xl font-bold">{show_name}</h1>
 
@@ -2671,7 +2671,7 @@ console.log(questionTime);
           )}
 
           <div className="container">
-            <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+            <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
               {/* Profile Image and Link */}
               <div>
                 <Avatar
@@ -2818,7 +2818,7 @@ console.log(questionTime);
                 className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
               >
                 <span className="block md:hidden">Mark & Next</span>
-                <span className="hidden md:block">Mark for Review</span>
+                <span className="hidden md:block">Mark for Review & Next</span>
               </button>
               &nbsp;&nbsp;&nbsp;&nbsp;
               <button

@@ -901,8 +901,8 @@ useEffect(() => {
   // 🚧 Coming Soon: Enrolled, but test not yet live
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
-      test.show_date 
-        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+      test.show_date
+        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed'
         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
     shadow-md hover:shadow-lg`}>
@@ -1066,7 +1066,7 @@ useEffect(() => {
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
       test.show_date 
-        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
     shadow-md hover:shadow-lg`}>
@@ -1232,7 +1232,7 @@ useEffect(() => {
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
       test.show_date 
-        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
     shadow-md hover:shadow-lg`}>
