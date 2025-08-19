@@ -2099,6 +2099,7 @@ useEffect(() => {
     console.log("Closing the window without parent notification");
     window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
   }
+   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
         // window.open(resultUrl, '_blank');
 
     // Close the current test window
