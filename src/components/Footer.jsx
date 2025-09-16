@@ -63,7 +63,7 @@ function Footer() {
           console.error("Failed to fetch UTC time:", error);
           // handle error as needed
         });
-    }, []);
+    }, [year]);
 console.warn(year)
   return (
     <>

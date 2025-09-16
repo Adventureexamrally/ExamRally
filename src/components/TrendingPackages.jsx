@@ -39,7 +39,6 @@ const TrendingPackages = () => {
   };
 
   const [packagesWithEnrollment, setPackagesWithEnrollment] = useState([]);
-  const [duration,setDuration]=useState([])
     const [utcNow, setUtcNow] = useState(null);
     
   // 1. Fetch UTC time from server
@@ -53,7 +52,7 @@ const TrendingPackages = () => {
           console.error("Failed to fetch UTC time:", error);
           // handle error as needed
         });
-    }, []);
+    }, [data, user]);
 
 useEffect(() => {
   if (!data.length) return;
