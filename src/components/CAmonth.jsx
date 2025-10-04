@@ -225,7 +225,7 @@ const CAmonth = ({ course }) => {
               </div>
               {expandedWeeks[week.title] && (
                 <div className="p-3 bg-gray-100">
-                  <div className="flex flex-wrap justify-center items-center gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {week.model.map((model) => {
                       const examId = model.exams?.[0];
                       const testStatus =
@@ -261,59 +261,55 @@ const CAmonth = ({ course }) => {
                                 </button>
                               )}
 
-                              {isEnrolled  ? (
-                                <button
-                                  className={`py-2 px-2 rounded transition w-full flex items-center justify-center ${
-                                    testStatus === "completed"
+                              <button
+                                className={`py-2 px-2 rounded transition w-full flex items-center justify-center ${!isSignedIn
+                                  ? "bg-blue-500 text-white hover:bg-blue-600" // show active button for not signed-in users
+                                  : !isEnrolled
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed" // disable only for signed-in but not enrolled
+                                    : testStatus === "completed"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : testStatus === "paused"
-                                      ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                                      : "bg-blue-500 text-white hover:bg-blue-600"
+                                        ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                                        : "bg-blue-500 text-white hover:bg-blue-600"
                                   }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                      navigate("/sign-in");
-                                      return;
-                                    }
+                                onClick={() => {
+                                  // 🔹 If not signed in → redirect to sign-in
+                                  if (!isSignedIn) {
+                                    navigate("/sign-in");
+                                    return;
+                                  }
 
-                                    if (testStatus === "completed") {
-                                      openNewWindow(
-                                        `/liveresult/${examId}/${user._id}`
-                                      );
-                                    } else if (testStatus === "paused") {
-                                      openNewWindow(
-                                        `/mocklivetest/${examId}/${user._id}`
-                                      );
-                                    } else {
-                                      openNewWindow(
-                                        `/instruct/${examId}/${user._id}`
-                                      );
-                                    }
-                                  }}
-                                  disabled={loadingTests[examId]}
-                                >
-                                  {loadingTests[examId] ? (
-                                    <CircularProgress
-                                      size={18}
-                                      thickness={4}
-                                      color="inherit"
-                                    />
-                                  ) : testStatus === "completed" ? (
-                                    "View Result"
-                                  ) : testStatus === "paused" ? (
-                                    "Resume"
-                                  ) : (
-                                    "Take Test"
-                                  )}
-                                </button>
-                              ) : (
-                                <button
-                                  disabled
-                                  className="py-2 px-4 rounded w-full bg-gray-300 text-gray-500 cursor-not-allowed"
-                                >
-                                  Test Disabled
-                                </button>
-                              )}
+                                  // 🔹 If not enrolled → do nothing
+                                  if (!isEnrolled) {
+                                    return;
+                                  }
+
+                                  // 🔹 Normal test flow
+                                  if (testStatus === "completed") {
+                                    openNewWindow(`/liveresult/${examId}/${user._id}`);
+                                  } else if (testStatus === "paused") {
+                                    openNewWindow(`/mocklivetest/${examId}/${user._id}`);
+                                  } else {
+                                    openNewWindow(`/instruct/${examId}/${user._id}`);
+                                  }
+                                }}
+                                disabled={loadingTests[examId] || (!isEnrolled && isSignedIn)} // still disable only if enrolled=false and signed in
+                              >
+                                {loadingTests[examId] ? (
+                                  <CircularProgress size={18} thickness={4} color="inherit" />
+                                ) : !isEnrolled && isSignedIn ? (
+                                  "Test Disabled"
+                                ) : testStatus === "completed" ? (
+                                  "View Result"
+                                ) : testStatus === "paused" ? (
+                                  "Resume"
+                                ) : (
+                                  "Take Test"
+                                )}
+                              </button>
+
+
+
                             </div>
 
                             {/* {!model.pdfLink && (
