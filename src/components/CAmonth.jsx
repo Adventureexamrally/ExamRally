@@ -261,9 +261,9 @@ const CAmonth = ({ course }) => {
                                 </button>
                               )}
 
-                              {isEnrolled && model.pdfLink ? (
+                              {isEnrolled  ? (
                                 <button
-                                  className={`py-2 px-4 rounded transition w-full flex items-center justify-center ${
+                                  className={`py-2 px-2 rounded transition w-full flex items-center justify-center ${
                                     testStatus === "completed"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : testStatus === "paused"
@@ -316,12 +316,12 @@ const CAmonth = ({ course }) => {
                               )}
                             </div>
 
-                            {!model.pdfLink && (
+                            {/* {!model.pdfLink && (
                               <p className="text-red-500 text-sm font-medium text-center mt-2">
                                 PDF not available — test is currently disabled
                                 until the content is uploaded.
                               </p>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       );
