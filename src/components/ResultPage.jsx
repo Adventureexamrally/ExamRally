@@ -462,9 +462,9 @@ const ResultPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
                       {sect.incorrect} / -{wrongMarks.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.s_score.toFixed(2)} / -{wrongMarks.toFixed(2)}
-                    </td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+  {sect?.s_score?.toFixed(2) ?? '0.00'} / -{wrongMarks?.toFixed(2) ?? '0.00'}
+</td>
                   </tr>
                 );
               })}

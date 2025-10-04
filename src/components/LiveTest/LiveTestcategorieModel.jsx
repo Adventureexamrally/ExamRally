@@ -21,7 +21,7 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   const { id } = useParams();
   const queryClient = useQueryClient(); // Add this
 const [loadingTests, setLoadingTests] = useState({});
-
+console.error(data)
   // Fetch UTC time
   const { 
     data: utcNow, 
@@ -289,10 +289,23 @@ const fetchTestStatuses = useCallback(async (testId) => {
               data-bs-dismiss="modal"
             ></button>
           </div>
-          <div
-            className="modal-body"
-            style={{ maxHeight: "400px", overflowY: "auto" }}
-          >
+       <div
+  className="modal-body"
+  style={{ 
+    maxHeight: "400px", 
+    overflowY: "auto",
+    scrollbarWidth: "thin",
+    msOverflowStyle: "auto",
+    /* WebKit (Chrome/Safari) */
+    "&::-webkit-scrollbar": {
+      width: "8px"
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "#ccc",
+      borderRadius: "4px"
+    }
+  }}
+>
             <div className="row">
               <div className="mt-3 bg-slate-50 py-2 px-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
@@ -336,20 +349,18 @@ const fetchTestStatuses = useCallback(async (testId) => {
 
                                 <div className="flex justify-center items-center gap-4 mt-2">
                                   <div className="flex flex-col items-center">
-                                    <p className="font-medium">Questions</p>
-                                    <p className="flex items-center gap-1">
-                                      <BsQuestionSquare
-                                        size={20}
-                                        color="orange"
-                                      />
-                                      {test.section[0].t_question}
-                                    </p>
-                                  </div>
+  <p className="font-medium">Questions</p>
+  <p className="flex items-center gap-1">
+    <BsQuestionSquare size={20} color="orange" />
+       {test.t_questions}
+  </p>
+</div>
+
                                   <div className="flex flex-col items-center">
                                     <p className="font-medium">Marks</p>
                                     <p className="flex items-center gap-1">
                                       <FaTachometerAlt size={20} color="green" />
-                                      {test.section[0].t_mark}
+                                        {test.t_marks}
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-center">
@@ -359,11 +370,22 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                         size={20}
                                         color="red"
                                       />
-                                      {test.section[0].t_time}
+                                      {/* {test.} */}
+                                     {test.duration} Min
                                     </p>
                                   </div>
                                 </div>
-                                <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                       <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+<div className="flex justify-center items-center py-2 px-4 text-center w-full">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
+    </p>
+  </div>
+</div>
+
                                 {(!enrollmentStatus.isEnrolled &&
                                   (isPaidTest(test) ||
                                     new Date(test.live_date) > utcNow)) ||
@@ -382,7 +404,7 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
                                     ${
                                       test.show_date 
-                                        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+                                        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
                                         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
                                     }
                                     shadow-md hover:shadow-lg`}>

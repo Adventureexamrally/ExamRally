@@ -15,8 +15,7 @@ import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
 import { Avatar } from "@mui/material";
 import axios from "axios";
-import DescriptiveTest from "./DescriptiveTest";
-const MockLiveTest = () => {
+const DescriptiveTest = () => {
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
@@ -111,6 +110,7 @@ useEffect(() => {
             setExamData(res.data);
             console.log("res.data", res.data);
             setIsDataFetched(true);
+            
             setShow_name(res.data.show_name);
             // setDuration(res.data.duration);
             sett_questions(res.data.t_questions); // Mark that data is fetched
@@ -604,23 +604,43 @@ useEffect(() => {
 const handleNextClick = () => {
   updateSectionTime();
 
-  if (
-    examData &&
-    examData.section[currentSectionIndex] &&
-    examData.section[currentSectionIndex].questions?.[
-      selectedLanguage?.toLowerCase()
-    ]
-  ) {
-    const totalQuestions =
-      examData.section[currentSectionIndex].questions[
-        selectedLanguage?.toLowerCase()
-      ]?.length;
+  // Save current descriptive answer
+  handleDescriptiveTest();
 
-    if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-      setClickedQuestionIndex(clickedQuestionIndex + 1);
+  if (!examData || !examData.section) return;
+
+  const currentSectionQuestions = 
+    examData.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()] || [];
+  
+  const isLastQuestionInSection = 
+    clickedQuestionIndex - startingIndex >= currentSectionQuestions.length - 1;
+
+  if (isLastQuestionInSection) {
+    // If it's the last question in the current section
+    if (currentSectionIndex < examData.section.length - 1) {
+      // Move to next section
+      const nextSectionIndex = currentSectionIndex + 1;
+      const nextSectionStartingIndex = examData.section
+        .slice(0, nextSectionIndex)
+        .reduce(
+          (acc, section) => 
+            acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+          0
+        );
+
+      setCurrentSectionIndex(nextSectionIndex);
+      setClickedQuestionIndex(nextSectionStartingIndex);
     } else {
-      setClickedQuestionIndex(startingIndex);
+    //   // If it's the last question of the last section, stay on this question
+    //   // Or you could wrap around to the first question
+    //   setClickedQuestionIndex(0);
+    //   setCurrentSectionIndex(0);
+    handleSectionCompletion();
+    console.log("Welcome our Coding...")
     }
+  } else {
+    // Move to next question in current section
+    setClickedQuestionIndex(clickedQuestionIndex + 1);
   }
 };
 
@@ -1760,7 +1780,7 @@ const handleChange = (e) => {
   const handleSectionCompletion = async () => {
     handleDescriptiveTest();
     console.log("handleSectionCompletion called");
-    setIsPaused(false);
+  await  setIsPaused(false);
 
     if (true) {
       console.log("Section is complete");
@@ -1832,6 +1852,46 @@ const handleChange = (e) => {
       setIsPaused(false); // Ensure it's not paused when restarting
     }
   };
+  const renderTextarea = () => (
+  <>
+    <textarea
+      value={descriptiveData?.[currentSectionIndex]?.text?.[0] || ""}
+      onChange={handleChange}
+      onKeyDown={preventShortcuts}
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onPaste={(e) => e.preventDefault()}
+      disabled={limitReached}
+      placeholder="Enter your text..."
+      rows="6"
+      cols="100"
+      style={{
+        width: "100%",
+        height: "350px",
+        padding: "10px",
+        fontSize: "1rem",
+        borderRadius: "8px",
+        border: "1px solid #ccc",
+        resize: "none",
+        backgroundColor: limitReached ? "#f5f5f5" : "#fff",
+      }}
+    />
+    <div
+      className="fw-bold text-right"
+      style={{
+        marginTop: "8px",
+        color: limitReached ? "red" : "#555",
+      }}
+    >
+      {limitReached
+        ? "Word limit reached"
+        : countType === "decrement"
+        ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
+        : `Words used: ${wordCounto} / ${words}`}
+    </div>
+  </>
+);
+
 
   // const formatTime = (time) => {
   //   const minutes = Math.floor(time / 60);
@@ -1962,99 +2022,108 @@ useEffect(() => {
   const [markedForReviewCount, setMarkedForReviewCount] = useState(0);
   const [answeredAndMarkedCount, setAnsweredAndMarkedCount] = useState(0);
 
-  useEffect(() => {
-    const calculateCounts = () => {
-      let answered = 0;
-      let notAnswered = 0;
-      let notVisited = 0;
-      let markedForReviewCount = 0;
-      let answeredAndMarked = 0;
-
-      examData?.section[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
-      ]?.forEach((_, index) => {
-        const fullIndex = startingIndex + index;
-
-        const isAnswered = selectedOptions[fullIndex] !== null;
-        const isVisited = visitedQuestions.includes(fullIndex);
-        const isMarked = markedForReview.includes(fullIndex);
-
-        if (isMarked && isAnswered) {
-          answeredAndMarked++; // ✅ Answered + Marked
-        } else if (isMarked && !isAnswered) {
-          markedForReviewCount++; // ✅ Just Marked
-        } else if (isAnswered) {
-          answered++; // ✅ Only Answered
-        } else if (isVisited) {
-          notAnswered++; // ✅ Visited but Not Answered
-        } else {
-          notVisited++; // ✅ Not Visited at all
-        }
-      });
-
-      setAnsweredCount(answered);
-      setNotAnsweredCount(notAnswered);
-      setNotVisitedCount(notVisited);
-      setMarkedForReviewCount(markedForReviewCount);
-      setAnsweredAndMarkedCount(answeredAndMarked);
-    };
-
-    calculateCounts();
-  }, [
-    selectedOptions,
-    visitedQuestions,
-    markedForReview,
-    examData,
-    currentSectionIndex,
-    selectedLanguage,
-    startingIndex,
-  ]);
-
-  const getSectionCounts = (
-    section,
-    selectedOptions,
-    visitedQuestions,
-    markedForReview,
-    selectedLanguage,
-    startingIndex
-  ) => {
+useEffect(() => {
+  const calculateCounts = () => {
     let answered = 0;
     let notAnswered = 0;
     let notVisited = 0;
     let markedForReviewCount = 0;
     let answeredAndMarked = 0;
 
-    const questions = section?.questions?.[selectedLanguage?.toLowerCase()];
+    examData?.section?.forEach((section, sectionIndex) => {
+      const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+      
+      questions?.forEach((_, questionIndex) => {
+        const fullIndex = examData.section
+          .slice(0, sectionIndex)
+          .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) + questionIndex;
 
-    questions?.forEach((_, index) => {
-      const fullIndex = startingIndex + index;
+        // Check for descriptive answer
+        const hasAnswer = descriptiveData?.[sectionIndex]?.text?.[0]?.trim() !== "" && 
+                         descriptiveData?.[sectionIndex]?.text?.[0] !== undefined;
+        
+        const isVisited = visitedQuestions.includes(fullIndex);
+        const isMarked = markedForReview.includes(fullIndex);
 
-      const isAnswered = selectedOptions[fullIndex] !== null;
-      const isVisited = visitedQuestions.includes(fullIndex);
-      const isMarked = markedForReview.includes(fullIndex);
-
-      if (isMarked && isAnswered) {
-        answeredAndMarked++;
-      } else if (isMarked && !isAnswered) {
-        markedForReviewCount++;
-      } else if (isAnswered) {
-        answered++;
-      } else if (isVisited) {
-        notAnswered++;
-      } else {
-        notVisited++;
-      }
+        if (isMarked && hasAnswer) {
+          answeredAndMarked++;
+        } else if (isMarked && !hasAnswer) {
+          markedForReviewCount++;
+        } else if (hasAnswer) {
+          answered++;
+        } else if (isVisited) {
+          notAnswered++;
+        } else {
+          notVisited++;
+        }
+      });
     });
 
-    return {
-      answered,
-      notAnswered,
-      notVisited,
-      markedForReviewCount,
-      answeredAndMarked,
-    };
+    setAnsweredCount(answered);
+    setNotAnsweredCount(notAnswered);
+    setNotVisitedCount(notVisited);
+    setMarkedForReviewCount(markedForReviewCount);
+    setAnsweredAndMarkedCount(answeredAndMarked);
   };
 
+  calculateCounts();
+}, [
+  descriptiveData, // Added to dependencies
+  visitedQuestions,
+  markedForReview,
+  examData,
+  selectedLanguage,
+]);
+
+const getSectionCounts = (
+  section,
+  sectionIndex,
+  visitedQuestions,
+  markedForReview,
+  selectedLanguage
+) => {
+  let answered = 0;
+  let notAnswered = 0;
+  let notVisited = 0;
+  let markedForReviewCount = 0;
+  let answeredAndMarked = 0;
+
+  const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+  const startingIndex = examData.section
+    .slice(0, sectionIndex)
+    .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+
+  questions?.forEach((_, questionIndex) => {
+    const fullIndex = startingIndex + questionIndex;
+    
+    // Check for descriptive answer
+    const hasAnswer = descriptiveData?.[sectionIndex]?.text?.[0]?.trim() !== "" && 
+                     descriptiveData?.[sectionIndex]?.text?.[0] !== undefined;
+    
+    const isVisited = visitedQuestions.includes(fullIndex);
+    const isMarked = markedForReview.includes(fullIndex);
+
+    if (isMarked && hasAnswer) {
+      answeredAndMarked++;
+    } else if (isMarked && !hasAnswer) {
+      markedForReviewCount++;
+    } else if (hasAnswer) {
+      answered++;
+    } else if (isVisited) {
+      notAnswered++;
+    } else {
+      notVisited++;
+    }
+  });
+
+  return {
+    answered,
+    notAnswered,
+    notVisited,
+    markedForReviewCount,
+    answeredAndMarked,
+  };
+};
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
@@ -2099,17 +2168,7 @@ useEffect(() => {
     console.log("Closing the window without parent notification");
     window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
   }
-   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
-        // window.open(resultUrl, '_blank');
-
-    // Close the current test window
-    // window.close();
-  // } catch (error) {
-  //   console.error("Closing the window without notifying parent:", error);
-  //   // alert('Failed to submit the exam. Please try again.');
-  //   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
-
-  // }
+     
 };
 
 
@@ -2177,9 +2236,6 @@ console.log(questionTime);
   }
 };
   return (
-    <>
-  {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
-  <DescriptiveTest/>):(
     <div className="mock-font " ref={commonDataRef}>
       <div>
        <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
@@ -2189,16 +2245,10 @@ console.log(questionTime);
   {/* Logo */}
   <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
 
-  {/* Timer Display */}
-  {/* {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
     <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(descriptiveTimeLeft)}
+      Time Left des: {formatTime(descriptiveTimeLeft)}
     </h1>
-  ) : (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(timeminus)}
-    </h1>
-  )} */}
+
   {/* Fullscreen Toggle Button */}
   <button
     onClick={toggleFullScreen}
@@ -2477,203 +2527,107 @@ console.log(questionTime);
                 </h1>
               </div>
 
-              {examData?.section[currentSectionIndex] ? (
-                <div className="flex flex-col md:flex-row p-0">
-                  {/* Left side for Common Data */}
-                  {examData.section[currentSectionIndex]?.questions?.[
-                    selectedLanguage?.toLowerCase()
-                  ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                    <div
-                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                  ${isFullscreen
-                        ? 'h-[80vh] md:h-[80vh]'
-                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      }`
-                    }
-                      style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-                  >
-                      <div
-                        className="text-wrap"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                             (displayLanguage|| selectedLanguage)?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.common_data || "No common data available",
-                        }}
-                      />
-                    </div>
-                  )}
+           {examData?.section[currentSectionIndex] ? (
+  (() => {
+    const currentQuestion =
+      examData.section[currentSectionIndex]?.questions?.[
+        (displayLanguage || selectedLanguage)?.toLowerCase()
+      ]?.[clickedQuestionIndex - startingIndex];
 
-                  {/* Right side for Question */}
-                  <div
-                    className={`   ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                        ? "md:w-[50%]"
-                        : "md:w-full" // Make it full width when no common data
-                      }`}   style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-  
-                  >
-                    <div>
-                      <div
-                        className="text-wrap mb-2"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                               (displayLanguage|| selectedLanguage)?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.question || "No question available",
-                        }}
-                      />
+    const hasCommonData = !!currentQuestion?.common_data;
+    const hasQuestion = !!currentQuestion?.question;
 
-                        {examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]
-                        ?.question_type === "descriptive" ? (
-                        <div>
-                          <textarea
-                            value={
-                              descriptiveData?.[currentSectionIndex]
-                                ?.text?.[0] || ""
-                            }
-                            onChange={handleChange}
-                            onKeyDown={preventShortcuts}
-                            onCopy={(e) => e.preventDefault()}
-                            onCut={(e) => e.preventDefault()}
-                            onPaste={(e) => e.preventDefault()}
-                            disabled={limitReached}
-                            placeholder="Enter your text..."
-                            rows="6"
-                            cols="100"
-                            style={{
-                              width: "100%",
-                              height: "350px",
-                              padding: "10px",
-                              fontSize: "1rem",
-                              borderRadius: "8px",
-                              border: "1px solid #ccc",
-                              resize: "none",
-                              backgroundColor: limitReached
-                                ? "#f5f5f5"
-                                : "#fff",
-                            }}
-                          />
-                          <div
-                            className="fw-bold text-right"
-                            style={{
-                              marginTop: "8px",
-                              color: limitReached ? "red" : "#555",
-                            }}
-                          >
-                            {limitReached
-                              ? "Word limit reached"
-                              : countType === "decrement"
-                              ? `Words remaining: ${Math.max(
-                                  words - wordCounto,
-                                  0
-                                )} / ${words}`
-                              : `Words used: ${wordCounto} / ${words}`}
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {examData.section[currentSectionIndex]?.questions?.[
-                            (displayLanguage|| selectedLanguage)?.toLowerCase()
-                          ]?.[clickedQuestionIndex - startingIndex]?.options ? (
-                            <div>
-                              {examData.section[
-                                currentSectionIndex
-                              ]?.questions?.[selectedLanguage?.toLowerCase()]?.[
-                                clickedQuestionIndex - startingIndex
-                              ]?.options.map((option, index) => (
-                                <div key={index} className="p-1 rounded-lg m-2">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      marginBottom: "10px",
-                                    }}
-                                  >
-                                    <input
-                                    className="p-5"
-                                      type="radio"
-                                      id={`option-${index}`}
-                                      name="exam-option"
-                                      value={index}
-                                      checked={
-                                        selectedOptions[
-                                          clickedQuestionIndex
-                                        ] === index
-                                      }
-                                      onChange={() => handleOptionChange(index)}
-                                      style={{
-                                        accentColor: "#3B82F6",
-                                        width: "1.2rem",
-                                        height: "1.2rem",
-                                        marginRight: "8px",
-                                        marginTop: "0px", // Remove vertical offset
-                                      }}
-                                    />
-                                    &nbsp;&nbsp;
-                                    <label
-                                      htmlFor={`option-${index}`}
-                                      dangerouslySetInnerHTML={{
-                                        __html: option || "No option available",
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p>No options available</p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                    <div className="md:flex hidden items-center">
-                      <div
-                        className={`fixed top-1/2 ${
-                          closeSideBar ? "right-0" : ""
-                        } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
-                        onClick={toggleMenu2}
-                      >
-                        <FaChevronRight
-                          className={`w-2 h-5 text-white transition-transform duration-300 ${
-                            closeSideBar ? "absalute left-0 rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div
-                className="d-flex justify-content-center align-items-center"
-                style={{ height: '100vh' }} // Full viewport height
-              >
-                <div
-                  className="spinner-border text-primary"
-                  role="status"
-                  style={{ width: '3rem', height: '3rem' }}
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              
-              )}
+    const showSplitLayout = hasCommonData && hasQuestion;
+
+    return (
+      <div className="flex flex-col md:flex-row p-0">
+        {/* ✅ CASE 1: Split layout when both commonData & question exist */}
+        {showSplitLayout ? (
+          <>
+            {/* LEFT - common data */}
+            <div
+              className="md:w-1/2 p-3 pb-5 md:border-r border-gray-300"
+              style={{
+                height: "calc(100vh - 150px)",
+                overflowY: "auto",
+              }}
+            >
+              <div
+                className="text-wrap"
+                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                dangerouslySetInnerHTML={{
+                  __html: currentQuestion?.common_data,
+                }}
+              />
+            </div>
+
+            {/* RIGHT - question + textarea */}
+            <div
+              className="md:w-1/2 p-3 pb-5"
+              style={{
+                height: "calc(100vh - 150px)",
+                overflowY: "auto",
+              }}
+            >
+              <div
+                className="text-wrap mb-2"
+                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                dangerouslySetInnerHTML={{
+                  __html: currentQuestion?.question,
+                }}
+              />
+
+              {/* Textarea */}
+              {renderTextarea()}
+            </div>
+          </>
+        ) : (
+          // ✅ CASE 2: Stacked full-width layout (when not both are present)
+          <div className="w-full p-3 pb-5" style={{ height: "calc(100vh - 150px)", overflowY: "auto" }}>
+            {/* Common Data */}
+            {hasCommonData && (
+              <div
+                className="text-wrap mb-4"
+                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                dangerouslySetInnerHTML={{
+                  __html: currentQuestion?.common_data,
+                }}
+              />
+            )}
+
+            {/* Question (if available) */}
+            {hasQuestion && (
+              <div
+                className="text-wrap mb-4"
+                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                dangerouslySetInnerHTML={{
+                  __html: currentQuestion?.question,
+                }}
+              />
+            )}
+
+            {/* ✅ Textarea always shown */}
+            {renderTextarea()}
+          </div>
+        )}
+      </div>
+    );
+  })()
+) : (
+  <div
+    className="d-flex justify-content-center align-items-center"
+    style={{ height: "100vh" }}
+  >
+    <div
+      className="spinner-border text-primary"
+      role="status"
+      style={{ width: "3rem", height: "3rem" }}
+    >
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+)}
+
             </>
           ) : (
             <div className="text-center">
@@ -2717,7 +2671,7 @@ console.log(questionTime);
           )}
 
           <div className="container">
-            <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
+            <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
               {/* Profile Image and Link */}
               <div>
                 <Avatar
@@ -2734,15 +2688,14 @@ console.log(questionTime);
                 </h1>
               </div>
             </div>
-          {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(descriptiveTimeLeft)}
-    </h1>
-  ) : (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(timeminus)}
-    </h1>
-  )}
+       {examData?.section?.[currentSectionIndex]?.questions?.[
+  selectedLanguage?.toLowerCase()
+]?.[clickedQuestionIndex - startingIndex] && (
+  <h1 className="text-center text-black bg-gray-100 p-2">
+    Time Left: {formatTime(descriptiveTimeLeft)}
+  </h1>
+)}
+
             <center>
               <button
                 onClick={handlePauseResume}
@@ -2805,51 +2758,51 @@ console.log(questionTime);
                 </p>
               </div>
             </div>
-  <h1 className="mt-1 mb-1 text-sm  text-white bg-blue-500 p-1">Section : {show_name}</h1>
 
-            <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-              {examData?.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.map((_, index) => {
-                const fullIndex = startingIndex + index;
-                const currentSection = examData.section[currentSectionIndex];
-                const timeFormatted = formatTime(timeLeft);
+        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+  {examData?.section[currentSectionIndex]?.questions?.[
+    selectedLanguage?.toLowerCase()
+  ]?.map((_, index) => {
+    const fullIndex = startingIndex + index;
+    const currentSection = examData.section[currentSectionIndex];
+    const timeFormatted = formatTime(timeLeft);
 
-                let className = "";
-                if (selectedOptions[fullIndex] !== null) {
-                  className = "answerImg";
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " mdansmarkedImg";
-                  }if (selectedOptions[fullIndex] == null) {
-                    className="notansImg";
-                  }
-                }
-                 else if (visitedQuestions.includes(fullIndex)) {
-                  className = "notansImg";
-                } else {
-                  className = "notVisitImg";
-                }
+    let className = "";
+    
+    // Check if the question has been answered (for descriptive questions)
+    const hasAnswer = descriptiveData?.[currentSectionIndex]?.text?.[0]?.trim() !== "" && 
+                     descriptiveData?.[currentSectionIndex]?.text?.[0] !== undefined;
+    
+    if (hasAnswer) {
+      className = "answerImg";
+      if (markedForReview.includes(fullIndex)) {
+        className += " mdansmarkedImg";
+      }
+    } else if (visitedQuestions.includes(fullIndex)) {
+      className = "notansImg";
+    } else {
+      className = "notVisitImg";
+    }
 
-                if (markedForReview.includes(fullIndex)) {
-                  className += " reviewed mdmarkedImg";
-                }
+    if (markedForReview.includes(fullIndex)) {
+      className += " reviewed mdmarkedImg";
+    }
 
-                return (
-                  <div key={fullIndex}>
-                    <span
-                      onClick={() => {
-                        console.log("Clicked question index:", fullIndex);
-                        setClickedQuestionIndex(fullIndex);
-                        // setQuestionTime(0);
-                      }}
-                      className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                    >
-                      {fullIndex + 1}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+    return (
+      <div key={fullIndex}>
+        <span
+          onClick={() => {
+            console.log("Clicked question index:", fullIndex);
+            setClickedQuestionIndex(fullIndex);
+          }}
+          className={`fw-bold flex align-items-center justify-content-center ${className}`}
+        >
+          {fullIndex + 1}
+        </span>
+      </div>
+    );
+  })}
+</div>
           </div>
         </div>
       </div>
@@ -2875,10 +2828,9 @@ console.log(questionTime);
                 <span className="block md:hidden">Clear</span>
                 <span className="hidden md:block"> Clear Response</span>
               </button>
-            </div>
-            {examData?.section?.[currentSectionIndex]?.questions?.[
-              selectedLanguage?.toLowerCase()
-            ]?.length > 0 && (
+           </div>
+            {examData?.section?.length > 0 && (
+          
               <button
                 onClick={handleNextClick}
                 className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
@@ -2906,9 +2858,7 @@ console.log(questionTime);
         </div>
       </div>
     </div>
-                )}
-                </>
   );
 };
 
-export default MockLiveTest;
+export default DescriptiveTest;

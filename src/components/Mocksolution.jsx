@@ -262,7 +262,7 @@ useEffect(() => {
         setCurrentSectionIndex(0);
 
         // Calculate the starting question index (first question of the first section)
-        const startingIndex = 0; // First question of the first section
+        const startingIndex = clickedQuestionIndex; // First question of the first section
         setClickedQuestionIndex(startingIndex);
 
         // Optionally, reset other states if needed
@@ -270,7 +270,7 @@ useEffect(() => {
         setIsClicked(false); // Reset clicked status for the question
 
         // Reset all tracking states
-        setVisitedQuestions([0]); // Clear visited questions
+        setVisitedQuestions([clickedQuestionIndex]); // Clear visited questions
         setMarkedForReview([]); // Clear marked for review
         setAnsmarkforrev([]); // Clear answered and marked for review
         setQuestionTimes({});
@@ -607,7 +607,7 @@ useEffect(() => {
         <div className="p-1 mock-font ">
             <div>
 
-                <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+                <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-evenly items-center">
                     <h1 className="h3 font-bold mt-3">{show_name}</h1>
                     <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
                     <button
@@ -795,13 +795,18 @@ useEffect(() => {
                                     {examData.section[currentSectionIndex]?.questions?.[
                                         selectedLanguage?.toLowerCase()
                                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                                            <div
-                                                className="md:w-[80%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300"
-                                                style={{
-                                                    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-                                                    overflowY: 'auto'
-                                                }}
-                                            >
+                                          <div
+                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                  ${isFullscreen
+                        ? 'h-[80vh] md:h-[80vh]'
+                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      }`
+                    }
+                      style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+                  >
                                                 <div
                                                     className="text-wrap"
                                                     style={{
@@ -821,13 +826,21 @@ useEffect(() => {
                                         )}
 
                                     {/* Right side for Question */}
-                                    <div
-                                        className="w-full p-3 mb-24 md:mb-0 flex flex-col md:flex-row justify-between"
-                                        style={{
-                                            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-                                            overflowY: 'auto'
-                                        }}
-                                    >
+                                  <div
+                    className={`   ${isFullscreen
+                      ? 'h-[80vh] md:h-[80vh]'
+                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                        selectedLanguage?.toLowerCase()
+                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                        ? "md:w-[50%]"
+                        : "md:w-full" // Make it full width when no common data
+                      }`}   style={{
+    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+    overflowY: 'auto'
+  }}
+  
+                  >
                                         {/* Content with dynamic height */}
 
 
@@ -1133,7 +1146,7 @@ useEffect(() => {
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
-                        <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+                        <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
                             {/* Profile Image and Link */}
                             <div>
                                 <Avatar
