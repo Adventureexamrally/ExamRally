@@ -34,32 +34,29 @@ const DescriptiveTest = () => {
   const [scoreBreakdown, setScoreBreakdown] = useState(null);
   const { user } = useContext(UserContext);
   const [wordCount, setWordCount] = useState(0);
-  const [descriptiveData, setDescriptiveData] = useState(
-  examData?.section?.map(() => ({
-    text: [""],
-    corrections: [],
-    scoreBreakdown: null,
-    scoreData: [],
-    keywords: [],
-    wordCount: 0
-  })) || []
-);
-  const location = useLocation();
-  const  selectedLanguage= location.state?.language || "English";
-  const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
-const timerRef = useRef(null);
-  // Fetch exam data
-// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
-const [displayLanguage, setDisplayLanguage] = useState(null);
+ const [descriptiveData, setDescriptiveData] = useState([]);
 
-useEffect(() => {
-  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
-  if (sectionName === "english language") {
-    setDisplayLanguage("English");
-  } else {
-    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
-  }
-}, [currentSectionIndex, examData]);
+// Initialize descriptiveData when examData is available
+
+  const location = useLocation();
+  const selectedLanguage = location.state?.language || "English";
+  const [previousQuestionIndex, setPreviousQuestionIndex] =
+    useState(clickedQuestionIndex);
+  const timerRef = useRef(null);
+  // Fetch exam data
+  // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+  const [displayLanguage, setDisplayLanguage] = useState(null);
+
+  useEffect(() => {
+    const sectionName = examData?.section?.[currentSectionIndex]?.name
+      ?.toLowerCase()
+      .trim();
+    if (sectionName === "english language") {
+      setDisplayLanguage("English");
+    } else {
+      setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+    }
+  }, [currentSectionIndex, examData]);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -110,7 +107,7 @@ useEffect(() => {
             setExamData(res.data);
             console.log("res.data", res.data);
             setIsDataFetched(true);
-            
+
             setShow_name(res.data.show_name);
             // setDuration(res.data.duration);
             sett_questions(res.data.t_questions); // Mark that data is fetched
@@ -126,46 +123,53 @@ useEffect(() => {
   useEffect(() => {
     if (user?._id && id) {
       Api.get(`results/${user?._id}/${id}`)
-        .then(response => {
+        .then((response) => {
           if (response.data) {
             const state = response.data;
-            setGetresult(state)
-            console.error("hello",state);
+            setGetresult(state);
+            console.error("hello", state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
             let markedForReviewList = [];
             let absoluteIndexCounter = 0;
-  // Parse question times from backend
-          const questionTimesFromDB = {};
-          let absoluteIndex = 0;
-          
-          state.section.forEach((section) => {
-            const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-            console.log("Questions:", questions);
-            
-            questions.forEach((question) => {
-              if (question.q_on_time) {
-                console.log("Question time:", question.q_on_time);
-                
-                // Parse time string "minutes:seconds" to total seconds
-                const [minutes, seconds] = question.q_on_time.split(':').map(Number);
-                questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
-              }
-              absoluteIndex++;
+            // Parse question times from backend
+            const questionTimesFromDB = {};
+            let absoluteIndex = 0;
+
+            state.section.forEach((section) => {
+              const questions =
+                section.questions?.[selectedLanguage?.toLowerCase()] || [];
+              console.log("Questions:", questions);
+
+              questions.forEach((question) => {
+                if (question.q_on_time) {
+                  console.log("Question time:", question.q_on_time);
+
+                  // Parse time string "minutes:seconds" to total seconds
+                  const [minutes, seconds] = question.q_on_time
+                    .split(":")
+                    .map(Number);
+                  questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
+                }
+                absoluteIndex++;
+              });
             });
-          });
-          console.log("Question times from DB:", questionTimesFromDB);
-          
-          setQuestionTimes(questionTimesFromDB);
+            console.log("Question times from DB:", questionTimesFromDB);
+
+            setQuestionTimes(questionTimesFromDB);
             if (state.section) {
               state.section.forEach((section) => {
-                const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                const questions =
+                  section.questions?.[selectedLanguage?.toLowerCase()] || [];
                 questions.forEach((question, questionIndex) => {
                   const absoluteIndex = absoluteIndexCounter++;
 
                   // Set selected option if exists
-                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
+                  if (
+                    question.selectedOption !== undefined &&
+                    question.selectedOption !== null
+                  ) {
                     initialOptions[absoluteIndex] = question.selectedOption;
                   }
 
@@ -190,16 +194,16 @@ useEffect(() => {
 
             // // Show the last visited question, or first question if none visited
             // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-        //     if (visitedQuestionsList.length > 0) {
-        //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-        // } else {
-        //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-        //   setVisitedQuestions([0]);  // Mark it as visited
-        // }
+            //     if (visitedQuestionsList.length > 0) {
+            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
+            // } else {
+            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+            //   setVisitedQuestions([0]);  // Mark it as visited
+            // }
           }
         })
 
-        .catch(error => console.error('Error fetching exam state:', error));
+        .catch((error) => console.error("Error fetching exam state:", error));
     }
   }, [id, user?._id, t_questions]);
 
@@ -270,7 +274,7 @@ useEffect(() => {
 
   useEffect(() => {
     const savedState = localStorage.getItem(`examState_${id}`);
-    console.warn(savedState)
+    console.warn(savedState);
     if (savedState) {
       const state = JSON.parse(savedState);
       setClickedQuestionIndex(state.clickedQuestionIndex);
@@ -290,7 +294,8 @@ useEffect(() => {
       const currentSection = examData.section[currentSectionIndex];
       // Find relative question index
       const relativeIndex = clickedQuestionIndex - startingIndex;
-      const currentQuestion = currentSection.questions[selectedLanguage.toLowerCase()][relativeIndex];
+      const currentQuestion =
+        currentSection.questions[selectedLanguage.toLowerCase()][relativeIndex];
 
       // Use section-specific marks
       const plus_mark = currentSection.plus_mark;
@@ -304,13 +309,13 @@ useEffect(() => {
       }
 
       // Update the database with the new selection
-      const result=Api.post(`results/${user?._id}/${id}`, {
+      const result = Api.post(`results/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
-        mark
+        mark,
       });
-console.log("handle option change result",result);
+      console.log("handle option change result", result);
 
       return updatedOptions;
     });
@@ -338,26 +343,26 @@ console.log("handle option change result",result);
   };
 
   // At the top of your component
-const [activeTimer, setActiveTimer] = useState(null); // 'question' or 'section'
+  const [activeTimer, setActiveTimer] = useState(null); // 'question' or 'section'
 
-// Cleanup all timers on unmount
-useEffect(() => {
-  return () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-  };
-}, []);
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
-useEffect(() => {
-  console.log('Timer setup for:', activeTimer);
-  // ... timer setup code ...
+  useEffect(() => {
+    console.log("Timer setup for:", activeTimer);
+    // ... timer setup code ...
 
-  return () => {
-    console.log('Cleaning up timer');
-    if (timerRef.current) clearInterval(timerRef.current);
-  };
-}, [clickedQuestionIndex]);
+    return () => {
+      console.log("Cleaning up timer");
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [clickedQuestionIndex]);
 
   const [questionStartTime, setQuestionStartTime] = useState(new Date());
   const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
@@ -445,10 +450,10 @@ useEffect(() => {
 
           // Transform the data
           const transformedData = {
-            bilingual_status:res.data.bilingual_status,
-            english_status:res.data.english_status,
-            hindi_status:res.data.hindi_status,
-            tamil_status:res.data.tamil_status,
+            bilingual_status: res.data.bilingual_status,
+            english_status: res.data.english_status,
+            hindi_status: res.data.hindi_status,
+            tamil_status: res.data.tamil_status,
             section: res.data.section.map((section) => ({
               name: section.name,
               t_question: section.t_question,
@@ -562,7 +567,6 @@ useEffect(() => {
     });
   };
 
-
   const handleMarkForReview = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
@@ -601,48 +605,53 @@ useEffect(() => {
   //     }
   //   }
   // };
-const handleNextClick = () => {
-  updateSectionTime();
+  const handleNextClick = () => {
+    updateSectionTime();
 
-  // Save current descriptive answer
-  handleDescriptiveTest();
+    // Save current descriptive answer
+    handleDescriptiveTest();
 
-  if (!examData || !examData.section) return;
+    if (!examData || !examData.section) return;
 
-  const currentSectionQuestions = 
-    examData.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()] || [];
-  
-  const isLastQuestionInSection = 
-    clickedQuestionIndex - startingIndex >= currentSectionQuestions.length - 1;
+    const currentSectionQuestions =
+      examData.section[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+      ] || [];
 
-  if (isLastQuestionInSection) {
-    // If it's the last question in the current section
-    if (currentSectionIndex < examData.section.length - 1) {
-      // Move to next section
-      const nextSectionIndex = currentSectionIndex + 1;
-      const nextSectionStartingIndex = examData.section
-        .slice(0, nextSectionIndex)
-        .reduce(
-          (acc, section) => 
-            acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-          0
-        );
+    const isLastQuestionInSection =
+      clickedQuestionIndex - startingIndex >=
+      currentSectionQuestions.length - 1;
 
-      setCurrentSectionIndex(nextSectionIndex);
-      setClickedQuestionIndex(nextSectionStartingIndex);
+    if (isLastQuestionInSection) {
+      // If it's the last question in the current section
+      if (currentSectionIndex < examData.section.length - 1) {
+        // Move to next section
+        const nextSectionIndex = currentSectionIndex + 1;
+        const nextSectionStartingIndex = examData.section
+          .slice(0, nextSectionIndex)
+          .reduce(
+            (acc, section) =>
+              acc +
+              (section.questions?.[selectedLanguage?.toLowerCase()]?.length ||
+                0),
+            0
+          );
+
+        setCurrentSectionIndex(nextSectionIndex);
+        setClickedQuestionIndex(nextSectionStartingIndex);
+      } else {
+        //   // If it's the last question of the last section, stay on this question
+        //   // Or you could wrap around to the first question
+        //   setClickedQuestionIndex(0);
+        //   setCurrentSectionIndex(0);
+        handleSectionCompletion();
+        console.log("Welcome our Coding...");
+      }
     } else {
-    //   // If it's the last question of the last section, stay on this question
-    //   // Or you could wrap around to the first question
-    //   setClickedQuestionIndex(0);
-    //   setCurrentSectionIndex(0);
-    handleSectionCompletion();
-    console.log("Welcome our Coding...")
+      // Move to next question in current section
+      setClickedQuestionIndex(clickedQuestionIndex + 1);
     }
-  } else {
-    // Move to next question in current section
-    setClickedQuestionIndex(clickedQuestionIndex + 1);
-  }
-};
+  };
 
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
@@ -763,29 +772,49 @@ const handleNextClick = () => {
   };
 
   // Your submitExam function with the necessary modifications
-const handleSubmitSection = () => {
+ const handleSubmitSection = () => {
   // Save current descriptive answer
   handleDescriptiveTest();
-
-  // Then proceed with section submission
   updateSectionTime();
-  
-  // Calculate section summary
+
   const currentSection = examData?.section[currentSectionIndex];
   const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
-  
+
+  // Create section summary with proper fallbacks
   const sectionSummary = {
-    sectionName: currentSection.name,
-    answeredQuestions: questions.filter((q, index) => selectedOptions[index] !== null).length,
-    notAnsweredQuestions: questions.filter((q, index) => selectedOptions[index] === null).length,
-    visitedQuestionsCount: questions.filter((q, index) => selectedOptions[index] !== null || q.visited).length,
-    notVisitedQuestions: questions.filter((q, index) => !q.visited).length,
-    reviewedQuestions: questions.filter((q, index) => q.reviewed).length,
+    sectionName: currentSection?.name || `Section ${currentSectionIndex + 1}`,
     totalQuestions: questions.length,
-    descriptiveData: descriptiveData[currentSectionIndex]
+    answeredQuestions: questions.reduce((count, q, index) => {
+      const hasAnswer = selectedOptions[index] !== null && 
+                       selectedOptions[index] !== undefined && 
+                       selectedOptions[index] !== '';
+      return count + (hasAnswer ? 1 : 0);
+    }, 0),
+    notAnsweredQuestions: questions.reduce((count, q, index) => {
+      const hasAnswer = selectedOptions[index] !== null && 
+                       selectedOptions[index] !== undefined && 
+                       selectedOptions[index] !== '';
+      return count + (hasAnswer ? 0 : 1);
+    }, 0),
+    visitedQuestionsCount: questions.reduce((count, q, index) => {
+      const wasVisited = q.visited || selectedOptions[index] !== null;
+      return count + (wasVisited ? 1 : 0);
+    }, 0),
+    notVisitedQuestions: questions.reduce((count, q, index) => {
+      const wasVisited = q.visited || selectedOptions[index] !== null;
+      return count + (wasVisited ? 0 : 1);
+    }, 0),
+    reviewedQuestions: questions.filter(q => q.reviewed).length,
+    descriptiveData: descriptiveData[currentSectionIndex],
   };
 
-  setSectionSummaryData(prev => [...prev, sectionSummary]);
+  // Update section summary data
+  setSectionSummaryData(prev => {
+    const updated = [...prev];
+    updated[currentSectionIndex] = sectionSummary;
+    return updated;
+  });
+
   setShowModal(true);
 };
 
@@ -812,7 +841,6 @@ const handleSubmitSection = () => {
     }
   }, [id]);
 
-
   useEffect(() => {
     const totalSectionTime =
       examData?.section[currentSectionIndex]?.t_time * 60;
@@ -829,7 +857,6 @@ const handleSubmitSection = () => {
     settimeminus(remainingTime);
   }, [examData, currentSectionIndex, resultData]);
 
-
   const updateSectionTime = () => {
     if (!examDataSubmission || timeTakenFromDB.length === 0) return;
 
@@ -845,18 +872,18 @@ const handleSubmitSection = () => {
       examData?.section[currentSectionIndex]?.t_time * 60 || 0;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
     const timeTakenInSecondsUpdated =
-    (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
-  
+      (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
+
     const previousTimeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
     console.log("currentSectionIndex:", currentSectionIndex);
 
     console.log("Previous time taken for section:", previousTimeTaken);
 
-    const finalTimeTaken = actualTimeTaken ; 
+    const finalTimeTaken = actualTimeTaken;
 
     console.log("Final time taken for section:", finalTimeTaken);
-    console.warn(formattedSections)
+    console.warn(formattedSections);
 
     const updatedSections = formattedSections.map((section, idx) => {
       if (idx === currentSectionIndex) {
@@ -867,7 +894,7 @@ const handleSubmitSection = () => {
       }
       return section;
     });
-    console.warn(updatedSections)
+    console.warn(updatedSections);
 
     if (user?._id) {
       Api.post(`results/${user._id}/${id}`, {
@@ -939,7 +966,7 @@ const handleSubmitSection = () => {
     }
   }, [user?._id, id]);
 
- useEffect(() => {
+  useEffect(() => {
     if (timeminus > 0 && !isPaused) {
       const timerInterval = setInterval(() => {
         settimeminus((prevTime) => {
@@ -954,38 +981,48 @@ const handleSubmitSection = () => {
       return () => clearInterval(timerInterval);
     }
   }, [timeminus, isPaused]);
-  
- const handleTimerEnd = async () => {
-  handleSubmitSection(); // 1. Submits the section
-  await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
-  handleSectionCompletion(); // 4. Calls this after 1 second
-};
 
-
-  const getKeywords = () => {
-    const keywordString =
-      examData?.section?.[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
-      ]?.[0]?.keywords;
-
-    if (typeof keywordString === "string") {
-      return keywordString.split(",").map((k) => k.trim().toLowerCase());
-    }
-    return [];
+  const handleTimerEnd = async () => {
+    handleSubmitSection(); // 1. Submits the section
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 3. Waits 1 second
+    handleSectionCompletion(); // 4. Calls this after 1 second
   };
 
+const getKeywords = (questionIndex = clickedQuestionIndex) => {
+  // Find which section and question this belongs to
+  let currentSectionIndex = 0;
+  let relativeQuestionIndex = 0;
+  let count = 0;
+  
+  examData.section.forEach((section, sectionIdx) => {
+    const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+    if (questionIndex >= count && questionIndex < count + questions.length) {
+      currentSectionIndex = sectionIdx;
+      relativeQuestionIndex = questionIndex - count;
+    }
+    count += questions.length;
+  });
 
-  // ✅ Check grammar for the current section's text
+  const keywordString = examData?.section?.[currentSectionIndex]?.questions?.[
+    selectedLanguage?.toLowerCase()
+  ]?.[relativeQuestionIndex]?.keywords;
+
+  if (typeof keywordString === "string") {
+    return keywordString.split(",").map((k) => k.trim().toLowerCase());
+  }
+  return [];
+};
+
+// ✅ Check grammar for the current section's text
 // Update your checkGrammar function
-const checkGrammar = async (text) => {
+const checkGrammar = async (text, questionIndex = clickedQuestionIndex) => {
   try {
-    // Validate input
-    if (typeof text !== 'string') {
+    if (typeof text !== "string") {
       console.warn("Invalid text input for grammar check:", text);
       return {
         corrections: [],
         scoreBreakdown: null,
-        scoreData: calculateScore("", [])
+        scoreData: calculateScore("", [], questionIndex),
       };
     }
 
@@ -994,173 +1031,219 @@ const checkGrammar = async (text) => {
       return {
         corrections: [],
         scoreBreakdown: null,
-        scoreData: calculateScore("", [])
+        scoreData: calculateScore("", [], questionIndex),
       };
     }
 
-    // Rest of your grammar check API call
-    const response = await axios.post(
-      "https://grammarbot.p.rapidapi.com/check",
-      new URLSearchParams({ text: textToCheck, language: "en-US" }),
-       {
-        headers: {
-          "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
-          "x-rapidapi-host": "grammarbot.p.rapidapi.com",
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
+    // ✅ Call your backend (/chat)
+    const response = await Api.post("/chat", { 
+      message: textToCheck,
+      questionIndex: questionIndex // Send question index for context
+    });
 
-    const corrections = response?.data?.matches || [];
-    const scoreData = calculateScore(textToCheck, corrections);
+    const correctedText = response?.data?.reply || textToCheck;
+
+    // Parse corrections from API response
+    const corrections = [];
+    
+    // If API returns detailed corrections
+    if (response?.data?.corrections && Array.isArray(response.data.corrections)) {
+      corrections.push(...response.data.corrections);
+    } 
+    // If only full text correction is available
+    else if (correctedText !== textToCheck) {
+      corrections.push({
+        original: textToCheck,
+        corrected: correctedText,
+        type: "comprehensive_correction",
+        message: "Text needs improvement"
+      });
+    }
+
+    const scoreData = calculateScore(textToCheck, corrections, questionIndex);
+    
+    console.log(`✅ Grammar Check Results for Q${questionIndex + 1}:`);
+    console.log("Original Text:", textToCheck);
+    console.log("Corrected Text:", correctedText);
+    console.log("Corrections Found:", corrections.length);
+    console.log("Score Data:", scoreData);
+
+    const scoreBreakdown = corrections.map((issue, index) => ({
+      id: `${questionIndex}-${index}`,
+      message: issue.message || "Suggested improvement",
+      suggestion: issue.corrected || issue.suggestion || correctedText,
+      context: issue.original || textToCheck,
+      type: issue.type || "grammar",
+      severity: issue.severity || "medium"
+    }));
 
     return {
       corrections,
-      scoreBreakdown: corrections.map(issue => ({
-        message: issue.message,
-        suggestion: issue.replacements?.[0]?.value || '',
-        offset: issue.offset,
-        length: issue.length,
-        context: issue.context,
-        type: issue.rule?.issueType?.toLowerCase().includes('spelling') ? 
-              'spelling' : 'grammar'
-      })),
-      scoreData
+      scoreBreakdown: scoreBreakdown.length > 0 ? scoreBreakdown : null,
+      scoreData,
+      correctedText,
     };
   } catch (error) {
-    console.error("Grammar check failed:", error);
+    console.error(`❌ Grammar check failed for Q${questionIndex + 1}:`, error);
+    
+    const fallbackScoreData = calculateScore(text?.toString() || "", [], questionIndex);
+    
     return {
       corrections: [],
       scoreBreakdown: null,
-      scoreData: calculateScore(text?.toString() || "", [])
+      scoreData: fallbackScoreData,
+      correctedText: text?.toString() || "",
+      error: error.message,
     };
   }
 };
+
   // Grammar check function
-// const calculateScore = async (issues) => {
-//   const keywords = getKeywords();
-//   const expectedWordCount =
-//     examData?.section?.[currentSectionIndex]?.questions?.[
-//       selectedLanguage?.toLowerCase()
-//     ]?.[0]?.words_limit || 100;
+  // const calculateScore = async (issues) => {
+  //   const keywords = getKeywords();
+  //   const expectedWordCount =
+  //     examData?.section?.[currentSectionIndex]?.questions?.[
+  //       selectedLanguage?.toLowerCase()
+  //     ]?.[0]?.words_limit || 100;
 
-//   const currentText =
-//     descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+  //   const currentText =
+  //     descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
 
-//   let spellingErrors = 0;
-//   let grammarErrors = 0;
+  //   let spellingErrors = 0;
+  //   let grammarErrors = 0;
 
-//   // Count spelling vs grammar issues
-//   issues.forEach((issue) => {
-//     const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
-//     if (category.includes("capitalization") || category.includes("spelling")) {
-//       spellingErrors++;
-//     } else {
-//       grammarErrors++;
-//     }
-//   });
+  //   // Count spelling vs grammar issues
+  //   issues.forEach((issue) => {
+  //     const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
+  //     if (category.includes("capitalization") || category.includes("spelling")) {
+  //       spellingErrors++;
+  //     } else {
+  //       grammarErrors++;
+  //     }
+  //   });
 
-// //   // Word count
-//   const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
+  // //   // Word count
+  //   const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
 
-//   // Score calculations
-//   const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
-//   const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
-//   const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
+  //   // Score calculations
+  //   const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+  //   const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
+  //   const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
 
-//   // Keyword match score
-//   let matchedKeywords = 0;
-//   const lowerText = currentText.toLowerCase();
-//   keywords.forEach((kw) => {
-//     if (lowerText.includes(kw)) matchedKeywords++;
-//   });
-//   const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
+  //   // Keyword match score
+  //   let matchedKeywords = 0;
+  //   const lowerText = currentText.toLowerCase();
+  //   keywords.forEach((kw) => {
+  //     if (lowerText.includes(kw)) matchedKeywords++;
+  //   });
+  //   const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
 
-//   // Total score
-//   const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
+  //   // Total score
+  //   const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
 
-//   const scoreData = {
-//     spellingScore,
-//     grammarScore,
-//     wordCountScore,
-//     keywordScore,
-//     totalScore: Math.round(totalScore),
-//     totalWords,
-//   };
+  //   const scoreData = {
+  //     spellingScore,
+  //     grammarScore,
+  //     wordCountScore,
+  //     keywordScore,
+  //     totalScore: Math.round(totalScore),
+  //     totalWords,
+  //   };
 
-//   setScoreData(scoreData);
+  //   setScoreData(scoreData);
 
-//   if (currentSectionIndex === examData?.section?.length - 1) {
-//     await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
-//   }
+  //   if (currentSectionIndex === examData?.section?.length - 1) {
+  //     await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
+  //   }
 
-//   // Debug logs
-//   console.log("✅ Score Data:", scoreData);
-//   console.log("Text:", currentText);
-//   console.log("Issues:", issues);
-//   console.log("Keywords:", keywords);
-//   console.log("Expected Word Count:", expectedWordCount);
+  //   // Debug logs
+  //   console.log("✅ Score Data:", scoreData);
+  //   console.log("Text:", currentText);
+  //   console.log("Issues:", issues);
+  //   console.log("Keywords:", keywords);
+  //   console.log("Expected Word Count:", expectedWordCount);
 
+  // };
+
+const calculateScore = (text, corrections = [], questionIndex = clickedQuestionIndex) => {
+  const textToScore = typeof text === "string" ? text : "";
+  const keywords = getKeywords(questionIndex);
   
-// };
-
-
-const calculateScore = (text, corrections = []) => {
-  // Ensure text is a string
-  const textToScore = typeof text === 'string' ? text : '';
+  // Get SECTION data
+  const sectionData = examData?.section?.[currentSectionIndex];
+  const totalMarks = sectionData?.t_mark || 10;
   
-  const keywords = getKeywords();
-  const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[
+  // Get QUESTION data
+  const questionData = sectionData?.questions?.[
     selectedLanguage?.toLowerCase()
-  ]?.[0]?.words_limit || 100;
+  ]?.[questionIndex - startingIndex];
+  
+  const expectedWordCount = questionData?.words_limit || 100;
 
-  // Classify and validate corrections
+  // Count errors from corrections
   const validCorrections = Array.isArray(corrections) ? corrections : [];
-  const issues = validCorrections.map(issue => ({
-    ...issue,
-    type: (issue?.rule?.issueType?.toLowerCase() || '').includes('spelling') ? 
-          'spelling' : 'grammar',
-    message: issue.message || 'Unknown issue',
-    suggestion: issue?.replacements?.[0]?.value || ''
-  }));
+  let spellingErrors = 0;
+  let grammarErrors = 0;
+  let punctuationErrors = 0;
 
-  // Count errors
-  const spellingErrors = issues.filter(i => i.type === 'spelling').length;
-  const grammarErrors = issues.filter(i => i.type === 'grammar').length;
+  validCorrections.forEach(issue => {
+    const type = issue.type?.toLowerCase() || "";
+    if (type.includes('spelling')) spellingErrors++;
+    else if (type.includes('punctuation')) punctuationErrors++;
+    else grammarErrors++;
+  });
 
-  // Calculate word count safely
+  // Word count calculation
   const wordCount = textToScore.trim().split(/\s+/).filter(w => w.trim().length > 0).length;
 
-  // Calculate scores with bounds checking
-  const spellingScore = Math.max(0, Math.min(35, 35 - (spellingErrors * 2)));
-  const grammarScore = Math.max(0, Math.min(35, 35 - (grammarErrors * 2)));
-  const wordCountScore = Math.max(0, Math.min(20, Math.round((wordCount / expectedWordCount) * 20)));
+  // **Get scoring weights from SECTION configuration**
+  // You can store these in your section data structure
+  const scoringWeights = sectionData?.scoring_weights || {
+    spelling: 0.35,    // 35%
+    grammar: 0.35,     // 35%
+    keyword: 0.10,     // 10%
+    wordCount: 0.20    // 20%
+  };
+
+  const spellingWeight = totalMarks * scoringWeights.spelling;
+  const grammarWeight = totalMarks * scoringWeights.grammar;
+  const keywordWeight = totalMarks * scoringWeights.keyword;
+  const wordCountWeight = totalMarks * scoringWeights.wordCount;
+
+  // Calculate scores
+  const maxErrors = Math.max(5, Math.floor(totalMarks / 2));
   
-  // Keyword matching
-  const matchedKeywords = keywords.filter(kw => 
-    textToScore.toLowerCase().includes(kw.toLowerCase())
-  ).length;
-  const keywordScore = keywords.length > 0 
-    ? Math.round((matchedKeywords / keywords.length) * 10)
-    : 0;
+  const spellingScore = Math.max(0, spellingWeight - (spellingErrors / maxErrors) * spellingWeight);
+  const grammarScore = Math.max(0, grammarWeight - (grammarErrors / maxErrors) * grammarWeight);
+  const punctuationScore = 0;
+
+  const wordCountScore = Math.max(0, Math.min(wordCountWeight, (wordCount / expectedWordCount) * wordCountWeight));
+
+  const matchedKeywords = keywords.filter(kw => textToScore.toLowerCase().includes(kw.toLowerCase())).length;
+  const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * keywordWeight : keywordWeight;
+
+  const totalScore = Math.min(totalMarks, spellingScore + grammarScore + punctuationScore + wordCountScore + keywordScore);
 
   return {
-    spellingScore,
-    grammarScore,
-    wordCountScore,
-    keywordScore,
-    totalScore: Math.min(100, spellingScore + grammarScore + wordCountScore + keywordScore),
+    spellingScore: Math.round(spellingScore * 100) / 100,
+    grammarScore: Math.round(grammarScore * 100) / 100,
+    punctuationScore: Math.round(punctuationScore * 100) / 100,
+    wordCountScore: Math.round(wordCountScore * 100) / 100,
+    keywordScore: Math.round(keywordScore * 100) / 100,
+    totalScore: Math.round(totalScore * 100) / 100,
     totalWords: wordCount,
     spellingErrors,
     grammarErrors,
+    punctuationErrors,
     matchedKeywords,
     keywordCount: keywords.length,
     expectedWordCount,
-    issues
+    totalMarks,
+    corrections: validCorrections,
   };
 };
-  const submitExam =async () => {
-    updateSectionTime()
+  const submitExam = async () => {
+    updateSectionTime();
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -1178,10 +1261,11 @@ const calculateScore = (text, corrections = []) => {
         ...prev,
         [currentSectionIndex]: updatedTime,
       };
-  setQuestionTimes(prev => ({
-    ...prev,
-    [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
-  }));
+      setQuestionTimes((prev) => ({
+        ...prev,
+        [clickedQuestionIndex]:
+          (prev[clickedQuestionIndex] || 0) + questionTime,
+      }));
       console.warn(
         `Section ${currentSectionIndex}: previous = ${previousTime}, new = ${timeSpent}, saved = ${updatedTime}`
       );
@@ -1202,10 +1286,9 @@ const calculateScore = (text, corrections = []) => {
     }
 
     const currentSection = examData.section[currentSectionIndex];
-        for (let i = 0; i < examData?.section?.length; i++) {
+    for (let i = 0; i < examData?.section?.length; i++) {
       await handleDescriptiveTest(i);
     }
-
 
     const endTime = new Date();
     const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
@@ -1259,24 +1342,28 @@ const calculateScore = (text, corrections = []) => {
     ).length;
 
     const answersData = selectedOptions.map((selectedOption, index) => {
-        // Find which section this question belongs to
-    let sectionIndex = 0;
-    let questionIndexInSection = 0;
-    let currentSection;
+      // Find which section this question belongs to
+      let sectionIndex = 0;
+      let questionIndexInSection = 0;
+      let currentSection;
 
-        // Find the section and relative index for this question
-    let count = 0;
-    examData.section.forEach((section, sIndex) => {
-      const questions = section.questions[selectedLanguage.toLowerCase()] || [];
-      if (index >= count && index < count + questions.length) {
-        sectionIndex = sIndex;
-        questionIndexInSection = index - count;
-        currentSection = section;
-      }
-      count += questions.length;
-    });
+      // Find the section and relative index for this question
+      let count = 0;
+      examData.section.forEach((section, sIndex) => {
+        const questions =
+          section.questions[selectedLanguage.toLowerCase()] || [];
+        if (index >= count && index < count + questions.length) {
+          sectionIndex = sIndex;
+          questionIndexInSection = index - count;
+          currentSection = section;
+        }
+        count += questions.length;
+      });
 
-    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+      const question =
+        currentSection.questions[selectedLanguage.toLowerCase()][
+          questionIndexInSection
+        ];
 
       // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
@@ -1298,14 +1385,14 @@ const calculateScore = (text, corrections = []) => {
       //       : -question?.minus_mark
       //     : 0;
 
-          // Use section-specific marks
-    const questionScore = selectedOption !== null
-      ? selectedOption === question.answer
-        ? currentSection.plus_mark
-        : -currentSection.minus_mark
-      : 0;
-console.log("ques score",questionScore);
-
+      // Use section-specific marks
+      const questionScore =
+        selectedOption !== null
+          ? selectedOption === question.answer
+            ? currentSection.plus_mark
+            : -currentSection.minus_mark
+          : 0;
+      console.log("ques score", questionScore);
 
       return {
         question: question?.question,
@@ -1322,7 +1409,7 @@ console.log("ques score",questionScore);
         descriptive: descriptiveData[index] || [],
       };
     });
-console.log("answers dataaaaa",answersData);
+    console.log("answers dataaaaa", answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1361,14 +1448,14 @@ console.log("answers dataaaaa",answersData);
             const selectedOption = selectedOptions[absoluteIndex];
             const isVisited = visitedQuestions.includes(absoluteIndex) ? 1 : 0;
             const notVisited = isVisited ? 0 : 1;
-            const questionScore = selectedOption !== undefined
-              ? selectedOption === question.answer
-                ? section.plus_mark
-                : -section.minus_mark
-              : 0;
+            const questionScore =
+              selectedOption !== undefined
+                ? selectedOption === question.answer
+                  ? section.plus_mark
+                  : -section.minus_mark
+                : 0;
 
             return {
-              
               descriptive: descriptiveData[absoluteIndex],
               question: question.question,
               options: question.options || [],
@@ -1384,29 +1471,29 @@ console.log("answers dataaaaa",answersData);
             };
           }
         );
-console.log("section answers data",sectionAnswersData);
+        console.log("section answers data", sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
-  (q) => q.correct === 1
-).length;
+          (q) => q.correct === 1
+        ).length;
 
-const attemptedCount = sectionAnswersData.filter(
-  (q) => q.selectedOption !== undefined
-).length;
+        const attemptedCount = sectionAnswersData.filter(
+          (q) => q.selectedOption !== undefined
+        ).length;
 
-const incorrectCount = sectionAnswered - correctCount;
+        const incorrectCount = sectionAnswered - correctCount;
 
-// Use section-specific marks instead of hardcoded values
-const sectionScore = 
-  (correctCount * section.plus_mark) - 
-  (incorrectCount * section.minus_mark);
+        // Use section-specific marks instead of hardcoded values
+        const sectionScore =
+          correctCount * section.plus_mark -
+          incorrectCount * section.minus_mark;
 
-const secaccuracy =
-  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+        const secaccuracy =
+          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
 
-console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
 
-const skippedQuestions = sectionVisited - sectionAnswered;
+        const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
@@ -1438,14 +1525,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-            descriptive: descriptiveData[sectionStartIndex + index] || {
-              text: [""],
-              corrections: [],
-              scoreBreakdown: null,
-              scoreData: [],
-              keywords: [],
-              wordCount: 0
-            },
+              descriptive: descriptiveData[sectionStartIndex + index] || {
+                text: [""],
+                corrections: [],
+                scoreBreakdown: null,
+                scoreData: [],
+                keywords: [],
+                wordCount: 0,
+              },
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -1467,7 +1554,7 @@ const skippedQuestions = sectionVisited - sectionAnswered;
                 scoreBreakdown: null,
                 scoreData: [],
                 keywords: [],
-                wordCount: 0
+                wordCount: 0,
               },
             })),
             tamil: section.questions.tamil.map((question, index) => ({
@@ -1490,7 +1577,7 @@ const skippedQuestions = sectionVisited - sectionAnswered;
                 scoreBreakdown: null,
                 scoreData: [],
                 keywords: [],
-                wordCount: 0
+                wordCount: 0,
               },
             })),
           },
@@ -1508,14 +1595,13 @@ const skippedQuestions = sectionVisited - sectionAnswered;
           timeTaken: (() => {
             const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
             const time2 = sectionTimes?.[sectionIndex];
-        
-            if (typeof time1 === 'number' && typeof time2 === 'number') {
+
+            if (typeof time1 === "number" && typeof time2 === "number") {
               return time1 + time2;
             }
-        
+
             return time1 ?? time2 ?? 0;
-          })()
-      
+          })(),
         };
       })
       .filter(Boolean);
@@ -1551,29 +1637,91 @@ const skippedQuestions = sectionVisited - sectionAnswered;
       endTime,
     });
   };
+// Add debounce for auto grammar check
+const [typingTimeout, setTypingTimeout] = useState(null);
 
-const handleDescriptiveTest = async (sectionIndex = currentSectionIndex) => {
+useEffect(() => {
+  return () => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+  };
+}, [typingTimeout]);
+
+const handleChangeWithAutoCheck = (e) => {
+  const inputText = e.target.value;
+  const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+  const currentCount = wordsArray.length;
+
+  setWordCounto(currentCount);
+
+  const limitReached =
+    (countType === "decrement" && currentCount >= words) ||
+    (countType === "increment" && currentCount >= words);
+  setLimitReached(limitReached);
+
+  let finalText = inputText;
+  if (countType === "decrement" && currentCount > words) {
+    finalText = wordsArray.slice(0, words).join(" ");
+  }
+
+  setDescriptiveData((prev) => {
+    const updated = [...prev];
+    
+    if (!updated[clickedQuestionIndex]) {
+      updated[clickedQuestionIndex] = {
+        text: [""],
+        corrections: [],
+        scoreBreakdown: null,
+        scoreData: [],
+        keywords: [],
+        wordCount: 0,
+      };
+    }
+
+    updated[clickedQuestionIndex] = {
+      ...updated[clickedQuestionIndex],
+      text: [finalText],
+      wordCount: currentCount,
+    };
+
+    return updated;
+  });
+
+  // Auto grammar check after user stops typing for 2 seconds
+  if (typingTimeout) clearTimeout(typingTimeout);
+  
+  const newTimeout = setTimeout(() => {
+    if (finalText.trim().length > 10) { // Only check if meaningful text exists
+      handleDescriptiveTest(clickedQuestionIndex);
+    }
+  }, 2000);
+
+  setTypingTimeout(newTimeout);
+};
+const handleDescriptiveTest = async (questionIndex = clickedQuestionIndex) => {
   try {
-    const currentText = descriptiveData?.[sectionIndex]?.text?.[0] || "";
+    const currentText = descriptiveData?.[questionIndex]?.text?.[0] || "";
     
     // Skip empty text
     if (!currentText.trim()) {
+      console.log(`⏩ Skipping grammar check for Q${questionIndex + 1} - empty text`);
       return {
         corrections: [],
-        scoreData: calculateScore("", []),
+        scoreData: calculateScore("", [], questionIndex),
         scoreBreakdown: null
       };
     }
 
-    const { corrections, scoreData, scoreBreakdown } = await checkGrammar(currentText);
+    console.log(`🔍 Checking grammar for Q${questionIndex + 1}...`);
+    
+    const { corrections, scoreData, scoreBreakdown, correctedText } = await checkGrammar(currentText, questionIndex);
     
     // Update state immutably
     setDescriptiveData(prev => {
       const newData = [...prev];
       
-      // Initialize section data if it doesn't exist
-      if (!newData[sectionIndex]) {
-        newData[sectionIndex] = {
+      // Initialize question data if it doesn't exist
+      if (!newData[questionIndex]) {
+        newData[questionIndex] = {
           text: [""],
           corrections: [],
           scoreBreakdown: null,
@@ -1583,96 +1731,102 @@ const handleDescriptiveTest = async (sectionIndex = currentSectionIndex) => {
         };
       }
       
-      // Update the specific section's data
-      newData[sectionIndex] = {
-        ...newData[sectionIndex],
+      // Update the specific question's data
+      newData[questionIndex] = {
+        ...newData[questionIndex],
         text: [currentText],
         corrections,
         scoreBreakdown,
         scoreData,
-        wordCount: scoreData?.totalWords || 0
+        correctedText: correctedText || currentText,
+        wordCount: scoreData?.totalWords || 0,
+        lastChecked: new Date().toISOString()
       };
       
       return newData;
     });
 
-    // Update corrections and score data
-    if (sectionIndex === currentSectionIndex) {
+    // Update corrections and score data if it's the current question
+    if (questionIndex === clickedQuestionIndex) {
       setCorrections(corrections);
       setScoreData(scoreData);
+      setScoreBreakdown(scoreBreakdown);
     }
 
-    return { corrections, scoreData, scoreBreakdown };
+    console.log(`✅ Grammar check completed for Q${questionIndex + 1}`);
+    console.log(`📊 Score: ${scoreData?.totalScore}/100`);
+    console.log(`📝 Corrections: ${corrections.length}`);
+
+    return { corrections, scoreData, scoreBreakdown, correctedText };
   } catch (error) {
-    console.error(`Error in section ${sectionIndex} descriptive test:`, error);
+    console.error(`❌ Error in question ${questionIndex + 1} descriptive test:`, error);
     return null;
   }
 };
+  const handlePauseResume = () => {
+    if (pauseCount < 1) {
+      clearInterval(questionTimerRef.current);
+      setIsPaused(true);
+      setPauseCount(pauseCount + 1);
 
+      const now = new Date();
 
-const handlePauseResume = () => {
-  if (pauseCount < 1) {
-    clearInterval(questionTimerRef.current);
-    setIsPaused(true);
-    setPauseCount(pauseCount + 1);
+      // ✅ Save current question time
+      if (questionStartTime && clickedQuestionIndex !== null) {
+        const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+        setQuestionTimes((prev) => ({
+          ...prev,
+          [clickedQuestionIndex]:
+            (prev[clickedQuestionIndex] || 0) + secondsSpent,
+        }));
+        setQuestionStartTime(null);
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
 
-    const now = new Date();
-
-    // ✅ Save current question time
-    if (questionStartTime && clickedQuestionIndex !== null) {
-      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-      setQuestionTimes((prev) => ({
+      // ✅ Save section time
+      const timeSpent = Math.floor(
+        (now - currentSectionStartTimeRef.current) / 1000
+      );
+      setSectionTimes((prev) => ({
         ...prev,
-        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+        [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
       }));
-      setQuestionStartTime(null);
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
+      currentSectionStartTimeRef.current = now;
 
-    // ✅ Save section time
-    const timeSpent = Math.floor(
-      (now - currentSectionStartTimeRef.current) / 1000
-    );
-    setSectionTimes((prev) => ({
-      ...prev,
-      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-    }));
-    currentSectionStartTimeRef.current = now;
+      // ✅ Store current exam state
+      const currentState = {
+        clickedQuestionIndex,
+        selectedOptions,
+        visitedQuestions,
+        markedForReview,
+        currentSectionIndex,
+      };
+      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
-    // ✅ Store current exam state
-    const currentState = {
-      clickedQuestionIndex,
-      selectedOptions,
-      visitedQuestions,
-      markedForReview,
-      currentSectionIndex,
-    };
-    localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-
-    Swal.fire({
-      title: "Pause Exam",
-      text: "Do you want to quit the exam?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, Quit",
-      cancelButtonText: "No, Resume",
-      position: "center",
-      width: "100vw",
-      height: "100vh",
-      padding: "100",
-      customClass: {
-        container: "swal-full-screen",
-        popup: "swal-popup-full-height",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        setIsPaused(true);
-        await submitExam();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        closeAndNotifyParent()
-      } else {
+      Swal.fire({
+        title: "Pause Exam",
+        text: "Do you want to quit the exam?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Quit",
+        cancelButtonText: "No, Resume",
+        position: "center",
+        width: "100vw",
+        height: "100vh",
+        padding: "100",
+        customClass: {
+          container: "swal-full-screen",
+          popup: "swal-popup-full-height",
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          setIsPaused(true);
+          await submitExam();
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          closeAndNotifyParent();
+        } else {
           setIsPaused(false);
           setPauseCount(0);
 
@@ -1691,10 +1845,9 @@ const handlePauseResume = () => {
             return prev; // Important: preserve state
           });
         }
-
-    });
-  }
-};
+      });
+    }
+  };
 
   const [words, setWords] = useState(); // default word limit
   const [countType, setCountType] = useState(" ");
@@ -1713,15 +1866,38 @@ const handlePauseResume = () => {
     }
   }, [examData, currentSectionIndex, selectedLanguage]);
   // console.log("Set Text Value", "", text[currentSectionIndex]);
-
-const handleChange = (e) => {
+useEffect(() => {
+  if (examData) {
+    const initialDescriptiveData = [];
+    examData.section.forEach((section, sectionIndex) => {
+      const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+      questions.forEach((question, questionIndex) => {
+        const fullIndex = examData.section
+          .slice(0, sectionIndex)
+          .reduce((acc, sec) => 
+            acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) + questionIndex;
+        
+        initialDescriptiveData[fullIndex] = {
+          text: [""],
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: [],
+          keywords: [],
+          wordCount: 0,
+        };
+      });
+    });
+    setDescriptiveData(initialDescriptiveData);
+  }
+}, [examData, selectedLanguage]);
+ const handleChange = (e) => {
   const inputText = e.target.value;
   const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
   const currentCount = wordsArray.length;
-  
+
   setWordCounto(currentCount);
 
-  const limitReached = 
+  const limitReached =
     (countType === "decrement" && currentCount >= words) ||
     (countType === "increment" && currentCount >= words);
   setLimitReached(limitReached);
@@ -1731,25 +1907,27 @@ const handleChange = (e) => {
     finalText = wordsArray.slice(0, words).join(" ");
   }
 
-  setDescriptiveData(prev => {
+  setDescriptiveData((prev) => {
     const updated = [...prev];
-    if (!updated[currentSectionIndex]) {
-      updated[currentSectionIndex] = {
+    
+    // Use clickedQuestionIndex to store data per question
+    if (!updated[clickedQuestionIndex]) {
+      updated[clickedQuestionIndex] = {
         text: [""],
         corrections: [],
         scoreBreakdown: null,
         scoreData: [],
         keywords: [],
-        wordCount: 0
+        wordCount: 0,
       };
     }
-    
-    updated[currentSectionIndex] = {
-      ...updated[currentSectionIndex],
+
+    updated[clickedQuestionIndex] = {
+      ...updated[clickedQuestionIndex],
       text: [finalText],
-      wordCount: currentCount
+      wordCount: currentCount,
     };
-    
+
     return updated;
   });
 };
@@ -1780,7 +1958,7 @@ const handleChange = (e) => {
   const handleSectionCompletion = async () => {
     handleDescriptiveTest();
     console.log("handleSectionCompletion called");
-  await  setIsPaused(false);
+    await setIsPaused(false);
 
     if (true) {
       console.log("Section is complete");
@@ -1812,7 +1990,7 @@ const handleChange = (e) => {
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
-    
+
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         // navigate(`/liveresult/${id}/${user?._id}`);
@@ -1853,45 +2031,42 @@ const handleChange = (e) => {
     }
   };
   const renderTextarea = () => (
-  <>
-    <textarea
-      value={descriptiveData?.[currentSectionIndex]?.text?.[0] || ""}
-      onChange={handleChange}
-      onKeyDown={preventShortcuts}
-      onCopy={(e) => e.preventDefault()}
-      onCut={(e) => e.preventDefault()}
-      onPaste={(e) => e.preventDefault()}
-      disabled={limitReached}
-      placeholder="Enter your text..."
-      rows="6"
-      cols="100"
-      style={{
-        width: "100%",
-        height: "350px",
-        padding: "10px",
-        fontSize: "1rem",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
-        resize: "none",
-        backgroundColor: limitReached ? "#f5f5f5" : "#fff",
-      }}
-    />
-    <div
-      className="fw-bold text-right"
-      style={{
-        marginTop: "8px",
-        color: limitReached ? "red" : "#555",
-      }}
-    >
-      {limitReached
-        ? "Word limit reached"
-        : countType === "decrement"
-        ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
-        : `Words used: ${wordCounto} / ${words}`}
-    </div>
-  </>
-);
-
+    <>
+     <textarea
+  value={descriptiveData?.[clickedQuestionIndex]?.text?.[0] || ""}
+  onChange={handleChangeWithAutoCheck} // Use the new handler
+  onKeyDown={preventShortcuts}
+  onCopy={(e) => e.preventDefault()}
+  onCut={(e) => e.preventDefault()}
+  onPaste={(e) => e.preventDefault()}
+  disabled={limitReached}
+  placeholder="Enter your answer here..."
+  rows="6"
+  cols="100"
+  style={{
+    width: "100%",
+    height: "350px",
+    padding: "10px",
+    fontSize: "1rem",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    resize: "none",
+    backgroundColor: limitReached ? "#f5f5f5" : "#fff",
+  }}
+/>
+   <div className="mt-3 d-flex justify-content-between align-items-center">
+  <div className="fw-bold text-right" style={{ color: limitReached ? "red" : "#555" }}>
+    {limitReached
+      ? "Word limit reached"
+      : countType === "decrement"
+      ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
+      : `Words used: ${wordCounto} / ${words}`}
+  </div>
+  
+ 
+</div>
+    </>
+  );
 
   // const formatTime = (time) => {
   //   const minutes = Math.floor(time / 60);
@@ -1899,72 +2074,90 @@ const handleChange = (e) => {
   //   return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   // };
 
-  
-  
-  const [descriptiveTimeLeft, setDescriptiveTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+  const [descriptiveTimeLeft, setDescriptiveTimeLeft] = useState(30 * 60);
 
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
-const formatTime = (timeInSeconds) => {
-  const minutes = Math.floor(timeInSeconds / 60);
-  const seconds = timeInSeconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-};
+  // Use useRef for the timer
+  const descriptiveTimerRef = useRef(null);
 
-// // Initialize timer on first render and when question changes
-useEffect(() => {
- 
+  useEffect(() => {
+    const isDescriptiveQuestion =
+      examData?.section?.[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+      ]?.[clickedQuestionIndex - startingIndex]?.question_type ===
+      "descriptive";
 
-  // Only start timer for descriptive questions
-  if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
-    // Reset timer to 30 minutes when new descriptive question is shown
-    setDescriptiveTimeLeft(30 * 60);
-    
-    // Start countdown timer
-    timerRef.current = setInterval(() => {
-      setDescriptiveTimeLeft(prev => {
-        if (prev <= 0) {
-          clearInterval(timerRef.current);
-          handleSubmitSection(); // Auto-submit when time runs out
-          return 0;
+      const time=examData?.section[currentSectionIndex]?.t_time;
+    if (isDescriptiveQuestion) {
+      // Only reset timer if it's not already running or if we're on a different question
+      if (!descriptiveTimerRef.current || descriptiveTimeLeft === time * 60) {
+        console.log("🕒 Starting/Restarting descriptive timer");
+
+        // Clear existing timer only if it exists
+        if (descriptiveTimerRef.current) {
+          clearInterval(descriptiveTimerRef.current);
         }
-        return prev - 1;
-      });
-    }, 1000);
-  }
 
-  // // Cleanup function to clear timer when component unmounts
-  // return () => {
-  //   if (timerRef.current) {
-  //     clearInterval(timerRef.current);
+        setDescriptiveTimeLeft(time * 60);
+
+        descriptiveTimerRef.current = setInterval(() => {
+          setDescriptiveTimeLeft((prev) => {
+            if (prev <= 1) {
+              clearInterval(descriptiveTimerRef.current);
+              descriptiveTimerRef.current = null;
+              handleSubmitSection();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    } else {
+      // If not descriptive question, clear the timer
+      if (descriptiveTimerRef.current) {
+        clearInterval(descriptiveTimerRef.current);
+        descriptiveTimerRef.current = null;
+      }
+    }
+
+    // Cleanup only on unmount or when completely leaving descriptive mode
+    return () => {
+      // Don't clear here to maintain timer during re-renders
+      // Timer will be cleared when switching to non-descriptive questions
+    };
+  }, [currentSectionIndex, clickedQuestionIndex, examData, selectedLanguage]);
+
+  // // Add this useEffect to handle the countdown
+  // useEffect(() => {
+  //   if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
+  //     const timer = setInterval(() => {
+  //       setDescriptiveTimeLeft(prev => {
+  //         if (prev <= 0) {
+  //           clearInterval(timer);
+  //           handleSubmitSection(); // Auto-submit when time runs out
+  //           return 0;
+  //         }
+  //         return prev - 1;
+  //       });
+  //     }, 1000);
+
+  //     return () => clearInterval(timer);
   //   }
-  // };
-}, [ examData]); // Dependencies for when to reset timer
+  // }, [currentSectionIndex, clickedQuestionIndex, descriptiveTimeLeft]);
 
-
-// // Add this useEffect to handle the countdown
-// useEffect(() => {
-//   if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
-//     const timer = setInterval(() => {
-//       setDescriptiveTimeLeft(prev => {
-//         if (prev <= 0) {
-//           clearInterval(timer);
-//           handleSubmitSection(); // Auto-submit when time runs out
-//           return 0;
-//         }
-//         return prev - 1;
-//       });
-//     }, 1000);
-
-//     return () => clearInterval(timer);
-//   }
-// }, [currentSectionIndex, clickedQuestionIndex, descriptiveTimeLeft]);
-
-//   useEffect(() => {
-//     const compositetime = examData?.duration * 60;
-//     console.log("Composite time:", compositetime);
-//     setDuration(compositetime);
-//   }, [examData, currentSectionIndex, duration, descriptiveTimeLeft]);
- const [isFullscreen, setIsFullscreen] = useState(false);
+  //   useEffect(() => {
+  //     const compositetime = examData?.duration * 60;
+  //     console.log("Composite time:", compositetime);
+  //     setDuration(compositetime);
+  //   }, [examData, currentSectionIndex, duration, descriptiveTimeLeft]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
@@ -2005,9 +2198,18 @@ useEffect(() => {
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange
+      );
     };
   }, []);
 
@@ -2032,16 +2234,32 @@ useEffect(() => {
 
     examData?.section?.forEach((section, sectionIndex) => {
       const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
-      
-      questions?.forEach((_, questionIndex) => {
+
+      questions?.forEach((question, questionIndex) => {
         const fullIndex = examData.section
           .slice(0, sectionIndex)
-          .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) + questionIndex;
+          .reduce(
+            (acc, sec) =>
+              acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+            0
+          ) + questionIndex;
 
-        // Check for descriptive answer
-        const hasAnswer = descriptiveData?.[sectionIndex]?.text?.[0]?.trim() !== "" && 
-                         descriptiveData?.[sectionIndex]?.text?.[0] !== undefined;
-        
+        // Multiple ways to check for descriptive answer
+        let hasAnswer = false;
+
+        // Method 1: Check nested structure
+        if (descriptiveData?.[sectionIndex]?.questions?.[questionIndex]?.text?.[0]) {
+          hasAnswer = descriptiveData[sectionIndex].questions[questionIndex].text[0].trim() !== "";
+        }
+        // Method 2: Check flat structure
+        else if (descriptiveData?.[sectionIndex]?.text?.[questionIndex]) {
+          hasAnswer = descriptiveData[sectionIndex].text[questionIndex].trim() !== "";
+        }
+        // Method 3: Check by question ID if available
+        else if (question._id && descriptiveData?.[question._id]) {
+          hasAnswer = descriptiveData[question._id].text?.trim() !== "";
+        }
+
         const isVisited = visitedQuestions.includes(fullIndex);
         const isMarked = markedForReview.includes(fullIndex);
 
@@ -2051,7 +2269,7 @@ useEffect(() => {
           markedForReviewCount++;
         } else if (hasAnswer) {
           answered++;
-        } else if (isVisited) {
+        } else if (isVisited && !hasAnswer) {
           notAnswered++;
         } else {
           notVisited++;
@@ -2068,12 +2286,32 @@ useEffect(() => {
 
   calculateCounts();
 }, [
-  descriptiveData, // Added to dependencies
+  descriptiveData,
   visitedQuestions,
   markedForReview,
   examData,
   selectedLanguage,
 ]);
+
+// Helper function to check if descriptive answer exists
+const hasDescriptiveAnswer = (sectionIndex, questionIndex) => {
+  if (!descriptiveData) return false;
+
+  // Try different possible data structures
+  return (
+    // Nested structure: descriptiveData[sectionIndex].questions[questionIndex].text[0]
+    (descriptiveData[sectionIndex]?.questions?.[questionIndex]?.text?.[0]?.trim() !== "" &&
+     descriptiveData[sectionIndex]?.questions?.[questionIndex]?.text?.[0] !== undefined) ||
+    
+    // Flat structure: descriptiveData[sectionIndex].text[questionIndex]
+    (descriptiveData[sectionIndex]?.text?.[questionIndex]?.trim() !== "" &&
+     descriptiveData[sectionIndex]?.text?.[questionIndex] !== undefined) ||
+    
+    // Direct structure: descriptiveData[questionId]
+    (examData?.section?.[sectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[questionIndex]?._id &&
+     descriptiveData[examData.section[sectionIndex].questions[selectedLanguage.toLowerCase()][questionIndex]._id]?.text?.trim() !== "")
+  );
+};
 
 const getSectionCounts = (
   section,
@@ -2091,15 +2329,16 @@ const getSectionCounts = (
   const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
   const startingIndex = examData.section
     .slice(0, sectionIndex)
-    .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+    .reduce(
+      (acc, sec) =>
+        acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+      0
+    );
 
-  questions?.forEach((_, questionIndex) => {
+  questions?.forEach((question, questionIndex) => {
     const fullIndex = startingIndex + questionIndex;
-    
-    // Check for descriptive answer
-    const hasAnswer = descriptiveData?.[sectionIndex]?.text?.[0]?.trim() !== "" && 
-                     descriptiveData?.[sectionIndex]?.text?.[0] !== undefined;
-    
+
+    const hasAnswer = hasDescriptiveAnswer(sectionIndex, questionIndex);
     const isVisited = visitedQuestions.includes(fullIndex);
     const isMarked = markedForReview.includes(fullIndex);
 
@@ -2109,7 +2348,7 @@ const getSectionCounts = (
       markedForReviewCount++;
     } else if (hasAnswer) {
       answered++;
-    } else if (isVisited) {
+    } else if (isVisited && !hasAnswer) {
       notAnswered++;
     } else {
       notVisited++;
@@ -2127,136 +2366,143 @@ const getSectionCounts = (
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
-     const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-  setQuestionTime(existingTime);
-  setQuestionStartTime(new Date());
+    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+    setQuestionTime(existingTime);
+    setQuestionStartTime(new Date());
 
-  if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
 
-  timerRef.current = setInterval(() => {
-    setQuestionTime((prev) => prev + 1);
-  }, 1000);
+    timerRef.current = setInterval(() => {
+      setQuestionTime((prev) => prev + 1);
+    }, 1000);
 
-  console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
+    console.log(
+      `⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`
+    );
   };
 
   const finishTestAndOpenResult = async () => {
-  // try {
+    // try {
     // await submitExam();
-    
+
     // Build the result URL
     const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
-    
+
     // Open result in a new window without _blank target
     // const resultWindow = window.open('', '_self');
-    console.log("openerr",window.opener);
-    
-  if (window.opener) {
-    console.log("Closing the window and notifying parent");
-    window.opener.postMessage({
-      type: 'test-status-updated',
-      testId: id
-    }, window.location.origin);   
-     
-            window.open(resultUrl, '_blank');
+    console.log("openerr", window.opener);
 
-    // Allow time for message to send before closing
-    setTimeout(() => {
-      window.close();
-    }, 300);
-  } else {
-    console.log("Closing the window without parent notification");
-    window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
-  }
-     
-};
+    if (window.opener) {
+      console.log("Closing the window and notifying parent");
+      window.opener.postMessage(
+        {
+          type: "test-status-updated",
+          testId: id,
+        },
+        window.location.origin
+      );
 
+      window.open(resultUrl, "_blank");
 
-useEffect(() => {
-  // Timer interval setup
-  timerRef.current = setInterval(() => {
-    setQuestionTime(prev => prev + 1);
-  }, 1000);
-
-  return () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+      // Allow time for message to send before closing
+      setTimeout(() => {
+        window.close();
+      }, 300);
+    } else {
+      console.log("Closing the window without parent notification");
+      window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
+    }
   };
-}, []);
 
-useEffect(() => {
-  const now = new Date();
+  useEffect(() => {
+    // Timer interval setup
+    timerRef.current = setInterval(() => {
+      setQuestionTime((prev) => prev + 1);
+    }, 1000);
 
-  // 1️⃣ Save time for previous question
-  if (previousQuestionIndex !== null && questionStartTime) {
-    const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-    setQuestionTimes(prev => ({
-      ...prev,
-      [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
-    }));
-  }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
-  // 2️⃣ Clear previous timer
-  if (timerRef.current) clearInterval(timerRef.current);
-console.log("q",questionTimes,clickedQuestionIndex);
+  useEffect(() => {
+    const now = new Date();
 
-  // 3️⃣ Start timer for current question
-  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-  console.log("Existing time for question:", existingTime);
-  
-  setQuestionTime(existingTime);
-  setQuestionStartTime(now);
-console.log(questionTime);
+    // 1️⃣ Save time for previous question
+    if (previousQuestionIndex !== null && questionStartTime) {
+      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+      setQuestionTimes((prev) => ({
+        ...prev,
+        [previousQuestionIndex]:
+          (prev[previousQuestionIndex] || 0) + secondsSpent,
+      }));
+    }
 
-  // 4️⃣ Live increment every second
-  timerRef.current = setInterval(() => {
-    setQuestionTime(prev => prev + 1);
-  }, 1000);
+    // 2️⃣ Clear previous timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    console.log("q", questionTimes, clickedQuestionIndex);
 
-  // 5️⃣ Track previous index for next time
-  setPreviousQuestionIndex(clickedQuestionIndex);
+    // 3️⃣ Start timer for current question
+    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+    console.log("Existing time for question:", existingTime);
 
-  return () => clearInterval(timerRef.current);
-}, [clickedQuestionIndex]);
+    setQuestionTime(existingTime);
+    setQuestionStartTime(now);
+    console.log(questionTime);
+
+    // 4️⃣ Live increment every second
+    timerRef.current = setInterval(() => {
+      setQuestionTime((prev) => prev + 1);
+    }, 1000);
+
+    // 5️⃣ Track previous index for next time
+    setPreviousQuestionIndex(clickedQuestionIndex);
+
+    return () => clearInterval(timerRef.current);
+  }, [clickedQuestionIndex]);
 
   const closeAndNotifyParent = () => {
-  if (window.opener) {
-    console.log("Closing the window and notifying parent");
-    window.opener.postMessage({
-      type: 'test-status-updated',
-      testId: id
-    }, window.location.origin);
-    
-    // Allow time for message to send before closing
-    setTimeout(() => {
-      window.close();
-    }, 300);
-  } else {
-    console.log("Closing the window without parent notification");
-    navigate('/');
-  }
-};
+    if (window.opener) {
+      console.log("Closing the window and notifying parent");
+      window.opener.postMessage(
+        {
+          type: "test-status-updated",
+          testId: id,
+        },
+        window.location.origin
+      );
+
+      // Allow time for message to send before closing
+      setTimeout(() => {
+        window.close();
+      }, 300);
+    } else {
+      console.log("Closing the window without parent notification");
+      navigate("/");
+    }
+  };
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-       <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
-  {/* Show Name */}
-  <h1 className="mt-3 text-sm md:text-xl font-bold">{show_name}</h1>
+        <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
+          {/* Show Name */}
+          <h1 className="mt-3 text-sm md:text-xl font-bold">{show_name}</h1>
 
-  {/* Logo */}
-  <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+          {/* Logo */}
+          <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
 
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left des: {formatTime(descriptiveTimeLeft)}
-    </h1>
+          <h1 className="text-center text-black bg-gray-100 p-2">
+            Time Left des: {formatTime(descriptiveTimeLeft)}
+          </h1>
 
-  {/* Fullscreen Toggle Button */}
-  <button
-    onClick={toggleFullScreen}
-    className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-  >
-    {isFullscreen ? <FaCompress /> : <FaExpand />}
-  </button>
-</div>
+          {/* Fullscreen Toggle Button */}
+          <button
+            onClick={toggleFullScreen}
+            className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
+          >
+            {isFullscreen ? <FaCompress /> : <FaExpand />}
+          </button>
+        </div>
 
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
@@ -2287,11 +2533,11 @@ console.log(questionTime);
                       Section Submit
                     </h1>
                     <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={popupmodal} // Manually hide the modal
-            ></button>
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={popupmodal} // Manually hide the modal
+                    ></button>
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -2378,17 +2624,19 @@ console.log(questionTime);
                           ? " font-medium underline"
                           : ""
                       }`}
-        onClick={() => {
-      const newStartingIndex = examData.section
-        .slice(0, index)
-        .reduce(
-          (acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-          0
-        );
-      setCurrentSectionIndex(index);
-      setClickedQuestionIndex(newStartingIndex);
-    }}
-
+                onClick={() => {
+                  const newStartingIndex = examData.section
+                    .slice(0, index)
+                    .reduce(
+                      (acc, sec) =>
+                        acc +
+                        (sec?.questions?.[selectedLanguage?.toLowerCase()]
+                          ?.length || 0),
+                      0
+                    );
+                  setCurrentSectionIndex(index);
+                  setClickedQuestionIndex(newStartingIndex);
+                }}
               >
                 {section.name}
                 <div className="relative group ml-2 d-inline-block">
@@ -2476,31 +2724,42 @@ console.log(questionTime);
                 </h3>
 
                 <h1 className="flex flex-wrap md:flex-row">
-                                    {/* Language dropdown added here */}
-                {examData &&
-                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                    <div className="flex items-center mx-2">
-                      <select
-                        value={displayLanguage || selectedLanguage}
-                        onChange={(e) => setDisplayLanguage(e.target.value)}
-                        className="border rounded p-1"
-                      >
-                        {examData?.bilingual_status ? (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                          </>
-                        ) : (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                          </>
-                        )}
-                      </select>
-                    </div>
-                )}
-
+                  {/* Language dropdown added here */}
+                  {examData &&
+                    examData.section?.[currentSectionIndex]?.name
+                      ?.toLowerCase()
+                      .trim() !== "english language" && (
+                      <div className="flex items-center mx-2">
+                        <select
+                          value={displayLanguage || selectedLanguage}
+                          onChange={(e) => setDisplayLanguage(e.target.value)}
+                          className="border rounded p-1"
+                        >
+                          {examData?.bilingual_status ? (
+                            <>
+                              {examData?.english_status && (
+                                <option value="English">English</option>
+                              )}
+                              {examData?.hindi_status && (
+                                <option value="Hindi">Hindi</option>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {examData?.english_status && (
+                                <option value="English">English</option>
+                              )}
+                              {examData?.hindi_status && (
+                                <option value="Hindi">Hindi</option>
+                              )}
+                              {examData?.tamil_status && (
+                                <option value="Tamil">Tamil</option>
+                              )}
+                            </>
+                          )}
+                        </select>
+                      </div>
+                    )}
 
                   <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
                     Qn Time : {formatTime(questionTime)}
@@ -2527,107 +2786,124 @@ console.log(questionTime);
                 </h1>
               </div>
 
-           {examData?.section[currentSectionIndex] ? (
-  (() => {
-    const currentQuestion =
-      examData.section[currentSectionIndex]?.questions?.[
-        (displayLanguage || selectedLanguage)?.toLowerCase()
-      ]?.[clickedQuestionIndex - startingIndex];
+              {examData?.section[currentSectionIndex] ? (
+                (() => {
+                  const currentQuestion =
+                    examData.section[currentSectionIndex]?.questions?.[
+                      (displayLanguage || selectedLanguage)?.toLowerCase()
+                    ]?.[clickedQuestionIndex - startingIndex];
 
-    const hasCommonData = !!currentQuestion?.common_data;
-    const hasQuestion = !!currentQuestion?.question;
+                  const hasCommonData = !!currentQuestion?.common_data;
+                  const hasQuestion = !!currentQuestion?.question;
 
-    const showSplitLayout = hasCommonData && hasQuestion;
+                  const showSplitLayout = hasCommonData && hasQuestion;
 
-    return (
-      <div className="flex flex-col md:flex-row p-0">
-        {/* ✅ CASE 1: Split layout when both commonData & question exist */}
-        {showSplitLayout ? (
-          <>
-            {/* LEFT - common data */}
-            <div
-              className="md:w-1/2 p-3 pb-5 md:border-r border-gray-300"
-              style={{
-                height: "calc(100vh - 150px)",
-                overflowY: "auto",
-              }}
-            >
-              <div
-                className="text-wrap"
-                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                dangerouslySetInnerHTML={{
-                  __html: currentQuestion?.common_data,
-                }}
-              />
-            </div>
+                  return (
+                    <div className="flex flex-col md:flex-row p-0">
+                      {/* ✅ CASE 1: Split layout when both commonData & question exist */}
+                      {showSplitLayout ? (
+                        <>
+                          {/* LEFT - common data */}
+                          <div
+                            className="md:w-1/2 p-3 pb-5 md:border-r border-gray-300"
+                            style={{
+                              height: "calc(100vh - 150px)",
+                              overflowY: "auto",
+                            }}
+                          >
+                            <div
+                              className="text-wrap"
+                              style={{
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                              }}
+                              dangerouslySetInnerHTML={{
+                                __html: currentQuestion?.common_data,
+                              }}
+                            />
+                          </div>
 
-            {/* RIGHT - question + textarea */}
-            <div
-              className="md:w-1/2 p-3 pb-5"
-              style={{
-                height: "calc(100vh - 150px)",
-                overflowY: "auto",
-              }}
-            >
-              <div
-                className="text-wrap mb-2"
-                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                dangerouslySetInnerHTML={{
-                  __html: currentQuestion?.question,
-                }}
-              />
+                          {/* RIGHT - question + textarea */}
+                          <div
+                            className="md:w-1/2 p-3 pb-5"
+                            style={{
+                              height: "calc(100vh - 150px)",
+                              overflowY: "auto",
+                            }}
+                          >
+                            <div
+                              className="text-wrap mb-2"
+                              style={{
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                              }}
+                              dangerouslySetInnerHTML={{
+                                __html: currentQuestion?.question,
+                              }}
+                            />
 
-              {/* Textarea */}
-              {renderTextarea()}
-            </div>
-          </>
-        ) : (
-          // ✅ CASE 2: Stacked full-width layout (when not both are present)
-          <div className="w-full p-3 pb-5" style={{ height: "calc(100vh - 150px)", overflowY: "auto" }}>
-            {/* Common Data */}
-            {hasCommonData && (
-              <div
-                className="text-wrap mb-4"
-                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                dangerouslySetInnerHTML={{
-                  __html: currentQuestion?.common_data,
-                }}
-              />
-            )}
+                            {/* Textarea */}
+                            {renderTextarea()}
+                          </div>
+                        </>
+                      ) : (
+                        // ✅ CASE 2: Stacked full-width layout (when not both are present)
+                        <div
+                          className="w-full p-3 pb-5"
+                          style={{
+                            height: "calc(100vh - 150px)",
+                            overflowY: "auto",
+                          }}
+                        >
+                          {/* Common Data */}
+                          {hasCommonData && (
+                            <div
+                              className="text-wrap mb-4"
+                              style={{
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                              }}
+                              dangerouslySetInnerHTML={{
+                                __html: currentQuestion?.common_data,
+                              }}
+                            />
+                          )}
 
-            {/* Question (if available) */}
-            {hasQuestion && (
-              <div
-                className="text-wrap mb-4"
-                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                dangerouslySetInnerHTML={{
-                  __html: currentQuestion?.question,
-                }}
-              />
-            )}
+                          {/* Question (if available) */}
+                          {hasQuestion && (
+                            <div
+                              className="text-wrap mb-4"
+                              style={{
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                              }}
+                              dangerouslySetInnerHTML={{
+                                __html: currentQuestion?.question,
+                              }}
+                            />
+                          )}
 
-            {/* ✅ Textarea always shown */}
-            {renderTextarea()}
-          </div>
-        )}
-      </div>
-    );
-  })()
-) : (
-  <div
-    className="d-flex justify-content-center align-items-center"
-    style={{ height: "100vh" }}
-  >
-    <div
-      className="spinner-border text-primary"
-      role="status"
-      style={{ width: "3rem", height: "3rem" }}
-    >
-      <span className="visually-hidden">Loading...</span>
-    </div>
-  </div>
-)}
-
+                          {/* ✅ Textarea always shown */}
+                          {renderTextarea()}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : (
+                <div
+                  className="d-flex justify-content-center align-items-center"
+                  style={{ height: "100vh" }}
+                >
+                  <div
+                    className="spinner-border text-primary"
+                    role="status"
+                    style={{ width: "3rem", height: "3rem" }}
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="text-center">
@@ -2640,16 +2916,21 @@ console.log(questionTime);
 
         <div
           className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
-        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
- ${isFullscreen
-              ? 'h-[87vh] md:h-[87vh]'
-              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-            style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+        ${isMobileMenuOpen ? "translate-x-0  w-3/4 " : "translate-x-full "}
+        ${
+          closeSideBar
+            ? "md:translate-x-full md:w-0 border-0"
+            : "md:translate-x-0 md:w-1/4"
+        }
+ ${
+   isFullscreen
+     ? "h-[87vh] md:h-[87vh]"
+     : "h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]"
+ } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+          style={{
+            height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
+            overflowY: "auto",
+          }}
         >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -2688,13 +2969,13 @@ console.log(questionTime);
                 </h1>
               </div>
             </div>
-       {examData?.section?.[currentSectionIndex]?.questions?.[
-  selectedLanguage?.toLowerCase()
-]?.[clickedQuestionIndex - startingIndex] && (
-  <h1 className="text-center text-black bg-gray-100 p-2">
-    Time Left: {formatTime(descriptiveTimeLeft)}
-  </h1>
-)}
+            {examData?.section?.[currentSectionIndex]?.questions?.[
+              selectedLanguage?.toLowerCase()
+            ]?.[clickedQuestionIndex - startingIndex] && (
+              <h1 className="text-center text-black bg-gray-100 p-2">
+                Time Left: {formatTime(descriptiveTimeLeft)}
+              </h1>
+            )}
 
             <center>
               <button
@@ -2759,20 +3040,20 @@ console.log(questionTime);
               </div>
             </div>
 
-        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+    <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
   {examData?.section[currentSectionIndex]?.questions?.[
     selectedLanguage?.toLowerCase()
   ]?.map((_, index) => {
     const fullIndex = startingIndex + index;
-    const currentSection = examData.section[currentSectionIndex];
-    const timeFormatted = formatTime(timeLeft);
 
     let className = "";
-    
+
     // Check if the question has been answered (for descriptive questions)
-    const hasAnswer = descriptiveData?.[currentSectionIndex]?.text?.[0]?.trim() !== "" && 
-                     descriptiveData?.[currentSectionIndex]?.text?.[0] !== undefined;
-    
+    // Now checking by question index (fullIndex) instead of section index
+    const hasAnswer =
+      descriptiveData?.[fullIndex]?.text?.[0]?.trim() !== "" &&
+      descriptiveData?.[fullIndex]?.text?.[0] !== undefined;
+
     if (hasAnswer) {
       className = "answerImg";
       if (markedForReview.includes(fullIndex)) {
@@ -2828,9 +3109,8 @@ console.log(questionTime);
                 <span className="block md:hidden">Clear</span>
                 <span className="hidden md:block"> Clear Response</span>
               </button>
-           </div>
+            </div>
             {examData?.section?.length > 0 && (
-          
               <button
                 onClick={handleNextClick}
                 className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
