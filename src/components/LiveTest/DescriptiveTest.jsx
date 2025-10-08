@@ -35,7 +35,7 @@ const DescriptiveTest = () => {
   const { user } = useContext(UserContext);
   const [wordCount, setWordCount] = useState(0);
  const [descriptiveData, setDescriptiveData] = useState([]);
-
+const [destimer,setDestimer]=useState()
 // Initialize descriptiveData when examData is available
 
   const location = useLocation();
@@ -107,7 +107,7 @@ const DescriptiveTest = () => {
             setExamData(res.data);
             console.log("res.data", res.data);
             setIsDataFetched(true);
-
+            setDestimer(res.data.duration);
             setShow_name(res.data.show_name);
             // setDuration(res.data.duration);
             sett_questions(res.data.t_questions); // Mark that data is fetched
@@ -843,7 +843,7 @@ const DescriptiveTest = () => {
 
   useEffect(() => {
     const totalSectionTime =
-      examData?.section[currentSectionIndex]?.t_time * 60;
+      destimer* 60;
     // Get time taken from resultData
     const timeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
@@ -869,7 +869,7 @@ const DescriptiveTest = () => {
     } = examDataSubmission;
 
     const totalTimeInSeconds =
-      examData?.section[currentSectionIndex]?.t_time * 60 || 0;
+   destimer * 60 || 0;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
     const timeTakenInSecondsUpdated =
       (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
@@ -2094,10 +2094,9 @@ useEffect(() => {
       ]?.[clickedQuestionIndex - startingIndex]?.question_type ===
       "descriptive";
 
-      const time=examData?.section[currentSectionIndex]?.t_time;
     if (isDescriptiveQuestion) {
       // Only reset timer if it's not already running or if we're on a different question
-      if (!descriptiveTimerRef.current || descriptiveTimeLeft === time * 60) {
+      if (!descriptiveTimerRef.current || descriptiveTimeLeft === destimer * 60) {
         console.log("🕒 Starting/Restarting descriptive timer");
 
         // Clear existing timer only if it exists
@@ -2105,7 +2104,7 @@ useEffect(() => {
           clearInterval(descriptiveTimerRef.current);
         }
 
-        setDescriptiveTimeLeft(time * 60);
+        setDescriptiveTimeLeft(destimer * 60);
 
         descriptiveTimerRef.current = setInterval(() => {
           setDescriptiveTimeLeft((prev) => {
