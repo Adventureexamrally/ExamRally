@@ -34,9 +34,10 @@ const DescriptiveTest = () => {
   const [scoreBreakdown, setScoreBreakdown] = useState(null);
   const { user } = useContext(UserContext);
   const [wordCount, setWordCount] = useState(0);
- const [descriptiveData, setDescriptiveData] = useState([]);
-const [destimer,setDestimer]=useState()
-// Initialize descriptiveData when examData is available
+  const [descriptiveData, setDescriptiveData] = useState([]);
+  const [destimer, setDestimer] = useState()
+  const [popupType, setPopupType] = useState('section');
+  // Initialize descriptiveData when examData is available
 
   const location = useLocation();
   const selectedLanguage = location.state?.language || "English";
@@ -555,9 +556,63 @@ const [destimer,setDestimer]=useState()
     fetchData();
   }, [id]); // Ensure to add 'id' as a dependency for the effect
 
+  const calculateAllSectionsData = () => {
+    if (!examData?.section) return [];
+
+    return examData.section.map((section, sectionIndex) => {
+      const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+      const sectionStartingIndex = examData.section
+        .slice(0, sectionIndex)
+        .reduce(
+          (acc, sec) =>
+            acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+          0
+        );
+
+      // Calculate answered questions for descriptive answers
+      const answeredQuestions = questions.reduce((count, q, index) => {
+        const fullIndex = sectionStartingIndex + index;
+        const hasAnswer = descriptiveData?.[fullIndex]?.text?.[0]?.trim() !== "" &&
+          descriptiveData?.[fullIndex]?.text?.[0] !== undefined;
+        return count + (hasAnswer ? 1 : 0);
+      }, 0);
+
+      // Calculate visited questions
+      const visitedQuestionsCount = questions.reduce((count, q, index) => {
+        const fullIndex = sectionStartingIndex + index;
+        const wasVisited = visitedQuestions.includes(fullIndex);
+        return count + (wasVisited ? 1 : 0);
+      }, 0);
+
+      // Calculate marked for review
+      const reviewedQuestions = questions.reduce((count, q, index) => {
+        const fullIndex = sectionStartingIndex + index;
+        const isMarked = markedForReview.includes(fullIndex);
+        return count + (isMarked ? 1 : 0);
+      }, 0);
+
+      return {
+        sectionName: section?.name || `Section ${sectionIndex + 1}`,
+        totalQuestions: questions.length,
+        answeredQuestions,
+        notAnsweredQuestions: questions.length - answeredQuestions,
+        visitedQuestionsCount,
+        notVisitedQuestions: questions.length - visitedQuestionsCount,
+        reviewedQuestions,
+      };
+    });
+  };
+
+  // For "Submit Test" button - Show ALL sections
   const handleSubmitTest = () => {
+    handleDescriptiveTest();
     updateSectionTime();
-    setIsSubmitted(true); // Trigger the post call for total marks
+    setPopupType('test'); // Set to test type
+
+    // Calculate ALL sections data
+    const allSectionsData = calculateAllSectionsData();
+    setSectionSummaryData(allSectionsData);
+    setShowModal(true);
   };
   const handleClearResponse = () => {
     setSelectedOptions((prev) => {
@@ -615,7 +670,7 @@ const [destimer,setDestimer]=useState()
 
     const currentSectionQuestions =
       examData.section[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
+      selectedLanguage?.toLowerCase()
       ] || [];
 
     const isLastQuestionInSection =
@@ -772,51 +827,50 @@ const [destimer,setDestimer]=useState()
   };
 
   // Your submitExam function with the necessary modifications
- const handleSubmitSection = () => {
-  // Save current descriptive answer
-  handleDescriptiveTest();
-  updateSectionTime();
+  const handleSubmitSection = () => {
+    handleDescriptiveTest();
+    updateSectionTime();
+    setPopupType('section'); // Set to section type
 
-  const currentSection = examData?.section[currentSectionIndex];
-  const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
+    // Calculate ONLY current section data
+    const currentSection = examData?.section[currentSectionIndex];
+    const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
 
-  // Create section summary with proper fallbacks
-  const sectionSummary = {
-    sectionName: currentSection?.name || `Section ${currentSectionIndex + 1}`,
-    totalQuestions: questions.length,
-    answeredQuestions: questions.reduce((count, q, index) => {
-      const hasAnswer = selectedOptions[index] !== null && 
-                       selectedOptions[index] !== undefined && 
-                       selectedOptions[index] !== '';
-      return count + (hasAnswer ? 1 : 0);
-    }, 0),
-    notAnsweredQuestions: questions.reduce((count, q, index) => {
-      const hasAnswer = selectedOptions[index] !== null && 
-                       selectedOptions[index] !== undefined && 
-                       selectedOptions[index] !== '';
-      return count + (hasAnswer ? 0 : 1);
-    }, 0),
-    visitedQuestionsCount: questions.reduce((count, q, index) => {
-      const wasVisited = q.visited || selectedOptions[index] !== null;
-      return count + (wasVisited ? 1 : 0);
-    }, 0),
-    notVisitedQuestions: questions.reduce((count, q, index) => {
-      const wasVisited = q.visited || selectedOptions[index] !== null;
-      return count + (wasVisited ? 0 : 1);
-    }, 0),
-    reviewedQuestions: questions.filter(q => q.reviewed).length,
-    descriptiveData: descriptiveData[currentSectionIndex],
+    const currentSectionData = {
+      sectionName: currentSection?.name || `Section ${currentSectionIndex + 1}`,
+      totalQuestions: questions.length,
+      answeredQuestions: questions.reduce((count, q, index) => {
+        const fullIndex = startingIndex + index;
+        const hasAnswer = descriptiveData?.[fullIndex]?.text?.[0]?.trim() !== "" &&
+          descriptiveData?.[fullIndex]?.text?.[0] !== undefined;
+        return count + (hasAnswer ? 1 : 0);
+      }, 0),
+      notAnsweredQuestions: questions.reduce((count, q, index) => {
+        const fullIndex = startingIndex + index;
+        const hasAnswer = descriptiveData?.[fullIndex]?.text?.[0]?.trim() !== "" &&
+          descriptiveData?.[fullIndex]?.text?.[0] !== undefined;
+        return count + (hasAnswer ? 0 : 1);
+      }, 0),
+      visitedQuestionsCount: questions.reduce((count, q, index) => {
+        const fullIndex = startingIndex + index;
+        const wasVisited = visitedQuestions.includes(fullIndex);
+        return count + (wasVisited ? 1 : 0);
+      }, 0),
+      notVisitedQuestions: questions.reduce((count, q, index) => {
+        const fullIndex = startingIndex + index;
+        const wasVisited = visitedQuestions.includes(fullIndex);
+        return count + (wasVisited ? 0 : 1);
+      }, 0),
+      reviewedQuestions: questions.reduce((count, q, index) => {
+        const fullIndex = startingIndex + index;
+        const isMarked = markedForReview.includes(fullIndex);
+        return count + (isMarked ? 1 : 0);
+      }, 0),
+    };
+
+    setSectionSummaryData([currentSectionData]);
+    setShowModal(true);
   };
-
-  // Update section summary data
-  setSectionSummaryData(prev => {
-    const updated = [...prev];
-    updated[currentSectionIndex] = sectionSummary;
-    return updated;
-  });
-
-  setShowModal(true);
-};
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
@@ -843,7 +897,7 @@ const [destimer,setDestimer]=useState()
 
   useEffect(() => {
     const totalSectionTime =
-      destimer* 60;
+      destimer * 60;
     // Get time taken from resultData
     const timeTaken =
       resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
@@ -869,7 +923,7 @@ const [destimer,setDestimer]=useState()
     } = examDataSubmission;
 
     const totalTimeInSeconds =
-   destimer * 60 || 0;
+      destimer * 60 || 0;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
     const timeTakenInSecondsUpdated =
       (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
@@ -966,14 +1020,15 @@ const [destimer,setDestimer]=useState()
     }
   }, [user?._id, id]);
 
+  // In your timers, make sure they call handleTimerEnd
   useEffect(() => {
     if (timeminus > 0 && !isPaused) {
       const timerInterval = setInterval(() => {
         settimeminus((prevTime) => {
           const newTime = prevTime - 1;
           if (newTime === 0) {
-            clearInterval(timerInterval); // Stop the timer immediately
-            handleTimerEnd(); // Call an async handler
+            clearInterval(timerInterval);
+            handleTimerEnd(); // Call the time expiry handler
           }
           return newTime;
         });
@@ -982,121 +1037,152 @@ const [destimer,setDestimer]=useState()
     }
   }, [timeminus, isPaused]);
 
+  // Add this useEffect to handle auto-submission when time expires
+  useEffect(() => {
+    let autoSubmitTimer;
+
+    if (showModal && popupType === 'timeExpired') {
+      // Set a timer to automatically submit after 2 seconds
+      autoSubmitTimer = setTimeout(async () => {
+        console.log("⏰ Auto-submitting due to time expiry...");
+       
+
+        await submitExam();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+         setShowModal(false);
+        finishTestAndOpenResult();
+
+      }, 2000); // 2 seconds delay
+    }
+
+    // Cleanup the timer if component unmounts or modal closes
+    return () => {
+      if (autoSubmitTimer) {
+        clearTimeout(autoSubmitTimer);
+      }
+    };
+  }, [showModal, popupType]);
+
+  // Also update your handleTimerEnd function to ensure it sets the correct popup type
   const handleTimerEnd = async () => {
-    handleSubmitSection(); // 1. Submits the section
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 3. Waits 1 second
-    handleSectionCompletion(); // 4. Calls this after 1 second
+    handleDescriptiveTest();
+    updateSectionTime();
+    setPopupType('timeExpired'); // Make sure this is set correctly
+
+    // Calculate ALL sections data
+    const allSectionsData = calculateAllSectionsData();
+    setSectionSummaryData(allSectionsData);
+    setShowModal(true);
   };
+  const getKeywords = (questionIndex = clickedQuestionIndex) => {
+    // Find which section and question this belongs to
+    let currentSectionIndex = 0;
+    let relativeQuestionIndex = 0;
+    let count = 0;
 
-const getKeywords = (questionIndex = clickedQuestionIndex) => {
-  // Find which section and question this belongs to
-  let currentSectionIndex = 0;
-  let relativeQuestionIndex = 0;
-  let count = 0;
-  
-  examData.section.forEach((section, sectionIdx) => {
-    const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-    if (questionIndex >= count && questionIndex < count + questions.length) {
-      currentSectionIndex = sectionIdx;
-      relativeQuestionIndex = questionIndex - count;
-    }
-    count += questions.length;
-  });
-
-  const keywordString = examData?.section?.[currentSectionIndex]?.questions?.[
-    selectedLanguage?.toLowerCase()
-  ]?.[relativeQuestionIndex]?.keywords;
-
-  if (typeof keywordString === "string") {
-    return keywordString.split(",").map((k) => k.trim().toLowerCase());
-  }
-  return [];
-};
-
-// ✅ Check grammar for the current section's text
-// Update your checkGrammar function
-const checkGrammar = async (text, questionIndex = clickedQuestionIndex) => {
-  try {
-    if (typeof text !== "string") {
-      console.warn("Invalid text input for grammar check:", text);
-      return {
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: calculateScore("", [], questionIndex),
-      };
-    }
-
-    const textToCheck = text.trim();
-    if (!textToCheck) {
-      return {
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: calculateScore("", [], questionIndex),
-      };
-    }
-
-    // ✅ Call your backend (/chat)
-    const response = await Api.post("/chat", { 
-      message: textToCheck,
-      questionIndex: questionIndex // Send question index for context
+    examData.section.forEach((section, sectionIdx) => {
+      const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+      if (questionIndex >= count && questionIndex < count + questions.length) {
+        currentSectionIndex = sectionIdx;
+        relativeQuestionIndex = questionIndex - count;
+      }
+      count += questions.length;
     });
 
-    const correctedText = response?.data?.reply || textToCheck;
+    const keywordString = examData?.section?.[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ]?.[relativeQuestionIndex]?.keywords;
 
-    // Parse corrections from API response
-    const corrections = [];
-    
-    // If API returns detailed corrections
-    if (response?.data?.corrections && Array.isArray(response.data.corrections)) {
-      corrections.push(...response.data.corrections);
-    } 
-    // If only full text correction is available
-    else if (correctedText !== textToCheck) {
-      corrections.push({
-        original: textToCheck,
-        corrected: correctedText,
-        type: "comprehensive_correction",
-        message: "Text needs improvement"
-      });
+    if (typeof keywordString === "string") {
+      return keywordString.split(",").map((k) => k.trim().toLowerCase());
     }
+    return [];
+  };
 
-    const scoreData = calculateScore(textToCheck, corrections, questionIndex);
-    
-    console.log(`✅ Grammar Check Results for Q${questionIndex + 1}:`);
-    console.log("Original Text:", textToCheck);
-    console.log("Corrected Text:", correctedText);
-    console.log("Corrections Found:", corrections.length);
-    console.log("Score Data:", scoreData);
+  // ✅ Check grammar for the current section's text
+  // Update your checkGrammar function
+  const checkGrammar = async (text, questionIndex = clickedQuestionIndex) => {
+    try {
+      if (typeof text !== "string") {
+        console.warn("Invalid text input for grammar check:", text);
+        return {
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: calculateScore("", [], questionIndex),
+        };
+      }
 
-    const scoreBreakdown = corrections.map((issue, index) => ({
-      id: `${questionIndex}-${index}`,
-      message: issue.message || "Suggested improvement",
-      suggestion: issue.corrected || issue.suggestion || correctedText,
-      context: issue.original || textToCheck,
-      type: issue.type || "grammar",
-      severity: issue.severity || "medium"
-    }));
+      const textToCheck = text.trim();
+      if (!textToCheck) {
+        return {
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: calculateScore("", [], questionIndex),
+        };
+      }
 
-    return {
-      corrections,
-      scoreBreakdown: scoreBreakdown.length > 0 ? scoreBreakdown : null,
-      scoreData,
-      correctedText,
-    };
-  } catch (error) {
-    console.error(`❌ Grammar check failed for Q${questionIndex + 1}:`, error);
-    
-    const fallbackScoreData = calculateScore(text?.toString() || "", [], questionIndex);
-    
-    return {
-      corrections: [],
-      scoreBreakdown: null,
-      scoreData: fallbackScoreData,
-      correctedText: text?.toString() || "",
-      error: error.message,
-    };
-  }
-};
+      // ✅ Call your backend (/chat)
+      const response = await Api.post("/chat", {
+        message: textToCheck,
+        questionIndex: questionIndex // Send question index for context
+      });
+
+      const correctedText = response?.data?.reply || textToCheck;
+
+      // Parse corrections from API response
+      const corrections = [];
+
+      // If API returns detailed corrections
+      if (response?.data?.corrections && Array.isArray(response.data.corrections)) {
+        corrections.push(...response.data.corrections);
+      }
+      // If only full text correction is available
+      else if (correctedText !== textToCheck) {
+        corrections.push({
+          original: textToCheck,
+          corrected: correctedText,
+          type: "comprehensive_correction",
+          message: "Text needs improvement"
+        });
+      }
+
+      const scoreData = calculateScore(textToCheck, corrections, questionIndex);
+
+      console.log(`✅ Grammar Check Results for Q${questionIndex + 1}:`);
+      console.log("Original Text:", textToCheck);
+      console.log("Corrected Text:", correctedText);
+      console.log("Corrections Found:", corrections.length);
+      console.log("Score Data:", scoreData);
+
+      const scoreBreakdown = corrections.map((issue, index) => ({
+        id: `${questionIndex}-${index}`,
+        message: issue.message || "Suggested improvement",
+        suggestion: issue.corrected || issue.suggestion || correctedText,
+        context: issue.original || textToCheck,
+        type: issue.type || "grammar",
+        severity: issue.severity || "medium"
+      }));
+
+      return {
+        corrections,
+        scoreBreakdown: scoreBreakdown.length > 0 ? scoreBreakdown : null,
+        scoreData,
+        correctedText,
+      };
+    } catch (error) {
+      console.error(`❌ Grammar check failed for Q${questionIndex + 1}:`, error);
+
+      const fallbackScoreData = calculateScore(text?.toString() || "", [], questionIndex);
+
+      return {
+        corrections: [],
+        scoreBreakdown: null,
+        scoreData: fallbackScoreData,
+        correctedText: text?.toString() || "",
+        error: error.message,
+      };
+    }
+  };
 
   // Grammar check function
   // const calculateScore = async (issues) => {
@@ -1165,83 +1251,83 @@ const checkGrammar = async (text, questionIndex = clickedQuestionIndex) => {
 
   // };
 
-const calculateScore = (text, corrections = [], questionIndex = clickedQuestionIndex) => {
-  const textToScore = typeof text === "string" ? text : "";
-  const keywords = getKeywords(questionIndex);
-  
-  // Get SECTION data
-  const sectionData = examData?.section?.[currentSectionIndex];
-  const totalMarks = sectionData?.t_mark || 10;
-  
-  // Get QUESTION data
-  const questionData = sectionData?.questions?.[
-    selectedLanguage?.toLowerCase()
-  ]?.[questionIndex - startingIndex];
-  
-  const expectedWordCount = questionData?.words_limit || 100;
+  const calculateScore = (text, corrections = [], questionIndex = clickedQuestionIndex) => {
+    const textToScore = typeof text === "string" ? text : "";
+    const keywords = getKeywords(questionIndex);
 
-  // Count errors from corrections
-  const validCorrections = Array.isArray(corrections) ? corrections : [];
-  let spellingErrors = 0;
-  let grammarErrors = 0;
-  let punctuationErrors = 0;
+    // Get SECTION data
+    const sectionData = examData?.section?.[currentSectionIndex];
+    const totalMarks = sectionData?.t_mark || 10;
 
-  validCorrections.forEach(issue => {
-    const type = issue.type?.toLowerCase() || "";
-    if (type.includes('spelling')) spellingErrors++;
-    else if (type.includes('punctuation')) punctuationErrors++;
-    else grammarErrors++;
-  });
+    // Get QUESTION data
+    const questionData = sectionData?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ]?.[questionIndex - startingIndex];
 
-  // Word count calculation
-  const wordCount = textToScore.trim().split(/\s+/).filter(w => w.trim().length > 0).length;
+    const expectedWordCount = questionData?.words_limit || 100;
 
-  // **Get scoring weights from SECTION configuration**
-  // You can store these in your section data structure
-  const scoringWeights = sectionData?.scoring_weights || {
-    spelling: 0.35,    // 35%
-    grammar: 0.35,     // 35%
-    keyword: 0.10,     // 10%
-    wordCount: 0.20    // 20%
+    // Count errors from corrections
+    const validCorrections = Array.isArray(corrections) ? corrections : [];
+    let spellingErrors = 0;
+    let grammarErrors = 0;
+    let punctuationErrors = 0;
+
+    validCorrections.forEach(issue => {
+      const type = issue.type?.toLowerCase() || "";
+      if (type.includes('spelling')) spellingErrors++;
+      else if (type.includes('punctuation')) punctuationErrors++;
+      else grammarErrors++;
+    });
+
+    // Word count calculation
+    const wordCount = textToScore.trim().split(/\s+/).filter(w => w.trim().length > 0).length;
+
+    // **Get scoring weights from SECTION configuration**
+    // You can store these in your section data structure
+    const scoringWeights = sectionData?.scoring_weights || {
+      spelling: 0.35,    // 35%
+      grammar: 0.35,     // 35%
+      keyword: 0.10,     // 10%
+      wordCount: 0.20    // 20%
+    };
+
+    const spellingWeight = totalMarks * scoringWeights.spelling;
+    const grammarWeight = totalMarks * scoringWeights.grammar;
+    const keywordWeight = totalMarks * scoringWeights.keyword;
+    const wordCountWeight = totalMarks * scoringWeights.wordCount;
+
+    // Calculate scores
+    const maxErrors = Math.max(5, Math.floor(totalMarks / 2));
+
+    const spellingScore = Math.max(0, spellingWeight - (spellingErrors / maxErrors) * spellingWeight);
+    const grammarScore = Math.max(0, grammarWeight - (grammarErrors / maxErrors) * grammarWeight);
+    const punctuationScore = 0;
+
+    const wordCountScore = Math.max(0, Math.min(wordCountWeight, (wordCount / expectedWordCount) * wordCountWeight));
+
+    const matchedKeywords = keywords.filter(kw => textToScore.toLowerCase().includes(kw.toLowerCase())).length;
+    const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * keywordWeight : keywordWeight;
+
+    const totalScore = Math.min(totalMarks, spellingScore + grammarScore + punctuationScore + wordCountScore + keywordScore);
+
+    return {
+      spellingScore: Math.round(spellingScore * 100) / 100,
+      grammarScore: Math.round(grammarScore * 100) / 100,
+      punctuationScore: Math.round(punctuationScore * 100) / 100,
+      wordCountScore: Math.round(wordCountScore * 100) / 100,
+      keywordScore: Math.round(keywordScore * 100) / 100,
+      totalScore: Math.round(totalScore * 100) / 100,
+      totalWords: wordCount,
+      spellingErrors,
+      grammarErrors,
+      punctuationErrors,
+      matchedKeywords,
+      keywordCount: keywords.length,
+      expectedWordCount,
+      totalMarks,
+      corrections: validCorrections,
+    };
   };
-
-  const spellingWeight = totalMarks * scoringWeights.spelling;
-  const grammarWeight = totalMarks * scoringWeights.grammar;
-  const keywordWeight = totalMarks * scoringWeights.keyword;
-  const wordCountWeight = totalMarks * scoringWeights.wordCount;
-
-  // Calculate scores
-  const maxErrors = Math.max(5, Math.floor(totalMarks / 2));
-  
-  const spellingScore = Math.max(0, spellingWeight - (spellingErrors / maxErrors) * spellingWeight);
-  const grammarScore = Math.max(0, grammarWeight - (grammarErrors / maxErrors) * grammarWeight);
-  const punctuationScore = 0;
-
-  const wordCountScore = Math.max(0, Math.min(wordCountWeight, (wordCount / expectedWordCount) * wordCountWeight));
-
-  const matchedKeywords = keywords.filter(kw => textToScore.toLowerCase().includes(kw.toLowerCase())).length;
-  const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * keywordWeight : keywordWeight;
-
-  const totalScore = Math.min(totalMarks, spellingScore + grammarScore + punctuationScore + wordCountScore + keywordScore);
-
-  return {
-    spellingScore: Math.round(spellingScore * 100) / 100,
-    grammarScore: Math.round(grammarScore * 100) / 100,
-    punctuationScore: Math.round(punctuationScore * 100) / 100,
-    wordCountScore: Math.round(wordCountScore * 100) / 100,
-    keywordScore: Math.round(keywordScore * 100) / 100,
-    totalScore: Math.round(totalScore * 100) / 100,
-    totalWords: wordCount,
-    spellingErrors,
-    grammarErrors,
-    punctuationErrors,
-    matchedKeywords,
-    keywordCount: keywords.length,
-    expectedWordCount,
-    totalMarks,
-    corrections: validCorrections,
-  };
-};
   const submitExam = async () => {
     updateSectionTime();
     console.log("submitExam called");
@@ -1362,7 +1448,7 @@ const calculateScore = (text, corrections = [], questionIndex = clickedQuestionI
 
       const question =
         currentSection.questions[selectedLanguage.toLowerCase()][
-          questionIndexInSection
+        questionIndexInSection
         ];
 
       // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
@@ -1637,172 +1723,188 @@ const calculateScore = (text, corrections = [], questionIndex = clickedQuestionI
       endTime,
     });
   };
-// Add debounce for auto grammar check
-const [typingTimeout, setTypingTimeout] = useState(null);
+  // Add debounce for auto grammar check
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
-useEffect(() => {
-  return () => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-  };
-}, [typingTimeout]);
-
-const handleChangeWithAutoCheck = (e) => {
-  const inputText = e.target.value;
-  const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
-  const currentCount = wordsArray.length;
-
-  setWordCounto(currentCount);
-
-  const limitReached =
-    (countType === "decrement" && currentCount >= words) ||
-    (countType === "increment" && currentCount >= words);
-  setLimitReached(limitReached);
-
-  let finalText = inputText;
-  if (countType === "decrement" && currentCount > words) {
-    finalText = wordsArray.slice(0, words).join(" ");
-  }
-
-  setDescriptiveData((prev) => {
-    const updated = [...prev];
-    
-    if (!updated[clickedQuestionIndex]) {
-      updated[clickedQuestionIndex] = {
-        text: [""],
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: [],
-        keywords: [],
-        wordCount: 0,
-      };
-    }
-
-    updated[clickedQuestionIndex] = {
-      ...updated[clickedQuestionIndex],
-      text: [finalText],
-      wordCount: currentCount,
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) clearTimeout(typingTimeout);
     };
+  }, [typingTimeout]);
 
-    return updated;
-  });
+  const handleChangeWithAutoCheck = (e) => {
+    const inputText = e.target.value;
+    const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+    const currentCount = wordsArray.length;
 
-  // Auto grammar check after user stops typing for 2 seconds
-  if (typingTimeout) clearTimeout(typingTimeout);
-  
-  const newTimeout = setTimeout(() => {
-    if (finalText.trim().length > 10) { // Only check if meaningful text exists
-      handleDescriptiveTest(clickedQuestionIndex);
-    }
-  }, 2000);
+    setWordCounto(currentCount);
 
-  setTypingTimeout(newTimeout);
-};
-const handleDescriptiveTest = async (questionIndex = clickedQuestionIndex) => {
-  try {
-    const currentText = descriptiveData?.[questionIndex]?.text?.[0] || "";
-    
-    // Skip empty text
-    if (!currentText.trim()) {
-      console.log(`⏩ Skipping grammar check for Q${questionIndex + 1} - empty text`);
-      return {
-        corrections: [],
-        scoreData: calculateScore("", [], questionIndex),
-        scoreBreakdown: null
-      };
+    const limitReached =
+      (countType === "decrement" && currentCount >= words) ||
+      (countType === "increment" && currentCount >= words);
+    setLimitReached(limitReached);
+
+    let finalText = inputText;
+    if (countType === "decrement" && currentCount > words) {
+      finalText = wordsArray.slice(0, words).join(" ");
     }
 
-    console.log(`🔍 Checking grammar for Q${questionIndex + 1}...`);
-    
-    const { corrections, scoreData, scoreBreakdown, correctedText } = await checkGrammar(currentText, questionIndex);
-    
-    // Update state immutably
-    setDescriptiveData(prev => {
-      const newData = [...prev];
-      
-      // Initialize question data if it doesn't exist
-      if (!newData[questionIndex]) {
-        newData[questionIndex] = {
+    setDescriptiveData((prev) => {
+      const updated = [...prev];
+
+      if (!updated[clickedQuestionIndex]) {
+        updated[clickedQuestionIndex] = {
           text: [""],
           corrections: [],
           scoreBreakdown: null,
-          scoreData: null,
+          scoreData: [],
           keywords: [],
-          wordCount: 0
+          wordCount: 0,
         };
       }
-      
-      // Update the specific question's data
-      newData[questionIndex] = {
-        ...newData[questionIndex],
-        text: [currentText],
-        corrections,
-        scoreBreakdown,
-        scoreData,
-        correctedText: correctedText || currentText,
-        wordCount: scoreData?.totalWords || 0,
-        lastChecked: new Date().toISOString()
+
+      updated[clickedQuestionIndex] = {
+        ...updated[clickedQuestionIndex],
+        text: [finalText],
+        wordCount: currentCount,
       };
-      
-      return newData;
+
+      return updated;
     });
 
-    // Update corrections and score data if it's the current question
-    if (questionIndex === clickedQuestionIndex) {
-      setCorrections(corrections);
-      setScoreData(scoreData);
-      setScoreBreakdown(scoreBreakdown);
+    // Auto grammar check after user stops typing for 2 seconds
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    const newTimeout = setTimeout(() => {
+      if (finalText.trim().length > 10) { // Only check if meaningful text exists
+        handleDescriptiveTest(clickedQuestionIndex);
+      }
+    }, 2000);
+
+    setTypingTimeout(newTimeout);
+  };
+  const handleDescriptiveTest = async (questionIndex = clickedQuestionIndex) => {
+    try {
+      const currentText = descriptiveData?.[questionIndex]?.text?.[0] || "";
+
+      // Skip empty text
+      if (!currentText.trim()) {
+        console.log(`⏩ Skipping grammar check for Q${questionIndex + 1} - empty text`);
+        return {
+          corrections: [],
+          scoreData: calculateScore("", [], questionIndex),
+          scoreBreakdown: null
+        };
+      }
+
+      console.log(`🔍 Checking grammar for Q${questionIndex + 1}...`);
+
+      const { corrections, scoreData, scoreBreakdown, correctedText } = await checkGrammar(currentText, questionIndex);
+
+      // Update state immutably
+      setDescriptiveData(prev => {
+        const newData = [...prev];
+
+        // Initialize question data if it doesn't exist
+        if (!newData[questionIndex]) {
+          newData[questionIndex] = {
+            text: [""],
+            corrections: [],
+            scoreBreakdown: null,
+            scoreData: null,
+            keywords: [],
+            wordCount: 0
+          };
+        }
+
+        // Update the specific question's data
+        newData[questionIndex] = {
+          ...newData[questionIndex],
+          text: [currentText],
+          corrections,
+          scoreBreakdown,
+          scoreData,
+          correctedText: correctedText || currentText,
+          wordCount: scoreData?.totalWords || 0,
+          lastChecked: new Date().toISOString()
+        };
+
+        return newData;
+      });
+
+      // Update corrections and score data if it's the current question
+      if (questionIndex === clickedQuestionIndex) {
+        setCorrections(corrections);
+        setScoreData(scoreData);
+        setScoreBreakdown(scoreBreakdown);
+      }
+
+      console.log(`✅ Grammar check completed for Q${questionIndex + 1}`);
+      console.log(`📊 Score: ${scoreData?.totalScore}/100`);
+      console.log(`📝 Corrections: ${corrections.length}`);
+
+      return { corrections, scoreData, scoreBreakdown, correctedText };
+    } catch (error) {
+      console.error(`❌ Error in question ${questionIndex + 1} descriptive test:`, error);
+      return null;
     }
-
-    console.log(`✅ Grammar check completed for Q${questionIndex + 1}`);
-    console.log(`📊 Score: ${scoreData?.totalScore}/100`);
-    console.log(`📝 Corrections: ${corrections.length}`);
-
-    return { corrections, scoreData, scoreBreakdown, correctedText };
-  } catch (error) {
-    console.error(`❌ Error in question ${questionIndex + 1} descriptive test:`, error);
-    return null;
-  }
-};
+  };
   const handlePauseResume = () => {
     if (pauseCount < 1) {
-      clearInterval(questionTimerRef.current);
+      // ✅ IMMEDIATELY pause all timers first
       setIsPaused(true);
-      setPauseCount(pauseCount + 1);
+
+      // Clear question timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      // Clear descriptive timer
+      if (descriptiveTimerRef.current) {
+        clearInterval(descriptiveTimerRef.current);
+        descriptiveTimerRef.current = null;
+      }
 
       const now = new Date();
 
-      // ✅ Save current question time
+      // ✅ Save current question time BEFORE showing popup
       if (questionStartTime && clickedQuestionIndex !== null) {
         const secondsSpent = Math.floor((now - questionStartTime) / 1000);
         setQuestionTimes((prev) => ({
           ...prev,
-          [clickedQuestionIndex]:
-            (prev[clickedQuestionIndex] || 0) + secondsSpent,
+          [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
         }));
         setQuestionStartTime(null);
-        if (timerRef.current) clearInterval(timerRef.current);
       }
 
       // ✅ Save section time
-      const timeSpent = Math.floor(
-        (now - currentSectionStartTimeRef.current) / 1000
-      );
+      const timeSpent = Math.floor((now - currentSectionStartTimeRef.current) / 1000);
       setSectionTimes((prev) => ({
         ...prev,
         [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
       }));
       currentSectionStartTimeRef.current = now;
 
-      // ✅ Store current exam state
+      // ✅ Store ALL current state including descriptive data AND descriptive timer
       const currentState = {
         clickedQuestionIndex,
         selectedOptions,
         visitedQuestions,
         markedForReview,
         currentSectionIndex,
+        descriptiveData: JSON.parse(JSON.stringify(descriptiveData)), // Deep copy
+        questionTimes: JSON.parse(JSON.stringify(questionTimes)),
+        questionTime, // Current question's accumulated time
+        descriptiveTimeLeft, // ✅ CRITICAL: Save current descriptive timer value
+        sectionTimes: JSON.parse(JSON.stringify(sectionTimes)),
+        pauseTime: now.toISOString(), // When pause was clicked
       };
-      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
+      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
+      console.log("⏸️ Exam paused at:", now, "Question:", clickedQuestionIndex, "Descriptive time left:", descriptiveTimeLeft);
+
+      // Now show the confirmation dialog
       Swal.fire({
         title: "Pause Exam",
         text: "Do you want to quit the exam?",
@@ -1815,38 +1917,103 @@ const handleDescriptiveTest = async (questionIndex = clickedQuestionIndex) => {
         position: "center",
         width: "100vw",
         height: "100vh",
-        padding: "100",
         customClass: {
           container: "swal-full-screen",
           popup: "swal-popup-full-height",
         },
       }).then(async (result) => {
         if (result.isConfirmed) {
-          setIsPaused(true);
+          // User chose to quit
+          console.log("🚪 User chose to quit");
           await submitExam();
           await new Promise((resolve) => setTimeout(resolve, 1000));
           closeAndNotifyParent();
         } else {
-          setIsPaused(false);
-          setPauseCount(0);
-
-          // ⏳ Get updated time for current question from state AFTER pause update
-          setQuestionTimes((prev) => {
-            const updatedTime = prev?.[clickedQuestionIndex] || 0;
-            setQuestionTime(updatedTime); // 👈 resume from latest
-            setQuestionStartTime(new Date()); // reset base time for further tracking
-
-            // 🔁 Restart interval
-            if (timerRef.current) clearInterval(timerRef.current);
-            timerRef.current = setInterval(() => {
-              setQuestionTime((prev) => prev + 1);
-            }, 1000);
-
-            return prev; // Important: preserve state
-          });
+          // User chose to resume
+          console.log("🔄 Resuming exam...");
+          await resumeExam();
         }
       });
     }
+  };
+
+  // New resume function
+  const resumeExam = async () => {
+    console.log("🔄 Starting resume process...");
+
+    // Restore state from localStorage
+    const savedState = localStorage.getItem(`examState_${id}`);
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      console.log("📋 Restoring state:", state);
+
+      // Restore all question states
+      setClickedQuestionIndex(state.clickedQuestionIndex);
+      setSelectedOptions(state.selectedOptions);
+      setVisitedQuestions(state.visitedQuestions);
+      setMarkedForReview(state.markedForReview);
+      setCurrentSectionIndex(state.currentSectionIndex);
+      setDescriptiveData(state.descriptiveData || []);
+      setQuestionTimes(state.questionTimes || {});
+      setQuestionTime(state.questionTime || 0);
+
+      // ✅ CRITICAL FIX: Restore the descriptive timer from saved state
+      if (state.descriptiveTimeLeft) {
+        setDescriptiveTimeLeft(state.descriptiveTimeLeft);
+      } else {
+        // Fallback to initial time if not found in saved state
+        setDescriptiveTimeLeft(destimer * 60);
+      }
+
+      setSectionTimes(state.sectionTimes || {});
+    }
+
+    // Reset pause state
+    setIsPaused(false);
+    setPauseCount(0);
+
+    const now = new Date();
+    setQuestionStartTime(now);
+    currentSectionStartTimeRef.current = now;
+
+    // Restart question timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setQuestionTime((prev) => prev + 1);
+    }, 1000);
+
+    // ✅ CRITICAL FIX: Restart descriptive timer properly
+    const isDescriptiveQuestion =
+      examData?.section?.[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+      ]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive";
+
+    if (isDescriptiveQuestion) {
+      console.log("🕒 Restarting descriptive timer from:", descriptiveTimeLeft, "seconds");
+
+      // Clear any existing descriptive timer
+      if (descriptiveTimerRef.current) {
+        clearInterval(descriptiveTimerRef.current);
+        descriptiveTimerRef.current = null;
+      }
+
+      // Start new descriptive timer from the saved time
+      descriptiveTimerRef.current = setInterval(() => {
+        setDescriptiveTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(descriptiveTimerRef.current);
+            descriptiveTimerRef.current = null;
+            handleTimerEnd();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    console.log("✅ Exam resumed successfully");
+    console.log(`⏳ Question ${clickedQuestionIndex + 1} time: ${questionTime}s`);
+    console.log(`📝 Descriptive time left: ${formatTime(descriptiveTimeLeft)}`);
   };
 
   const [words, setWords] = useState(); // default word limit
@@ -1857,7 +2024,7 @@ const handleDescriptiveTest = async (questionIndex = clickedQuestionIndex) => {
   useEffect(() => {
     const selectedQuestion =
       examData?.section?.[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
+      selectedLanguage?.toLowerCase()
       ]?.[0];
 
     if (selectedQuestion) {
@@ -1866,18 +2033,53 @@ const handleDescriptiveTest = async (questionIndex = clickedQuestionIndex) => {
     }
   }, [examData, currentSectionIndex, selectedLanguage]);
   // console.log("Set Text Value", "", text[currentSectionIndex]);
-useEffect(() => {
-  if (examData) {
-    const initialDescriptiveData = [];
-    examData.section.forEach((section, sectionIndex) => {
-      const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-      questions.forEach((question, questionIndex) => {
-        const fullIndex = examData.section
-          .slice(0, sectionIndex)
-          .reduce((acc, sec) => 
-            acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) + questionIndex;
-        
-        initialDescriptiveData[fullIndex] = {
+  useEffect(() => {
+    if (examData) {
+      const initialDescriptiveData = [];
+      examData.section.forEach((section, sectionIndex) => {
+        const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+        questions.forEach((question, questionIndex) => {
+          const fullIndex = examData.section
+            .slice(0, sectionIndex)
+            .reduce((acc, sec) =>
+              acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) + questionIndex;
+
+          initialDescriptiveData[fullIndex] = {
+            text: [""],
+            corrections: [],
+            scoreBreakdown: null,
+            scoreData: [],
+            keywords: [],
+            wordCount: 0,
+          };
+        });
+      });
+      setDescriptiveData(initialDescriptiveData);
+    }
+  }, [examData, selectedLanguage]);
+  const handleChange = (e) => {
+    const inputText = e.target.value;
+    const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+    const currentCount = wordsArray.length;
+
+    setWordCounto(currentCount);
+
+    const limitReached =
+      (countType === "decrement" && currentCount >= words) ||
+      (countType === "increment" && currentCount >= words);
+    setLimitReached(limitReached);
+
+    let finalText = inputText;
+    if (countType === "decrement" && currentCount > words) {
+      finalText = wordsArray.slice(0, words).join(" ");
+    }
+
+    setDescriptiveData((prev) => {
+      const updated = [...prev];
+
+      // Use clickedQuestionIndex to store data per question
+      if (!updated[clickedQuestionIndex]) {
+        updated[clickedQuestionIndex] = {
           text: [""],
           corrections: [],
           scoreBreakdown: null,
@@ -1885,52 +2087,17 @@ useEffect(() => {
           keywords: [],
           wordCount: 0,
         };
-      });
-    });
-    setDescriptiveData(initialDescriptiveData);
-  }
-}, [examData, selectedLanguage]);
- const handleChange = (e) => {
-  const inputText = e.target.value;
-  const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
-  const currentCount = wordsArray.length;
+      }
 
-  setWordCounto(currentCount);
-
-  const limitReached =
-    (countType === "decrement" && currentCount >= words) ||
-    (countType === "increment" && currentCount >= words);
-  setLimitReached(limitReached);
-
-  let finalText = inputText;
-  if (countType === "decrement" && currentCount > words) {
-    finalText = wordsArray.slice(0, words).join(" ");
-  }
-
-  setDescriptiveData((prev) => {
-    const updated = [...prev];
-    
-    // Use clickedQuestionIndex to store data per question
-    if (!updated[clickedQuestionIndex]) {
       updated[clickedQuestionIndex] = {
-        text: [""],
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: [],
-        keywords: [],
-        wordCount: 0,
+        ...updated[clickedQuestionIndex],
+        text: [finalText],
+        wordCount: currentCount,
       };
-    }
 
-    updated[clickedQuestionIndex] = {
-      ...updated[clickedQuestionIndex],
-      text: [finalText],
-      wordCount: currentCount,
-    };
-
-    return updated;
-  });
-};
+      return updated;
+    });
+  };
   const preventShortcuts = (e) => {
     if (
       (e.ctrlKey || e.metaKey) &&
@@ -1956,48 +2123,39 @@ useEffect(() => {
 
   // Function to show the toast and move to the next section (or result if last section)
   const handleSectionCompletion = async () => {
+    // This function is only for normal flow (when time hasn't expired)
+    // Remove time check from here since popup will handle it differently
     handleDescriptiveTest();
     console.log("handleSectionCompletion called");
     await setIsPaused(false);
 
-    if (true) {
-      console.log("Section is complete");
-      console.log(currentSectionIndex);
-      console.log(examData?.section?.length - 1);
-      // Move to the next section if there's another one
-      if (currentSectionIndex < examData?.section?.length - 1) {
-        setShowModal(false);
-        console.log(`Current section index: ${currentSectionIndex}`);
-        console.log(`Total sections: ${examData?.section?.length}`);
-        setCurrentSectionIndex(currentSectionIndex + 1);
-        setQuestionTime(0);
-        // Calculate the starting index for the new section
-        const newStartingIndex = examData?.section
-          ?.slice(0, currentSectionIndex + 1)
-          .reduce(
-            (acc, section) =>
-              acc +
-              (section.questions?.[selectedLanguage?.toLowerCase()]?.length ||
-                0),
-            0
-          );
+    setShowModal(false);
 
-        // Set clicked question to first question of new section
-        setClickedQuestionIndex(newStartingIndex);
-        console.log(
-          `Moving to the next section. New index: ${currentSectionIndex + 1}`
+    if (currentSectionIndex < examData?.section?.length - 1) {
+      // Move to next section (only for normal flow)
+      console.log(`Moving to next section. Current: ${currentSectionIndex}`);
+      setCurrentSectionIndex(currentSectionIndex + 1);
+      setQuestionTime(0);
+
+      const newStartingIndex = examData?.section
+        ?.slice(0, currentSectionIndex + 1)
+        .reduce(
+          (acc, section) =>
+            acc +
+            (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+          0
         );
-      } else {
-        // If last section is complete, navigate to result
-        console.log("Last section complete. Navigating to results.");
 
-        await submitExam();
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-        // navigate(`/liveresult/${id}/${user?._id}`);
-        finishTestAndOpenResult();
-      }
+      setClickedQuestionIndex(newStartingIndex);
+    } else {
+      // Last section submit
+      console.log("Last section complete. Submitting exam.");
+      await submitExam();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      finishTestAndOpenResult();
     }
   };
+
 
   // Calculate starting index for the current section
   const quantsSection = examData?.section?.[currentSectionIndex];
@@ -2032,39 +2190,39 @@ useEffect(() => {
   };
   const renderTextarea = () => (
     <>
-     <textarea
-  value={descriptiveData?.[clickedQuestionIndex]?.text?.[0] || ""}
-  onChange={handleChangeWithAutoCheck} // Use the new handler
-  onKeyDown={preventShortcuts}
-  onCopy={(e) => e.preventDefault()}
-  onCut={(e) => e.preventDefault()}
-  onPaste={(e) => e.preventDefault()}
-  disabled={limitReached}
-  placeholder="Enter your answer here..."
-  rows="6"
-  cols="100"
-  style={{
-    width: "100%",
-    height: "350px",
-    padding: "10px",
-    fontSize: "1rem",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    resize: "none",
-    backgroundColor: limitReached ? "#f5f5f5" : "#fff",
-  }}
-/>
-   <div className="mt-3 d-flex justify-content-between align-items-center">
-  <div className="fw-bold text-right" style={{ color: limitReached ? "red" : "#555" }}>
-    {limitReached
-      ? "Word limit reached"
-      : countType === "decrement"
-      ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
-      : `Words used: ${wordCounto} / ${words}`}
-  </div>
-  
- 
-</div>
+      <textarea
+        value={descriptiveData?.[clickedQuestionIndex]?.text?.[0] || ""}
+        onChange={handleChangeWithAutoCheck} // Use the new handler
+        onKeyDown={preventShortcuts}
+        onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
+        onPaste={(e) => e.preventDefault()}
+        disabled={limitReached}
+        placeholder="Enter your answer here..."
+        rows="6"
+        cols="100"
+        style={{
+          width: "100%",
+          height: "350px",
+          padding: "10px",
+          fontSize: "1rem",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          resize: "none",
+          backgroundColor: limitReached ? "#f5f5f5" : "#fff",
+        }}
+      />
+      <div className="mt-3 d-flex justify-content-between align-items-center">
+        <div className="fw-bold text-right" style={{ color: limitReached ? "red" : "#555" }}>
+          {limitReached
+            ? "Word limit reached"
+            : countType === "decrement"
+              ? `Words remaining: ${Math.max(words - wordCounto, 0)} / ${words}`
+              : `Words used: ${wordCounto} / ${words}`}
+        </div>
+
+
+      </div>
     </>
   );
 
@@ -2091,27 +2249,20 @@ useEffect(() => {
     const isDescriptiveQuestion =
       examData?.section?.[currentSectionIndex]?.questions?.[
         selectedLanguage?.toLowerCase()
-      ]?.[clickedQuestionIndex - startingIndex]?.question_type ===
-      "descriptive";
+      ]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive";
 
-    if (isDescriptiveQuestion) {
-      // Only reset timer if it's not already running or if we're on a different question
-      if (!descriptiveTimerRef.current || descriptiveTimeLeft === destimer * 60) {
-        console.log("🕒 Starting/Restarting descriptive timer");
-
-        // Clear existing timer only if it exists
-        if (descriptiveTimerRef.current) {
-          clearInterval(descriptiveTimerRef.current);
-        }
-
-        setDescriptiveTimeLeft(destimer * 60);
+    // Only start timer if not paused and it's a descriptive question
+    if (isDescriptiveQuestion && !isPaused) {
+      // Don't reset timer if we're resuming - use existing descriptiveTimeLeft
+      if (!descriptiveTimerRef.current) {
+        console.log("🕒 Starting descriptive timer from:", descriptiveTimeLeft, "seconds");
 
         descriptiveTimerRef.current = setInterval(() => {
           setDescriptiveTimeLeft((prev) => {
             if (prev <= 1) {
               clearInterval(descriptiveTimerRef.current);
               descriptiveTimerRef.current = null;
-              handleSubmitSection();
+              handleTimerEnd();
               return 0;
             }
             return prev - 1;
@@ -2119,19 +2270,38 @@ useEffect(() => {
         }, 1000);
       }
     } else {
-      // If not descriptive question, clear the timer
+      // If not descriptive question or paused, clear the timer
       if (descriptiveTimerRef.current) {
         clearInterval(descriptiveTimerRef.current);
         descriptiveTimerRef.current = null;
       }
     }
 
-    // Cleanup only on unmount or when completely leaving descriptive mode
+    // Cleanup on component unmount or when leaving descriptive mode
     return () => {
-      // Don't clear here to maintain timer during re-renders
-      // Timer will be cleared when switching to non-descriptive questions
+      if (descriptiveTimerRef.current && !isPaused) {
+        clearInterval(descriptiveTimerRef.current);
+        descriptiveTimerRef.current = null;
+      }
     };
-  }, [currentSectionIndex, clickedQuestionIndex, examData, selectedLanguage]);
+  }, [currentSectionIndex, clickedQuestionIndex, examData, selectedLanguage, isPaused]);
+
+  // Initialize descriptive timer when component mounts
+  useEffect(() => {
+    const savedState = localStorage.getItem(`examState_${id}`);
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      // Restore descriptive time from saved state
+      if (state.descriptiveTimeLeft) {
+        setDescriptiveTimeLeft(state.descriptiveTimeLeft);
+      } else {
+        setDescriptiveTimeLeft(destimer * 60);
+      }
+    } else {
+      // Fresh start
+      setDescriptiveTimeLeft(destimer * 60);
+    }
+  }, [id, destimer]);
 
   // // Add this useEffect to handle the countdown
   // useEffect(() => {
@@ -2223,145 +2393,145 @@ useEffect(() => {
   const [markedForReviewCount, setMarkedForReviewCount] = useState(0);
   const [answeredAndMarkedCount, setAnsweredAndMarkedCount] = useState(0);
 
-useEffect(() => {
-  const calculateCounts = () => {
+  useEffect(() => {
+    const calculateCounts = () => {
+      let answered = 0;
+      let notAnswered = 0;
+      let notVisited = 0;
+      let markedForReviewCount = 0;
+      let answeredAndMarked = 0;
+
+      examData?.section?.forEach((section, sectionIndex) => {
+        const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+
+        questions?.forEach((question, questionIndex) => {
+          const fullIndex = examData.section
+            .slice(0, sectionIndex)
+            .reduce(
+              (acc, sec) =>
+                acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+              0
+            ) + questionIndex;
+
+          // Multiple ways to check for descriptive answer
+          let hasAnswer = false;
+
+          // Method 1: Check nested structure
+          if (descriptiveData?.[sectionIndex]?.questions?.[questionIndex]?.text?.[0]) {
+            hasAnswer = descriptiveData[sectionIndex].questions[questionIndex].text[0].trim() !== "";
+          }
+          // Method 2: Check flat structure
+          else if (descriptiveData?.[sectionIndex]?.text?.[questionIndex]) {
+            hasAnswer = descriptiveData[sectionIndex].text[questionIndex].trim() !== "";
+          }
+          // Method 3: Check by question ID if available
+          else if (question._id && descriptiveData?.[question._id]) {
+            hasAnswer = descriptiveData[question._id].text?.trim() !== "";
+          }
+
+          const isVisited = visitedQuestions.includes(fullIndex);
+          const isMarked = markedForReview.includes(fullIndex);
+
+          if (isMarked && hasAnswer) {
+            answeredAndMarked++;
+          } else if (isMarked && !hasAnswer) {
+            markedForReviewCount++;
+          } else if (hasAnswer) {
+            answered++;
+          } else if (isVisited && !hasAnswer) {
+            notAnswered++;
+          } else {
+            notVisited++;
+          }
+        });
+      });
+
+      setAnsweredCount(answered);
+      setNotAnsweredCount(notAnswered);
+      setNotVisitedCount(notVisited);
+      setMarkedForReviewCount(markedForReviewCount);
+      setAnsweredAndMarkedCount(answeredAndMarked);
+    };
+
+    calculateCounts();
+  }, [
+    descriptiveData,
+    visitedQuestions,
+    markedForReview,
+    examData,
+    selectedLanguage,
+  ]);
+
+  // Helper function to check if descriptive answer exists
+  const hasDescriptiveAnswer = (sectionIndex, questionIndex) => {
+    if (!descriptiveData) return false;
+
+    // Try different possible data structures
+    return (
+      // Nested structure: descriptiveData[sectionIndex].questions[questionIndex].text[0]
+      (descriptiveData[sectionIndex]?.questions?.[questionIndex]?.text?.[0]?.trim() !== "" &&
+        descriptiveData[sectionIndex]?.questions?.[questionIndex]?.text?.[0] !== undefined) ||
+
+      // Flat structure: descriptiveData[sectionIndex].text[questionIndex]
+      (descriptiveData[sectionIndex]?.text?.[questionIndex]?.trim() !== "" &&
+        descriptiveData[sectionIndex]?.text?.[questionIndex] !== undefined) ||
+
+      // Direct structure: descriptiveData[questionId]
+      (examData?.section?.[sectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[questionIndex]?._id &&
+        descriptiveData[examData.section[sectionIndex].questions[selectedLanguage.toLowerCase()][questionIndex]._id]?.text?.trim() !== "")
+    );
+  };
+
+  const getSectionCounts = (
+    section,
+    sectionIndex,
+    visitedQuestions,
+    markedForReview,
+    selectedLanguage
+  ) => {
     let answered = 0;
     let notAnswered = 0;
     let notVisited = 0;
     let markedForReviewCount = 0;
     let answeredAndMarked = 0;
 
-    examData?.section?.forEach((section, sectionIndex) => {
-      const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+    const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+    const startingIndex = examData.section
+      .slice(0, sectionIndex)
+      .reduce(
+        (acc, sec) =>
+          acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+        0
+      );
 
-      questions?.forEach((question, questionIndex) => {
-        const fullIndex = examData.section
-          .slice(0, sectionIndex)
-          .reduce(
-            (acc, sec) =>
-              acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-            0
-          ) + questionIndex;
+    questions?.forEach((question, questionIndex) => {
+      const fullIndex = startingIndex + questionIndex;
 
-        // Multiple ways to check for descriptive answer
-        let hasAnswer = false;
+      const hasAnswer = hasDescriptiveAnswer(sectionIndex, questionIndex);
+      const isVisited = visitedQuestions.includes(fullIndex);
+      const isMarked = markedForReview.includes(fullIndex);
 
-        // Method 1: Check nested structure
-        if (descriptiveData?.[sectionIndex]?.questions?.[questionIndex]?.text?.[0]) {
-          hasAnswer = descriptiveData[sectionIndex].questions[questionIndex].text[0].trim() !== "";
-        }
-        // Method 2: Check flat structure
-        else if (descriptiveData?.[sectionIndex]?.text?.[questionIndex]) {
-          hasAnswer = descriptiveData[sectionIndex].text[questionIndex].trim() !== "";
-        }
-        // Method 3: Check by question ID if available
-        else if (question._id && descriptiveData?.[question._id]) {
-          hasAnswer = descriptiveData[question._id].text?.trim() !== "";
-        }
-
-        const isVisited = visitedQuestions.includes(fullIndex);
-        const isMarked = markedForReview.includes(fullIndex);
-
-        if (isMarked && hasAnswer) {
-          answeredAndMarked++;
-        } else if (isMarked && !hasAnswer) {
-          markedForReviewCount++;
-        } else if (hasAnswer) {
-          answered++;
-        } else if (isVisited && !hasAnswer) {
-          notAnswered++;
-        } else {
-          notVisited++;
-        }
-      });
+      if (isMarked && hasAnswer) {
+        answeredAndMarked++;
+      } else if (isMarked && !hasAnswer) {
+        markedForReviewCount++;
+      } else if (hasAnswer) {
+        answered++;
+      } else if (isVisited && !hasAnswer) {
+        notAnswered++;
+      } else {
+        notVisited++;
+      }
     });
 
-    setAnsweredCount(answered);
-    setNotAnsweredCount(notAnswered);
-    setNotVisitedCount(notVisited);
-    setMarkedForReviewCount(markedForReviewCount);
-    setAnsweredAndMarkedCount(answeredAndMarked);
+    return {
+      answered,
+      notAnswered,
+      notVisited,
+      markedForReviewCount,
+      answeredAndMarked,
+    };
   };
-
-  calculateCounts();
-}, [
-  descriptiveData,
-  visitedQuestions,
-  markedForReview,
-  examData,
-  selectedLanguage,
-]);
-
-// Helper function to check if descriptive answer exists
-const hasDescriptiveAnswer = (sectionIndex, questionIndex) => {
-  if (!descriptiveData) return false;
-
-  // Try different possible data structures
-  return (
-    // Nested structure: descriptiveData[sectionIndex].questions[questionIndex].text[0]
-    (descriptiveData[sectionIndex]?.questions?.[questionIndex]?.text?.[0]?.trim() !== "" &&
-     descriptiveData[sectionIndex]?.questions?.[questionIndex]?.text?.[0] !== undefined) ||
-    
-    // Flat structure: descriptiveData[sectionIndex].text[questionIndex]
-    (descriptiveData[sectionIndex]?.text?.[questionIndex]?.trim() !== "" &&
-     descriptiveData[sectionIndex]?.text?.[questionIndex] !== undefined) ||
-    
-    // Direct structure: descriptiveData[questionId]
-    (examData?.section?.[sectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[questionIndex]?._id &&
-     descriptiveData[examData.section[sectionIndex].questions[selectedLanguage.toLowerCase()][questionIndex]._id]?.text?.trim() !== "")
-  );
-};
-
-const getSectionCounts = (
-  section,
-  sectionIndex,
-  visitedQuestions,
-  markedForReview,
-  selectedLanguage
-) => {
-  let answered = 0;
-  let notAnswered = 0;
-  let notVisited = 0;
-  let markedForReviewCount = 0;
-  let answeredAndMarked = 0;
-
-  const questions = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
-  const startingIndex = examData.section
-    .slice(0, sectionIndex)
-    .reduce(
-      (acc, sec) =>
-        acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-      0
-    );
-
-  questions?.forEach((question, questionIndex) => {
-    const fullIndex = startingIndex + questionIndex;
-
-    const hasAnswer = hasDescriptiveAnswer(sectionIndex, questionIndex);
-    const isVisited = visitedQuestions.includes(fullIndex);
-    const isMarked = markedForReview.includes(fullIndex);
-
-    if (isMarked && hasAnswer) {
-      answeredAndMarked++;
-    } else if (isMarked && !hasAnswer) {
-      markedForReviewCount++;
-    } else if (hasAnswer) {
-      answered++;
-    } else if (isVisited && !hasAnswer) {
-      notAnswered++;
-    } else {
-      notVisited++;
-    }
-  });
-
-  return {
-    answered,
-    notAnswered,
-    notVisited,
-    markedForReviewCount,
-    answeredAndMarked,
-  };
-};
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
@@ -2508,35 +2678,18 @@ const getSectionCounts = (
         <div>
           {/* Modal for showing section summary */}
           {showModal && (
-            <div
-              className="modal"
-              tabIndex="-1"
-              id="staticBackdrop"
-              data-bs-backdrop="static"
-              data-bs-keyboard="false"
-              aria-labelledby="staticBackdropLabel"
-              aria-hidden="true"
-              style={{
-                display: "block",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                minHeight: "100vh",
-              }}
-            >
+            <div className="modal" tabIndex="-1" style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
               <div className="modal-dialog modal-xl">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h1
-                      className="modal-title fs-5 text-green-500"
-                      id="staticBackdropLabel"
-                    >
-                      Section Submit
+                    <h1 className="modal-title fs-5 text-green-500">
+                      {popupType === 'timeExpired'
+                        ? 'Time Finished - Complete Test Summary'
+                        : popupType === 'test'
+                          ? 'Complete Test Summary'
+                          : 'Section Summary'}
                     </h1>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      aria-label="Close"
-                      onClick={popupmodal} // Manually hide the modal
-                    ></button>
+                    <button type="button" className="btn-close" onClick={popupmodal}></button>
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -2564,21 +2717,57 @@ const getSectionCounts = (
                               <td>{summary.reviewedQuestions}</td>
                             </tr>
                           ))}
+
+                          {/* {(popupType === 'timeExpired' || popupType === 'test') && sectionSummaryData.length > 1 && (
+                            <tr className="table-info fw-bold">
+                              <td>Total</td>
+                              <td>{sectionSummaryData.reduce((sum, section) => sum + section.totalQuestions, 0)}</td>
+                              <td>{sectionSummaryData.reduce((sum, section) => sum + section.answeredQuestions, 0)}</td>
+                              <td>{sectionSummaryData.reduce((sum, section) => sum + section.notAnsweredQuestions, 0)}</td>
+                              <td>{sectionSummaryData.reduce((sum, section) => sum + section.visitedQuestionsCount, 0)}</td>
+                              <td>{sectionSummaryData.reduce((sum, section) => sum + section.notVisitedQuestions, 0)}</td>
+                              <td>{sectionSummaryData.reduce((sum, section) => sum + section.reviewedQuestions, 0)}</td>
+                            </tr>
+                          )} */}
                         </tbody>
                       </table>
                     </div>
+
+                    {/* {popupType === 'timeExpired' && (
+                      <div className="alert alert-warning text-center">
+                        <strong>Time has finished!</strong>
+                        <br />
+                        Automatically submitting in 2 seconds...
+                        <div className="mt-2">
+                          <div className="spinner-border spinner-border-sm" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )} */}
                   </div>
                   <div className="modal-footer">
                     <div className="d-flex justify-content-center w-100">
                       <button
                         type="button"
                         className="btn btn-success"
-                        data-bs-dismiss="modal"
-                        onClick={handleSectionCompletion} // Check completion and move to next section
+                        onClick={async () => {
+                          setShowModal(false);
+
+                          if (popupType === 'timeExpired' || popupType === 'test') {
+                            // Time finished or Submit Test - go directly to result
+                            await submitExam();
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+                            finishTestAndOpenResult();
+                          } else {
+                            // Normal section submit - use existing logic
+                            handleSectionCompletion();
+                          }
+                        }}
                       >
-                        {currentSectionIndex === examData?.section?.length - 1
-                          ? "Submit"
-                          : "Next Section"}
+                        {popupType === 'timeExpired' || popupType === 'test'
+                          ? 'Submit & View Result'
+                          : 'Submit'}
                       </button>
                     </div>
                   </div>
@@ -2618,11 +2807,10 @@ const getSectionCounts = (
             <div key={index}>
               <h1
                 className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                      ${
-                        currentSectionIndex === index
-                          ? " font-medium underline"
-                          : ""
-                      }`}
+                      ${currentSectionIndex === index
+                    ? " font-medium underline"
+                    : ""
+                  }`}
                 onClick={() => {
                   const newStartingIndex = examData.section
                     .slice(0, index)
@@ -2769,7 +2957,7 @@ const getSectionCounts = (
                     <span className="text-success">
                       +
                       {examData?.section &&
-                      examData.section[currentSectionIndex]
+                        examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].plus_mark
                         : "No plus marks"}
                     </span>
@@ -2777,7 +2965,7 @@ const getSectionCounts = (
                     <span className="text-danger">
                       -
                       {examData?.section &&
-                      examData.section[currentSectionIndex]
+                        examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].minus_mark
                         : "No minus marks"}
                     </span>
@@ -2789,7 +2977,7 @@ const getSectionCounts = (
                 (() => {
                   const currentQuestion =
                     examData.section[currentSectionIndex]?.questions?.[
-                      (displayLanguage || selectedLanguage)?.toLowerCase()
+                    (displayLanguage || selectedLanguage)?.toLowerCase()
                     ]?.[clickedQuestionIndex - startingIndex];
 
                   const hasCommonData = !!currentQuestion?.common_data;
@@ -2916,16 +3104,14 @@ const getSectionCounts = (
         <div
           className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
         ${isMobileMenuOpen ? "translate-x-0  w-3/4 " : "translate-x-full "}
-        ${
-          closeSideBar
-            ? "md:translate-x-full md:w-0 border-0"
-            : "md:translate-x-0 md:w-1/4"
-        }
- ${
-   isFullscreen
-     ? "h-[87vh] md:h-[87vh]"
-     : "h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]"
- } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+        ${closeSideBar
+              ? "md:translate-x-full md:w-0 border-0"
+              : "md:translate-x-0 md:w-1/4"
+            }
+ ${isFullscreen
+              ? "h-[87vh] md:h-[87vh]"
+              : "h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]"
+            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
           style={{
             height: "calc(100vh - 150px)", // Adjust 150px to your header/footer height
             overflowY: "auto",
@@ -2971,19 +3157,18 @@ const getSectionCounts = (
             {examData?.section?.[currentSectionIndex]?.questions?.[
               selectedLanguage?.toLowerCase()
             ]?.[clickedQuestionIndex - startingIndex] && (
-              <h1 className="text-center text-black bg-gray-100 p-2">
-                Time Left: {formatTime(descriptiveTimeLeft)}
-              </h1>
-            )}
+                <h1 className="text-center text-black bg-gray-100 p-2">
+                  Time Left: {formatTime(descriptiveTimeLeft)}
+                </h1>
+              )}
 
             <center>
               <button
                 onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
-                  isPaused
-                    ? "bg-green-500 hover:bg-green-600 text-white"
-                    : "bg-red-500 hover:bg-red-600 text-white"
-                }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused
+                  ? "bg-green-500 hover:bg-green-600 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
+                  }`}
               >
                 Pause
               </button>
@@ -3039,50 +3224,50 @@ const getSectionCounts = (
               </div>
             </div>
 
-    <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-  {examData?.section[currentSectionIndex]?.questions?.[
-    selectedLanguage?.toLowerCase()
-  ]?.map((_, index) => {
-    const fullIndex = startingIndex + index;
+            <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+              {examData?.section[currentSectionIndex]?.questions?.[
+                selectedLanguage?.toLowerCase()
+              ]?.map((_, index) => {
+                const fullIndex = startingIndex + index;
 
-    let className = "";
+                let className = "";
 
-    // Check if the question has been answered (for descriptive questions)
-    // Now checking by question index (fullIndex) instead of section index
-    const hasAnswer =
-      descriptiveData?.[fullIndex]?.text?.[0]?.trim() !== "" &&
-      descriptiveData?.[fullIndex]?.text?.[0] !== undefined;
+                // Check if the question has been answered (for descriptive questions)
+                // Now checking by question index (fullIndex) instead of section index
+                const hasAnswer =
+                  descriptiveData?.[fullIndex]?.text?.[0]?.trim() !== "" &&
+                  descriptiveData?.[fullIndex]?.text?.[0] !== undefined;
 
-    if (hasAnswer) {
-      className = "answerImg";
-      if (markedForReview.includes(fullIndex)) {
-        className += " mdansmarkedImg";
-      }
-    } else if (visitedQuestions.includes(fullIndex)) {
-      className = "notansImg";
-    } else {
-      className = "notVisitImg";
-    }
+                if (hasAnswer) {
+                  className = "answerImg";
+                  if (markedForReview.includes(fullIndex)) {
+                    className += " mdansmarkedImg";
+                  }
+                } else if (visitedQuestions.includes(fullIndex)) {
+                  className = "notansImg";
+                } else {
+                  className = "notVisitImg";
+                }
 
-    if (markedForReview.includes(fullIndex)) {
-      className += " reviewed mdmarkedImg";
-    }
+                if (markedForReview.includes(fullIndex)) {
+                  className += " reviewed mdmarkedImg";
+                }
 
-    return (
-      <div key={fullIndex}>
-        <span
-          onClick={() => {
-            console.log("Clicked question index:", fullIndex);
-            setClickedQuestionIndex(fullIndex);
-          }}
-          className={`fw-bold flex align-items-center justify-content-center ${className}`}
-        >
-          {fullIndex + 1}
-        </span>
-      </div>
-    );
-  })}
-</div>
+                return (
+                  <div key={fullIndex}>
+                    <span
+                      onClick={() => {
+                        console.log("Clicked question index:", fullIndex);
+                        setClickedQuestionIndex(fullIndex);
+                      }}
+                      className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                    >
+                      {fullIndex + 1}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -3123,14 +3308,12 @@ const getSectionCounts = (
           <div className="flex justify-center md:w-[20%]">
             <center>
               <button
-                className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
-                onClick={handleSubmitSection}
+                className="btn bg-blue-500 text-white hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
+                onClick={currentSectionIndex === examData?.section?.length - 1 ? handleSubmitTest : handleSubmitSection}
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"
               >
-                {currentSectionIndex === examData?.section?.length - 1
-                  ? "Submit Test"
-                  : "Submit Section"}
+                {currentSectionIndex === examData?.section?.length - 1 ? "Submit Test" : "Submit Section"}
               </button>
             </center>
           </div>
