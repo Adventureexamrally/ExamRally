@@ -122,7 +122,7 @@ function App() {
 }
 
 function MainApp() {
-  const { user, utcNow } = useContext(UserContext);
+  const { use, utcNow } = useContext(UserContext);
 
   const location = useLocation();
   const [showModalji, setShowModalji] = useState(false);
