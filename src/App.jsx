@@ -5,6 +5,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { UserContext } from "./context/UserProvider";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -360,6 +361,8 @@ function MainApp() {
 
   return (
     <>
+      <Analytics />
+      
       {/* Header and Navbar */}
       {!isMockTestRoute && (
         <>
