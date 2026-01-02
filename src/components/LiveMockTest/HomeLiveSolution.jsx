@@ -263,7 +263,7 @@ useEffect(() => {
         setCurrentSectionIndex(0);
 
         // Calculate the starting question index (first question of the first section)
-        const startingIndex = 0; // First question of the first section
+        const startingIndex = clickedQuestionIndex; // First question of the first section
         setClickedQuestionIndex(startingIndex);
 
         // Optionally, reset other states if needed
@@ -271,7 +271,7 @@ useEffect(() => {
         setIsClicked(false); // Reset clicked status for the question
 
         // Reset all tracking states
-        setVisitedQuestions([0]); // Clear visited questions
+        setVisitedQuestions([clickedQuestionIndex]); // Clear visited questions
         setMarkedForReview([]); // Clear marked for review
         setAnsmarkforrev([]); // Clear answered and marked for review
         setQuestionTimes({});
@@ -597,7 +597,7 @@ useEffect(() => {
         <div className="p-1 mock-font ">
             <div>
 
-                <div className="bg-blue-400 text-white font-bold h-12 w-full flex justify-evenly items-center">
+                <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-evenly items-center">
                     <h1 className="h3 font-bold mt-3">{show_name}</h1>
                     <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
                     <button
@@ -1123,7 +1123,7 @@ useEffect(() => {
                     <div className="container mt-3">
                         <h1>Section Summary</h1>
                         <hr className="m-2" />
-                        <div className="w-fulll flex items-center justify-center space-x-4 p-2 bg-blue-400">
+                        <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
                             {/* Profile Image and Link */}
                             <div>
                                 <Avatar

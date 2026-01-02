@@ -3,6 +3,7 @@ import Api from "../service/Api";
 import { useNavigate } from "react-router-dom";
 import { FaChevronUp, FaChevronDown, FaCloudDownloadAlt } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
+import { CircularProgress } from "@mui/material";
 
 const CAmonth = ({ course }) => {
   const [CA, setCA] = useState([]);
@@ -12,6 +13,7 @@ const CAmonth = ({ course }) => {
   const { user, utcNow } = useContext(UserContext);
   const [resultData, setResultData] = useState({});
   const [expiredate, setExpirydate] = useState(null);
+  const [loadingTests, setLoadingTests] = useState({}); // Track loading state per exam
   console.log("isEnrolled", isEnrolled);
 
   // Get test status from localStorage
@@ -124,14 +126,65 @@ const CAmonth = ({ course }) => {
     };
   }, [user, CA, utcNow]);
 
+  // Refetch single test status
+  const fetchSingleResult = useCallback(
+    async (examId) => {
+      if (!user?._id) return;
+
+      try {
+        const res = await Api.get(`/results/${user._id}/${examId}`);
+        if (
+          res.data?.status === "completed" ||
+          res.data?.status === "paused"
+        ) {
+          setResultData((prev) => ({
+            ...prev,
+            [examId]: {
+              ...res.data,
+              lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+              selectedOptions: res.data.selectedOptions,
+            },
+          }));
+        }
+      } catch (err) {
+        console.error(`Error fetching result for exam ${examId}:`, err);
+      }
+    },
+    [user]
+  );
+
+  // Handle postMessage events
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.log("Received message:", event.data);
+      
+      // Ensure message is from same origin
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data && event.data.type === "test-status-updated") {
+        const examId = event.data.testId;
+        if (examId) {
+          console.log(`Updating test status for exam ${examId}`);
+          
+          // Set loading state and refetch result
+          setLoadingTests((prev) => ({ ...prev, [examId]: true }));
+          fetchSingleResult(examId).finally(() => {
+            setLoadingTests((prev) => ({ ...prev, [examId]: false }));
+          });
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [fetchSingleResult]);
+
   const openNewWindow = useCallback((url) => {
     const width = window.screen.width;
     const height = window.screen.height;
-    window.open(
-      url,
-      "_blank",
-      `noopener,noreferrer,width=${width},height=${height}`
-    );
+    window.open(url, "_blank", `width=${width},height=${height}`);
   }, []);
 
   const toggleWeek = useCallback((weekTitle) => {
@@ -172,7 +225,7 @@ const CAmonth = ({ course }) => {
               </div>
               {expandedWeeks[week.title] && (
                 <div className="p-3 bg-gray-100">
-                  <div className="flex flex-wrap justify-center items-center gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {week.model.map((model) => {
                       const examId = model.exams?.[0];
                       const testStatus =
@@ -208,58 +261,63 @@ const CAmonth = ({ course }) => {
                                 </button>
                               )}
 
-                              {isEnrolled && model.pdfLink ? (
-                                <button
-                                  className={`py-2 px-4 rounded transition w-full ${
-                                    testStatus === "completed"
+                              <button
+                                className={`py-2 px-2 rounded transition w-full flex items-center justify-center ${!isSignedIn
+                                  ? "bg-blue-500 text-white hover:bg-blue-600" // show active button for not signed-in users
+                                  : !isEnrolled
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed" // disable only for signed-in but not enrolled
+                                    : testStatus === "completed"
                                       ? "bg-green-500 text-white hover:bg-green-600"
                                       : testStatus === "paused"
-                                      ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                                      : "bg-blue-500 text-white hover:bg-blue-600"
+                                        ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                                        : "bg-blue-500 text-white hover:bg-blue-600"
                                   }`}
-                                  onClick={() => {
-                                    if (!isSignedIn) {
-                                      navigate("/sign-in");
-                                      return;
-                                    }
+                                onClick={() => {
+                                  // 🔹 If not signed in → redirect to sign-in
+                                  if (!isSignedIn) {
+                                    navigate("/sign-in");
+                                    return;
+                                  }
 
-                                    if (testStatus === "completed") {
-                                      openNewWindow(
-                                        `/liveresult/${examId}/${user._id}`
-                                      );
-                                    } else if (testStatus === "paused") {
-                                      openNewWindow(
-                                        `/mocklivetest/${examId}/${user._id}`
-                                      );
-                                    } else {
-                                      openNewWindow(
-                                        `/instruct/${examId}/${user._id}`
-                                      );
-                                    }
-                                  }}
-                                >
-                                  {testStatus === "completed"
-                                    ? "View Result"
-                                    : testStatus === "paused"
-                                    ? "Resume"
-                                    : "Take Test"}
-                                </button>
-                              ) : (
-                                <button
-                                  disabled
-                                  className="py-2 px-4 rounded w-full bg-gray-300 text-gray-500 cursor-not-allowed"
-                                >
-                                  Test Disabled
-                                </button>
-                              )}
+                                  // 🔹 If not enrolled → do nothing
+                                  if (!isEnrolled) {
+                                    return;
+                                  }
+
+                                  // 🔹 Normal test flow
+                                  if (testStatus === "completed") {
+                                    openNewWindow(`/liveresult/${examId}/${user._id}`);
+                                  } else if (testStatus === "paused") {
+                                    openNewWindow(`/mocklivetest/${examId}/${user._id}`);
+                                  } else {
+                                    openNewWindow(`/instruct/${examId}/${user._id}`);
+                                  }
+                                }}
+                                disabled={loadingTests[examId] || (!isEnrolled && isSignedIn)} // still disable only if enrolled=false and signed in
+                              >
+                                {loadingTests[examId] ? (
+                                  <CircularProgress size={18} thickness={4} color="inherit" />
+                                ) : !isEnrolled && isSignedIn ? (
+                                  "Test Disabled"
+                                ) : testStatus === "completed" ? (
+                                  "View Result"
+                                ) : testStatus === "paused" ? (
+                                  "Resume"
+                                ) : (
+                                  "Take Test"
+                                )}
+                              </button>
+
+
+
                             </div>
 
-                            {!model.pdfLink && (
+                            {/* {!model.pdfLink && (
                               <p className="text-red-500 text-sm font-medium text-center mt-2">
                                 PDF not available — test is currently disabled
                                 until the content is uploaded.
                               </p>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       );

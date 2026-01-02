@@ -445,6 +445,7 @@ const storeTestStatus = (testId, status, lastQuestionIndex = null, selectedOptio
 useEffect(() => {
   if (user?._id) {
     data?.exams?.forEach((test) => {
+      if(test?._id){
       // First try to get from API
       Api.get(`/results/${user?._id}/${test._id}`)
         .then((res) => {
@@ -481,6 +482,7 @@ useEffect(() => {
             }));
           }
         });
+      }
     });
   }
 }, [data?.exams, user?._id]);
@@ -870,7 +872,15 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
-
+<div className="flex justify-center items-center py-2 px-4 text-center w-full">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
+    </p>
+  </div>
+</div>
                                 {/* Check if the current date is greater than or equal to live_date */}
 
                         {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
@@ -887,20 +897,12 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : !utcNow || (isEnrolled && expiredate === undefined) ? (
-  // ⏳ Loading state while checking enrollment/expiry
-  <button
-    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-    disabled
-  >
-    Loading...
-  </button>
-) : isEnrolled && new Date(test.live_date) > utcNow ? (
+)  : isEnrolled && new Date(test.live_date) > utcNow ? (
   // 🚧 Coming Soon: Enrolled, but test not yet live
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
-      test.show_date 
-        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+      test.show_date
+        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed'
         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
     shadow-md hover:shadow-lg`}>
@@ -1034,6 +1036,15 @@ useEffect(() => {
                                   </div>
                                 </div>
                                 <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                               <div className="flex justify-center items-center py-2 px-4 text-center w-full">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
+    </p>
+  </div>
+</div>
                                 {/* Check if the current date is greater than or equal to live_date */}
 
                                     {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
@@ -1050,20 +1061,12 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : !utcNow || (isEnrolled && expiredate === undefined) ? (
-  // ⏳ Loading state while checking enrollment/expiry
-  <button
-    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-    disabled
-  >
-    Loading...
-  </button>
 ) : isEnrolled && new Date(test.live_date) > utcNow ? (
   // 🚧 Coming Soon: Enrolled, but test not yet live
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
       test.show_date 
-        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
     shadow-md hover:shadow-lg`}>
@@ -1199,6 +1202,15 @@ useEffect(() => {
                               </div>
                             </div>
                             <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                           <div className="flex justify-center items-center py-2 px-4 text-center w-full">
+  <div className="flex items-center gap-2">
+    <i className="bi bi-translate text-gray-500"></i>
+    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+      <span className="font-semibold text-gray-600">Language:</span>
+      {test.show_language}
+    </p>
+  </div>
+</div>
                             {/* Check if the current date is greater than or equal to live_date */}
 
                                  {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
@@ -1215,20 +1227,12 @@ useEffect(() => {
       Locked
     </div>
   </button>
-) : !utcNow || (isEnrolled && expiredate === undefined) ? (
-  // ⏳ Loading state while checking enrollment/expiry
-  <button
-    className="mt-3 py-2 px-4 rounded w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-    disabled
-  >
-    Loading...
-  </button>
-) : isEnrolled && new Date(test.live_date) > utcNow ? (
+) :  isEnrolled && new Date(test.live_date) > utcNow ? (
   // 🚧 Coming Soon: Enrolled, but test not yet live
   <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
     ${
       test.show_date 
-        ? 'border-1 text-green-500 border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
+        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
         : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
     }
     shadow-md hover:shadow-lg`}>
