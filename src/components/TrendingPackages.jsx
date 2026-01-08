@@ -55,7 +55,7 @@ useEffect(() => {
     const updatedPackages = data.map(item => {
       const packageName = item.name?.trim().toLowerCase();
       const matchedCourse = allCourses.find(
-        course => course.courseName?.trim().toLowerCase() === packageName
+        course => String(course.courseName || '').trim().toLowerCase() === packageName
       );
 
       let enrolled = false;

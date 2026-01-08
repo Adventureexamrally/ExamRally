@@ -1,10 +1,4 @@
 
-  // console.log = () => {};
-  // console.warn = () => {};
-  // console.error = () => {};
-
-
-
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";

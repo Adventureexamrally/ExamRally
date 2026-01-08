@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import Api from '../../service/Api';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -6,9 +6,10 @@ import { IoMdLock } from 'react-icons/io';
 import { UserContext } from '../../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import { fetchUtcNow } from '../../service/timeApi';
+import { generateImageEnabledPDF } from '../../utils/pdfGenerator';
 
 const PdfCourse = () => {
-  
+
     const [ad, setAD] = useState([])
     const [seo, setSeo] = useState([])
     const [alldata, setAlldata] = useState([]);
@@ -16,36 +17,36 @@ const PdfCourse = () => {
     const [resultData, setResultData] = useState(null);
     const [AllExamsName, setAllExamsName] = useState([]);
     const [selectedExam, setSelectedExam] = useState('');
-    const [pdfSubscription, setPdfSubscription] = useState(null);
-const [openScheduleId, setOpenScheduleId] = useState(null);
-   const [utcNow, setUtcNow] = useState(null);
-  const [year, setYear] = useState(null);
-  const [month, setMonth] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [isfree] = useState(false);
+    const [openScheduleId, setOpenScheduleId] = useState(null);
+    const [utcNow, setUtcNow] = useState(null);
+    const [year, setYear] = useState(null);
+    const [month, setMonth] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [isfree] = useState(false);
+    const [refetchTrigger, setRefetchTrigger] = useState(0);
+    const [generatingPdf, setGeneratingPdf] = useState({}); // Tracking loading state per examId
 
-  // 1. Fetch UTC time from server
-  useEffect(() => {
-    fetchUtcNow()
-      .then(globalDate => {
-        setUtcNow(globalDate);
-        console.warn("Server UTC Date:", globalDate.toISOString());
+    // 1. Fetch UTC time from server
+    useEffect(() => {
+        fetchUtcNow()
+            .then(globalDate => {
+                setUtcNow(globalDate);
 
-        // Set year and month after fetching UTC date
-        setYear(globalDate.getFullYear());
-        setMonth(globalDate.getMonth());
-      })
-      .catch(error => {
-        console.error("Failed to fetch UTC time:", error);
-      });
-  }, []);
+                // Set year and month after fetching UTC date
+                setYear(globalDate.getFullYear());
+                setMonth(globalDate.getMonth());
+            })
+            .catch(error => {
+                console.error("Failed to fetch UTC time:", error);
+            });
+    }, []);
 
-const toggleSchedule = (id) => {
-  setOpenScheduleId((prevId) => (prevId === id ? null : id));
-};
+    // Memoized toggle function
+    const toggleSchedule = useCallback((id) => {
+        setOpenScheduleId((prevId) => (prevId === id ? null : id));
+    }, []);
 
     const { user } = useContext(UserContext);
-    console.log(user)
     const { level } = useParams();
 
     const { isSignedIn } = useUser();
@@ -54,131 +55,147 @@ const toggleSchedule = (id) => {
 
     useEffect(() => {
         run(); // Step 1: only fetch and set alldata here
-      }, [level]);
-      
-      const run = async () => {
+    }, [level]);
+
+    const run = async () => {
         const response = await Api.get(`pdf-Course/courses`);
         const filteredData = response.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
         setAlldata(filteredData);
-      
+
         const pdfExams = await Api.get("pdf-Course/Exams");
         setAllExamsName(pdfExams.data);
-      
+
         const response2 = await Api.get(`/get-Specific-page/pdf-course`);
         setSeo(response2.data);
-      
+
         const response3 = await Api.get(`/blog-Ad/getbypage/pdf-course`);
         setAD(response3.data);
-      };
-      
-      // Step 2: Now that alldata is updated, fetch results
-      useEffect(() => {
+    };
+
+    // Step 2: Now that alldata is updated, fetch results
+    useEffect(() => {
         if (!user?._id || !alldata.length) return;
-      
+
         alldata.forEach((pdf) => {
-          const examId = pdf.exams?.[0]?._id;
-          if (!examId) return;
-      
-          Api.get(`/PDFresults/${user._id}/${examId}`)
-            .then((res) => {
-              if (res.data?.status === "completed" || res.data?.status === "paused") {
-                setResultData((prev) => ({
-                  ...prev,
-                  [examId]: {
-                    ...res.data,
-                    lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-                    selectedOptions: res.data.selectedOptions,
-                  },
-                }));
-              }
-            })
-            .catch((err) => {
-              console.error("Error fetching result for", examId, ":", err);
-            });
+            const examId = pdf.exams?.[0]?._id;
+            if (!examId) return;
+
+            Api.get(`/PDFresults/${user._id}/${examId}`)
+                .then((res) => {
+                    if (res.data?.status === "completed" || res.data?.status === "paused") {
+                        setResultData((prev) => ({
+                            ...prev,
+                            [examId]: {
+                                ...res.data,
+                                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                                selectedOptions: res.data.selectedOptions,
+                            },
+                        }));
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error fetching result for", examId, ":", err);
+                });
         });
-      }, [alldata, user?._id,level]);
+    }, [alldata, user?._id, level, refetchTrigger]);
+
+    // Listen for page visibility changes to refetch results when user returns
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                // Trigger refetch when page becomes visible again
+                setRefetchTrigger(prev => prev + 1);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
 
 
-    // Function to generate the calendar dates for the selected month and year
-    const generateCalendar = (year, month) => {
+    // Memoized calendar generation
+    const generateCalendar = useCallback((year, month) => {
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
         const daysInMonth = lastDayOfMonth.getDate();
 
-        // Calculate the day of the week the month starts on (0 = Sunday, 1 = Monday, etc.)
         const firstDayOfWeek = firstDayOfMonth.getDay();
-
-        // Create the calendar array with empty slots at the start for the first week
         const calendarDays = [];
 
-        // Fill in the empty slots before the 1st day of the month
         for (let i = 0; i < firstDayOfWeek; i++) {
             calendarDays.push(null);
         }
 
-        // Fill the calendar with the actual days of the month
         for (let day = 1; day <= daysInMonth; day++) {
             calendarDays.push(day);
         }
 
-        // Split the calendar into weeks (arrays of 7 days)
         const weeks = [];
         while (calendarDays.length) {
             weeks.push(calendarDays.splice(0, 7));
         }
 
         return weeks;
-    };
+    }, []);
 
-    const handleDateClick = (day) => {
-        setSelectedDate(day); // Save only the day to simplify comparison
-    };
+    const handleDateClick = useCallback((day) => {
+        setSelectedDate(day);
+    }, []);
 
-    const handleYearChange = (event) => {
+    const handleYearChange = useCallback((event) => {
         setYear(Number(event.target.value));
-    };
+    }, []);
 
-    const handleMonthClick = (index) => {
+    const handleMonthClick = useCallback((index) => {
         setMonth(index);
-    };
+    }, []);
 
     useEffect(() => {
         setSelectedDate(null); // Reset selected date when month/year changes
     }, [year, month]);
 
-    const weeks = generateCalendar(year, month);
-    const months = [
+    // Memoized calendar weeks
+    const weeks = useMemo(() => {
+        if (year === null || month === null) return [];
+        return generateCalendar(year, month);
+    }, [year, month, generateCalendar]);
+
+    // Static months array
+    const months = useMemo(() => [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+    ], []);
 
-    const formatDateToYMD = (dateString) => {
+    // Memoized date formatter
+    const formatDateToYMD = useCallback((dateString) => {
         const date = new Date(dateString);
         return {
             year: date.getFullYear(),
             month: date.getMonth(),
             day: date.getDate(),
         };
-    };
-    const filteredPdfs = alldata.filter((pdf) => {
-        if (!pdf.examName || !pdf.date) return false;
+    }, []);
 
-        const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
-        const matchesYear = pdfYear === year;
-        const matchesMonth = pdfMonth === month;
-        const matchesExam = selectedExam && pdf.examName.toLowerCase() === selectedExam.toLowerCase();
+    // Memoized filtered PDFs
+    const filteredPdfs = useMemo(() => {
+        return alldata.filter((pdf) => {
+            if (!pdf.examName || !pdf.date) return false;
 
-        // If exam is selected, show PDFs for the whole selected year
-        if (selectedExam) {
-            return matchesExam && matchesYear;
-        }
+            const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
+            const matchesYear = pdfYear === year;
+            const matchesMonth = pdfMonth === month;
+            const matchesExam = selectedExam && pdf.examName.toLowerCase() === selectedExam.toLowerCase();
 
-        // Default: show current month/year PDFs
-        return matchesYear && matchesMonth;
-    });
+            if (selectedExam) {
+                return matchesExam && matchesYear;
+            }
 
-    // ✅ Sort by date so they're in Jan → Dec order
-    filteredPdfs.sort((a, b) => new Date(a.date) - new Date(b.date));
+            return matchesYear && matchesMonth;
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+    }, [alldata, year, month, selectedExam, formatDateToYMD]);
 
 
     useEffect(() => {
@@ -193,58 +210,100 @@ const toggleSchedule = (id) => {
         }
     }, [selectedDate, year, month]);
 
-    // Group filtered PDFs by day
-    const groupedPdfs = filteredPdfs.reduce((acc, pdf) => {
-        const date = new Date(pdf.date);
-        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(pdf);
-        return acc;
-    }, {});
+    // Memoized grouped PDFs by day
+    const groupedPdfs = useMemo(() => {
+        return filteredPdfs.reduce((acc, pdf) => {
+            const date = new Date(pdf.date);
+            const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(pdf);
+            return acc;
+        }, {});
+    }, [filteredPdfs]);
 
-    const formatPrettyDate = (dateStr) => {
+    // Memoized helper functions
+    const formatPrettyDate = useCallback((dateStr) => {
         const date = new Date(dateStr);
         const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
         return date.toLocaleDateString('en-US', options);
-    };
+    }, []);
 
-    const formatKey = (year, month, day) => `${year}-${month}-${day}`;
+    const formatKey = useCallback((year, month, day) => `${year}-${month}-${day}`, []);
 
-    const openNewWindow = (url) => {
+    const openNewWindow = useCallback((url) => {
         const width = screen.width;
         const height = screen.height;
         window.open(
             url,
             "_blank",
-            `noopener,noreferrer,width=${width},height=${height}`
+            `noopener,width=${width},height=${height}`
         );
+    }, []);
+
+
+    const handleViewPdf = async (pdf) => {
+        const examId = pdf.exams?.[0]?._id;
+        if (!examId) return;
+
+        setGeneratingPdf(prev => ({ ...prev, [examId]: true }));
+
+        try {
+            // 1. Fetch complete exam details to get the questions
+            const response = await Api.get(`pdf-exams/getExam/${examId}`);
+            const exam = response.data;
+
+            if (!exam || !exam.section) {
+                throw new Error("Exam data not found or incomplete");
+            }
+
+            // 2. Extract and flatten all questions from sections
+            // We'll prioritize English for the PDF generation
+            const questions = exam.section.flatMap(sec =>
+                (sec.questions?.english || []).map(q => ({
+                    ...q,
+                    sectionName: sec.name
+                }))
+            );
+
+            if (questions.length === 0) {
+                alert("No questions found in this exam to generate a PDF.");
+                return;
+            }
+
+            // 3. Generate the PDF with user email as watermark
+            await generateImageEnabledPDF(questions, {
+                title: exam.show_name || exam.exam_name || "Exam PDF",
+                watermarkText: user?.email || "ExamRally",
+                sectionTitle: "Full Exam Questions",
+                explanationTitle: "Answer & Explanations"
+            });
+
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert("Failed to generate PDF. Please try again later.");
+        } finally {
+            setGeneratingPdf(prev => ({ ...prev, [examId]: false }));
+        }
     };
 
-    
-    useEffect(() => {
-        const fetchSubscription = async () => {
-          try {
-            const res = await Api.get(`/pdf-subscriptions/${user._id}`); // assume your backend supports this
-            setPdfSubscription(res.data);
-          } catch (err) {
-            console.error("Failed to fetch PDF subscription:", err);
-          }
-        };
-      
-        if (user?._id) {
-          fetchSubscription();
-        }
-      }, [user]);
-      
-      const hasActiveSubscription = () => {
-    if (!pdfSubscription) return false;
-  
-    const now = utcNow;
-    const expiry = new Date(pdfSubscription.expiryDate);
-  
-    return expiry > now;
-  };
-  
+    // Check if user has ANY active PDF subscription (using context)
+    const hasActiveSubscription = () => {
+        if (!user?.subscriptions || !utcNow) return false;
+
+        const activePdfSubscription = user.subscriptions.find(sub =>
+            sub.status === 'Active' &&
+            (Array.isArray(sub.courseName)
+                ? sub.courseName.some(name => name?.includes('PDF Course') || name?.includes('Pdf Course'))
+                : sub.courseName?.includes('PDF Course') || sub.courseName?.includes('Pdf Course')
+            )
+        );
+
+        if (!activePdfSubscription) return false;
+
+        const expiry = new Date(activePdfSubscription.expiryDate);
+        return expiry > utcNow;
+    };
+
     return (
         <>
             <Helmet>
@@ -497,105 +556,101 @@ const toggleSchedule = (id) => {
                                                                 </div>
 
                                                                 {/* Schedule */}
-                                                                    {openScheduleId !== pdf._id && (
+                                                                {openScheduleId !== pdf._id && (
                                                                     <div className="text-center text-sm text-gray-700 mb-4 px-2">
                                                                         <button
-                                                                        onClick={() => toggleSchedule(pdf._id)}
-                                                                        className="mt-2 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+                                                                            onClick={() => toggleSchedule(pdf._id)}
+                                                                            className="mt-2 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
                                                                         >
-                                                                        Show Schedule
+                                                                            Show Schedule
                                                                         </button>
                                                                     </div>
-                                                                    )}
+                                                                )}
 
-                                                                    {openScheduleId === pdf._id && (
+                                                                {openScheduleId === pdf._id && (
                                                                     <div className="text-sm text-gray-700 mb-4 px-2">
                                                                         <div className="mt-2 bg-purple-50 p-3 rounded shadow-inner border border-purple-200">
-                                                                        <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
+                                                                            <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
                                                                         </div>
                                                                     </div>
-                                                                    )}
-
-
-
+                                                                )}
                                                                 {/* Action Buttons */}
                                                                 <div className="flex justify-between space-x-2">
-                                                                    <a
-                                                                        href={pdf.pdfLink}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="flex-1 text-center text-white bg-blue-600 hover:bg-blue-700 py-2 px-3 rounded-md text-sm font-medium transition-colors"
-                                                                    >
-                                                                        View PDF
-                                                                    </a>
-                                                                    {/* <button
-                                                                        onClick={() => openNewWindow(`/instruction/${pdf.exams[0]}`)}
-                                                                        className="flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors"
-                                                                    >
-                                                                        Take Test
-                                                                    </button> */}
-                                                                    {/* Check if the current date is greater than or equal to live_date */}
-                                                                                                                                    {(() => {
-                                                                // 🔒 LOCKED: If content is paid & user has no subscription
-                                                                if (pdf.exams[0]?.result_type === "paid" && !hasActiveSubscription()) {
-                                                                    return (
-                                                                    <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded">
-                                                                        <IoMdLock /> Locked
-                                                                    </div>
-                                                                    );
-                                                                }
+                                                                    {(() => {
+                                                                        const examId = pdf.exams[0]?._id;
 
-                                                                // 🔒 LOCKED: Even if content is free, if live date is in the future, show "Locked"
-                                                                if (!hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
-                                                                    return (
-                                                                    <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded">
-                                                                        <IoMdLock /> Locked
-                                                                    </div>
-                                                                    );
-                                                                }
-
-                                                                // ⏳ COMING SOON: Only if subscribed AND live date is in future
-                                                                if (hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
-                                                                    return (
-                                                                    <div className="flex-1 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                                                        Coming Soon
-                                                                    </div>
-                                                                    );
-                                                                }
-
-                                                                // ✅ AVAILABLE: Show action button (Take Test / Resume / View Result)
-                                                                return (
-                                                                    <button
-                                                                    className={`flex-1 text-center text-white bg-green-600 hover:bg-green-700 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                                                                        resultData?.[pdf.exams[0]?._id]?.status === "completed"
-                                                                        ? "bg-green-500"
-                                                                        : resultData?.[pdf.exams[0]?._id]?.status === "paused"
-                                                                        ? "bg-green-500"
-                                                                        : "bg-green-500"
-                                                                    }`}
-                                                                    onClick={() => {
-                                                                        if (!isSignedIn) {
-                                                                        navigate("/sign-in");
-                                                                        } else if (resultData?.[pdf.exams[0]?._id]?.status === "completed") {
-                                                                        openNewWindow(`/pdf/result/${pdf.exams[0]._id}/${user?._id}`);
-                                                                        } else if (resultData?.[pdf.exams[0]?._id]?.status === "paused") {
-                                                                        openNewWindow(`/pdf/mocktest/${pdf.exams[0]?._id}/${user?._id}`);
-                                                                        } else {
-                                                                        openNewWindow(`/pdf/instruction/${pdf.exams[0]?._id}/${user?._id}`);
+                                                                        // 🔒 LOCKED: If content is paid & user has no subscription
+                                                                        if (pdf.exams[0]?.result_type === "paid" && !hasActiveSubscription()) {
+                                                                            return (
+                                                                                <div
+                                                                                    onClick={() => navigate('/pdf-course#pdf-plan')}
+                                                                                    className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded cursor-pointer hover:bg-red-50 transition-colors"
+                                                                                >
+                                                                                    <IoMdLock /> Locked
+                                                                                </div>
+                                                                            );
                                                                         }
-                                                                    }}
-                                                                    >
-                                                                    {resultData?.[pdf.exams[0]?._id]?.status === "completed"
-                                                                        ? "View Result"
-                                                                        : resultData?.[pdf.exams[0]?._id]?.status === "paused"
-                                                                        ? "Resume"
-                                                                        : "Take Test"}
-                                                                    </button>
-                                                                );
-                                                                })()}
 
+                                                                        // 🔒 LOCKED: Even if content is free, if live date is in the future, show "Locked"
+                                                                        if (!hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
+                                                                            return (
+                                                                                <div
+                                                                                    onClick={() => navigate('/pdf-course#pdf-plan')}
+                                                                                    className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded cursor-pointer hover:bg-red-50 transition-colors"
+                                                                                >
+                                                                                    <IoMdLock /> Locked
+                                                                                </div>
+                                                                            );
+                                                                        }
 
+                                                                        // ⏳ COMING SOON: Only if subscribed AND live date is in future
+                                                                        if (hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
+                                                                            return (
+                                                                                <div className="flex-1 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
+                                                                                    Coming Soon
+                                                                                </div>
+                                                                            );
+                                                                        }
 
+                                                                        // ✅ AVAILABLE: Show both View PDF and action button
+                                                                        return (
+                                                                            <>
+                                                                                <button
+                                                                                    disabled={generatingPdf[examId]}
+                                                                                    onClick={() => handleViewPdf(pdf)}
+                                                                                    className={`flex-1 text-center text-white bg-blue-600 hover:bg-blue-700 py-2 px-3 rounded-md text-sm font-medium transition-colors ${generatingPdf[examId] ? "opacity-50 cursor-not-allowed" : ""
+                                                                                        }`}
+                                                                                >
+                                                                                    {generatingPdf[examId] ? "Generating..." : "View PDF"}
+                                                                                </button>
+
+                                                                                <button
+                                                                                    className={`flex-1 text-center text-white py-2 px-3 rounded-md text-sm font-medium transition-colors ${resultData?.[examId]?.status === "completed"
+                                                                                        ? "bg-green-600 hover:bg-green-700"
+                                                                                        : resultData?.[examId]?.status === "paused"
+                                                                                            ? "bg-yellow-600 hover:bg-yellow-700"
+                                                                                            : "bg-green-600 hover:bg-green-700"
+                                                                                        }`}
+                                                                                    onClick={() => {
+                                                                                        const results = resultData?.[examId];
+                                                                                        if (results?.status === "completed") {
+                                                                                            openNewWindow(`/pdf/MockResult/${examId}`);
+                                                                                        } else if (results?.status === "paused") {
+                                                                                            openNewWindow(`/pdf/test/${examId}`);
+                                                                                        } else {
+                                                                                            openNewWindow(`/instruction/${examId}`);
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    {resultData?.[examId]?.status === "completed"
+                                                                                        ? "View Result"
+                                                                                        : resultData?.[examId]?.status === "paused"
+                                                                                            ? "Resume"
+                                                                                            : "Take Test"}
+                                                                                </button>
+                                                                            </>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                             </div>
                                                         );

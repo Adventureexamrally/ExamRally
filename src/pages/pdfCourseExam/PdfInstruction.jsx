@@ -16,11 +16,11 @@ import { UserContext } from "../../context/UserProvider";
 
 // Prevent F12, Ctrl+R, Ctrl+Shift+R, and Ctrl+Shift+I key presses
 window.addEventListener('keydown', function (e) {
-  if ((e.key === 'F12') || 
-      (e.ctrlKey && e.key === 'r') || 
-      (e.ctrlKey && e.shiftKey && e.key === 'R') || 
-      (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-      e.preventDefault();  // Prevent F12, Ctrl+R, Ctrl+Shift+R, or Ctrl+Shift+I
+  if ((e.key === 'F12') ||
+    (e.ctrlKey && e.key === 'r') ||
+    (e.ctrlKey && e.shiftKey && e.key === 'R') ||
+    (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+    e.preventDefault();  // Prevent F12, Ctrl+R, Ctrl+Shift+R, or Ctrl+Shift+I
   }
 });
 
@@ -40,7 +40,7 @@ const images = [
 
 const PdfInstruction = () => {
   const [examData, setExamData] = useState(null);
-  const {id}=useParams()
+  const { id } = useParams()
   const { user } = useContext(UserContext);
 
   useEffect(() => {
@@ -57,44 +57,44 @@ const PdfInstruction = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
-        <h1 className="text-lg font-semibold text-white">Instruction</h1>
-        
-     
-      
+      <div className="bg-blue-300 p-3 flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Instruction</h2>
+
+
+
       </div>
       <p className="text-red-500 fw-bold p-2">The Public Examinations (Prevention of Unfair Means) Act 2024 is in force. The provisions of the Act will be applicable to persons involved in use of unfair means. Accordingly, Candidates will be covered under the extent administrative provisions of the concerned Public Examination Authority. Candidates are advised to not take/give or attempt to take/give any unfair assistance or use or attempt to use any unfair means during the examinations.
       </p>
-<div className="p-2">
-  <h1><strong> {examData?.exam_name}</strong> </h1>
-</div>
+      <div className="p-2">
+        <h1><strong> {examData?.exam_name}</strong> </h1>
+      </div>
 
 
 
 
 
-<table className="table table-bordered table-striped table-responsive mt-2">
-  <thead>
-    <tr>
-      <th>S.No</th>
-      <th>Section Exam Name</th>
-      <th>No. of Questions</th>
-      <th>Mark</th>
-      <th>Section Time (Minutes)</th>
-    </tr>
-  </thead>
-  <tbody>
-    {examData?.section?.map((section, index) => (
-      <tr key={index}>
-        <td>{index + 1}</td>
-        <td>{section.name}</td>
-        <td>{section.t_question}</td>
-        <td>{section.t_mark}</td>
-        <td>{section.t_time} Min </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+      <table className="table table-bordered table-striped table-responsive mt-2">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Section Exam Name</th>
+            <th>No. of Questions</th>
+            <th>Mark</th>
+            <th>Section Time (Minutes)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {examData?.section?.map((section, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{section.name}</td>
+              <td>{section.t_question}</td>
+              <td>{section.t_mark}</td>
+              <td>{section.t_time} Min </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
 
 
@@ -102,16 +102,16 @@ const PdfInstruction = () => {
       <div className="mt-4">
         <p className="font-semibold">General Instructions:</p>
         <ul className="list-decimal list-inside space-y-2 mt-2">
-      {
-  examData?.time?.toLowerCase() === "composite" ? (
-    <li>
-      Total duration of examination is <strong>{examData?.duration}</strong> Min. 
-    </li>
-  ) : (
-   <>
-   </>
-  )
-}
+          {
+            examData?.time?.toLowerCase() === "composite" ? (
+              <li>
+                Total duration of examination is <strong>{examData?.duration}</strong> Min.
+              </li>
+            ) : (
+              <>
+              </>
+            )
+          }
 
 
           <li>
@@ -245,12 +245,23 @@ const PdfInstruction = () => {
             legend that appears in every section above the question palette.
           </li>
         </ul>
-        <div className="fixed bottom-1 right-4">
-        <Link to={`/pdf/otherinstruct/${id}/${user?._id}`}>
-  <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
-    Next
-  </button>
-</Link>
+        {/* <div className="flex justify-center">
+          <Link to={`/pdf/otherinstruct/${id}/${user?._id}`}>
+            <button className="bg-blue-500 p-2 text-white hover:bg-blue-600 rounded-md">
+              Next
+            </button>
+          </Link>
+        </div> */}
+        <div className="fixed bottom-0 w-full flex justify-center bg-gradient-to-r from-gray-100 to-gray-200 p-3 shadow-lg">
+          <Link
+            to={`/pdf/otherinstruct/${id}/${user?._id}`}
+            className="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-0.5 font-medium text-white hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300"
+          >
+            <span className="relative rounded-md px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
+              Next
+              <i className="bi bi-arrow-right-circle-fill ml-2 group-hover:translate-x-1 transition-transform duration-200"></i>
+            </span>
+          </Link>
         </div>
       </div>
     </div>
