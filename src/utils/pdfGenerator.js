@@ -329,6 +329,7 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
     return decoded;
   };
+  
 
   const printText = (text, size = 11, style = "normal", indent = 0) => {
     if (!text) return;
