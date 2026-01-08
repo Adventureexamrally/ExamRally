@@ -38,55 +38,55 @@ const Packages = () => {
   };
 
   const [packagesWithEnrollment, setPackagesWithEnrollment] = useState([]);
-  const [duration,setDuration]=useState([])
-    
- 
+  const [duration, setDuration] = useState([])
 
-useEffect(() => {
-  if (!data.length) return;
 
-  if (user && (Array.isArray(user.enrolledCourses) || Array.isArray(user.subscriptions))) {
-    const allCourses = [
-      ...(user.enrolledCourses || []),
-      ...(user.subscriptions || []),
-    ];
 
-    const updatedPackages = data.map(item => {
-      const packageName = item.name?.trim().toLowerCase();
-      const matchedCourse = allCourses.find(
-        course => course.courseName?.trim().toLowerCase() === packageName
-      );
+  useEffect(() => {
+    if (!data.length) return;
 
-      let enrolled = false;
-      let daysLeft = null;
-      let expired = false;
+    if (user && (Array.isArray(user.enrolledCourses) || Array.isArray(user.subscriptions))) {
+      const allCourses = [
+        ...(user.enrolledCourses || []),
+        ...(user.subscriptions || []),
+      ];
 
-      if (matchedCourse) {
-        enrolled = true;
-        const expiryDate = new Date(matchedCourse.expiryDate);
-        const timeDiff = expiryDate - utcNow;
-        daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      const updatedPackages = data.map(item => {
+        const packageName = item.name?.trim().toLowerCase();
+        const matchedCourse = allCourses.find(
+          course => String(course.courseName || '').trim().toLowerCase() === packageName
+        );
 
-        if (daysLeft <= 0) {
-          enrolled = false; // let user re-purchase if expired
-          expired = true;
+        let enrolled = false;
+        let daysLeft = null;
+        let expired = false;
+
+        if (matchedCourse) {
+          enrolled = true;
+          const expiryDate = new Date(matchedCourse.expiryDate);
+          const timeDiff = expiryDate - utcNow;
+          daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+          if (daysLeft <= 0) {
+            enrolled = false; // let user re-purchase if expired
+            expired = true;
+          }
         }
-      }
 
-      return {
-        ...item,
-        enrolled,
-        daysLeft,
-        expired,
-      };
-    });
+        return {
+          ...item,
+          enrolled,
+          daysLeft,
+          expired,
+        };
+      });
 
-    setPackagesWithEnrollment(updatedPackages);
-  } else {
-    // User not signed in, just show all packages without enrollment info
-    setPackagesWithEnrollment(data);
-  }
-}, [user, data, utcNow]);
+      setPackagesWithEnrollment(updatedPackages);
+    } else {
+      // User not signed in, just show all packages without enrollment info
+      setPackagesWithEnrollment(data);
+    }
+  }, [user, data, utcNow]);
 
   return (
     <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
@@ -126,30 +126,30 @@ useEffect(() => {
                     Save Rs. {pkg.price - pkg.discountPrice}
                   </span>
                 </div>
-<button
-  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 font-bold hover:from-green-600 hover:to-green-700 rounded-lg shadow-md transition-all duration-300"
-  onClick={() => handlePackageSelect(pkg)}
-  // allow repurchase if expired
-    disabled={pkg.enrolled && !pkg.expired}
->
-  {pkg.enrolled && !pkg.expired
-    ? "Purchased"
-    : `Rs.${pkg.discountPrice}`}
-</button>
+                <button
+                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 font-bold hover:from-green-600 hover:to-green-700 rounded-lg shadow-md transition-all duration-300"
+                  onClick={() => handlePackageSelect(pkg)}
+                  // allow repurchase if expired
+                  disabled={pkg.enrolled && !pkg.expired}
+                >
+                  {pkg.enrolled && !pkg.expired
+                    ? "Purchased"
+                    : `Rs.${pkg.discountPrice}`}
+                </button>
 
-{pkg.enrolled && !pkg.expired ? (
-  <p className="text-md text-red-500 mt-2 font blink">
-    <i className="bi bi-clock-history"></i> {pkg.daysLeft} - Days Left
-  </p>
-) : pkg.expired ? (
-  <p className="text-md text-orange-500 mt-2 font">
-    <i className="bi bi-exclamation-triangle-fill"></i> Expired - Repurchase
-  </p>
-) : (
-  <p className="text-md text-gray-500 mt-2 font">
-    <i className="bi bi-clock-history"></i> Limited Time Offer
-  </p>
-)}
+                {pkg.enrolled && !pkg.expired ? (
+                  <p className="text-md text-red-500 mt-2 font blink">
+                    <i className="bi bi-clock-history"></i> {pkg.daysLeft} - Days Left
+                  </p>
+                ) : pkg.expired ? (
+                  <p className="text-md text-orange-500 mt-2 font">
+                    <i className="bi bi-exclamation-triangle-fill"></i> Expired - Repurchase
+                  </p>
+                ) : (
+                  <p className="text-md text-gray-500 mt-2 font">
+                    <i className="bi bi-clock-history"></i> Limited Time Offer
+                  </p>
+                )}
 
               </div>
             </div>
@@ -157,8 +157,8 @@ useEffect(() => {
         ))}
 
         {showModal && selectedPackage && (
-          <PackageCoupon 
-            pkg={selectedPackage} 
+          <PackageCoupon
+            pkg={selectedPackage}
             setShowModal={setShowModal}
           />
         )}

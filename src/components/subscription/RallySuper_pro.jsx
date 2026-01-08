@@ -43,16 +43,16 @@ const RallySuper_pro = () => {
     return () => clearTimeout(timer);
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
     if (user && data) {
-      const matchedCourse = user. subscriptions?.find(
+      const matchedCourse = user.subscriptions?.find(
         (course) =>
-          course.courseName?.trim().toLowerCase() ===
-          data.subscriptionType?.trim().toLowerCase()
-      )|| user.enrolledCourses?.find(
+          String(course.courseName || "").trim().toLowerCase() ===
+          String(data.subscriptionType || "").trim().toLowerCase()
+      ) || user.enrolledCourses?.find(
         (course) =>
-          course.courseName?.trim().toLowerCase() ===
-          data.subscriptionType?.trim().toLowerCase()
+          String(course.courseName || "").trim().toLowerCase() ===
+          String(data.subscriptionType || "").trim().toLowerCase()
       );
 
       if (matchedCourse) {
@@ -61,7 +61,7 @@ const RallySuper_pro = () => {
         const timeDiff = expiryDate - currentDate;
         const remainingDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
-console.log("koli",currentDate,expiryDate,timeDiff,remainingDays)
+        console.log("koli", currentDate, expiryDate, timeDiff, remainingDays)
 
         if (remainingDays > 0) {
           setEnrolled(true);
@@ -129,11 +129,10 @@ console.log("koli",currentDate,expiryDate,timeDiff,remainingDays)
                   </del>
                   <br />
                   <button
-                    className={`px-3 py-1 font-bold rounded-full ${
-                      enrolled && !expired
+                    className={`px-3 py-1 font-bold rounded-full ${enrolled && !expired
                         ? "bg-gray-400 cursor-not-allowed text-white"
                         : "bg-green-500 hover:bg-green-400 text-white"
-                    }`}
+                      }`}
                     disabled={enrolled && !expired}
                     onClick={() => {
                       if (!isSignedIn) {
