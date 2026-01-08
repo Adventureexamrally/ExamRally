@@ -25,6 +25,7 @@ const PdfCourse = () => {
     const [isfree] = useState(false);
     const [refetchTrigger, setRefetchTrigger] = useState(0);
     const [generatingPdf, setGeneratingPdf] = useState({}); // Tracking loading state per examId
+    const [selectedLanguage, setSelectedLanguage] = useState({}); // Language selection per examId (english/tamil/hindi)
 
     // 1. Fetch UTC time from server
     useEffect(() => {
@@ -241,9 +242,12 @@ const PdfCourse = () => {
     }, []);
 
 
-    const handleViewPdf = async (pdf) => {
+    const handleViewPdf = async (pdf, lang = null) => {
         const examId = pdf.exams?.[0]?._id;
         if (!examId) return;
+
+        // Use selected language or default to 'english'
+        const language = lang || selectedLanguage[examId] || 'english';
 
         setGeneratingPdf(prev => ({ ...prev, [examId]: true }));
 
@@ -256,26 +260,26 @@ const PdfCourse = () => {
                 throw new Error("Exam data not found or incomplete");
             }
 
-            // 2. Extract and flatten all questions from sections
-            // We'll prioritize English for the PDF generation
+            // 2. Extract and flatten all questions from sections based on selected language
             const questions = exam.section.flatMap(sec =>
-                (sec.questions?.english || []).map(q => ({
+                (sec.questions?.[language] || sec.questions?.english || []).map(q => ({
                     ...q,
                     sectionName: sec.name
                 }))
             );
 
             if (questions.length === 0) {
-                alert("No questions found in this exam to generate a PDF.");
+                alert(`No questions found in ${language} for this exam. Please try another language.`);
                 return;
             }
 
-            // 3. Generate the PDF with user email as watermark
+            // 3. Generate the PDF with user email as watermark and selected language
             await generateImageEnabledPDF(questions, {
                 title: exam.show_name || exam.exam_name || "Exam PDF",
                 watermarkText: user?.email || "ExamRally",
                 sectionTitle: "Full Exam Questions",
-                explanationTitle: "Answer & Explanations"
+                explanationTitle: "Answer & Explanations",
+                language: language // Pass language to PDF generator
             });
 
         } catch (error) {
@@ -574,10 +578,76 @@ const PdfCourse = () => {
                                                                         </div>
                                                                     </div>
                                                                 )}
+                                                                {/* Language Selector - Show only if content is available */}
+                                                                {(() => {
+                                                                    const examId = pdf.exams[0]?._id;
+                                                                    const exam = pdf.exams[0];
+
+                                                                    // Only show language selector if exam is accessible
+                                                                    if (exam?.result_type === "paid" && !hasActiveSubscription()) return null;
+                                                                    if (!hasActiveSubscription() && exam?.live_date && new Date(exam.live_date) > utcNow) return null;
+                                                                    if (hasActiveSubscription() && exam?.live_date && new Date(exam.live_date) > utcNow) return null;
+
+                                                                    // Check which languages are available
+                                                                    const hasEnglish = exam?.english_status;
+                                                                    const hasTamil = exam?.tamil_status;
+                                                                    const hasHindi = exam?.hindi_status;
+
+                                                                    // Count available languages
+                                                                    const availableLanguages = [hasEnglish, hasTamil, hasHindi].filter(Boolean).length;
+
+                                                                    // Only show selector if more than one language is available
+                                                                    if (availableLanguages <= 1) return null;
+
+                                                                    const currentLang = selectedLanguage[examId] || 'english';
+
+                                                                    return (
+                                                                        <div className="mb-3 pb-3 border-b border-gray-200">
+                                                                            <p className="text-xs text-gray-600 mb-2 text-center font-medium">PDF Language:</p>
+                                                                            <div className="flex gap-2 justify-center">
+                                                                                {hasEnglish && (
+                                                                                    <button
+                                                                                        onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'english' }))}
+                                                                                        className={`text-xs px-3 py-1 rounded-full transition-all ${currentLang === 'english'
+                                                                                                ? 'bg-blue-600 text-white'
+                                                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                                                            }`}
+                                                                                    >
+                                                                                        English
+                                                                                    </button>
+                                                                                )}
+                                                                                {hasTamil && (
+                                                                                    <button
+                                                                                        onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'tamil' }))}
+                                                                                        className={`text-xs px-3 py-1 rounded-full transition-all ${currentLang === 'tamil'
+                                                                                                ? 'bg-blue-600 text-white'
+                                                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                                                            }`}
+                                                                                    >
+                                                                                        தமிழ்
+                                                                                    </button>
+                                                                                )}
+                                                                                {hasHindi && (
+                                                                                    <button
+                                                                                        onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'hindi' }))}
+                                                                                        className={`text-xs px-3 py-1 rounded-full transition-all ${currentLang === 'hindi'
+                                                                                                ? 'bg-blue-600 text-white'
+                                                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                                                            }`}
+                                                                                    >
+                                                                                        हिंदी
+                                                                                    </button>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })()}
+
                                                                 {/* Action Buttons */}
                                                                 <div className="flex justify-between space-x-2">
                                                                     {(() => {
                                                                         const examId = pdf.exams[0]?._id;
+                                                                        const id = pdf.exams[0]?._id;
 
                                                                         // 🔒 LOCKED: If content is paid & user has no subscription
                                                                         if (pdf.exams[0]?.result_type === "paid" && !hasActiveSubscription()) {
@@ -634,11 +704,11 @@ const PdfCourse = () => {
                                                                                     onClick={() => {
                                                                                         const results = resultData?.[examId];
                                                                                         if (results?.status === "completed") {
-                                                                                            openNewWindow(`/pdf/MockResult/${examId}`);
+                                                                                            openNewWindow(`/pdf/result/${id}/${user._id}`);
                                                                                         } else if (results?.status === "paused") {
-                                                                                            openNewWindow(`/pdf/test/${examId}`);
+                                                                                            openNewWindow(`/pdf/mocktest/${id}/${user._id}`);
                                                                                         } else {
-                                                                                            openNewWindow(`/instruction/${examId}`);
+                                                                                            openNewWindow(`/pdf/instruction/${id}/${user._id}`);
                                                                                         }
                                                                                     }}
                                                                                 >
