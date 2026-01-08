@@ -174,7 +174,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
                 orderId: response.razorpay_order_id,
                 signature: response.razorpay_signature,
                 amount: finalPrice,
-                expiryDays: data.months*28,
+                expiryDays: data.months*30,
                 subscriptions: true,
                 subscriptionId: data._id,
               }),
