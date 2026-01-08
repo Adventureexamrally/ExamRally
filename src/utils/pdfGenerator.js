@@ -157,6 +157,179 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   /* -------- TEXT PRINTER -------- */
 
+  // Decode HTML entities (e.g., &times; → ×, &divide; → ÷)
+  const decodeHtmlEntities = (text) => {
+    const entityMap = {
+      // Basic arithmetic
+      "&times;": "×",
+      "&divide;": "÷",
+      "&plus;": "+",
+      "&minus;": "−",
+      "&equals;": "=",
+      "&plusmn;": "±",
+
+      // Comparison & Relations
+      "&lt;": "<",
+      "&gt;": ">",
+      "&le;": "≤",
+      "&ge;": "≥",
+      "&ne;": "≠",
+      "&equiv;": "≡",
+      "&asymp;": "≈",
+      "&cong;": "≅",
+      "&prop;": "∝",
+
+      // Fractions & Powers
+      "&frac12;": "½",
+      "&frac14;": "¼",
+      "&frac34;": "¾",
+      "&frac13;": "⅓",
+      "&frac23;": "⅔",
+      "&sup2;": "²",
+      "&sup3;": "³",
+      "&sup1;": "¹",
+
+      // Set Theory & Logic
+      "&isin;": "∈",
+      "&notin;": "∉",
+      "&sub;": "⊂",
+      "&sube;": "⊆",
+      "&sup;": "⊃",
+      "&supe;": "⊇",
+      "&cup;": "∪",
+      "&cap;": "∩",
+      "&empty;": "∅",
+      "&exist;": "∃",
+      "&forall;": "∀",
+      "&and;": "∧",
+      "&or;": "∨",
+      "&not;": "¬",
+      "&rArr;": "⇒",
+      "&lArr;": "⇐",
+      "&hArr;": "⇔",
+      "&rarr;": "→",
+      "&larr;": "←",
+      "&harr;": "↔",
+
+      // Greek Letters (lowercase)
+      "&alpha;": "α",
+      "&beta;": "β",
+      "&gamma;": "γ",
+      "&delta;": "δ",
+      "&epsilon;": "ε",
+      "&zeta;": "ζ",
+      "&eta;": "η",
+      "&theta;": "θ",
+      "&iota;": "ι",
+      "&kappa;": "κ",
+      "&lambda;": "λ",
+      "&mu;": "μ",
+      "&nu;": "ν",
+      "&xi;": "ξ",
+      "&omicron;": "ο",
+      "&pi;": "π",
+      "&rho;": "ρ",
+      "&sigma;": "σ",
+      "&tau;": "τ",
+      "&upsilon;": "υ",
+      "&phi;": "φ",
+      "&chi;": "χ",
+      "&psi;": "ψ",
+      "&omega;": "ω",
+
+      // Greek Letters (uppercase)
+      "&Alpha;": "Α",
+      "&Beta;": "Β",
+      "&Gamma;": "Γ",
+      "&Delta;": "Δ",
+      "&Epsilon;": "Ε",
+      "&Zeta;": "Ζ",
+      "&Eta;": "Η",
+      "&Theta;": "Θ",
+      "&Iota;": "Ι",
+      "&Kappa;": "Κ",
+      "&Lambda;": "Λ",
+      "&Mu;": "Μ",
+      "&Nu;": "Ν",
+      "&Xi;": "Ξ",
+      "&Omicron;": "Ο",
+      "&Pi;": "Π",
+      "&Rho;": "Ρ",
+      "&Sigma;": "Σ",
+      "&Tau;": "Τ",
+      "&Upsilon;": "Υ",
+      "&Phi;": "Φ",
+      "&Chi;": "Χ",
+      "&Psi;": "Ψ",
+      "&Omega;": "Ω",
+
+      // Calculus & Analysis
+      "&int;": "∫",
+      "&sum;": "∑",
+      "&prod;": "∏",
+      "&part;": "∂",
+      "&nabla;": "∇",
+      "&infin;": "∞",
+      "&lim;": "lim",
+      "&sqrt;": "√",
+      "&radic;": "√",
+
+      // Other Math
+      "&deg;": "°",
+      "&prime;": "′",
+      "&Prime;": "″",
+      "&permil;": "‰",
+      "&perp;": "⊥",
+      "&ang;": "∠",
+      "&parallel;": "∥",
+
+      // Standard HTML
+      "&amp;": "&",
+      "&quot;": '"',
+      "&apos;": "'",
+      "&nbsp;": " ",
+      "&ndash;": "-",
+      "&mdash;": "—",
+      "&lsquo;": "'",
+      "&rsquo;": "'",
+      "&ldquo;": "\u201C",
+      "&rdquo;": "\u201D",
+      "&hellip;": "…",
+      "&bull;": "•",
+      "&middot;": "·",
+
+      // Numeric codes (common math symbols)
+      "&#8800;": "≠",
+      "&#8804;": "≤",
+      "&#8805;": "≥",
+      "&#8730;": "√",
+      "&#178;": "²",
+      "&#179;": "³",
+      "&#8734;": "∞",
+      "&#8721;": "∑",
+      "&#8747;": "∫",
+      "&#8706;": "∂",
+    };
+
+    let decoded = text;
+    Object.entries(entityMap).forEach(([entity, char]) => {
+      decoded = decoded.replace(
+        new RegExp(entity.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+        char
+      );
+    });
+
+    // Handle numeric entities (&#xxx; or &#xXX;)
+    decoded = decoded.replace(/&#(\d+);/g, (match, dec) =>
+      String.fromCharCode(dec)
+    );
+    decoded = decoded.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    );
+
+    return decoded;
+  };
+
   const printText = (text, size = 11, style = "normal", indent = 0) => {
     if (!text) return;
 
@@ -164,8 +337,10 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     doc.setFontSize(size);
     doc.setTextColor(0);
 
-    const cleanText = text.replace(/<[^>]+>/g, "");
-    const lines = doc.splitTextToSize(cleanText, CONTENT_WIDTH - indent);
+    const cleanText = text.replace(/\<[^\>]+\>/g, "");
+    const decodedText = decodeHtmlEntities(cleanText);
+
+    const lines = doc.splitTextToSize(decodedText, CONTENT_WIDTH - indent);
 
     lines.forEach((line) => {
       checkPageBreak();
