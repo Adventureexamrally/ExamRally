@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { fonts } from "./fonts.js";
 
 /* ================= IMAGE HELPERS ================= */
 
@@ -6,6 +7,7 @@ const LOGO_URL = "https://examrally.in/assets/logo-DuhjVB4Q.png";
 const LOGO_WIDTH = 25; // mm
 
 let cachedLogo = null;
+let fontsRegistered = false;
 
 const loadImage = (url) =>
   new Promise((resolve, reject) => {
@@ -16,6 +18,35 @@ const loadImage = (url) =>
     img.onerror = reject;
   });
 
+const registerFonts = (doc) => {
+  if (fontsRegistered || !fonts) return;
+
+  try {
+    // Register Tamil font if available
+    if (fonts.NotoSansTamil) {
+      doc.addFileToVFS("NotoSansTamil-Regular.ttf", fonts.NotoSansTamil);
+      doc.addFont("NotoSansTamil-Regular.ttf", "NotoSansTamil", "normal");
+    }
+
+    // Register Devanagari (Hindi) font if available
+    if (fonts.NotoSansDevanagari) {
+      doc.addFileToVFS(
+        "NotoSansDevanagari-Regular.ttf",
+        fonts.NotoSansDevanagari
+      );
+      doc.addFont(
+        "NotoSansDevanagari-Regular.ttf",
+        "NotoSansDevanagari",
+        "normal"
+      );
+    }
+
+    fontsRegistered = true;
+  } catch (error) {
+    console.warn("Failed to register custom fonts:", error);
+  }
+};
+
 /* ================= MAIN FUNCTION ================= */
 
 export const generateImageEnabledPDF = async (questions, options = {}) => {
@@ -24,9 +55,21 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     sectionTitle = "1. Questions",
     explanationTitle = "2. Answer & Explanation",
     watermarkText = "ExamRally",
+    language = "english", // NEW: language parameter (english, hindi, tamil)
   } = options;
 
   const doc = new jsPDF("p", "mm", "a4");
+
+  /* -------- REGISTER FONTS -------- */
+  registerFonts(doc);
+
+  /* -------- SELECT FONT BASED ON LANGUAGE -------- */
+  let currentFont = "helvetica";
+  if (language === "tamil" && fonts.NotoSansTamil) {
+    currentFont = "NotoSansTamil";
+  } else if (language === "hindi" && fonts.NotoSansDevanagari) {
+    currentFont = "NotoSansDevanagari";
+  }
 
   /* -------- PAGE CONFIG -------- */
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -59,15 +102,10 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
     doc.setTextColor(235);
-    doc.text(
-      watermarkText,
-      pageWidth / 2,
-      pageHeight / 2,
-      {
-        align: "center",
-        angle: 45,
-      }
-    );
+    doc.text(watermarkText, pageWidth / 2, pageHeight / 2, {
+      align: "center",
+      angle: 45,
+    });
     doc.restoreGraphicsState();
   };
 
@@ -75,17 +113,9 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     addWatermark();
 
     if (cachedLogo) {
-      const logoHeight =
-        (cachedLogo.height * LOGO_WIDTH) / cachedLogo.width;
+      const logoHeight = (cachedLogo.height * LOGO_WIDTH) / cachedLogo.width;
 
-      doc.addImage(
-        cachedLogo,
-        "PNG",
-        MARGIN,
-        6,
-        LOGO_WIDTH,
-        logoHeight
-      );
+      doc.addImage(cachedLogo, "PNG", MARGIN, 6, LOGO_WIDTH, logoHeight);
     } else {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
@@ -108,12 +138,9 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     doc.line(MARGIN, pageHeight - 15, pageWidth - MARGIN, pageHeight - 15);
     doc.setFontSize(9);
     doc.setTextColor(120);
-    doc.text(
-      `Page ${pageNo} of ${total}`,
-      pageWidth - MARGIN,
-      pageHeight - 8,
-      { align: "right" }
-    );
+    doc.text(`Page ${pageNo} of ${total}`, pageWidth - MARGIN, pageHeight - 8, {
+      align: "right",
+    });
   };
 
   const newPage = () => {
@@ -133,15 +160,12 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
   const printText = (text, size = 11, style = "normal", indent = 0) => {
     if (!text) return;
 
-    doc.setFont("helvetica", style);
+    doc.setFont(currentFont, style);
     doc.setFontSize(size);
     doc.setTextColor(0);
 
     const cleanText = text.replace(/<[^>]+>/g, "");
-    const lines = doc.splitTextToSize(
-      cleanText,
-      CONTENT_WIDTH - indent
-    );
+    const lines = doc.splitTextToSize(cleanText, CONTENT_WIDTH - indent);
 
     lines.forEach((line) => {
       checkPageBreak();
