@@ -106,7 +106,7 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
   const MARGIN = 15;
   const HEADER_HEIGHT = 22;
   const FOOTER_HEIGHT = 15;
-  const LINE_HEIGHT = 7;
+  const LINE_HEIGHT = 6; // Reduced from 7 for tighter spacing
 
   const CONTENT_WIDTH = pageWidth - MARGIN * 2;
   const IMAGE_MAX_WIDTH = CONTENT_WIDTH * 0.65;
@@ -125,11 +125,14 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   /* -------- HEADER / FOOTER / WATERMARK -------- */
 
+  /* -------- HEADER / FOOTER / WATERMARK -------- */
+
   const addWatermark = () => {
+    if (!watermarkText) return;
     doc.saveGraphicsState();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
-    doc.setTextColor(235);
+    doc.setTextColor(230, 230, 230); // Very light gray
     doc.text(watermarkText, pageWidth / 2, pageHeight / 2, {
       align: "center",
       angle: 45,
@@ -155,18 +158,21 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       );
     } else {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(37, 138, 20);
-      doc.text("ExamRally", MARGIN, 12);
+      doc.setFontSize(14);
+      doc.setTextColor(37, 138, 20); // Green
+      doc.text("examrally", MARGIN, 14);
     }
 
-    doc.setFontSize(11);
+    // Exam Title on Right
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
     doc.setTextColor(0);
-    doc.text(title, pageWidth / 2, 12, { align: "center" });
+    doc.text(title, pageWidth - MARGIN, 14, { align: "right" });
 
+    // Green Underline
     doc.setDrawColor(37, 138, 20);
     doc.setLineWidth(0.5);
-    doc.line(MARGIN, 16, pageWidth - MARGIN, 16);
+    doc.line(MARGIN, 18, pageWidth - MARGIN, 18);
   };
 
   const addFooter = (pageNo, total) => {
@@ -380,7 +386,7 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       doc.setFont(segment.font, segment.style);
       doc.setFontSize(segment.size);
       doc.setTextColor(0);
-      doc.text(segment.text, segment.x, cursorY);
+      doc.text(segment.text, segment.x, cursorY + (segment.offsetY || 0));
     });
 
     cursorY += LINE_HEIGHT;
@@ -388,32 +394,72 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     currentX = MARGIN;
   };
 
-  const printStyledText = (text, size = 11, style = "normal", indent = 0) => {
+  const printStyledText = (
+    text,
+    size = 11,
+    style = "normal",
+    indent = 0,
+    offsetY = 0
+  ) => {
     if (!text) return;
+
+    // 1. Decode HTML entities FIRST so that split logic works on actual characters
+    // This ensures &times; becomes × and is caught by the math symbol regex
+    let decodedText = decodeHtmlEntities(text);
+
+    // 2. Normalize non-breaking spaces to regular spaces to prevent "9 0" gaps
+    decodedText = decodedText.replace(/\u00A0/g, " ");
 
     const targetIndent = MARGIN + indent;
     if (currentX < targetIndent) currentX = targetIndent;
 
     // Split text into words while keeping whitespace
-    const words = text.split(/(\s+)/);
+    const words = decodedText.split(/(\s+)/);
 
     words.forEach((word) => {
       if (!word) return;
 
-      // Handle Rupee symbol fallback character by character
-      const segments = word.split(/(₹|&#8377;|\u20B9)/g);
+      // Split by:
+      // 1. Math symbols (×, ÷, +, −, =, *, |, √)
+      // 2. Rupee symbol
+      // 3. Hindi Blocks (\u0900-\u097F)
+      // 4. Tamil Blocks (\u0B80-\u0BFF)
+      const segments = word.split(
+        /(₹|&#8377;|\u20B9|×|÷|\+|−|=|[*]|\||√|[\u0900-\u097F]+|[\u0B80-\u0BFF]+)/g
+      );
 
       segments.forEach((seg) => {
         if (!seg) return;
 
         let font = baseFont;
         let activeStyle = style;
-        let activeText = decodeHtmlEntities(seg);
 
-        if (activeText === "₹" || seg === "&#8377;" || seg === "\u20B9") {
-          font = "NotoSansDevanagari";
+        // seg is already decoded
+        let activeText = seg;
+
+        // Check for specific content types to switch fonts
+
+        // 1. Square Root -> Use Symbol Font (Code 214 / 0xD6)
+        // NotoSans and Helvetica fail to render √ correctly in generic mode
+        if (activeText === "√") {
+          font = "Symbol";
           activeStyle = "normal";
-          activeText = "₹";
+          activeText = String.fromCharCode(214);
+        }
+        // 2. Hindi Auto-detection (excluding √)
+        else if (/[\u0900-\u097F]/.test(activeText) || activeText === "₹") {
+          font = "NotoSansDevanagari";
+          activeStyle = "normal"; // Hindi font doesn't have bold, utilize normal
+        }
+        // 2. Tamil Auto-detection
+        else if (/[\u0B80-\u0BFF]/.test(activeText)) {
+          font = "NotoSansTamil";
+          activeStyle = "normal";
+        }
+        // 3. Math Symbols -> Force Helvetica
+        // Removed '√' from here as it needs a better font
+        else if (["×", "÷", "+", "−", "=", "*", "|"].includes(activeText)) {
+          font = "helvetica";
         }
 
         doc.setFont(font, activeStyle);
@@ -431,6 +477,7 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
           font,
           style: activeStyle,
           size,
+          offsetY, // Capture vertical offset
         });
         currentX += wordWidth;
       });
@@ -477,13 +524,22 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
   const renderHtml = async (html, indent = 0, defaultStyle = "normal") => {
     if (!html) return;
 
+    // Pre-clean HTML: remove empty paragraphs and repeated breaks
+    let cleanHtml = html
+      .replace(/<p[^>]*>\s*<br\s*\/?>\s*<\/p>/gi, "") // Remove <p><br></p>
+      .replace(/<p[^>]*>\s*&nbsp;\s*<\/p>/gi, "") // Remove <p>&nbsp;</p>
+      .replace(/<p[^>]*>\s*<\/p>/gi, "") // Remove empty <p>
+      .replace(/(<br\s*\/?>){2,}/gi, "<br/>"); // Collapse multiple <br>
+
     const container = document.createElement("div");
-    container.innerHTML = html;
+    container.innerHTML = cleanHtml;
 
     const processNodes = async (
       childNodes,
       currentIndent,
-      currentStyle = defaultStyle
+      currentStyle = defaultStyle,
+      currentSize = 11,
+      currentOffset = 0
     ) => {
       for (const node of Array.from(childNodes)) {
         const nodeName = node.nodeName ? node.nodeName.toUpperCase() : "";
@@ -495,6 +551,18 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
         } else if (node.querySelector && node.querySelector("img")) {
           flushLineBuffer();
           await printImage(node.querySelector("img").src);
+        }
+        // Handle Superscript (SUP)
+        else if (nodeName === "SUP") {
+          if (node.childNodes && node.childNodes.length > 0) {
+            await processNodes(
+              node.childNodes,
+              currentIndent,
+              currentStyle,
+              currentSize * 0.7, // Smaller font for superscript
+              currentOffset - 2 // Shift up (negative Y)
+            );
+          }
         }
         // Handle lists
         else if (nodeName === "UL" || nodeName === "OL") {
@@ -514,7 +582,13 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
         else if (node.nodeType === Node.TEXT_NODE) {
           const text = node.textContent;
           if (text) {
-            printStyledText(text, 11, currentStyle, currentIndent);
+            printStyledText(
+              text,
+              currentSize,
+              currentStyle,
+              currentIndent,
+              currentOffset
+            );
           }
         }
         // Handle elements
@@ -542,10 +616,23 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
           }
 
           if (node.childNodes && node.childNodes.length > 0) {
-            await processNodes(node.childNodes, currentIndent, nodeStyle);
+            await processNodes(
+              node.childNodes,
+              currentIndent,
+              nodeStyle,
+              currentSize,
+              currentOffset
+            );
           } else {
             const text = (node.innerText || "").trim();
-            if (text) printStyledText(text, 11, nodeStyle, currentIndent);
+            if (text)
+              printStyledText(
+                text,
+                currentSize,
+                nodeStyle,
+                currentIndent,
+                currentOffset
+              );
           }
 
           if (isBlock) {
@@ -566,8 +653,18 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   /* -------- QUESTIONS SECTION -------- */
 
-  printText(sectionTitle, 12, "bold");
-  cursorY += 4;
+  // Section Header with Background
+  doc.setFillColor(240, 240, 240); // Light Gray Background
+  doc.rect(MARGIN, cursorY, CONTENT_WIDTH, 8, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(37, 138, 20); // Green Text
+  doc.text("QUESTIONS", MARGIN + 2, cursorY + 5.5);
+  cursorY += 12;
+
+  // Directions (if any, typically first item or separate) - standard text color text reset
+  doc.setTextColor(0);
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
@@ -581,7 +678,15 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
     checkPageBreak(15);
     printStyledText(`Q${i + 1}. `, 11, "bold");
-    await renderHtml(q.question, 0, "bold");
+
+    // Strip surrounding <p> or <div> tags from question to keep it inline
+    // Handles attributes too, e.g. <p class="ql-align-justify">
+    const questionHtml = q.question.replace(
+      /^\s*<(p|div)[^>]*>(.*?)<\/\1>\s*$/i,
+      "$2"
+    );
+    await renderHtml(questionHtml, 0, "bold");
+
     flushLineBuffer();
     cursorY += 2;
 
@@ -589,7 +694,14 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       for (let j = 0; j < q.options.length; j++) {
         checkPageBreak(8);
         printStyledText(`${String.fromCharCode(97 + j)}. `, 11, "bold", 6);
-        await renderHtml(q.options[j], 6);
+
+        // Strip surrounding <p> or <div> tags from options
+        const optHtml = q.options[j].replace(
+          /^\s*<(p|div)[^>]*>(.*?)<\/\1>\s*$/i,
+          "$2"
+        );
+        await renderHtml(optHtml, 6);
+
         flushLineBuffer();
       }
     }
@@ -600,8 +712,17 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
   /* -------- EXPLANATION SECTION -------- */
 
   newPage();
-  printText(explanationTitle, 12, "bold");
-  cursorY += 6;
+
+  // Section Header with Background
+  doc.setFillColor(240, 240, 240); // Light Gray
+  doc.rect(MARGIN, cursorY, CONTENT_WIDTH, 8, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(37, 138, 20); // Green
+  doc.text("ANSWERS & EXPLANATIONS", MARGIN + 2, cursorY + 5.5);
+  cursorY += 12;
+  doc.setTextColor(0);
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
