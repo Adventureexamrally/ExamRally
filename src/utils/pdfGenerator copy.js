@@ -18,8 +18,8 @@ const loadImage = (url) =>
     img.onerror = reject;
   });
 
-const registerFonts = (doc, language) => {
-  if (!fonts) return;
+const registerFonts = (doc) => {
+  if (fontsRegistered || !fonts) return;
 
   const stripBase64Prefix = (str) => {
     if (typeof str !== "string") return str;
@@ -27,17 +27,24 @@ const registerFonts = (doc, language) => {
   };
 
   try {
-    // Register Tamil font if needed
-    if (language === "tamil" && fonts.NotoSansTamil) {
+    // Tamil Fonts
+    if (fonts.NotoSansTamil) {
       doc.addFileToVFS(
         "NotoSansTamil-Regular.ttf",
         stripBase64Prefix(fonts.NotoSansTamil)
       );
       doc.addFont("NotoSansTamil-Regular.ttf", "NotoSansTamil", "normal");
     }
+    if (fonts.NotoSansTamilBold) {
+      doc.addFileToVFS(
+        "NotoSansTamil-Bold.ttf",
+        stripBase64Prefix(fonts.NotoSansTamilBold)
+      );
+      doc.addFont("NotoSansTamil-Bold.ttf", "NotoSansTamil", "bold");
+    }
 
-    // Register Devanagari (Hindi) font if needed
-    if (language === "hindi" && fonts.NotoSansDevanagari) {
+    // Devanagari (Hindi) Fonts
+    if (fonts.NotoSansDevanagari) {
       doc.addFileToVFS(
         "NotoSansDevanagari-Regular.ttf",
         stripBase64Prefix(fonts.NotoSansDevanagari)
@@ -48,6 +55,15 @@ const registerFonts = (doc, language) => {
         "normal"
       );
     }
+    if (fonts.NotoSansDevanagariBold) {
+      doc.addFileToVFS(
+        "NotoSansDevanagari-Bold.ttf",
+        stripBase64Prefix(fonts.NotoSansDevanagariBold)
+      );
+      doc.addFont("NotoSansDevanagari-Bold.ttf", "NotoSansDevanagari", "bold");
+    }
+
+    fontsRegistered = true;
   } catch (error) {
     console.warn("Failed to register custom fonts:", error);
   }
@@ -61,43 +77,21 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     sectionTitle = "1. Questions",
     explanationTitle = "2. Answer & Explanation",
     watermarkText = "ExamRally",
-    language = "english", // NEW: language parameter (english, hindi, tamil)
+    language = "english",
   } = options;
 
-  // Detect if Rupee symbol is present in any content to trigger font fallback
-  const contentString = JSON.stringify(questions);
-  const hasRupeeSymbol =
-    contentString.includes("₹") ||
-    contentString.includes("&#8377;") ||
-    contentString.includes("\u20B9");
-
-  const doc = new jsPDF({
-    orientation: "p",
-    unit: "mm",
-    format: "a4",
-    compress: true,
-  });
+  const doc = new jsPDF("p", "mm", "a4");
 
   /* -------- REGISTER FONTS -------- */
-  // Always register fonts if they might be needed (for Rupee or Language)
-  const needsHindi =
-    language === "hindi" ||
-    contentString.includes("₹") ||
-    contentString.includes("&#8377;") ||
-    contentString.includes("\u20B9");
-  const needsTamil = language === "tamil";
+  registerFonts(doc);
 
-  if (needsHindi) registerFonts(doc, "hindi");
-  if (needsTamil) registerFonts(doc, "tamil");
-
-  /* -------- SELECT BASE FONT -------- */
-  const baseFont =
-    language === "tamil"
-      ? "NotoSansTamil"
-      : language === "hindi"
-      ? "NotoSansDevanagari"
-      : "helvetica";
-  let currentFont = baseFont;
+  /* -------- SELECT FONT BASED ON LANGUAGE -------- */
+  let currentFont = "helvetica";
+  if (language === "tamil" && fonts.NotoSansTamil) {
+    currentFont = "NotoSansTamil";
+  } else if (language === "hindi" && fonts.NotoSansDevanagari) {
+    currentFont = "NotoSansDevanagari";
+  }
 
   /* -------- PAGE CONFIG -------- */
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -142,17 +136,7 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
     if (cachedLogo) {
       const logoHeight = (cachedLogo.height * LOGO_WIDTH) / cachedLogo.width;
-
-      doc.addImage(
-        cachedLogo,
-        "PNG",
-        MARGIN,
-        6,
-        LOGO_WIDTH,
-        logoHeight,
-        undefined,
-        "FAST"
-      );
+      doc.addImage(cachedLogo, "PNG", MARGIN, 6, LOGO_WIDTH, logoHeight);
     } else {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
@@ -194,18 +178,14 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   /* -------- TEXT PRINTER -------- */
 
-  // Decode HTML entities (e.g., &times; → ×, &divide; → ÷)
   const decodeHtmlEntities = (text) => {
     const entityMap = {
-      // Basic arithmetic
       "&times;": "×",
       "&divide;": "÷",
       "&plus;": "+",
       "&minus;": "−",
       "&equals;": "=",
       "&plusmn;": "±",
-
-      // Comparison & Relations
       "&lt;": "<",
       "&gt;": ">",
       "&le;": "≤",
@@ -215,8 +195,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&asymp;": "≈",
       "&cong;": "≅",
       "&prop;": "∝",
-
-      // Fractions & Powers
       "&frac12;": "½",
       "&frac14;": "¼",
       "&frac34;": "¾",
@@ -225,8 +203,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&sup2;": "²",
       "&sup3;": "³",
       "&sup1;": "¹",
-
-      // Set Theory & Logic
       "&isin;": "∈",
       "&notin;": "∉",
       "&sub;": "⊂",
@@ -247,8 +223,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&rarr;": "→",
       "&larr;": "←",
       "&harr;": "↔",
-
-      // Greek Letters (lowercase)
       "&alpha;": "α",
       "&beta;": "β",
       "&gamma;": "γ",
@@ -273,8 +247,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&chi;": "χ",
       "&psi;": "ψ",
       "&omega;": "ω",
-
-      // Greek Letters (uppercase)
       "&Alpha;": "Α",
       "&Beta;": "Β",
       "&Gamma;": "Γ",
@@ -299,8 +271,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&Chi;": "Χ",
       "&Psi;": "Ψ",
       "&Omega;": "Ω",
-
-      // Calculus & Analysis
       "&int;": "∫",
       "&sum;": "∑",
       "&prod;": "∏",
@@ -310,8 +280,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&lim;": "lim",
       "&sqrt;": "√",
       "&radic;": "√",
-
-      // Other Math
       "&deg;": "°",
       "&prime;": "′",
       "&Prime;": "″",
@@ -319,8 +287,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&perp;": "⊥",
       "&ang;": "∠",
       "&parallel;": "∥",
-
-      // Standard HTML
       "&amp;": "&",
       "&quot;": '"',
       "&apos;": "'",
@@ -334,8 +300,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&hellip;": "…",
       "&bull;": "•",
       "&middot;": "·",
-
-      // Numeric codes (common math symbols)
       "&#8800;": "≠",
       "&#8804;": "≤",
       "&#8805;": "≥",
@@ -346,7 +310,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       "&#8721;": "∑",
       "&#8747;": "∫",
       "&#8706;": "∂",
-      "&#8377;": "₹",
     };
 
     let decoded = text;
@@ -356,116 +319,128 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
         char
       );
     });
-
-    // Handle numeric entities (&#xxx; or &#xXX;)
     decoded = decoded.replace(/&#(\d+);/g, (match, dec) =>
       String.fromCharCode(dec)
     );
     decoded = decoded.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) =>
       String.fromCharCode(parseInt(hex, 16))
     );
-
     return decoded;
   };
 
-  // RICH TEXT RENDERING HELPERS
-  let lineBuffer = [];
-  let currentX = MARGIN;
+  /**
+   * Prints text that can contain inline bold tags (<b> or <strong>).
+   * It handles word wrapping and style changes mid-line.
+   */
+  const printRichText = (
+    htmlText,
+    size = 11,
+    defaultStyle = "normal",
+    indent = 0
+  ) => {
+    if (!htmlText) return;
 
-  const flushLineBuffer = () => {
-    if (lineBuffer.length === 0) return;
+    // 1. Parse HTML into simple chunks of { text, style }
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlText;
 
-    checkPageBreak();
-    lineBuffer.forEach((segment) => {
-      doc.setFont(segment.font, segment.style);
-      doc.setFontSize(segment.size);
-      doc.setTextColor(0);
-      doc.text(segment.text, segment.x, cursorY);
-    });
-
-    cursorY += LINE_HEIGHT;
-    lineBuffer = [];
-    currentX = MARGIN;
-  };
-
-  const printStyledText = (text, size = 11, style = "normal", indent = 0) => {
-    if (!text) return;
-
-    const targetIndent = MARGIN + indent;
-    if (currentX < targetIndent) currentX = targetIndent;
-
-    // Split text into words while keeping whitespace
-    const words = text.split(/(\s+)/);
-
-    words.forEach((word) => {
-      if (!word) return;
-
-      // Handle Rupee symbol fallback character by character
-      const segments = word.split(/(₹|&#8377;|\u20B9)/g);
-
-      segments.forEach((seg) => {
-        if (!seg) return;
-
-        let font = baseFont;
-        let activeStyle = style;
-        let activeText = decodeHtmlEntities(seg);
-
-        if (activeText === "₹" || seg === "&#8377;" || seg === "\u20B9") {
-          font = "NotoSansDevanagari";
-          activeStyle = "normal";
-          activeText = "₹";
+    const chunks = [];
+    const walk = (node, currentStyle) => {
+      if (node.nodeType === 3) {
+        // Text node
+        if (node.nodeValue) {
+          chunks.push({ text: node.nodeValue, style: currentStyle });
         }
-
-        doc.setFont(font, activeStyle);
-        doc.setFontSize(size);
-        const wordWidth = doc.getTextWidth(activeText);
-
-        if (currentX + wordWidth > MARGIN + CONTENT_WIDTH - 2) {
-          flushLineBuffer();
-          currentX = targetIndent;
+      } else if (node.nodeType === 1) {
+        // Element node
+        let nextStyle = currentStyle;
+        if (["B", "STRONG"].includes(node.nodeName)) {
+          nextStyle = "bold";
         }
+        for (const child of node.childNodes) {
+          walk(child, nextStyle);
+        }
+      }
+    };
+    walk(tempDiv, defaultStyle);
 
-        lineBuffer.push({
-          text: activeText,
-          x: currentX,
-          font,
-          style: activeStyle,
-          size,
-        });
-        currentX += wordWidth;
+    // 2. Wrap chunks into lines manually since jsPDF doesn't support mixed styles in splitTextToSize
+    const lines = [];
+    let currentLine = [];
+    let currentLineWidth = 0;
+    const maxWidth = CONTENT_WIDTH - indent;
+
+    const wordsWithStyles = [];
+    chunks.forEach((chunk) => {
+      const decoded = decodeHtmlEntities(chunk.text);
+      // We need to keep track of spaces too
+      const tokens = decoded.split(/(\s+)/);
+      tokens.forEach((token) => {
+        if (token) {
+          wordsWithStyles.push({ text: token, style: chunk.style });
+        }
       });
     });
+
+    wordsWithStyles.forEach((item) => {
+      doc.setFont(currentFont, item.style);
+      doc.setFontSize(size);
+      const wordWidth = doc.getTextWidth(item.text);
+
+      if (
+        currentLineWidth + wordWidth > maxWidth &&
+        currentLine.length > 0 &&
+        !item.text.match(/^\s+$/)
+      ) {
+        lines.push(currentLine);
+        currentLine = [];
+        currentLineWidth = 0;
+        // If it was just a space that caused overflow at the start of a new line, skip it
+        if (item.text.match(/^\s+$/)) return;
+      }
+
+      currentLine.push(item);
+      currentLineWidth += wordWidth;
+    });
+    if (currentLine.length > 0) lines.push(currentLine);
+
+    // 3. Print lines
+    lines.forEach((line) => {
+      checkPageBreak();
+      let xOffset = MARGIN + indent;
+      line.forEach((item) => {
+        doc.setFont(currentFont, item.style);
+        doc.setFontSize(size);
+        doc.text(item.text, xOffset, cursorY);
+        xOffset += doc.getTextWidth(item.text);
+      });
+      cursorY += LINE_HEIGHT;
+    });
   };
 
+  // Keep original printText for backwards compatibility if needed, but it just calls printRichText now
   const printText = (text, size = 11, style = "normal", indent = 0) => {
-    printStyledText(text, size, style, indent);
-    flushLineBuffer();
+    printRichText(text, size, style, indent);
   };
 
   /* -------- IMAGE PRINTER -------- */
 
   const printImage = async (url) => {
     if (!url) return;
-
     try {
       const img = await loadImage(url);
-
       let imgW = img.width;
       let imgH = img.height;
-
       const scale = Math.min(
         IMAGE_MAX_WIDTH / imgW,
         IMAGE_MAX_HEIGHT / imgH,
         1
       );
-
       imgW *= scale;
       imgH *= scale;
-
       checkPageBreak(imgH + 6);
-
       const x = MARGIN + (CONTENT_WIDTH - imgW) / 2;
-      doc.addImage(img, "JPEG", x, cursorY, imgW, imgH, undefined, "FAST");
+      doc.addImage(img, "PNG", x, cursorY, imgW, imgH);
       cursorY += imgH + 6;
     } catch {
       console.warn("Image load failed:", url);
@@ -474,90 +449,42 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   /* -------- HTML RENDERER -------- */
 
-  const renderHtml = async (html, indent = 0, defaultStyle = "normal") => {
+  const renderHtml = async (html, indent = 0) => {
     if (!html) return;
 
     const container = document.createElement("div");
     container.innerHTML = html;
 
-    const processNodes = async (
-      childNodes,
-      currentIndent,
-      currentStyle = defaultStyle
-    ) => {
-      for (const node of Array.from(childNodes)) {
-        const nodeName = node.nodeName ? node.nodeName.toUpperCase() : "";
+    for (const node of Array.from(container.childNodes)) {
+      if (node.nodeType === 3) {
+        // Text node
+        const val = node.nodeValue.trim();
+        if (val) printRichText(val, 11, "normal", indent);
+        continue;
+      }
 
-        // Handle images
-        if (nodeName === "IMG") {
-          flushLineBuffer();
-          await printImage(node.src);
-        } else if (node.querySelector && node.querySelector("img")) {
-          flushLineBuffer();
+      if (node.nodeName === "P") {
+        if (node.querySelector("img")) {
           await printImage(node.querySelector("img").src);
-        }
-        // Handle lists
-        else if (nodeName === "UL" || nodeName === "OL") {
-          flushLineBuffer();
-          for (const li of node.querySelectorAll("li")) {
-            printStyledText(
-              `• ${li.innerText.trim()}`,
-              11,
-              currentStyle,
-              currentIndent + 4
-            );
-            flushLineBuffer();
-          }
-          cursorY += 2;
-        }
-        // Handle text nodes
-        else if (node.nodeType === Node.TEXT_NODE) {
-          const text = node.textContent;
+        } else {
+          const text = node.innerHTML.trim();
           if (text) {
-            printStyledText(text, 11, currentStyle, currentIndent);
-          }
-        }
-        // Handle elements
-        else if (node.nodeType === Node.ELEMENT_NODE) {
-          const isBlock = ["P", "DIV", "H1", "H2", "H3", "BR"].includes(
-            nodeName
-          );
-          if (isBlock) flushLineBuffer();
-
-          let nodeStyle = currentStyle;
-          // Support multiple bold tags and inline styles
-          if (
-            ["B", "STRONG", "H1", "H2", "H3"].includes(nodeName) ||
-            (node.style &&
-              (node.style.fontWeight === "bold" ||
-                node.style.fontWeight === "700"))
-          ) {
-            nodeStyle = "bold";
-          }
-          if (
-            ["I", "EM"].includes(nodeName) ||
-            (node.style && node.style.fontStyle === "italic")
-          ) {
-            nodeStyle = nodeStyle === "bold" ? "bolditalic" : "italic";
-          }
-
-          if (node.childNodes && node.childNodes.length > 0) {
-            await processNodes(node.childNodes, currentIndent, nodeStyle);
-          } else {
-            const text = (node.innerText || "").trim();
-            if (text) printStyledText(text, 11, nodeStyle, currentIndent);
-          }
-
-          if (isBlock) {
-            flushLineBuffer();
+            printRichText(text, 11, "normal", indent);
             cursorY += 2;
           }
         }
+      } else if (node.nodeName === "UL") {
+        for (const li of node.querySelectorAll("li")) {
+          printRichText(`• ${li.innerHTML}`, 11, "normal", indent + 4);
+        }
+        cursorY += 2;
+      } else if (node.nodeName === "DIV") {
+        const text = node.innerHTML.trim();
+        if (text) {
+          printRichText(text, 11, "normal", indent);
+        }
       }
-    };
-
-    await processNodes(container.childNodes, indent, defaultStyle);
-    flushLineBuffer();
+    }
   };
 
   /* ================= START PDF ================= */
@@ -571,7 +498,6 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
-
     checkPageBreak(25);
 
     if (q.common_data) {
@@ -579,21 +505,19 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       cursorY += 4;
     }
 
-    checkPageBreak(15);
-    printStyledText(`Q${i + 1}. `, 11, "bold");
-    await renderHtml(q.question, 0, "bold");
-    flushLineBuffer();
+    printText(`Q${i + 1}. ${q.question}`, 11, "bold");
     cursorY += 2;
 
     if (q.options?.length) {
       for (let j = 0; j < q.options.length; j++) {
-        checkPageBreak(8);
-        printStyledText(`${String.fromCharCode(97 + j)}. `, 11, "bold", 6);
-        await renderHtml(q.options[j], 6);
-        flushLineBuffer();
+        printText(
+          `${String.fromCharCode(97 + j)}. ${q.options[j]}`,
+          11,
+          "normal",
+          5
+        );
       }
     }
-
     cursorY += 6;
   }
 
@@ -605,29 +529,24 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
-
     checkPageBreak(30);
 
-    printStyledText(`Q${i + 1}.`, 11, "bold");
-    flushLineBuffer();
+    printText(`Q${i + 1}.`, 11, "bold");
     cursorY += 2;
 
     if (q.answer !== undefined) {
-      const answerText =
-        typeof q.answer === "number"
-          ? String.fromCharCode(65 + q.answer)
-          : q.answer;
-      printStyledText(`Correct Answer: `, 11, "bold", 5);
-      printStyledText(`${answerText}`, 11, "normal", 0);
-      flushLineBuffer();
+      printText(
+        `Correct Answer: ${String.fromCharCode(65 + q.answer)}`,
+        11,
+        "bold",
+        5
+      );
       cursorY += 2;
     }
 
     if (q.explanation) {
       await renderHtml(q.explanation, 5);
-      flushLineBuffer();
     }
-
     cursorY += 6;
   }
 
