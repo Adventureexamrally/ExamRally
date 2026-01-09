@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Api from "../service/Api";
 import AOS from "aos";
@@ -56,128 +56,156 @@ const Packagename = () => {
     setTimer(600); // Reset Timer on topic change
   };
 
-  const [resultData, setResultData] = useState(null);
-
+  const [resultData, setResultData] = useState({});
   const { user, utcNow } = useContext(UserContext);
-  // console.log(user)
-const fetchPackageContent = async () => {
-  try {
-    const res = await Api.get(`packages/package-content/${id}`);
-    const packageData = res.data.data[0];
 
-    setData(packageData);
-    setFaqs(packageData.faqs);
+  const fetchPackageContent = async () => {
+    try {
+      const res = await Api.get(`packages/package-content/${id}`);
+      const packageData = res.data.data[0];
 
-    // Reset result data before fetching new results
-    setResultData({});
+      setData(packageData);
+      setFaqs(packageData.faqs);
 
-    // If user exists, fetch results
-    if (user?._id && packageData?.exams?.length > 0) {
-      const resultPromises = packageData.exams.map(async (test) => {
-        try {
-          const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
-          return {
-            testId: test._id,
-            result: resultRes.data
-          };
-        } catch (err) {
-          console.error("Error fetching result for test:", test._id, err);
-          return null;
-        }
-      });
+      // Reset result data before fetching new results
+      setResultData({});
 
-      const results = await Promise.all(resultPromises);
-      results.forEach(item => {
-        if (item && (item.result?.status === "completed" || item.result?.status === "paused")) {
-          setResultData(prev => ({
-            ...prev,
-            [item.testId]: {
-              ...item.result,
-              lastQuestionIndex: item.result.lastVisitedQuestionIndex,
-              selectedOptions: item.result.selectedOptions,
-            },
-          }));
-        }
-      });
+      // If user exists, fetch results
+      if (user?._id && packageData?.exams?.length > 0) {
+        const resultPromises = packageData.exams.map(async (test) => {
+          try {
+            const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
+            return {
+              testId: test._id,
+              result: resultRes.data
+            };
+          } catch (err) {
+            console.error("Error fetching result for test:", test._id, err);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(resultPromises);
+        results.forEach(item => {
+          if (item && (item.result?.status === "completed" || item.result?.status === "paused")) {
+            setResultData(prev => ({
+              ...prev,
+              [item.testId]: {
+                ...item.result,
+                lastQuestionIndex: item.result.lastVisitedQuestionIndex,
+                selectedOptions: item.result.selectedOptions,
+              },
+            }));
+          }
+        });
+      }
+
+      if (typeof run === "function") {
+        run();
+      }
+
+    } catch (err) {
+      console.error("Error fetching package content:", err);
     }
+  };
 
-    if (typeof run === "function") {
-      run();
-    }
-
-  } catch (err) {
-    console.error("Error fetching package content:", err);
-  }
-};
-
-// Make sure to call fetchPackageContent when component mounts and when user changes
-useEffect(() => {
-  fetchPackageContent();
-}, [id, user?._id]);  // Add dependencies here
   useEffect(() => {
-fetchPackageContent()
-
-  if (id && user?._id) {
     fetchPackageContent();
-  }
+  }, [id, user?._id]);
 
-}, [id, user?._id]); // re-run on route change or new user
-useEffect(() => {
-  console.log("ResultData updated:", resultData);
-  // You can add other logic here to respond to resultData changes
-}, [JSON.stringify(resultData)]);
+  useEffect(() => {
+    if (user?._id && data?.exams?.length > 0) {
+      data.exams.forEach((test) => {
+        if (test?._id) {
+          Api.get(`/results/${user._id}/${test._id}`)
+            .then((res) => {
+              if (res.data?.status === "completed" || res.data?.status === "paused") {
+                setResultData((prev) => ({
+                  ...prev,
+                  [test._id]: {
+                    ...res.data,
+                    lastQuestionIndex: res.data.lastVisitedQuestionIndex,
+                    selectedOptions: res.data.selectedOptions,
+                  },
+                }));
+                storeTestStatus(
+                  test._id,
+                  res.data.status,
+                  res.data.lastVisitedQuestionIndex,
+                  res.data.selectedOptions
+                );
+              }
+            })
+            .catch((err) => {
+              console.error("Error fetching result:", err);
+              const storedStatus = getTestStatusFromStorage(test._id);
+              if (storedStatus) {
+                setResultData((prev) => ({
+                  ...prev,
+                  [test._id]: {
+                    status: storedStatus.status,
+                    lastVisitedQuestionIndex: storedStatus.lastQuestionIndex,
+                    selectedOptions: storedStatus.selectedOptions,
+                  },
+                }));
+              }
+            });
+        }
+      });
+    }
+  }, [data?.exams, user?._id]);
 
-// useEffect(() => {
-//   const handleVisibilityChange = async () => {
-//     if (document.visibilityState === "visible") {
-//       console.log("User returned to tab");
-//       if (user?._id && id) {
-//         try {
-//           let shouldReload = false;
+  // useEffect(() => {
+  //   const handleVisibilityChange = async () => {
+  //     if (document.visibilityState === "visible") {
+  //       console.log("User returned to tab");
+  //       if (user?._id && id) {
+  //         try {
+  //           let shouldReload = false;
 
-//           const res = await Api.get(`packages/package-content/${id}`);
-//           const freshPackageData = res.data.data[0];
+  //           const res = await Api.get(`packages/package-content/${id}`);
+  //           const freshPackageData = res.data.data[0];
 
-//           console.log("Package Content:", res.data);
-//           console.log("wednesday", freshPackageData);
+  //           console.log("Package Content:", res.data);
+  //           console.log("wednesday", freshPackageData);
 
-//           setData(freshPackageData);
-//           setFaqs(freshPackageData.faqs);
+  //           setData(freshPackageData);
+  //           setFaqs(freshPackageData.faqs);
 
-//           if (freshPackageData?.exams?.length > 0) {
-//             for (const test of freshPackageData.exams) {
-//               const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
-//               const result = resultRes.data;
+  //           if (freshPackageData?.exams?.length > 0) {
+  //             for (const test of freshPackageData.exams) {
+  //               const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
+  //               const result = resultRes.data;
 
-//               if (result?.status === "completed" || result?.status === "paused") {
-//                 shouldReload = true;
-//                 setResultData((prev) => ({
-//                   ...prev,
-//                   [test._id]: {
-//                     ...result,
-//                     lastQuestionIndex: result.lastVisitedQuestionIndex,
-//                     selectedOptions: result.selectedOptions,
-//                   },
-//                 }));
-//               }
-//             }
-//           }
+  //               if (result?.status === "completed" || result?.status === "paused") {
+  //                 shouldReload = true;
+  //                 setResultData((prev) => ({
+  //                   ...prev,
+  //                   [test._id]: {
+  //                     ...result,
+  //                     lastQuestionIndex: result.lastVisitedQuestionIndex,
+  //                     selectedOptions: result.selectedOptions,
+  //                   },
+  //                 }));
+  //               }
+  //             }
+  //           }
 
-//           if (shouldReload) {
-//             window.location.reload();
-//           }
-//         } catch (err) {
-//           console.error("Error fetching result for tests:", err);
-//         }
-//       }
-//     }
-//   };
+  //           if (shouldReload) {
+  //             window.location.reload();
+  //           }
+  //         } catch (err) {
+  //           console.error("Error fetching result for tests:", err);
+  //         }
+  //       }
+  //     }
+  //   };
 
-//   document.addEventListener("visibilitychange", handleVisibilityChange);
-//   return () => {
-//     document.removeEventListener("visibilitychange", handleVisibilityChange);
-//   };
-// }, [user?._id, id]);
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, [user?._id, id]);
 
 
   // Fetch test result
@@ -275,39 +303,51 @@ useEffect(() => {
   }, []);
   // console.log(data);
   const [isEnrolled, setIsEnrolled] = useState(false);
-        const [expiredate, setExpirydate] = useState();
-  
+  const [expiredate, setExpirydate] = useState();
+
   const status = true;
 
-  
-// 1. Fetch UTC time from server
+
+  // 1. Fetch UTC time from server
 
 
-useEffect(() => {
-  if (!utcNow || (!user?.enrolledCourses && !user?.subscriptions)) return;
+  useEffect(() => {
+    if (!utcNow || (!user?.enrolledCourses && !user?.subscriptions)) return;
 
-  const checkExpiry = (course) => {
-    const expireDate = new Date(course?.expiryDate);
-    const timeDiff = expireDate.getTime() - utcNow.getTime();
-    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+    const checkExpiry = (course) => {
+      const expireDate = new Date(course?.expiryDate);
+      const timeDiff = expireDate.getTime() - utcNow.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
 
-    if (
-      !isNaN(daysLeft) &&
-      daysLeft >= 0 &&
-      course?.courseId?.includes(data._id)
-    ) {
-      setExpirydate(daysLeft); // Set days left
-      return true;
-    }
+      if (
+        !isNaN(daysLeft) &&
+        daysLeft >= 0 &&
+        course?.courseId?.includes(data._id)
+      ) {
+        setExpirydate(daysLeft); // Set days left
+        return true;
+      }
 
-    return false;
-  };
+      return false;
+    };
 
-  const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
-  const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
+    const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+    const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
 
-  setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
-}, [user, data, utcNow,isEnrolled,expiredate]);
+    setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+  }, [user, data, utcNow, isEnrolled, expiredate]);
+
+  const availableYears = useMemo(() => {
+    if (!data?.exams) return [];
+    const years = new Set();
+    data.exams.forEach(test => {
+      if (test.live_date) {
+        years.add(new Date(test.live_date).getFullYear());
+      }
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [data?.exams]);
+
 
   console.log("check", user?.enrolledCourses);
 
@@ -395,110 +435,189 @@ useEffect(() => {
   const isPaidTest = (test) => {
     return test?.result_type?.toLowerCase() === "paid";
   };
-useEffect(() => {
-  window.addEventListener("focus", fetchPackageContent);
-  return () => {
-    window.removeEventListener("focus", fetchPackageContent);
-  };
-}, []);
-// In the component where you take the test (mocktest/instruction pages)
-useEffect(() => {
-  return () => {
-    // This will run when component unmounts (when you navigate back)
-    if (window.opener) {
-      window.opener.postMessage('refresh-needed', '*');
-    }
-  };
-}, []);
+  useEffect(() => {
+    window.addEventListener("focus", fetchPackageContent);
+    return () => {
+      window.removeEventListener("focus", fetchPackageContent);
+    };
+  }, []);
+  // In the component where you take the test (mocktest/instruction pages)
+  useEffect(() => {
+    return () => {
+      // This will run when component unmounts (when you navigate back)
+      if (window.opener) {
+        window.opener.postMessage('refresh-needed', '*');
+      }
+    };
+  }, []);
 
   // Utility functions for localStorage
-const getTestStatusFromStorage = (testId) => {
-  const storedResults = localStorage.getItem('testResults');
-  if (!storedResults) return null;
-  
-  try {
-    const results = JSON.parse(storedResults);
-    return results[testId] || null;
-  } catch (error) {
-    console.error('Error parsing stored test results:', error);
-    return null;
-  }
-};
+  const getTestStatusFromStorage = (testId) => {
+    const storedResults = localStorage.getItem('testResults');
+    if (!storedResults) return null;
 
-const storeTestStatus = (testId, status, lastQuestionIndex = null, selectedOptions = null) => {
-  const storedResults = localStorage.getItem('testResults') || '{}';
-  
-  try {
-    const results = JSON.parse(storedResults);
-    results[testId] = {
-      status,
-      lastQuestionIndex,
-      selectedOptions,
-      timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('testResults', JSON.stringify(results));
-  } catch (error) {
-    console.error('Error storing test result:', error);
-  }
-};
-
-useEffect(() => {
-  if (user?._id) {
-    data?.exams?.forEach((test) => {
-      if(test?._id){
-      // First try to get from API
-      Api.get(`/results/${user?._id}/${test._id}`)
-        .then((res) => {
-          if (res.data?.status === "completed" || res.data?.status === "paused") {
-            setResultData((prev) => ({
-              ...prev,
-              [test._id]: {
-                ...res.data,
-                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-                selectedOptions: res.data.selectedOptions,
-              },
-            }));
-            // Also store in localStorage
-            storeTestStatus(
-              test._id,
-              res.data.status,
-              res.data.lastVisitedQuestionIndex,
-              res.data.selectedOptions
-            );
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching result:", err);
-          // If API fails, check localStorage
-          const storedStatus = getTestStatusFromStorage(test._id);
-          if (storedStatus) {
-            setResultData((prev) => ({
-              ...prev,
-              [test._id]: {
-                status: storedStatus.status,
-                lastVisitedQuestionIndex: storedStatus.lastQuestionIndex,
-                selectedOptions: storedStatus.selectedOptions,
-              },
-            }));
-          }
-        });
-      }
-    });
-  }
-}, [data?.exams, user?._id]);
-
-
-// And in your main component add this effect:
-useEffect(() => {
-  const handleMessage = (event) => {
-    if (event.data === 'refresh-needed') {
-      forceRefresh();
+    try {
+      const results = JSON.parse(storedResults);
+      return results[testId] || null;
+    } catch (error) {
+      console.error('Error parsing stored test results:', error);
+      return null;
     }
   };
 
-  window.addEventListener('message', handleMessage);
-  return () => window.removeEventListener('message', handleMessage);
-}, []);
+  const storeTestStatus = (testId, status, lastQuestionIndex = null, selectedOptions = null) => {
+    const storedResults = localStorage.getItem('testResults') || '{}';
+
+    try {
+      const results = JSON.parse(storedResults);
+      results[testId] = {
+        status,
+        lastQuestionIndex,
+        selectedOptions,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('testResults', JSON.stringify(results));
+    } catch (error) {
+      console.error('Error storing test result:', error);
+    }
+  };
+
+  // TestCard Component for optimization
+  const TestCard = ({ test }) => {
+    const status = resultData?.[test._id]?.status || getTestStatusFromStorage(test._id)?.status;
+
+    return (
+      <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
+        <div className="card-body text-center flex flex-col justify-evenly">
+          <h5 className="card-title font-bold text-">{test.exam_name}</h5>
+          <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
+
+          {!showDifficulty[test._id] ? (
+            <button
+              onClick={() => handleShowLevelClick(test._id)}
+              className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
+            >
+              Show Level
+            </button>
+          ) : (
+            <div className="mt-2 text-sm rounded px-2 py-2 text-center text-white bg-[#131656]">
+              <p>
+                <strong>{test.q_level.toUpperCase()}</strong>
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-around items-center gap-4 mt-2">
+            <div className="flex flex-col items-center">
+              <p className="font-medium">Quez</p>
+              <p className="flex items-center gap-1">
+                <BsQuestionSquare size={20} color="orange" />
+                {test.t_questions}
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="font-medium">Marks</p>
+              <p className="flex items-center gap-1">
+                <BsSpeedometer2 size={20} color="green" />
+                {test.t_marks}
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="font-medium">Time</p>
+              <p className="flex items-center gap-1">
+                <MdOutlineAccessTime size={20} color="red" />
+                {test.duration} Min
+              </p>
+            </div>
+          </div>
+          <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
+          <div className="flex justify-center items-center py-2 px-4 text-center w-full">
+            <div className="flex items-center gap-2">
+              <i className="bi bi-translate text-gray-500"></i>
+              <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
+                <span className="font-semibold text-gray-600">Language:</span>
+                {test.show_language}
+              </p>
+            </div>
+          </div>
+
+          {(!isEnrolled &&
+            (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) ||
+            (isEnrolled && expiredate !== undefined && expiredate < 0) ? (
+            <button
+              className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
+              disabled
+            >
+              <div className="flex items-center justify-center font-semibold gap-1">
+                <IoMdLock />
+                Locked
+              </div>
+            </button>
+          ) : isEnrolled && new Date(test.live_date) > utcNow ? (
+            <div
+              className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
+            ${test.show_date
+                  ? "border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed"
+                  : "text-red-400 border-2 border-gray-200 cursor-not-allowed"
+                }
+            shadow-md hover:shadow-lg`}
+            >
+              {test.show_date
+                ? `Available from ${new Date(test.live_date).toLocaleString(
+                  "en-US",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  }
+                )}`
+                : "Coming Soon"}
+            </div>
+          ) : (
+            <button
+              className="mt-3 py-2 px-4 rounded w-full transition bg-green-500 text-white hover:bg-green-600"
+              onClick={() => {
+                if (!isSignedIn) {
+                  navigate("/sign-in");
+                  return;
+                }
+
+                if (status === "completed") {
+                  openNewWindow(`/result/${test._id}/${user?._id}`);
+                } else if (status === "paused") {
+                  openNewWindow(`/mocktest/${test._id}/${user?._id}`);
+                } else {
+                  openNewWindow(`/instruction/${test._id}/${user?._id}`);
+                }
+              }}
+            >
+              {status === "completed"
+                ? "View Result"
+                : status === "paused"
+                  ? "Resume"
+                  : "Take Test"}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+
+  // And in your main component add this effect:
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data === 'refresh-needed') {
+        fetchPackageContent();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
 
   return (
@@ -674,13 +793,11 @@ useEffect(() => {
                  </div> */}
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${
-                      activeSection === "prelims"
-                        ? "bg-[#131656] hover:bg-[#131656]"
-                        : "bg-green-500 hover:bg-green-600"
-                    }`}
+                    className={`btn w-100 mb-2 text-white ${activeSection === "prelims"
+                      ? "bg-[#131656] hover:bg-[#131656]"
+                      : "bg-green-500 hover:bg-green-600"
+                      }`}
                     onClick={handlePrelimsClick}
-                    // disabled={activeSection && activeSection !== "prelims"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
                   >
                     Prelims
@@ -688,13 +805,11 @@ useEffect(() => {
                 </div>
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${
-                      activeSection === "mains"
-                        ? "bg-[#131656] hover:bg-[#131656]"
-                        : "bg-green-500 hover:bg-green-600"
-                    }`}
+                    className={`btn w-100 mb-2 text-white ${activeSection === "mains"
+                      ? "bg-[#131656] hover:bg-[#131656]"
+                      : "bg-green-500 hover:bg-green-600"
+                      }`}
                     onClick={handleMainsClick}
-                    // disabled={activeSection && activeSection !== "mains"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
                   >
                     Mains
@@ -702,13 +817,11 @@ useEffect(() => {
                 </div>
                 <div className="col-md-2">
                   <button
-                    className={`btn w-100 mb-2 text-white ${
-                      activeSection === "PYQ"
-                        ? "bg-[#131656] hover:bg-[#131656]"
-                        : "bg-green-500 hover:bg-green-600"
-                    }`}
+                    className={`btn w-100 mb-2 text-white ${activeSection === "PYQ"
+                      ? "bg-[#131656] hover:bg-[#131656]"
+                      : "bg-green-500 hover:bg-green-600"
+                      }`}
                     onClick={handleUpdatesClick}
-                    // disabled={activeSection && activeSection !== "PYQ"}
                     style={{ fontFamily: "helvetica, Arial, sans-serif" }}
                   >
                     PYQ
@@ -716,584 +829,91 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* {activeSection === "All" && (
-            <div className="mt-3 bg-slate-50 py-2 px-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-                {data?.exams?.map((test, idx) => (
-                  <div key={idx} className="">
-                    <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                      <div className="card-body text-center flex flex-col justify-evenly">
-                        <h5 className="card-title font-bold text-">
-                          {test.exam_name}
-                        </h5>
-                        <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
-                       
-                        {!showDifficulty[test._id] ? (
-                          <button
-                            onClick={() => handleShowLevelClick(test._id)}
-                            className="text-white text-sm py-2 px-2 rounded my-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                          >
-                            Show Level
-                          </button>
-                        ) : (
-                          <div className="text-sm  my-2 px-2 py-2 rounded text-center text-white bg-[#131656]">
-                            <p>
-                              <strong>{test.q_level.toUpperCase()}</strong>
-                            </p>
-                          </div>
-                        )}
 
-                  
-                        <div className="flex justify-around items-center gap-4 mt-2">
-                          <div className="flex flex-col items-center">
-                            <p className="font-medium">Questions</p>
-                            <p className="flex items-center gap-1">
-                              <BsQuestionSquare size={20} color="orange" />
-                              {test.section[0].t_question}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <p className="font-medium">Marks</p>
-                            <p className="flex items-center gap-1">
-                              {" "}
-                              <ImCheckmark2 size={20} color="green" />
-                              {test.section[0].t_mark}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <p className="font-medium">Time</p>
-                            <p className="flex items-center gap-1">
-                              {" "}
-                              <MdOutlineAccessTime size={20} color="red" />
-                              {test.section[0].t_time}
-                            </p>
-
-      
-                          </div>
-                        </div>
-                        <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
-
-                       
-                        <button
-                          className={`mt-3 py-2 px-4 rounded w-full transition ${
-                            test.status === "true"
-                              ? "bg-green-500 text-white hover:bg-green-600"
-                              : "border-1 border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
-                          }`}
-                          onClick={() => {
-                            if (test.status === "true") {
-                              navigate(`/instruction/${test._id}`);
-                            } else {
-                              handleTopicSelect(test.section[0], "prelims");
-                            }
-                          }}
-                        >
-                          {test.status === "true" ? (
-                            "Take Test"
-                          ) : (
-                            <div className="flex items-center justify-center font-semibold gap-1">
-                              <IoMdLock />
-                              Lock
-                            </div>
-                          )}
-                        </button>
-                      </div>
-
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )} */}
+              {/* Prelims Topics */}
               {activeSection === "prelims" && (
                 <div className="mt-3 bg-slate-50 py-2 px-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-                    {data?.exams?.map(
-                      (test, idx) =>
-                        test.test_type === "Prelims" && (
-                          <div key={idx} className="">
-                            <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                              <div className="card-body text-center flex flex-col justify-evenly">
-                                <h5 className="card-title font-bold text-">
-                                  {test.exam_name}
-                                </h5>
-                                <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
+                  {availableYears.map(year => {
+                    const filteredExams = data?.exams?.filter(
+                      (test) => test.test_type === "Prelims" && new Date(test.live_date).getFullYear() === year
+                    );
 
-                                {/* Show Level Button */}
-                                {!showDifficulty[test._id] ? (
-                                  <button
-                                    onClick={() =>
-                                      handleShowLevelClick(test._id)
-                                    }
-                                    className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                                  >
-                                    Show Level
-                                  </button>
-                                ) : (
-                                  <div className="mt-2 text-sm rounded px-2 py-2 text-center text-white bg-[#131656]">
-                                    <p>
-                                      <strong>
-                                        {test.q_level.toUpperCase()}
-                                      </strong>
-                                    </p>
-                                  </div>
-                                )}
+                    if (!filteredExams || filteredExams.length === 0) return null;
 
-                                {/* Test Info Section */}
-                                <div className="flex justify-around items-center gap-4 mt-2">
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Quez</p>
-                                    <p className="flex items-center gap-1">
-                                      <BsQuestionSquare
-                                        size={20}
-                                        color="orange"
-                                      />
-                                      {test.t_questions}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Marks</p>
-                                    <p className="flex items-center gap-1">
-                                      {" "}
-                                      <BsSpeedometer2 size={20} color="green" />
-                                      {test.t_marks}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Time</p>
-                                    <p className="flex items-center gap-1">
-                                      {" "}
-                                      <MdOutlineAccessTime
-                                        size={20}
-                                        color="red"
-                                      />
-                                      {test.duration} Min
-                                    </p>
-                                  </div>
-                                </div>
-                                <hr className="h-px mt-3 bg-gray-200 border-0 dark:bg-gray-700" />
-<div className="flex justify-center items-center py-2 px-4 text-center w-full">
-  <div className="flex items-center gap-2">
-    <i className="bi bi-translate text-gray-500"></i>
-    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
-      <span className="font-semibold text-gray-600">Language:</span>
-      {test.show_language}
-    </p>
-  </div>
-</div>
-                                {/* Check if the current date is greater than or equal to live_date */}
-
-                        {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
-(isEnrolled && expiredate !== undefined && expiredate < 0) ? (
-  // 🔒 Locked if:
-  // - Not enrolled AND (test is paid OR not live), OR
-  // - Enrolled BUT course is expired
-  <button
-    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
-    disabled
-  >
-    <div className="flex items-center justify-center font-semibold gap-1">
-      <IoMdLock />
-      Locked
-    </div>
-  </button>
-)  : isEnrolled && new Date(test.live_date) > utcNow ? (
-  // 🚧 Coming Soon: Enrolled, but test not yet live
-  <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
-    ${
-      test.show_date
-        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed'
-        : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
-    }
-    shadow-md hover:shadow-lg`}>
-    {test.show_date
-      ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: true,
-        })}`
-      : 'Coming Soon'}
-  </div>
-) : (
-  // ✅ Actionable: Enrolled and test is live
-  <button
-    className={`mt-3 py-2 px-4 rounded w-full transition ${
-      (resultData?.[test._id]?.status === "completed" || 
-       getTestStatusFromStorage(test._id)?.status === "completed")
-        ? "bg-green-500 text-white hover:bg-green-600"
-        : (resultData?.[test._id]?.status === "paused" || 
-           getTestStatusFromStorage(test._id)?.status === "paused")
-        ? "bg-green-500 text-white hover:bg-green-600"
-        : "bg-green-500 text-white hover:bg-green-600"
-    }`}
-    onClick={() => {
-      if (!isSignedIn) {
-        const backdrop = document.querySelector(".modal-backdrop");
-        if (backdrop) backdrop.remove();
-        navigate("/sign-in");
-        return;
-      }
-
-      const status = resultData?.[test._id]?.status || 
-                    getTestStatusFromStorage(test._id)?.status;
-
-      if (status === "completed") {
-        openNewWindow(`/result/${test._id}/${user?._id}`);
-      } else if (status === "paused") {
-        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
-      } else {
-        openNewWindow(`/instruction/${test._id}/${user?._id}`);
-      }
-    }}
-  >
-    {resultData === undefined && getTestStatusFromStorage(test._id) === undefined ? (
-      "Loading..." // Show loading while checking test status
-    ) : (resultData?.[test._id]?.status === "completed" || 
-        getTestStatusFromStorage(test._id)?.status === "completed")
-      ? "View Result"
-      : (resultData?.[test._id]?.status === "paused" || 
-         getTestStatusFromStorage(test._id)?.status === "paused")
-      ? "Resume"
-      : "Take Test"}
-  </button>
-)}
-                              </div>
+                    return (
+                      <div key={year} className="mb-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <h2 className="text-xl font-bold text-gray-800">{year} Mock Test Series</h2>
+                          <div className="h-px flex-grow bg-gray-200"></div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
+                          {filteredExams.map((test, idx) => (
+                            <div key={test._id || idx}>
+                              <TestCard test={test} />
                             </div>
-                          </div>
-                        )
-                    )}
-                  </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
-              {/* Mains Topics - Bootstrap Cards */}
+              {/* Mains Topics */}
               {activeSection === "mains" && (
                 <div className="mt-3 bg-slate-50 py-2 px-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-                    {data?.exams?.map(
-                      (test, idx) =>
-                        test.test_type === "Mains" && (
-                          <div key={idx} className="">
-                            <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                              <div className="card-body text-center flex flex-col justify-evenly">
-                                <h5 className="card-title font-bold text-">
-                                  {test.exam_name}
-                                </h5>
-                                <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Show Level Button */}
-                                {!showDifficulty[test._id] ? (
-                                  <button
-                                    onClick={() =>
-                                      handleShowLevelClick(test._id)
-                                    }
-                                    className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                                  >
-                                    Show Level
-                                  </button>
-                                ) : (
-                                  <div className="mt-2 rounded text-sm px-2 py-2 text-center text-white bg-[#131656]">
-                                    <p>
-                                      <strong>
-                                        {test.q_level.toUpperCase()}
-                                      </strong>
-                                    </p>
-                                  </div>
-                                )}
+                  {availableYears.map(year => {
+                    const filteredExams = data?.exams?.filter(
+                      (test) => test.test_type === "Mains" && new Date(test.live_date).getFullYear() === year
+                    );
 
-                                {/* Test Info Section */}
-                                <div className="flex justify-around items-center gap-4 mt-2">
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Quez</p>
-                                    <p className="flex items-center gap-1">
-                                      <BsQuestionSquare
-                                        size={20}
-                                        color="orange"
-                                      />
-                                      {test.t_questions}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Marks</p>
-                                    <p className="flex items-center gap-1">
-                                      {" "}
-                                      <BsSpeedometer2 size={20} color="green" />
-                                      {test.t_marks}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Time</p>
-                                    <p className="flex items-center gap-1">
-                                      {" "}
-                                      <MdOutlineAccessTime
-                                        size={20}
-                                        color="red"
-                                      />
-                                      {test.duration} Min
-                                    </p>
-                                  </div>
-                                </div>
-                                <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                               <div className="flex justify-center items-center py-2 px-4 text-center w-full">
-  <div className="flex items-center gap-2">
-    <i className="bi bi-translate text-gray-500"></i>
-    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
-      <span className="font-semibold text-gray-600">Language:</span>
-      {test.show_language}
-    </p>
-  </div>
-</div>
-                                {/* Check if the current date is greater than or equal to live_date */}
+                    if (!filteredExams || filteredExams.length === 0) return null;
 
-                                    {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
-(isEnrolled && expiredate !== undefined && expiredate < 0) ? (
-  // 🔒 Locked if:
-  // - Not enrolled AND (test is paid OR not live), OR
-  // - Enrolled BUT course is expired
-  <button
-    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
-    disabled
-  >
-    <div className="flex items-center justify-center font-semibold gap-1">
-      <IoMdLock />
-      Locked
-    </div>
-  </button>
-) : isEnrolled && new Date(test.live_date) > utcNow ? (
-  // 🚧 Coming Soon: Enrolled, but test not yet live
-  <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
-    ${
-      test.show_date 
-        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
-        : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
-    }
-    shadow-md hover:shadow-lg`}>
-    {test.show_date
-      ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: true,
-        })}`
-      : 'Coming Soon'}
-  </div>
-) : (
-  // ✅ Actionable: Enrolled and test is live
-  <button
-    className={`mt-3 py-2 px-4 rounded w-full transition ${
-      (resultData?.[test._id]?.status === "completed" || 
-       getTestStatusFromStorage(test._id)?.status === "completed")
-        ? "bg-green-500 text-white hover:bg-green-600"
-        : (resultData?.[test._id]?.status === "paused" || 
-           getTestStatusFromStorage(test._id)?.status === "paused")
-        ? "bg-green-500 text-white hover:bg-green-600"
-        : "bg-green-500 text-white hover:bg-green-600"
-    }`}
-    onClick={() => {
-      if (!isSignedIn) {
-        const backdrop = document.querySelector(".modal-backdrop");
-        if (backdrop) backdrop.remove();
-        navigate("/sign-in");
-        return;
-      }
-
-      const status = resultData?.[test._id]?.status || 
-                    getTestStatusFromStorage(test._id)?.status;
-
-      if (status === "completed") {
-        openNewWindow(`/result/${test._id}/${user?._id}`);
-      } else if (status === "paused") {
-        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
-      } else {
-        openNewWindow(`/instruction/${test._id}/${user?._id}`);
-      }
-    }}
-  >
-    {resultData === undefined && getTestStatusFromStorage(test._id) === undefined ? (
-      "Loading..." // Show loading while checking test status
-    ) : (resultData?.[test._id]?.status === "completed" || 
-        getTestStatusFromStorage(test._id)?.status === "completed")
-      ? "View Result"
-      : (resultData?.[test._id]?.status === "paused" || 
-         getTestStatusFromStorage(test._id)?.status === "paused")
-      ? "Resume"
-      : "Take Test"}
-  </button>
-)}
-                              </div>
+                    return (
+                      <div key={year} className="mb-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <h2 className="text-xl font-bold text-gray-800">{year} Mock Test Series</h2>
+                          <div className="h-px flex-grow bg-gray-200"></div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
+                          {filteredExams.map((test, idx) => (
+                            <div key={test._id || idx}>
+                              <TestCard test={test} />
                             </div>
-                          </div>
-                        )
-                    )}
-                  </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
               {/* Previous Year Question Paper */}
               {activeSection === "PYQ" && (
                 <div className="mt-3 bg-slate-50 py-2 px-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 ">
-                    {data?.exams?.map(
-                      (test, idx) =>
-                        test.test_type === "PYQ" && (
-                          <div key={idx} className="">
-                            <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
-                              <div className="card-body text-center flex flex-col justify-evenly">
-                                <h5 className="card-title font-bold text-">
-                                  {test.exam_name}
-                                </h5>
-                                <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
-                                {/* Show Level Button */}
-                                {!showDifficulty[test._id] ? (
-                                  <button
-                                    onClick={() =>
-                                      handleShowLevelClick(test._id)
-                                    }
-                                    className="text-white py-2 px-2 rounded mt-2 w-full bg-[#131656] hover:bg-[#0f1245]"
-                                  >
-                                    Show Level
-                                  </button>
-                                ) : (
-                                  <div className="mt-2 rounded text-sm px-2 py-2 text-center text-white bg-[#131656]">
-                                    <p>
-                                      <strong>
-                                        {test.q_level.toUpperCase()}
-                                      </strong>
-                                    </p>
-                                  </div>
-                                )}
+                  {availableYears.map(year => {
+                    const filteredExams = data?.exams?.filter(
+                      (test) => test.test_type === "PYQ" && new Date(test.live_date).getFullYear() === year
+                    );
 
-                                {/* Test Info Section */}
-                                <div className="flex justify-around items-center gap-4 mt-2">
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Quez</p>
-                                    <p className="flex items-center gap-1">
-                                      <BsQuestionSquare
-                                        size={20}
-                                        color="orange"
-                                      />
-                                      {test.t_questions}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Marks</p>
-                                    <p className="flex items-center gap-1">
-                                      {" "}
-                                      <BsSpeedometer2 size={20} color="green" />
-                                      {test.t_marks}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <p className="font-medium">Time</p>
-                                    <p className="flex items-center gap-1">
-                                      {" "}
-                                      <MdOutlineAccessTime
-                                        size={20}
-                                        color="red"
-                                      />
-                                      {test.duration} Min
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
+                    if (!filteredExams || filteredExams.length === 0) return null;
+
+                    return (
+                      <div key={year} className="mb-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <h2 className="text-xl font-bold text-gray-800">{year} Mock Test Series</h2>
+                          <div className="h-px flex-grow bg-gray-200"></div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
+                          {filteredExams.map((test, idx) => (
+                            <div key={test._id || idx}>
+                              <TestCard test={test} />
                             </div>
-                            <hr className="h-px mt-4 bg-gray-200 border-0 dark:bg-gray-700" />
-                           <div className="flex justify-center items-center py-2 px-4 text-center w-full">
-  <div className="flex items-center gap-2">
-    <i className="bi bi-translate text-gray-500"></i>
-    <p className="font-medium text-gray-700 flex items-center gap-1 m-0 p-0">
-      <span className="font-semibold text-gray-600">Language:</span>
-      {test.show_language}
-    </p>
-  </div>
-</div>
-                            {/* Check if the current date is greater than or equal to live_date */}
-
-                                 {(!isEnrolled && (isPaidTest(test) || (utcNow && new Date(test.live_date) > utcNow))) || 
-(isEnrolled && expiredate !== undefined && expiredate < 0) ? (
-  // 🔒 Locked if:
-  // - Not enrolled AND (test is paid OR not live), OR
-  // - Enrolled BUT course is expired
-  <button
-    className="mt-3 py-2 px-4 rounded w-full border-2 border-green-600 text-green-600 cursor-not-allowed"
-    disabled
-  >
-    <div className="flex items-center justify-center font-semibold gap-1">
-      <IoMdLock />
-      Locked
-    </div>
-  </button>
-) :  isEnrolled && new Date(test.live_date) > utcNow ? (
-  // 🚧 Coming Soon: Enrolled, but test not yet live
-  <div className={`mt-3 fw-bold py-2 px-6 rounded-md text-center transition-all duration-200 
-    ${
-      test.show_date 
-        ? 'border-1 text-[#eb9534] border-red-700 py-0 px-0 text-wrap cursor-not-allowed' 
-        : 'text-red-400 border-2 border-gray-200 cursor-not-allowed'
-    }
-    shadow-md hover:shadow-lg`}>
-    {test.show_date
-      ? `Available from ${new Date(test.live_date).toLocaleString('en-US', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: true,
-        })}`
-      : 'Coming Soon'}
-  </div>
-) : (
-  // ✅ Actionable: Enrolled and test is live
-  <button
-    className={`mt-3 py-2 px-4 rounded w-full transition ${
-      (resultData?.[test._id]?.status === "completed" || 
-       getTestStatusFromStorage(test._id)?.status === "completed")
-        ? "bg-green-500 text-white hover:bg-green-600"
-        : (resultData?.[test._id]?.status === "paused" || 
-           getTestStatusFromStorage(test._id)?.status === "paused")
-        ? "bg-green-500 text-white hover:bg-green-600"
-        : "bg-green-500 text-white hover:bg-green-600"
-    }`}
-    onClick={() => {
-      if (!isSignedIn) {
-        const backdrop = document.querySelector(".modal-backdrop");
-        if (backdrop) backdrop.remove();
-        navigate("/sign-in");
-        return;
-      }
-
-      const status = resultData?.[test._id]?.status || 
-                    getTestStatusFromStorage(test._id)?.status;
-
-      if (status === "completed") {
-        openNewWindow(`/result/${test._id}/${user?._id}`);
-      } else if (status === "paused") {
-        openNewWindow(`/mocktest/${test._id}/${user?._id}`);
-      } else {
-        openNewWindow(`/instruction/${test._id}/${user?._id}`);
-      }
-    }}
-  >
-    {resultData === undefined && getTestStatusFromStorage(test._id) === undefined ? (
-      "Loading..." // Show loading while checking test status
-    ) : (resultData?.[test._id]?.status === "completed" || 
-        getTestStatusFromStorage(test._id)?.status === "completed")
-      ? "View Result"
-      : (resultData?.[test._id]?.status === "paused" || 
-         getTestStatusFromStorage(test._id)?.status === "paused")
-      ? "Resume"
-      : "Take Test"}
-  </button>
-)}
-                          </div>
-                        )
-                    )}
-                  </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1335,11 +955,10 @@ useEffect(() => {
                       className="border rounded-lg overflow-hidden shadow-sm "
                     >
                       <button
-                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${
-                          activeIndex === index
-                            ? "bg-green-100 text-green-700"
-                            : "hover:bg-gray-50"
-                        }`}
+                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${activeIndex === index
+                          ? "bg-green-100 text-green-700"
+                          : "hover:bg-gray-50"
+                          }`}
                         onClick={() => handleAccordionToggle(index)}
                       >
                         <span
@@ -1355,9 +974,8 @@ useEffect(() => {
                         </span>
                       </button>
                       <div
-                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${
-                          activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
-                        }`}
+                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
+                          }`}
                       >
                         <p
                           className="text-gray-600"
@@ -1377,95 +995,95 @@ useEffect(() => {
             {/* advertiswment part */}
             <div className="w-fill md:w-1/5 m-1">
               <div>
-              
 
-    <div className="relative flex flex-col w-full bg-cover rounded-xl shadow-md border-2">
-                <div className="absolute inset-0 z-[-10] border-2 rounded-xl "></div>
-  <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto">
 
-               <div className="mb-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-2 text-center" >Features</h2>
-      <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
-    </div>
-    
-              
-<div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{ 
-  scrollbarWidth: 'none',
-  msOverflowStyle: 'none',
-}}>  
-  <style jsx>{`
-    div::-webkit-scrollbar {
-      display: none;
-    }
-  `}</style>
- {data?.feature?.map((item, index) => (
-  <div key={index} className="flex items-start gap-3">
-    <div className="mt-1 text-green-500">
-      <i className="bi bi-check-circle-fill"></i>
-    </div>
-    <p className="text-gray-700">{item}</p>
-  </div>
-))}
+                <div className="relative flex flex-col w-full bg-cover rounded-xl shadow-md border-2">
+                  <div className="absolute inset-0 z-[-10] border-2 rounded-xl "></div>
+                  <div className="bg-white border-2 border-green-100 p-6 rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col overflow-y-auto">
 
-</div>
-               
-                {/* <img src={data.featurePhoto} alt="" /> */}
-                      <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
-      <div className="mb-2">
-        <del className="text-gray-500 font-medium">       Rs.{data.amount}</del>
-        <p className="ml-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
-         You Save Money: Rs. {data.amount - data.discountedAmount}
-        </p>
-      </div>
-      
-      
-      <button
-        
-         className={`px-3 py-1 font-bold rounded-full ${
-    isEnrolled 
-      ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
-      : "bg-green-500 text-gray-50 hover:bg-green-400"
-  }`}
-  onClick={() => {
-    if (!isSignedIn) {
-      navigate('/sign-in');
-    } else if (isEnrolled) {
-      // Do nothing or show a message if needed, since already purchased
-      console.log("Already enrolled");
-    } else {
-      setshowmodel(true);
-    }
-  }}
-     
-      >
-      
-       {expiredate
-                        ? isEnrolled
-                          ? "Purchased"
-                          : `Rs.${data.discountedAmount}`
-                        : `Rs.${data.discountedAmount}`}
-                    </button>
+                    <div className="mb-4">
+                      <h2 className="text-xl font-bold text-gray-800 mb-2 text-center" >Features</h2>
+                      <div className="w-120 mt-1 h-1 bg-green-500 rounded-full"></div>
+                    </div>
 
-                    {expiredate ? (
-                      <p className="text-md text-red-500 mt-2 font blink">
-                        <i className="bi bi-clock-history"></i> {expiredate} -
-                        Days Left
-                      </p>
-                    ) : (
-                      <p className="text-md text-gray-500 mt-2 font">
-                        <i className="bi bi-clock-history"></i> Limited Time
-                        offer
-                      </p>
-                    )}
-    </div>
-      </div>
-              </div>
-                  {showmodel && (
-                    <Coupon data={data} setshowmodel={setshowmodel} />
-                  )}
-              
 
-                
+                    <div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none',
+                    }}>
+                      <style dangerouslySetInnerHTML={{
+                        __html: `
+                      div::-webkit-scrollbar {
+                        display: none;
+                      }
+                    ` }} />
+                      {data?.feature?.map((item, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="mt-1 text-green-500">
+                            <i className="bi bi-check-circle-fill"></i>
+                          </div>
+                          <p className="text-gray-700">{item}</p>
+                        </div>
+                      ))}
+
+                    </div>
+
+                    {/* <img src={data.featurePhoto} alt="" /> */}
+                    <div className="mt-auto text-center bg-green-50 rounded-xl p-2 border border-blue-100">
+                      <div className="mb-2">
+                        <del className="text-gray-500 font-medium">       Rs.{data.amount}</del>
+                        <p className="ml-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+                          You Save Money: Rs. {data.amount - data.discountedAmount}
+                        </p>
+                      </div>
+
+
+                      <button
+
+                        className={`px-3 py-1 font-bold rounded-full ${isEnrolled
+                          ? "bg-[#000080] text-white cursor-not-allowed" // disabled style
+                          : "bg-green-500 text-gray-50 hover:bg-green-400"
+                          }`}
+                        onClick={() => {
+                          if (!isSignedIn) {
+                            navigate('/sign-in');
+                          } else if (isEnrolled) {
+                            // Do nothing or show a message if needed, since already purchased
+                            console.log("Already enrolled");
+                          } else {
+                            setshowmodel(true);
+                          }
+                        }}
+
+                      >
+
+                        {expiredate
+                          ? isEnrolled
+                            ? "Purchased"
+                            : `Rs.${data.discountedAmount}`
+                          : `Rs.${data.discountedAmount}`}
+                      </button>
+
+                      {expiredate ? (
+                        <p className="text-md text-red-500 mt-2 font blink">
+                          <i className="bi bi-clock-history"></i> {expiredate} -
+                          Days Left
+                        </p>
+                      ) : (
+                        <p className="text-md text-gray-500 mt-2 font">
+                          <i className="bi bi-clock-history"></i> Limited Time
+                          offer
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {showmodel && (
+                  <Coupon data={data} setshowmodel={setshowmodel} />
+                )}
+
+
+
                 {ad.length > 0 &&
                   ad.map((item, index) => (
                     <div

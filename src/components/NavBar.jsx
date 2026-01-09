@@ -203,12 +203,12 @@ const NavBar = () => {
             >
               Free PDF
             </Link>
-            {/* <Link
+            <Link
               to="/pdf-course"
               className="hover:text-blue-600 transition duration-300"
             >
               PDF Course
-            </Link> */}
+            </Link>
             <Link
               to="/blog"
               className="hover:text-blue-600 transition duration-300"
