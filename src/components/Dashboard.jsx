@@ -1,176 +1,208 @@
-import {  Link } from "react-router-dom";
-import Banner from "./Banner";
-// import { RiRobotFill } from "react-icons/ri";
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from "react-router-dom";
 import Api from "../service/Api";
-import { useState } from "react";
-import { useEffect } from "react";
-import { useRef } from "react";
+import { FaChevronLeft, FaChevronRight, FaFireAlt } from "react-icons/fa";
 import LiveTest from "./LiveTest/LiveTest";
 import TrendingPackages from "./TrendingPackages";
 import Archivements from "./Archivements";
+import PdfCourseAd from "./PdfCourseAd";
 
 const Dashboard = () => {
-  const IMG_URL = import.meta.env.VITE_APP_IMG_BASE_URL;
   const [packages, setPackages] = useState([]);
   const [scrollLinks, setScrollLinks] = useState([]);
-  console.log(packages);
+  const scrollContainerRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
-
+  // Fetching Packages (Trending Exams)
   const fetchPakages = async () => {
     try {
       const response = await Api.get("/packages/get/active");
-      console.log("ji", response.data)
       setPackages(response.data);
     } catch (error) {
       console.error(error);
     }
   };
+
+  // Fetching Top Ticker Links
   const fetchScrollLinks = async () => {
     try {
       const response = await Api.get("/links/all");
       if (response.status === 200) {
-        // The response.data will contain documents with links array
-        const allLinks = response.data.reduce((acc, entry) => {
-          // Combine all links from each entry
-          return acc.concat(entry.links);
-        }, []);
+        const allLinks = response.data.reduce((acc, entry) => acc.concat(entry.links), []);
         setScrollLinks(allLinks);
-        console.log("Links data:", allLinks);
       }
     } catch (error) {
-      console.error("Error fetching scroll links:", error.response?.data || error.message);
+      console.error("Error fetching scroll links:", error);
       setScrollLinks([]);
     }
   };
+
   useEffect(() => {
     fetchPakages();
     fetchScrollLinks();
   }, []);
 
-  // const [scrollPosition, setScrollPosition] = useState(0);
-  // console.log(scrollPosition);
-
-
-  const itemsPerView = 3; // Adjust based on screen size
-  const totalItems = packages.length;
-  const fg = Math.ceil(totalItems / itemsPerView) - 1;
-
-  // const handleLeftClick = () => {
-  //   setScrollPosition((prev) => Math.max(prev - 1, 0));
-  // };
-
-  // const handleRightClick = () => {
-  //   setScrollPosition((prev) => Math.min(prev + 1, maxScroll));
-  // };
-  const scrollContainerRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [maxScroll, setMaxScroll] = useState(0);
+  // Check scroll position to show/hide buttons
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
 
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      const containerWidth = scrollContainerRef.current.clientWidth;
-      const scrollWidth = scrollContainerRef.current.scrollWidth;
-      setMaxScroll(scrollWidth - containerWidth);
-    }
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
   }, [packages]);
 
-  const handleLeftClick = () => {
+  const handleScroll = (direction) => {
     if (scrollContainerRef.current) {
-      const newPosition = Math.max(scrollPosition - 200, 0);
-      scrollContainerRef.current.scrollTo({ left: newPosition, behavior: "smooth" });
-      setScrollPosition(newPosition);
+      const scrollAmount = 400;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
     }
   };
 
-  const handleRightClick = () => {
-    if (scrollContainerRef.current) {
-      const newPosition = Math.min(scrollPosition + 200, maxScroll);
-      scrollContainerRef.current.scrollTo({ left: newPosition, behavior: "smooth" });
-      setScrollPosition(newPosition);
-    }
-  };
   return (
-    <div className="bg-gray-100 min-h-screen p-2">
-      {/* Trending Links */}
-      <div className="mb-1 overflow-hidden">
-     
-      <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
-          {scrollLinks?.map((link, index) => (
-            <Link
-              key={index}
-              to={link.linkUrl}
-                className="text-md font-bold text-[#131656] hover:underline  flex items-center"
-            >
-              {link.linkName}
-              {index < scrollLinks.length - 1 && <span className="ml-4">|</span>}
-            </Link>
-          ))}
+    <div className="bg-slate-50/50 min-h-screen pb-10">
+      {/* 1. NEWS TICKER (Scrolling Links) */}
+      <div className="bg-white border-b border-emerald-50 py-2 shadow-sm overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-4 flex items-center">
+          {/* Label - Fixed in place */}
+          <div className="flex-shrink-0 bg-green-600 text-white text-[10px] font-black px-3 py-1 rounded-md mr-4 uppercase tracking-[0.2em] flex items-center gap-1.5 z-10 shadow-sm">
+            <FaFireAlt className="animate-pulse" /> Trending
+          </div>
+
+          {/* Ticker Container */}
+          <div className="relative flex-grow overflow-hidden">
+            <div className="ticker-wrapper flex items-center">
+              {/* We duplicate the list. 
+                   The animation moves from 0 to -50%. 
+                   Since the second half is identical to the first, 
+                   it snaps back to 0 seamlessly.
+                */}
+              <div className="ticker-content flex gap-12 items-center">
+                {[...scrollLinks, ...scrollLinks, ...scrollLinks].map((link, index) => (
+                  <Link
+                    key={index}
+                    to={link.linkUrl}
+                    className="text-sm font-bold text-slate-600 hover:text-green-600 transition-colors flex items-center gap-4 whitespace-nowrap"
+                  >
+                    {link.linkName}
+                    <span className="text-green-200 font-normal">|</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
-    </div>
-      {/* 
-      <div className="h-[30vh] w-full overflow-hidden rounded mb-4">
-        <Banner />
-      </div> */}
+      </div>
 
-  {/* Main Content */ }
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10 mt-2">
+        {/* <PdfCourseAd /> */}
 
-  <LiveTest />
+        <LiveTest />
 
+        {/* 2. TOP TRENDING EXAMS (Carousel) */}
+        <section className="bg-white p-6 sm:p-10 rounded-[2.5rem] border border-green-100 shadow-sm relative">
+          <div className="flex justify-between items-end mb-8 relative z-10">
+            <div>
+              <h3 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+                Top Trending <span className="text-green-600 italic font-serif font-medium">Exams</span>
+              </h3>
+              <p className="text-slate-400 text-sm font-medium mt-1">Select your goal to start practicing</p>
+            </div>
+          </div>
 
-  {/* Upcoming Exams */ }
-      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white" id="Top Trending Exams">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="font-bold text-lg">Top Trending Exams</h3>
+          <div className="group relative">
+            {/* Left Navigation Button */}
+            {canScrollLeft && (
+              <button
+                onClick={() => handleScroll('left')}
+                className="absolute -left-5 top-1/2 -translate-y-1/2 p-4 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
+              >
+                <FaChevronLeft size={18} />
+              </button>
+            )}
 
-        </div>
-
-        {/* Carousel Container */}
-        <div className="relative py-3 overflow-hidden">
-          {/* Left Button */}
-          {scrollPosition > 0 && (
-            <button
-              onClick={handleLeftClick}
-              className="absolute top-1/2 left-0 p-3 bg-blue-500 text-white rounded-full transform -translate-y-1/2 z-10 shadow-lg"
+            {/* Carousel Wrapper */}
+            <div
+              className="flex gap-6 overflow-x-auto scroll-smooth py-4 no-scrollbar"
+              ref={scrollContainerRef}
+              onScroll={checkScroll}
             >
-              <i className="bi bi-chevron-left"></i>
-            </button>
-          )}
-
-          {/* Exams Wrapper */}
-          <div className="overflow-hidden" ref={scrollContainerRef}>
-            <div className="flex space-x-5 sm:space-x-3 md:space-x-5 lg:space-x-8 transition-transform duration-300 ease-in-out">
               {packages.map((exam, index) => (
-                <div key={index} className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/5 lg:w-1/6">
-                  <Link to={`/top-trending-exams/${exam.link_name}`} className="text-sm font-medium text-gray-700">
-                    <div className="bg-blue-100 p-4 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300">
-                      <img
-                        src={exam.photo}
-                        alt={exam.name}
-                        className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
-                      />
-                      <p>{exam.name}</p>
+                <div key={index} className="flex-shrink-0 w-[140px] sm:w-[190px]">
+                  <Link to={`/top-trending-exams/${exam.link_name}`}>
+                    <div className="bg-white border border-slate-100 p-6 rounded-3xl text-center transition-all duration-300 hover:border-green-200 hover:shadow-2xl hover:shadow-green-100/50 hover:-translate-y-2 group/card">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 relative flex items-center justify-center">
+                        <div className="absolute inset-0 bg-green-50 rounded-2xl opacity-0 group-hover/card:opacity-100 scale-110 transition-all duration-300"></div>
+                        <img
+                          src={exam.photo}
+                          alt={exam.name}
+                          className="relative z-10 w-full h-full object-contain"
+                        />
+                      </div>
+                      <p className="text-slate-700 font-bold text-sm tracking-tight leading-tight group-hover/card:text-emerald-700">
+                        {exam.name}
+                      </p>
                     </div>
                   </Link>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Right Button */}
-          {scrollPosition < maxScroll && (
-            <button
-              onClick={handleRightClick}
-              className="absolute top-1/2 right-0 p-3 bg-blue-500 text-white rounded-full transform -translate-y-1/2 z-10 shadow-lg"
-            >
-              <i className="bi bi-chevron-right"></i>
-            </button>
-          )}
-        </div>
+            {/* Right Navigation Button */}
+            {canScrollRight && (
+              <button
+                onClick={() => handleScroll('right')}
+                className="absolute -right-5 top-1/2 -translate-y-1/2 p-4 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
+              >
+                <FaChevronRight size={18} />
+              </button>
+            )}
+          </div>
+        </section>
+
+        <TrendingPackages />
+        <Archivements />
       </div>
-      <TrendingPackages />
-          <Archivements/>
-    </div >
+
+      {/* Injected Styles for Ticker and Scrollbars */}
+      <style jsx>{`
+        .ticker-wrapper {
+            display: flex;
+            width: max-content; /* Critical: allows content to define width beyond 100% */
+            animation: ticker-loop 30s linear infinite;
+        }
+
+        .ticker-wrapper:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes ticker-loop {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                /* We move by 1/3 because we duplicated the array 3 times 
+                   to ensure no white space on extra wide screens */
+                transform: translateX(-33.33%);
+            }
+        }
+
+        .ticker-content {
+            display: flex;
+            flex-shrink: 0;
+        }
+    `}</style>
+    </div>
   );
 };
 

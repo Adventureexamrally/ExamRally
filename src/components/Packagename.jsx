@@ -341,8 +341,8 @@ const Packagename = () => {
     if (!data?.exams) return [];
     const years = new Set();
     data.exams.forEach(test => {
-      if (test.live_date) {
-        years.add(new Date(test.live_date).getFullYear());
+      if (test.exam_year) {
+        years.add(test.exam_year);
       }
     });
     return Array.from(years).sort((a, b) => b - a);
@@ -351,86 +351,7 @@ const Packagename = () => {
 
   console.log("check", user?.enrolledCourses);
 
-  // if (isEnrolled) {
-  //   console.log("Hii");
-  // } else if (status) {
-  //   console.log("bye");
-  // }
 
-  //  const loadRazorpayScript = () => {
-  //     return new Promise((resolve) => {
-  //       const script = document.createElement("script");
-  //       script.src = "https://checkout.razorpay.com/v1/checkout.js";
-  //       console.log(script.src);
-  //       script.onload = () => {
-  //         resolve(true);
-  //       };
-  //       script.onerror = () => {
-  //         resolve(false);
-  //       };
-  //       document.body.appendChild(script);
-  //     });
-  //   };
-
-  //   const paymentmeth = async (discountedAmount) => {
-  //     console.log("Join Payment");
-  //     try {
-  //       console.log("Join Payment Inner");
-  //       const res = await Api.post("/orders/orders", {
-  //         amount: discountedAmount * 100,
-  //         currency: "INR",
-  //         receipt: `${user?.email}`,
-  //       payment_capture: 1
-  //       });
-  //       console.log("data show that ", res.data);
-  //       console.log("Order response:", res.data);
-
-  //       // Load Razorpay script
-  //       const scriptLoaded = await loadRazorpayScript();
-  //       if (!scriptLoaded) {
-  //         alert(
-  //           "Failed to load Razorpay SDK. Please check your internet connection."
-  //         );
-  //         return;
-  //       }
-  //       const options = {
-  //         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-  //         amount: discountedAmount * 100,
-  //         currency: "INR",
-  //         name: data?.name,
-  //         description: "Test Payment",
-  //         handler: function (response) {
-  //           setResponseId(response.razorpay_payment_id);
-  //         },
-  //         prefill: {
-  //           name: user?.firstName,
-  //           email: user?.email,
-  //         },
-  //         theme: {
-  //           color: "#F4C430",
-  //         },
-  //         notes: {
-  //           user_id: user?._id,
-  //           course_id: data?._id,
-  //           courseName: data?.categorys,
-  //         },
-  //       };
-  // console.log("ji".options)
-  //       const paymentObject = new window.Razorpay(options);
-  //       paymentObject.open();
-  //       const rzp = new window.Razorpay(options);
-  //       rzp.open();
-
-  //       rzp.on("payment.failed", function (response) {
-  //         console.error("Payment failed", response.error);
-  //         alert("Payment failed. Please try again.");
-  //       });
-  //       console.log("ji".options)
-  //     } catch (error) {
-  //       console.error("Error during payment:", error);
-  //       alert(error.message);
-  //     }
-  //   };
 
   const isPaidTest = (test) => {
     return test?.result_type?.toLowerCase() === "paid";
@@ -767,13 +688,12 @@ const Packagename = () => {
           </Helmet>
           <div className="flex flex-col md:flex-row">
             <div className="container w-full md:w-4/5">
-              <div className="row">
-                <div>
-                  <h1
-                    className="leading-8 font h5"
-                    dangerouslySetInnerHTML={{ __html: data.description }}
-                  />
-                </div>
+              <div className="mb-6">
+                <h1
+                  className="text-2xl font-bold text-gray-900 mb-2"
+                  dangerouslySetInnerHTML={{ __html: data.description }}
+                />
+                <div className="h-1 w-20 bg-[#131656] rounded-full"></div>
               </div>
 
               <div className="row p-3 bg-light">
@@ -829,29 +749,41 @@ const Packagename = () => {
                 </div>
               </div>
 
-
               {/* Prelims Topics */}
               {activeSection === "prelims" && (
-                <div className="mt-3 bg-slate-50 py-2 px-2">
+                <div className="space-y-8 animate-fade-in">
                   {availableYears.map(year => {
                     const filteredExams = data?.exams?.filter(
-                      (test) => test.test_type === "Prelims" && new Date(test.live_date).getFullYear() === year
+                      (test) => test.test_type === "Prelims" && test.exam_year === year
                     );
 
                     if (!filteredExams || filteredExams.length === 0) return null;
 
                     return (
-                      <div key={year} className="mb-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <h2 className="text-xl font-bold text-gray-800">{year} Mock Test Series</h2>
-                          <div className="h-px flex-grow bg-gray-200"></div>
+                      <div
+                        key={year}
+                        className="mb-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                        style={{ border: '1px solid #22C55E' }}
+                      >
+                        {/* Header section inside border */}
+                        <div className="px-6 py-2">
+                          <h2 className="text-xl font-bold text-gray-800 text-start">
+                            {year} Prelims Mock Test Series
+                          </h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
-                          {filteredExams.map((test, idx) => (
-                            <div key={test._id || idx}>
-                              <TestCard test={test} />
-                            </div>
-                          ))}
+
+                        {/* Separator line */}
+                        <div style={{ borderTop: '1px solid #22C55E' }}></div>
+
+                        {/* Content section */}
+                        <div className="p-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredExams.map((test, idx) => (
+                              <div key={test._id || idx}>
+                                <TestCard test={test} />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     );
@@ -861,26 +793,39 @@ const Packagename = () => {
 
               {/* Mains Topics */}
               {activeSection === "mains" && (
-                <div className="mt-3 bg-slate-50 py-2 px-2">
+                <div className="space-y-8 animate-fade-in">
                   {availableYears.map(year => {
                     const filteredExams = data?.exams?.filter(
-                      (test) => test.test_type === "Mains" && new Date(test.live_date).getFullYear() === year
+                      (test) => test.test_type === "Mains" && test.exam_year === year
                     );
 
                     if (!filteredExams || filteredExams.length === 0) return null;
 
                     return (
-                      <div key={year} className="mb-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <h2 className="text-xl font-bold text-gray-800">{year} Mock Test Series</h2>
-                          <div className="h-px flex-grow bg-gray-200"></div>
+                      <div
+                        key={year}
+                        className="mb-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                        style={{ border: '1px solid #22C55E' }}
+                      >
+                        {/* Header section inside border */}
+                        <div className="px-6 py-2">
+                          <h2 className="text-xl font-bold text-gray-800 text-start">
+                            {year} Mains Mock Test Series
+                          </h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
-                          {filteredExams.map((test, idx) => (
-                            <div key={test._id || idx}>
-                              <TestCard test={test} />
-                            </div>
-                          ))}
+
+                        {/* Separator line */}
+                        <div style={{ borderTop: '1px solid #22C55E' }}></div>
+
+                        {/* Content section */}
+                        <div className="p-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredExams.map((test, idx) => (
+                              <div key={test._id || idx}>
+                                <TestCard test={test} />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     );
@@ -890,26 +835,39 @@ const Packagename = () => {
 
               {/* Previous Year Question Paper */}
               {activeSection === "PYQ" && (
-                <div className="mt-3 bg-slate-50 py-2 px-2">
+                <div className="space-y-8 animate-fade-in">
                   {availableYears.map(year => {
                     const filteredExams = data?.exams?.filter(
-                      (test) => test.test_type === "PYQ" && new Date(test.live_date).getFullYear() === year
+                      (test) => test.test_type === "PYQ" && test.exam_year === year
                     );
 
                     if (!filteredExams || filteredExams.length === 0) return null;
 
                     return (
-                      <div key={year} className="mb-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <h2 className="text-xl font-bold text-gray-800">{year} Mock Test Series</h2>
-                          <div className="h-px flex-grow bg-gray-200"></div>
+                       <div
+                        key={year}
+                        className="mb-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                        style={{ border: '1px solid #22C55E' }}
+                      >
+                        {/* Header section inside border */}
+                        <div className="px-6 py-2">
+                          <h2 className="text-xl font-bold text-gray-800 text-start">
+                            {year} PYQ Mock Test Series
+                          </h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
-                          {filteredExams.map((test, idx) => (
-                            <div key={test._id || idx}>
-                              <TestCard test={test} />
-                            </div>
-                          ))}
+
+                        {/* Separator line */}
+                        <div style={{ borderTop: '1px solid #22C55E' }}></div>
+
+                        {/* Content section */}
+                        <div className="p-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredExams.map((test, idx) => (
+                              <div key={test._id || idx}>
+                                <TestCard test={test} />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     );

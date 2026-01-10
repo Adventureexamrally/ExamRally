@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Api from "../../service/Api";
 import Banner from "../Banner";
+import PdfCourseAd from "../PdfCourseAd";
+
 
 
 const LiveTest = () => {
@@ -101,7 +103,9 @@ const LiveTest = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="col-span-full">
           <Banner />
+          <PdfCourseAd />
         </div>
+        {/* <PdfCourseAd /> */}
         {/* Topic Test */}
         {topics.map((title) => {
           const colors = topicColors[title] || ["bg-gray-100"]; // Fallback to gray if no specific colors are defined

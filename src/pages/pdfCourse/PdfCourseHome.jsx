@@ -229,11 +229,11 @@ const PdfCourseHome = () => {
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <p className="text-sm text-gray-600 mb-1">
+                <div className="mb-2">
+                  {/* <p className="text-sm text-gray-600 mb-1">
                     <span className="font-medium">Purchase and get validity till </span>
                     {getSubscriptionEndDate(plan.months)}
-                  </p>
+                  </p> */}
                   <p className="text-sm text-gray-600">
                     <span className="font-medium">Access:</span> {plan.months} months
                   </p>
