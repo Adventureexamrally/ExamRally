@@ -38,8 +38,8 @@ const PdfCourseAd = () => {
                             {/* Feature Highlights Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {/* Card 1 - Green to Blue */}
-                                <div className="relative p-[1px] bg-gradient-to-br from-green-400 to-blue-400 rounded-xl group hover:shadow-lg transition-shadow">
-                                    <div className="bg-white rounded-xl p-4 flex items-start gap-3">
+                                <div className="bg-gradient-to-br from-green-400 to-blue-400 p-[2px] rounded-xl hover:shadow-lg transition-shadow">
+                                    <div className="bg-white rounded-[10px] p-2 flex items-center gap-3 h-full">
                                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-50 to-blue-50 border border-green-100 rounded-xl flex items-center justify-center">
                                             <FaCalendarCheck className="text-green-600 text-sm" />
                                         </div>
@@ -51,8 +51,8 @@ const PdfCourseAd = () => {
                                 </div>
 
                                 {/* Card 2 - Purple to Pink */}
-                                <div className="relative p-[1px] bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl group hover:shadow-lg transition-shadow">
-                                    <div className="bg-white rounded-xl p-4 flex items-start gap-3">
+                                <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-[2px] rounded-xl hover:shadow-lg transition-shadow">
+                                    <div className="bg-white rounded-[10px] p-2 flex items-center gap-3 h-full">
                                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-xl flex items-center justify-center">
                                             <FaSync className="text-purple-600 text-sm" />
                                         </div>
@@ -64,21 +64,21 @@ const PdfCourseAd = () => {
                                 </div>
 
                                 {/* Card 3 - Orange to Amber */}
-                                <div className="relative p-[1px] bg-gradient-to-br from-orange-400 to-amber-400 rounded-xl group hover:shadow-lg transition-shadow">
-                                    <div className="bg-white rounded-xl p-4 flex items-start gap-3">
+                                <div className="bg-gradient-to-br from-orange-400 to-amber-400 p-[2px] rounded-xl hover:shadow-lg transition-shadow">
+                                    <div className="bg-white rounded-[11px] p-2 flex items-center gap-3 h-full">
                                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 rounded-xl flex items-center justify-center">
                                             <FaChartLine className="text-orange-600 text-sm" />
                                         </div>
                                         <div>
                                             <h4 className="text-slate-800 font-bold text-md">Trend Focused</h4>
-                                            <p className="text-slate-400 text-sm mt-0.5">Based on 2020-2025 patterns (Updated)</p>
+                                            <p className="text-slate-400 text-sm mt-0.5">Based on 2020-2025 IBPS and SBI Exam Pattern</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Card 4 - Emerald to Cyan */}
-                                <div className="relative p-[1px] bg-gradient-to-br from-emerald-400 to-cyan-400 rounded-xl group hover:shadow-lg transition-shadow">
-                                    <div className="bg-white rounded-xl p-4 flex items-start gap-3">
+                                <div className="bg-gradient-to-br from-emerald-400 to-cyan-400 p-[2px] rounded-xl hover:shadow-lg transition-shadow">
+                                    <div className="bg-white rounded-[10px] p-2 flex items-center gap-3 h-full">
                                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-100 rounded-xl flex items-center justify-center">
                                             <FaRupeeSign className="text-emerald-600 text-sm" />
                                         </div>
