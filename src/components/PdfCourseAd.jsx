@@ -93,15 +93,15 @@ const PdfCourseAd = () => {
                             <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-100">
                                 <div className="flex items-center gap-1.5">
                                     <FaCheckCircle className="text-green-600 text-sm" />
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider italic">Consistency.</span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Consistency.</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <FaCheckCircle className="text-green-600 text-sm" />
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider italic">Practice.</span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Practice.</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <FaCheckCircle className="text-green-600 text-sm" />
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider italic">Selection.</span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selection.</span>
                                 </div>
                             </div>
                         </div>
