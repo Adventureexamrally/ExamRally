@@ -70,7 +70,7 @@ const TrendingPackages = () => {
           <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
             Trending <span className="text-green-600 italic font-serif font-medium">Packages</span>
           </h1>
-          <p className="text-slate-400 text-sm font-medium mt-1">Our most popular 365-day banking prep bundles</p>
+          {/* <p className="text-slate-400 text-sm font-medium mt-1">Our most popular 365-day banking prep bundles</p> */}
         </div>
         <Link to='/All-Packages' className="group flex items-center gap-2 bg-green-50 text-green-700 px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:bg-green-600 hover:text-white">
           View All Library

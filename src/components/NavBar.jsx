@@ -378,12 +378,12 @@ const NavBar = () => {
             >
               Free PDF
             </Link>
-            {/* <Link
+            <Link
               to="/pdf-course"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
             >
               PDF Course
-            </Link> */}
+            </Link>
             <Link
               to="/blog"
               className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
@@ -405,7 +405,7 @@ const NavBar = () => {
 
       <Link
       to='/homelivetest'
-      className="block px-4 py-2 transition duration-300 flex items-center gap-2 hover:bg-blue-700 hover:text-white"
+      className=" px-4 py-2 transition duration-300 flex items-center gap-2 hover:bg-blue-700 hover:text-white"
     >
       Live Test 
 
