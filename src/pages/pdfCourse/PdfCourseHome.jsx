@@ -11,17 +11,17 @@ import { sanitizeHtml } from '../../utils/sanitizeHtml';
 const CourseLink = memo(({ to, title }) => (
   <Link
     to={to}
-    className="group flex flex-col items-center p-8 cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 w-full max-w-sm border-4 border-green-50 hover:border-green-200"
+    className="group flex flex-col items-center p-8 cursor-pointer bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-sm border border-slate-200 hover:border-green-300"
   >
-    <div className="bg-green-50 text-green-600 p-5 rounded-full mb-4 group-hover:bg-green-100 transition-colors duration-300">
-      <FaDesktop className="text-4xl" />
+    <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-6 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-md">
+      <FaDesktop className="text-5xl" />
     </div>
-    <h1 className="text-xl font-semibold text-gray-800 mb-2 text-center">
+    <h1 className="text-xl font-black text-slate-800 mb-2 text-center leading-tight">
       {title}
     </h1>
-    <div className="flex items-center text-green-600 mt-2 font-medium">
+    <div className="flex items-center text-green-600 mt-3 font-bold">
       <span>Explore Now</span>
-      <FaArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+      <FaArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-2" />
     </div>
   </Link>
 ));
@@ -29,13 +29,13 @@ CourseLink.displayName = 'CourseLink';
 
 // Memoized feature list
 const FeatureItem = memo(({ title, description }) => (
-  <li className="flex items-start">
-    <div className="bg-green-100 p-2 rounded-full mr-3">
-      <FaCheck className="text-green-600" />
+  <li className="flex items-start gap-3">
+    <div className="bg-green-100 p-2.5 rounded-xl flex-shrink-0">
+      <FaCheck className="text-green-600 text-sm" />
     </div>
     <div>
-      <h4 className="font-semibold text-gray-800">{title}</h4>
-      <p className="text-gray-600 text-sm">{description}</p>
+      <h4 className="font-bold text-slate-800 mb-1">{title}</h4>
+      <p className="text-slate-600 text-sm leading-relaxed">{description}</p>
     </div>
   </li>
 ));
@@ -163,13 +163,19 @@ const PdfCourseHome = () => {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
       {/* Header Section */}
-      <div className="text-center mb-10">
-        <h1 dangerouslySetInnerHTML={{ __html: sanitizedTitle }}></h1>
-        <p dangerouslySetInnerHTML={{ __html: sanitizedDescription }}></p>
+      <div className="text-center">
+        <h1
+          className="text-3xl md:text-5xl font-black text-slate-800 leading-tight"
+          dangerouslySetInnerHTML={{ __html: sanitizedTitle }}
+        ></h1>
+        <p
+          className="text-lg text-slate-600 leading-relaxed font-medium text-left"
+          dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+        ></p>
       </div>
 
       {/* Course Options - Memoized */}
-      <div className="flex justify-center flex-col md:flex-row items-stretch mb-16 gap-6">
+      <div className="flex justify-center flex-col md:flex-row items-stretch mb-16 gap-6 mt-2">
         <CourseLink
           to="/pdf-course/Prelims"
           title="365 Days Rally PDF Course Prelims"
@@ -182,11 +188,11 @@ const PdfCourseHome = () => {
 
       {/* Pricing Section */}
       <div className="mb-12">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-            Choose Your Plan
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-3">
+            Choose Your <span className="text-green-600 italic font-serif">Plan</span>
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
             Select the subscription that fits your preparation needs
           </p>
         </div>
@@ -195,47 +201,43 @@ const PdfCourseHome = () => {
           {plansWithSubscription.map((plan) => (
             <div
               key={plan._id || plan.months}
-              className="border rounded-xl shadow-lg overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-300"
+              className="border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl overflow-hidden bg-white transform hover:scale-[1.02] transition-all duration-300"
             >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-xl font-black text-slate-800">
                     {plan.months}-Month Plan
                   </h3>
                   {plan.offerName && (
-                    <span className="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                    <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
                       {plan.offerName}
                     </span>
                   )}
                 </div>
 
                 <div className="mb-4">
-                  <div className="flex items-end gap-2 mb-1">
-                    <span className="text-3xl font-bold text-green-600">
+                  <div className="flex items-end gap-2 mb-2">
+                    <span className="text-4xl font-black text-green-600">
                       ₹{plan.discountedPrice}
                     </span>
-                    <span className="line-through text-gray-500 text-sm">
+                    <span className="line-through text-slate-400 text-base mb-1">
                       ₹{plan.originalPrice}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-bold text-slate-600">
                       Save ₹{plan.originalPrice - plan.discountedPrice}
                     </span>
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                    <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded">
                       {calculateDiscount(plan.originalPrice, plan.discountedPrice)}% OFF
                     </span>
                   </div>
                 </div>
 
-                <div className="mb-2">
-                  {/* <p className="text-sm text-gray-600 mb-1">
-                    <span className="font-medium">Purchase and get validity till </span>
-                    {getSubscriptionEndDate(plan.months)}
-                  </p> */}
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Access:</span> {plan.months} months
+                <div className="mb-4 pb-4 border-b border-slate-100">
+                  <p className="text-sm text-slate-600 font-medium">
+                    <span className="font-bold text-slate-800">Access:</span> {plan.months} months
                   </p>
                 </div>
 
@@ -243,21 +245,21 @@ const PdfCourseHome = () => {
                   <div className="text-center">
                     <button
                       disabled
-                      className="w-full bg-gray-400 text-white font-medium py-3 px-4 rounded-lg shadow-md cursor-not-allowed flex items-center justify-center"
+                      className="w-full bg-slate-200 text-slate-500 font-bold py-3 px-4 rounded-xl shadow-sm cursor-not-allowed flex items-center justify-center"
                     >
-                      Purchased
+                      ✓ Purchased
                     </button>
-                    <p className="text-sm text-green-600 mt-2 font-semibold">
+                    <p className="text-sm text-green-600 mt-3 font-bold flex items-center justify-center gap-1">
                       <i className="bi bi-clock-history"></i> {plan.daysLeft} Days Left
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-slate-500 mt-1 font-medium">
                       Valid till: {formatExpiryDate(plan.expiryDate)}
                     </p>
                   </div>
                 ) : (
                   <button
                     onClick={() => handlePlanClick(plan)}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
                   >
                     {plan.isExpired ? 'Renew Now' : 'Buy Now'}
                     <FaArrowRight className="ml-2" />
@@ -275,14 +277,17 @@ const PdfCourseHome = () => {
       )}
 
       {/* Subtitle Section */}
-      <div className="my-12">
-        <p dangerouslySetInnerHTML={{ __html: sanitizedSubtitle }}></p>
+      <div className="my-12 bg-slate-50 rounded-2xl p-8 border border-slate-100">
+        <div
+          className="text-base text-slate-700 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: sanitizedSubtitle }}
+        ></div>
       </div>
 
       {/* Additional Info Section - Features */}
-      <div className="bg-green-50 rounded-xl p-8 max-w-4xl mx-auto border border-green-100">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Why Choose Our PDF Course?
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-10 max-w-4xl mx-auto border border-green-100 shadow-sm">
+        <h3 className="text-3xl font-black text-slate-800 mb-8 text-center">
+          Why Choose Our <span className="text-green-600 italic font-serif">PDF Course</span>?
         </h3>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {features.map((feature, idx) => (
