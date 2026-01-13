@@ -309,7 +309,7 @@ const PdfCourse = () => {
         const expiry = new Date(activePdfSubscription.expiryDate);
         return expiry > utcNow;
     };
-console.log(alldata)
+    console.log(alldata)
     return (
         <>
             <Helmet>
@@ -561,8 +561,14 @@ console.log(alldata)
                                                                     }`}
                                                             >
                                                                 {/* Exam Name at Top */}
-                                                                <div className="text-[10px] font-bold text-slate-500 mb-2 text-center uppercase tracking-wide">
-                                                                    {pdf.examName}
+                                                                {/* Exam Name Chip */}
+                                                                <div className="flex justify-end mb-2">
+                                                                    <div className="inline-flex items-center gap-1 bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-300 rounded-full px-3 py-1">
+                                                                        <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                                                                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">
+                                                                            {pdf.examName}
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
 
                                                                 {/* Subject Header */}
