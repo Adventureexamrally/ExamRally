@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -9,14 +9,6 @@ import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
 import { Avatar, duration } from '@mui/material';
 import { sanitizeHtml } from "../../utils/sanitizeHtml";
-import {
-  formatTime,
-  isCompositeMode,
-  calculateSectionTimeTaken,
-  retryAsync,
-  logger,
-  EXAM_CONSTANTS
-} from './examUtils';
 
 const Test = () => {
   const [examData, setExamData] = useState(null);
@@ -895,9 +887,8 @@ const Test = () => {
     }
   }, [examData, currentSectionIndex, resultData]);
 
-  const updateSectionTime = async () => {
-    // Fix: Removed timeminus <= 0 check to allow submission on timeout
-    if (!examDataSubmission) return;
+  const updateSectionTime = () => {
+    if (!examDataSubmission || timeminus <= 0) return;
 
     const {
       formattedSections,
@@ -907,10 +898,12 @@ const Test = () => {
       endTime,
     } = examDataSubmission;
 
-    const isComposite = isCompositeMode(examData);
+    const isCompositeMode =
+      examData?.time?.toLowerCase() === "composite" ||
+      examData?.examineMode?.toLowerCase() === "composite";
 
     let finalTimeTaken = 0;
-    if (!isComposite) {
+    if (!isCompositeMode) {
       const totalTimeInSeconds =
         examData?.section[currentSectionIndex]?.t_time * 60 || 0;
       finalTimeTaken = Math.max(0, totalTimeInSeconds - timeminus);
@@ -927,7 +920,7 @@ const Test = () => {
     const timeTakenInSecondsUpdated =
       (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
 
-    logger.info("Final time taken for section:", finalTimeTaken);
+    console.log("Final time taken for section:", finalTimeTaken);
 
     const updatedSections = formattedSections.map((section, idx) => {
       if (idx === currentSectionIndex) {
@@ -940,23 +933,23 @@ const Test = () => {
     });
 
     if (user?._id) {
-      try {
-        const response = await Api.post(`PDFresults/${user._id}/${id}`, {
-          ExamId: id,
-          section: updatedSections,
-          score: totalScore,
-          totalTime: formattedTotalTime,
-          timeTakenInSeconds: timeTakenInSecondsUpdated,
-          takenAt: examStartTime,
-          submittedAt: endTime,
-          status: isPaused ? "paused" : "completed",
-          sectionTimes,
+      Api.post(`PDFresults/${user._id}/${id}`, {
+        ExamId: id,
+        section: updatedSections,
+        score: totalScore,
+        totalTime: formattedTotalTime,
+        timeTakenInSeconds: timeTakenInSecondsUpdated,
+        takenAt: examStartTime,
+        submittedAt: endTime,
+        status: isPaused ? "paused" : "completed",
+        sectionTimes, // Optional: make sure this matches backend schema
+      })
+        .then((res) => {
+          console.log("Submitted:", res.data);
+        })
+        .catch((err) => {
+          console.error("Error submitting:", err);
         });
-        logger.info("Progress updated:", response.data);
-      } catch (err) {
-        logger.error("Error updating progress:", err);
-        // Don't show toast for progress updates, only log the error
-      }
     }
   };
 
@@ -1003,28 +996,13 @@ const Test = () => {
     finishTestAndOpenResult();
   };
 
-  const submitExam = async (examStatus = null) => {
-    logger.info("submitExam called", { examStatus });
+  const submitExam = () => {
+    updateSectionTime()
+    console.log("submitExam called");
     const now = new Date();
-
-    // ✅ PRODUCTION-READY: Calculate total elapsed time from exam start
-    // This is more reliable than refs which get reset
-    const totalElapsedSeconds = Math.floor((now - examStartTime) / 1000);
-
-    // Get time spent in current section from examStartTime
     const timeSpent = Math.floor(
       (now - currentSectionStartTimeRef.current) / 1000
     );
-
-    // Store this for use in timeTaken calculation
-    const calculatedSectionTime = timeSpent;
-
-
-    // ✅ Calculate using CURRENT STATE value (most reliable)
-    const previousSectionTime = sectionTimes[currentSectionIndex] || 0;
-    // If previous is larger (we had accumulated time), use it; otherwise use calculated
-    const actualAccumulatedTime = Math.max(timeSpent, previousSectionTime, totalElapsedSeconds);
-
 
     setSectionTimes((prev) => {
       const previousTime = prev[currentSectionIndex] || 0;
@@ -1038,11 +1016,15 @@ const Test = () => {
         [currentSectionIndex]: updatedTime,
       };
 
+      console.warn(
+        `Section ${currentSectionIndex}: previous = ${previousTime}, new = ${timeSpent}, saved = ${updatedTime}`
+      );
 
+      // Optional: Show the full updated object
+      console.warn("All updated section times:", updated);
 
       return updated;
     });
-
     setQuestionTimes(prev => ({
       ...prev,
       [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
@@ -1053,20 +1035,20 @@ const Test = () => {
       !examData.section ||
       !examData.section[currentSectionIndex]
     ) {
-      logger.error("Exam data or section not available");
+      console.error("Exam data or section not available");
       return;
     }
 
     const currentSection = examData.section[currentSectionIndex];
     const endTime = new Date();
+    const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
+    const formattedTotalTime = formatTime(timeTakenInSeconds);
 
-    // ❌ OLD: This includes pause time!
-    // const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
+    const formattime = now;
 
-    // ✅ NEW: Will be calculated from sum of all section.timeTaken values later
-    let totalTimeTakenInSeconds = 0;
+    console.log("check this ", formattime);
 
-    setTotalTime(formatTime(totalTimeTakenInSeconds)); // Will update after calculating sections
+    setTotalTime(formattedTotalTime);
     if (!currentSection) return;
 
     const questions =
@@ -1102,6 +1084,8 @@ const Test = () => {
         notVisitedQuestions.length > 0 ? notVisitedQuestions[0] : null,
     };
 
+    // setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
+
     const reviewedQuestions = markedForReview.filter(
       (index) =>
         index >= startingIndex && index < startingIndex + totalQuestions
@@ -1127,6 +1111,7 @@ const Test = () => {
 
       const question = currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[questionIndexInSection];
 
+      // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
 
       const optionsData = question?.options?.map((option, optionIndex) => ({
@@ -1139,16 +1124,28 @@ const Test = () => {
       const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
       const notVisited = isVisited === 1 ? 0 : 1;
 
+      // const questionScore =
+      //   selectedOption !== undefined
+      //     ? selectedOption === question?.answer
+      //       ? question?.plus_mark
+      //       : -question?.minus_mark
+      //     : 0;
+
       // Use section-specific marks
       const questionScore = selectedOption !== null
         ? selectedOption === question.answer
           ? currentSection.plus_mark
           : -currentSection.minus_mark
         : 0;
+      console.log("ques score", questionScore);
 
       return {
+        // question: question?.question,
+        // options: optionsData,
         correct: question?.answer === selectedOption,
+        // explanation: question?.explanation,
         answer: question?.answer,
+        // common_data: question?.common_data,
         selectedOption: selectedOption,
         isVisited: isVisited,
         NotVisited: notVisited,
@@ -1156,6 +1153,7 @@ const Test = () => {
         score: questionScore,
       };
     });
+    console.log("answers dataaaaa", answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1215,6 +1213,7 @@ const Test = () => {
             };
           }
         );
+        console.log("section answers data", sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
           (q) => q.correct === 1
@@ -1233,6 +1232,8 @@ const Test = () => {
 
         const secaccuracy =
           sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+
+        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
 
         const skippedQuestions = sectionVisited - sectionAnswered;
 
@@ -1310,33 +1311,24 @@ const Test = () => {
           s_accuracy: secaccuracy,
           skipped: skippedQuestions,
           timeTaken: (() => {
-            // time1 = time from database (previous sessions/pauses)
             const time1 = resultData?.section?.[sectionIndex]?.timeTaken || 0;
-            // time2 = accumulated time in this session from state updates
             const time2 = sectionTimes?.[sectionIndex] || 0;
 
             if (sectionIndex === currentSectionIndex) {
-              const isComposite = isCompositeMode(examData);
-              const sectionTimeLimit = (section.t_time || 0) * 60; // in seconds
+              const isCompositeMode =
+                examData?.time?.toLowerCase() === "composite" ||
+                examData?.examineMode?.toLowerCase() === "composite";
 
-              // ✅ Use actualAccumulatedTime instead of time2 (old state)
-              // This ensures we use the real accumulated time, not the stale state
-              const actualSessionTime = Math.max(calculatedSectionTime, actualAccumulatedTime);
-
-              // If section has no time limit (t_time = 0) OR composite mode:
-              // Accumulate all times from database + actual session time
-              if (isComposite || sectionTimeLimit === 0) {
-                return time1 + actualSessionTime;
+              if (!isCompositeMode) {
+                const totalSectionTime = (section.t_time || 0) * 60;
+                return Math.max(0, totalSectionTime - timeminus);
+              } else {
+                const now = new Date();
+                const timeSpentThisSession = Math.floor((now - currentSectionStartTimeRef.current) / 1000);
+                return time1 + time2 + timeSpentThisSession;
               }
-
-              // Sectional mode with time limit:
-              // Calculate actual time spent in current attempt
-              const timeSpentNow = Math.max(0, sectionTimeLimit - timeminus);
-              // Add database time (from previous pause/resume) + time spent in current attempt
-              return time1 + Math.max(timeSpentNow, actualSessionTime);
             }
 
-            // For other sections (not current), sum database time + session accumulated time
             return time1 + time2;
           })()
 
@@ -1359,28 +1351,13 @@ const Test = () => {
       }
     );
 
-    // ✅ Calculate total time from sum of all section timeTaken values
-    // This ensures timeTakenInSeconds matches the sum of section.timeTaken
-    totalTimeTakenInSeconds = formattedSections.reduce(
-      (sum, section) => sum + (section.timeTaken || 0),
-      0
-    );
-
-    // Add any previous total time from database
-    const previousTotalTime = resultData?.timeTakenInSeconds || 0;
-    // Only add if we haven't already counted it (avoid double counting)
-    // Since section.timeTaken already includes database time, we don't need to add previousTotalTime
-
-    const formattedTotalTime = formatTime(totalTimeTakenInSeconds);
-    setTotalTime(formattedTotalTime);
-
-    const submissionData = {
+    setExamDataSubmission({
       formattedSections,
       totalScore: formattedSections.reduce(
         (sum, section) => sum + (section.s_score || 0),
         0
       ),
-      timeTakenInSeconds: totalTimeTakenInSeconds,
+      timeTakenInSeconds,
       totalcheck: {
         visitedQuestionsCount: totalStats.visitedCount,
         notVisitedQuestions: totalStats.notVisitedCount,
@@ -1388,38 +1365,7 @@ const Test = () => {
         notAnsweredQuestions: totalStats.notAnsweredCount,
       },
       endTime,
-      formattedTotalTime,
-    };
-
-    setExamDataSubmission(submissionData);
-
-    // Direct backend submission with retry logic
-    if (user?._id) {
-      try {
-        const response = await retryAsync(
-          () => Api.post(`PDFresults/${user._id}/${id}`, {
-            ExamId: id,
-            section: submissionData.formattedSections,
-            score: submissionData.totalScore,
-            totalTime: submissionData.formattedTotalTime,
-            timeTakenInSeconds: submissionData.timeTakenInSeconds,
-            takenAt: examStartTime,
-            submittedAt: endTime,
-            status: examStatus !== null ? examStatus : (isPaused ? "paused" : "completed"),
-            sectionTimes,
-          }),
-          EXAM_CONSTANTS.MAX_RETRY_ATTEMPTS,
-          EXAM_CONSTANTS.RETRY_DELAY
-        );
-
-        logger.success("Exam submitted successfully", response.data);
-        return response.data;
-      } catch (error) {
-        logger.error("Failed to submit exam after retries", error);
-        toast.error("Failed to submit exam. Please check your connection.");
-        throw error;
-      }
-    }
+    });
   };
 
   const handlePauseResume = () => {
@@ -1470,7 +1416,7 @@ const Test = () => {
         console.log("Updated sectionTimes object to return:", previous);
 
         return previous;
-      });
+      }); currentSectionStartTimeRef.current = now;
 
       // ✅ Store current exam state
       const currentState = {
@@ -1502,9 +1448,8 @@ const Test = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           setIsPaused(true);
-          // ✅ Don't reset ref here - submitExam needs it to calculate correct time
-          // currentSectionStartTimeRef will be used to calculate currentSessionTime
-          await submitExam("paused"); // ✅ Explicitly pass "paused" status
+          currentSectionStartTimeRef.current = new Date(); // 👈 Reset to now so submitExam doesn't count modal time
+          await submitExam();
           await new Promise((resolve) => setTimeout(resolve, 1000));
           window.close();
         } else {
@@ -1621,6 +1566,12 @@ const Test = () => {
       setIsRunning((prev) => !prev); // Toggle play/pause
       setIsPaused(false); // Ensure it's not paused when restarting
     }
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   };
 
   const [isFullscreen, setIsFullscreen] = useState(false);
