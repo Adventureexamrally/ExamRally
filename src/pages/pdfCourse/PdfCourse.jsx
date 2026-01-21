@@ -64,7 +64,7 @@ const PdfCourse = () => {
         const filteredData = response.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
         setAlldata(filteredData);
 
-        const pdfExams = await Api.get("/packages/pdfExam");
+        const pdfExams = await Api.get("/pdf-Course/Exams");
         setAllExamsName(pdfExams.data);
         console.log(pdfExams.data);
 
@@ -513,8 +513,8 @@ const PdfCourse = () => {
                                         >
                                             <option value="">All Exams</option>
                                             {AllExamsName?.map((Exname) => (
-                                                <option key={Exname._id} value={Exname.name}>
-                                                    {Exname.name}
+                                                <option key={Exname._id} value={Exname.Exam}>
+                                                    {Exname.Exam}
                                                 </option>
                                             ))}
                                         </select>
@@ -734,11 +734,11 @@ const PdfCourse = () => {
                                                                                 </button>
 
                                                                                 <button
-                                                                                    className={`flex-1 text-center text-white py-2 px-3 rounded-md text-sm font-medium transition-colors ${resultData?.[examId]?.status === "completed"
-                                                                                        ? "bg-green-600 hover:bg-green-700"
+                                                                                    className={`flex-1 text-center  py-2 px-3 text-black rounded-md text-sm font-medium border-1 transition-colors ${resultData?.[examId]?.status === "completed"
+                                                                                        ? "border-green-600 text-green-600 hover:border-green-700 hover:text-green-700"
                                                                                         : resultData?.[examId]?.status === "paused"
-                                                                                            ? "bg-yellow-600 hover:bg-yellow-700"
-                                                                                            : "bg-green-600 hover:bg-green-700"
+                                                                                            ? "border-yellow-600 hover:border-yellow-700"
+                                                                                            : "border-green-600 hover:border-green-700"
                                                                                         }`}
                                                                                     onClick={() => {
                                                                                         const results = resultData?.[examId];
