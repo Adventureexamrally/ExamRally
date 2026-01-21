@@ -734,11 +734,11 @@ const PdfCourse = () => {
                                                                                 </button>
 
                                                                                 <button
-                                                                                    className={`flex-1 text-center  py-2 px-3 text-black rounded-md text-sm font-medium border-1 transition-colors ${resultData?.[examId]?.status === "completed"
-                                                                                        ? "border-green-600 text-green-600 hover:border-green-700 hover:text-green-700"
+                                                                                    className={`flex-1 text-center text-white py-2 px-3 rounded-md text-sm font-medium transition-colors ${resultData?.[examId]?.status === "completed"
+                                                                                        ? "bg-green-600 hover:bg-green-700"
                                                                                         : resultData?.[examId]?.status === "paused"
-                                                                                            ? "border-yellow-600 hover:border-yellow-700"
-                                                                                            : "border-green-600 hover:border-green-700"
+                                                                                            ? "bg-yellow-600 hover:bg-yellow-700"
+                                                                                            : "bg-green-600 hover:bg-green-700"
                                                                                         }`}
                                                                                     onClick={() => {
                                                                                         const results = resultData?.[examId];
