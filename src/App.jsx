@@ -72,7 +72,7 @@ const Livemocktest = lazy(() => import("./components/LiveMockTest/Livemocktest")
 const Homeliveresult = lazy(() => import("./components/LiveMockTest/Homeliveresult"));
 const HomeLiveSolution = lazy(() => import("./components/LiveMockTest/HomeLiveSolution"));
 const HomeLiveResultPage = lazy(() => import("./components/LiveMockTest/HomeLiveResult2"));
-
+const Subvideocourse = lazy(() => import("./pages/Subvideocourse"))
 // Constants
 const MOCK_TEST_ROUTES = [
   "/mocktest",
@@ -167,7 +167,7 @@ function App() {
 function MainApp() {
   const { user } = useContext(UserContext);
   const location = useLocation();
-  
+
   const [dailyModalData, setDailyModalData] = useState(null);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [isDailyModalLoading, setIsDailyModalLoading] = useState(true);
@@ -179,32 +179,32 @@ function MainApp() {
     [location.pathname]
   );
   const initializeOneSignal = useCallback((user) => {
-  if (typeof window === "undefined" || !window.OneSignalDeferred) return;
+    if (typeof window === "undefined" || !window.OneSignalDeferred) return;
 
-  window.OneSignalDeferred.push(async function (OneSignal) {
-    try {
-      await OneSignal.init({
-        appId: "d25c3e90-f22a-4283-afc2-02156b046e1f",
-        notifyButton: { enable: true },
-      });
+    window.OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        await OneSignal.init({
+          appId: "d25c3e90-f22a-4283-afc2-02156b046e1f",
+          notifyButton: { enable: true },
+        });
 
-      const permission = await OneSignal.Notification.permission;
-      if (permission !== "granted") {
-        await OneSignal.showSlidedownPrompt();
+        const permission = await OneSignal.Notification.permission;
+        if (permission !== "granted") {
+          await OneSignal.showSlidedownPrompt();
+        }
+
+        if (user?.email) {
+          await OneSignal.User.Email.set(user.email);
+        }
+
+        if (user?.phoneNumber) {
+          await OneSignal.User.Tag.set("phone", user.phoneNumber);
+        }
+      } catch (error) {
+        console.error("OneSignal initialization error:", error);
       }
-
-      if (user?.email) {
-        await OneSignal.User.Email.set(user.email);
-      }
-
-      if (user?.phoneNumber) {
-        await OneSignal.User.Tag.set("phone", user.phoneNumber);
-      }
-    } catch (error) {
-      console.error("OneSignal initialization error:", error);
-    }
-  });
-}, []);
+    });
+  }, []);
 
   // Initialize OneSignal
   useEffect(() => {
@@ -222,14 +222,14 @@ function MainApp() {
       setIsDailyModalLoading(true);
       const response = await Api.get("/models");
       const data = response.data;
-      
+
       let photoUrl = null;
       if (Array.isArray(data) && data.length > 0) {
         photoUrl = data[0].photo;
       } else if (data?.photo) {
         photoUrl = data.photo;
       }
-      
+
       if (photoUrl) {
         setDailyModalData(photoUrl);
       }
@@ -261,7 +261,7 @@ function MainApp() {
         localStorage.setItem(LOCAL_STORAGE_KEYS.MODAL_FIRST_TIME, "shown");
       }
       localStorage.setItem(LOCAL_STORAGE_KEYS.MODAL_SHOWN_DATE, today);
-      
+
       // Fetch and show modal
       fetchDailyModalData();
       setShowDailyModal(true);
@@ -344,6 +344,7 @@ function MainApp() {
     { path: "/pdf-course", element: <PdfCourseHome /> },
     { path: "/pdf-course/:level", element: <PdfCourse /> },
     { path: "/video-course", element: <VideoCourse /> },
+    { path: "/videocourse/:sub/:id", element: <Subvideocourse /> },
     { path: "/All-Packages", element: <Packages /> },
     { path: "/homelivetest", element: <HomeLivetest /> },
     { path: "*", element: <NotFound /> },
@@ -362,7 +363,7 @@ function MainApp() {
   return (
     <>
       <Analytics />
-      
+
       {/* Header and Navbar */}
       {!isMockTestRoute && (
         <>
@@ -426,7 +427,7 @@ function MainApp() {
 
       {/* Footer */}
       {!isMockTestRoute && <Footer />}
-      
+
       <ScrollToTopButton showButton={!isMockTestRoute} />
     </>
   );
