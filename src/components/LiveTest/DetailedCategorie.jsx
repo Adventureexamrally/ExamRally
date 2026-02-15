@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import parse from "html-react-parser";
 
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import CAmonth from "../CAmonth";
@@ -183,35 +184,35 @@ const DetailedCategorie = () => {
   };
 
   const [isEnrolled, setIsEnrolled] = useState(false);
-  
+
   const status = true;
 
-  
-useEffect(() => {
-  if (!utcNow || !data?._id || (!user?.enrolledCourses && !user?.subscriptions)) return;
 
-  const checkExpiry = (course) => {
-    const expireDate = new Date(course?.expiryDate);
-    const timeDiff = expireDate.getTime() - utcNow.getTime();
-    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
+  useEffect(() => {
+    if (!utcNow || !data?._id || (!user?.enrolledCourses && !user?.subscriptions)) return;
 
-    if (
-      !isNaN(daysLeft) &&
-      daysLeft >= 0 &&
-      course?.courseId?.includes(data._id)
-    ) {
-      setExpirydate(daysLeft); // Set days left
-      return true;
-    }
+    const checkExpiry = (course) => {
+      const expireDate = new Date(course?.expiryDate);
+      const timeDiff = expireDate.getTime() - utcNow.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 1 day in ms
 
-    return false;
-  };
+      if (
+        !isNaN(daysLeft) &&
+        daysLeft >= 0 &&
+        course?.courseId?.includes(data._id)
+      ) {
+        setExpirydate(daysLeft); // Set days left
+        return true;
+      }
 
-  const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
-  const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
+      return false;
+    };
 
-  setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
-}, [user, data,isEnrolled,expiredate]);
+    const enrolledFromCourses = user?.enrolledCourses?.some(checkExpiry);
+    const enrolledFromSubscriptions = user?.subscriptions?.some(checkExpiry);
+
+    setIsEnrolled(enrolledFromCourses || enrolledFromSubscriptions);
+  }, [user, data, isEnrolled, expiredate]);
 
   console.log("check", user?.enrolledCourses);
 
@@ -296,18 +297,15 @@ useEffect(() => {
             <div className="container w-full md:w-4/5">
               <div className="row mt-3">
                 <div className="staticheader">
-                  <p className="font mt-2 h5 leading-8">
-                    <h1
-                      className="font font-bold "
-                      dangerouslySetInnerHTML={{ __html: catDetail.title }}
-                    ></h1>
-                    <br />
-                    <p
-                      dangerouslySetInnerHTML={{
-                        __html: catDetail.description,
-                      }}
-                    ></p>
-                  </p>
+                  <div className="font mt-2 h5 leading-8">
+                    <div className="font-bold text-2xl md:text-4xl text-gray-900 mb-6 font-inter leading-tight">
+                      {parse(catDetail.title || "")}
+                    </div>
+
+                    <div className="text-xl md:text-2xl  text-gray-900 mb-3 font-inter border-b pb-3 border-gray-100">
+                      {parse(catDetail.description || "")}
+                    </div>
+                  </div>
                 </div>
                 {/* {catDetail?.sub_titles?.length > 0 && catDetail?.sub_titles?.map((sub) => (
                                     <div className=" staticheader">
@@ -402,11 +400,10 @@ useEffect(() => {
                           <button
                             key={sub}
                             onClick={() => setActiveSection(sub)}
-                            className={`btn w-100 mb-2 text-white ${
-                              activeSection === sub
-                                ? "bg-[#131656] hover:bg-[#131656]"
-                                : "bg-green-500 hover:bg-green-600"
-                            }`}
+                            className={`btn w-100 mb-2 text-white ${activeSection === sub
+                              ? "bg-[#131656] hover:bg-[#131656]"
+                              : "bg-green-500 hover:bg-green-600"
+                              }`}
                           >
                             {sub}
                           </button>
@@ -425,17 +422,15 @@ useEffect(() => {
                   catDetail?.sub_titles?.map((sub, index) => (
                     <div
                       key={index}
-                      className="flex flex-col gap-3 flex-wrap py-2 bg-gray-50 px-2 my-3 shadow-lg"
+                      className="flex flex-col gap-3 py-6 px-6 my-6 bg-white rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md"
                     >
-                      <h1
-                        className="my-2 p-3"
-                        dangerouslySetInnerHTML={{ __html: sub.title }}
-                      ></h1>
+                      <div className="text-xl md:text-2xl  text-gray-900 mb-3 font-inter border-b pb-3 border-gray-100">
+                        {parse(sub.title || "")}
+                      </div>
 
-                      <p
-                        className="my-2 p-3"
-                        dangerouslySetInnerHTML={{ __html: sub.description }}
-                      ></p>
+                      <div className="tinymce-content text-gray-600 text-base md:text-lg leading-relaxed font-inter">
+                        {parse(sub.description || "")}
+                      </div>
                     </div>
                   ))}
               </div>
@@ -451,17 +446,15 @@ useEffect(() => {
                       className="border rounded-lg overflow-hidden shadow-sm "
                     >
                       <button
-                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${
-                          activeIndex === index
-                            ? "bg-green-100 text-green-700"
-                            : "hover:bg-gray-50"
-                        }`}
+                        className={`flex items-center justify-between w-full p-4 text-left transition-colors duration-200 ${activeIndex === index
+                          ? "bg-green-100 text-green-700"
+                          : "hover:bg-gray-50"
+                          }`}
                         onClick={() => handleAccordionToggle(index)}
                       >
-                        <span
-                          className="font-medium flex items-center "
-                          dangerouslySetInnerHTML={{ __html: faq.question }}
-                        />
+                        <span className="font-medium flex items-center text-gray-800 font-inter">
+                          {parse(faq.question || "")}
+                        </span>
                         <span className="text-lg">
                           {activeIndex === index ? (
                             <FaChevronUp />
@@ -471,14 +464,12 @@ useEffect(() => {
                         </span>
                       </button>
                       <div
-                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${
-                          activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
-                        }`}
+                        className={`transition-max-h duration-300 ease-in-out overflow-hidden ${activeIndex === index ? "max-h-96 p-4" : "max-h-0 p-0"
+                          }`}
                       >
-                        <p
-                          className="text-gray-600"
-                          dangerouslySetInnerHTML={{ __html: faq.answer }}
-                        />
+                        <div className="text-gray-600 tinymce-content font-inter leading-relaxed">
+                          {parse(faq.answer || "")}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -542,11 +533,10 @@ useEffect(() => {
                     </div>
 
                     <button
-                      className={`px-3 py-1 font-bold rounded-full ${
-                        isEnrolled
-                          ? "bg-[#000080] text-white cursor-not-allowed"
-                          : "bg-green-500 text-gray-50 hover:bg-green-400"
-                      }`}
+                      className={`px-3 py-1 font-bold rounded-full ${isEnrolled
+                        ? "bg-[#000080] text-white cursor-not-allowed"
+                        : "bg-green-500 text-gray-50 hover:bg-green-400"
+                        }`}
                       onClick={() => {
                         if (!isSignedIn) {
                           navigate("/sign-in");
@@ -556,7 +546,7 @@ useEffect(() => {
                           setshowmodel(true);
                         }
                       }}
-                      
+
                     >
                       {expiredate
                         ? isEnrolled
@@ -577,12 +567,12 @@ useEffect(() => {
                       </p>
                     )}
                   </div>
-                    </div>
+                </div>
               </div>
-                  {showmodel && (
-                    <Coupon data={data} setshowmodel={setshowmodel} />
-                  )}
-              
+              {showmodel && (
+                <Coupon data={data} setshowmodel={setshowmodel} />
+              )}
+
 
               {ad.length > 0 && (
                 <div>
