@@ -38,7 +38,19 @@ const CAmonth = ({ course }) => {
       try {
         const response = await Api.get("topic-test/getAffairs/all");
         if (isMounted) {
-          setCA(response.data);
+          const processedData = response.data
+            .filter((item) => {
+              const monthStr = item.currentAffair.month; // e.g. "January 2025"
+              if (!monthStr) return false;
+              const year = parseInt(monthStr.split(" ")[1]);
+              return year === 2025 || year === 2026;
+            })
+            .sort((a, b) => {
+              const dateA = new Date(a.currentAffair.month);
+              const dateB = new Date(b.currentAffair.month);
+              return dateB - dateA;
+            });
+          setCA(processedData);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -157,7 +169,7 @@ const CAmonth = ({ course }) => {
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("Received message:", event.data);
-      
+
       // Ensure message is from same origin
       if (event.origin !== window.location.origin) return;
 
@@ -165,7 +177,7 @@ const CAmonth = ({ course }) => {
         const examId = event.data.testId;
         if (examId) {
           console.log(`Updating test status for exam ${examId}`);
-          
+
           // Set loading state and refetch result
           setLoadingTests((prev) => ({ ...prev, [examId]: true }));
           fetchSingleResult(examId).finally(() => {

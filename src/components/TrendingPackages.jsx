@@ -67,7 +67,7 @@ const TrendingPackages = () => {
 
       <div className="relative z-10 flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
+          <h1 className="text-3xl lg:text-3xl font-extrabold text-slate-800 tracking-tight">
             Trending <span className="text-green-600 italic font-serif font-medium">Packages</span>
           </h1>
           {/* <p className="text-slate-400 text-sm font-medium mt-1">Our most popular 365-day banking prep bundles</p> */}

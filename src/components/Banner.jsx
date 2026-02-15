@@ -70,7 +70,7 @@ const Banner = () => {
           <Slider {...settings}>
             {slides.map((slide, index) => (
               <div key={index} className="relative">
-                <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-md shadow-lg">
+                <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] z-40 overflow-hidden rounded-md shadow-lg">
                   <a href={slide.link}>
                     <img
                       src={slide.photo}

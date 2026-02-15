@@ -108,7 +108,7 @@ const NavBar = () => {
   }, [isLoaded, isSignedIn, user]);
 
 
-   const [liveTests, setLiveTests] = useState([]);
+  const [liveTests, setLiveTests] = useState([]);
 
   useEffect(() => {
     Api.get('exams/live-test')
@@ -123,7 +123,7 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="bg-green-600 text-white font-semibold shadow-md py-2">
+      <nav className="bg-green-600 text-white font-semibold shadow-md py-2 relative z-50">
         <div className="container mx-auto flex justify-between items-center px-4">
           {/* Logo */}
 
@@ -228,19 +228,19 @@ const NavBar = () => {
               Rally Super Pro
             </Link>
 
-     <Link
-  to='/homelivetest'
-  className="hover:text-blue-600 transition duration-300 flex items-center gap-1"
->
-  Live Test
-   {liveTests.length > 0 && (
-    <span className="ml-1 bg-[#7E57C2] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
-      New
-    </span>
-  )}
-</Link>
+            <Link
+              to='/homelivetest'
+              className="hover:text-blue-600 transition duration-300 flex items-center gap-1"
+            >
+              Live Test
+              {liveTests.length > 0 && (
+                <span className="ml-1 bg-[#7E57C2] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
+                  New
+                </span>
+              )}
+            </Link>
 
-     
+
 
             {/* <Link
               to="/video-course"
@@ -275,7 +275,7 @@ const NavBar = () => {
           {/* <User /> */}
 
           {/* Mobile Hamburger Menu */}
-          <button onClick={toggleMenu} className="md:hidden text-black">
+          <button onClick={toggleMenu} className="md:hidden text-white hover:text-green-100 transition-colors">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -304,162 +304,120 @@ const NavBar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-green-200 text-black py-4 space-y-4">
+          <div className="md:hidden bg-white text-slate-800 py-4 space-y-2 border-t border-green-500 absolute top-full left-0 w-full shadow-xl z-50 max-h-[90vh] overflow-y-auto">
             <Link
               to="/"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
             </Link>
-            <div
-              className="relative group"
-              onMouseEnter={() => setIsDropdownOpen(true)}
-              onMouseLeave={() => {
-                setIsDropdownOpen(false);
-                setActiveSubMenu(null);
-              }}
-            >
-              <button className="flex px-4 py-2 w-full hover:bg-blue-700 hover:text-white transition duration-300">
-                Exams
+            <div className="relative group z-50">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center justify-between w-full px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              >
+                <span>Exams</span>
                 {isDropdownOpen ? (
-                  <FaChevronUp className="ml-2 mt-2 text-sm" />
+                  <FaChevronUp className="text-sm" />
                 ) : (
-                  <FaChevronDown className="ml-2 mt-2 text-sm" />
+                  <FaChevronDown className="text-sm" />
                 )}
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
-                  <div
-                    className="relative group"
-                    onMouseEnter={() => setActiveSubMenu(0)}
-                    onMouseLeave={() => setActiveSubMenu(null)}
+                <div className="bg-slate-50 py-2">
+                  <Link
+                    to="/subscriptions"
+                    className="block px-8 py-2.5 text-sm font-medium text-slate-600 hover:text-green-700 hover:bg-green-100 transition duration-300"
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Link
-                      to="/subscriptions"
-                      className="block px-4 py-2 w-full text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-                    >
-                      Banking & Insurance
-                    </Link>
-
-                    {activeSubMenu === 0 && (
-                      <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48 z-50">
-                        {packages.map((item, index) => (
-                          <Link
-                            key={index}
-                            to={`/top-trending-exams/${item.link_name}`}
-                            className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
-                          >
-                            {item.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    <hr className="border-t border-gray-300" />
-                  </div>
+                    Banking & Insurance
+                  </Link>
+                  {/* Add more sub-items here if needed, mirroring desktop */}
                 </div>
               )}
             </div>
+
             <Link
               to="/subscriptions"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Test Series
             </Link>
             <Link
               to="/All-Packages"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Packages
             </Link>
             <Link
               to="/free-pdf"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Free PDF
             </Link>
-            <Link
+            {/* <Link
               to="/pdf-course"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               PDF Course
-            </Link>
+            </Link> */}
             <Link
               to="/blog"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Blogs
             </Link>
-            <Link
+            {/* <Link
               to="/rally-pro"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+               onClick={() => setIsMobileMenuOpen(false)}
             >
               Rally Pro
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               to="/rally-super-pro"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+               onClick={() => setIsMobileMenuOpen(false)}
             >
               Rally Super Pro
+            </Link> */}
+
+            <Link
+              to='/homelivetest'
+              className="px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300 flex items-center justify-between"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span>Live Test</span>
+              {liveTests.length > 0 && (
+                <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">New</span>
+              )}
             </Link>
 
-      <Link
-      to='/homelivetest'
-      className=" px-4 py-2 transition duration-300 flex items-center gap-2 hover:bg-blue-700 hover:text-white"
-    >
-      Live Test 
+            <div className="border-t border-slate-100 pt-4 pb-2 px-6 space-y-4">
+              <div className="flex flex-col gap-3">
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="w-full bg-green-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-green-700 transition-colors">Sign In</button>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <div className="w-full flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                    <span className="font-bold text-slate-700 truncate mr-2">{user?.firstName}</span>
+                    <CustomUserMenu />
+                  </div>
+                </SignedIn>
+              </div>
 
-         {liveTests.length > 0 && (
-    <span className="ml-1 bg-[#7E57C2] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">New</span>
-  )}
-      </Link>
-
-            {/* <Link
-              to="/video-course"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
-            >
-              Video Course
-            </Link> */}
-
-            {/* <Link
-              to="/blogs"
-              className="block px-4 py-2 hover:bg-blue-700 hover:text-white transition duration-300"
-            >
-              Blogs
-            </Link> */}
-            <hr />
-            {/* Login/Register Buttons in Mobile Menu */}
-            <div className="flex flex-col space-y-2 px-4">
-              {/* <button
-              type="button"
-              className="w-full px-4 py-2 text-blue-500 border border-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition"
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-            >
-              Register
-            </button> */}
-
-              <SignedOut>
-                <SignInButton />
-              </SignedOut>
-              <SignedIn>
-                {/* <UserButton /> */}
-                <CustomUserMenu />
-              </SignedIn>
-              <p>{!user ? "" : user.firstName}</p>
-              <Link target="_blank" to="https://t.me/examrally">
-                {" "}
-                <i
-                  className="bi bi-telegram text-2xl"
-                  style={{ color: "	#24A1DE" }}
-                >
-                  {" "}
-                </i>
-                Join Telegram{" "}
+              <Link target="_blank" to="https://t.me/examrally" className="flex items-center justify-center gap-2 w-full bg-[#24A1DE]/10 text-[#24A1DE] font-bold py-3 rounded-xl hover:bg-[#24A1DE]/20 transition-colors">
+                <i className="bi bi-telegram text-xl"></i>
+                Join Telegram
               </Link>
             </div>
           </div>
