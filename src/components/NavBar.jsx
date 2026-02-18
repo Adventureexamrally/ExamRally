@@ -128,10 +128,10 @@ const NavBar = () => {
           {/* Logo */}
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex space-x-6">
+          <nav className="hidden md:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
             <Link
               to="/"
-              className="hover:text-blue-600 transition duration-300 "
+              className="hover:text-blue-600 transition duration-300"
             >
               Home
             </Link>
@@ -209,6 +209,15 @@ const NavBar = () => {
             >
               PDF Course
             </Link>
+              <Link
+              to="/video-course"
+              className="relative hover:text-blue-600 transition duration-300"
+            >
+              Video Course
+              {/* <span className="absolute -top-3 -right-6 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full animate-pulse font-bold shadow-sm">
+                New
+              </span> */}
+            </Link>
             <Link
               to="/blog"
               className="hover:text-blue-600 transition duration-300"
@@ -242,12 +251,7 @@ const NavBar = () => {
 
 
 
-            {/* <Link
-              to="/video-course"
-              className="hover:text-blue-600 transition duration-300"
-            >
-              Video Course
-            </Link> */}
+          
             {/* <Link
               to="/blogs"
               className="hover:text-blue-600 transition duration-300"
@@ -261,8 +265,9 @@ const NavBar = () => {
             to="https://play.google.com/store/apps/details?id=io.examrally.in"
             target="_blank"
             rel="noopener noreferrer"
+            className="flex-shrink-0"
           >
-            <button className=" text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
+            <button className="text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
                 alt="Get it on Google Play"
@@ -360,13 +365,20 @@ const NavBar = () => {
             >
               Free PDF
             </Link>
-            {/* <Link
+            <Link
               to="/pdf-course"
               className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               PDF Course
-            </Link> */}
+            </Link>
+            <Link
+              to="/video-course"
+              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Video Course
+            </Link>
             <Link
               to="/blog"
               className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"

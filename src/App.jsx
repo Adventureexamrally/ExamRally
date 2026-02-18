@@ -73,6 +73,7 @@ const Homeliveresult = lazy(() => import("./components/LiveMockTest/Homeliveresu
 const HomeLiveSolution = lazy(() => import("./components/LiveMockTest/HomeLiveSolution"));
 const HomeLiveResultPage = lazy(() => import("./components/LiveMockTest/HomeLiveResult2"));
 const Subvideocourse = lazy(() => import("./pages/Subvideocourse"))
+const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
 // Constants
 const MOCK_TEST_ROUTES = [
   "/mocktest",
@@ -94,7 +95,8 @@ const MOCK_TEST_ROUTES = [
   "/homeliveotherinstruct",
   "/homelivemocktest",
   "/homeSolution",
-  "/HomeliveresultPage"
+  "/HomeliveresultPage",
+  "/videoplayer"
 ];
 
 const LOCAL_STORAGE_KEYS = {
@@ -345,6 +347,7 @@ function MainApp() {
     { path: "/pdf-course/:level", element: <PdfCourse /> },
     { path: "/video-course", element: <VideoCourse /> },
     { path: "/videocourse/:sub/:id", element: <Subvideocourse /> },
+    { path: "/videoplayer/:courseId/:topicName", element: <VideoPlayerPage /> },
     { path: "/All-Packages", element: <Packages /> },
     { path: "/homelivetest", element: <HomeLivetest /> },
     { path: "*", element: <NotFound /> },

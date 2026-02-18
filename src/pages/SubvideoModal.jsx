@@ -4,7 +4,7 @@ import { UserContext } from '../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from "react-router-dom";
 
-const SubvideoModal = ({ videos = [], onClose, isOpen,data }) => {
+const SubvideoModal = ({ videos = [], onClose, isOpen, data }) => {
   console.log(data);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const playerRef = useRef(null);
@@ -39,7 +39,7 @@ const SubvideoModal = ({ videos = [], onClose, isOpen,data }) => {
     };
   }, [onClose, isOpen]);
 
- useEffect(() => {
+  useEffect(() => {
     if (!utcNow || (!user?.enrolledCourses && !user?.subscriptions)) return;
 
     const checkExpiry = (course) => {
@@ -145,128 +145,160 @@ const SubvideoModal = ({ videos = [], onClose, isOpen,data }) => {
         ) : (
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-{videos.map((video) => {
-  const liveDate = new Date(video.live_date);
-  const showDate = video.live_date ? new Date(video.live_date) : null;
-  const isFree = video.type === 'free';
-  const isPaid = video.type === 'paid';
-  const isUserEnrolled = isEnrolled;
-  const utcNow = new Date(); // Current time
+              {videos.map((courseEntry) => {
+                // Use the new videos array if available, otherwise fallback to single video properties for backward compatibility
+                const videoList = courseEntry.videos && courseEntry.videos.length > 0
+                  ? courseEntry.videos
+                  : [{
+                    title: courseEntry.title || "Video",
+                    video_url: courseEntry.video_url,
+                    type: courseEntry.type || "free",
+                    isLive: courseEntry.isLive || false // Assuming old structure might imply live status differently or not at all
+                  }];
 
-  let isLocked = false;
-  let showDateText = 'Coming Soon';
+                return videoList.map((video, vIndex) => {
+                  // Determine properties based on whether it's from the new array or old structure
+                  // Note: The 'video' object here is either an item from the 'videos' array OR the constructed object above.
+                  // However, for locking logic, we need course-level dates (live_date, expiry) from 'courseEntry'
 
-if (isFree) {
-  isLocked = utcNow < liveDate;
-  if (video.show_date) {
-    showDateText = isLocked
-      ? `Available from ${liveDate.toLocaleString('en-US', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: true,
-        })}`
-      : '';
-  } else {
-    showDateText = 'Coming Soon';
-  }
-} else if (isPaid) {
-  if (!isUserEnrolled) {
-    isLocked = true;
-    showDateText = 'Purchase Required';
-  } else {
-    isLocked = utcNow < liveDate;
-    if (video.show_date) {
-      showDateText = isLocked
-        ? `Available from ${liveDate.toLocaleString('en-US', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true,
-          })}`
-        : '';
-    } else {
-      showDateText = 'Coming Soon';
-    }
-  }
-}
+                  const liveDate = courseEntry.live_date ? new Date(courseEntry.live_date) : null;
+                  const showDate = courseEntry.live_date ? new Date(courseEntry.live_date) : null;
+                  const isFree = video.type === 'free'; // Check individual video type
+                  const isPaid = video.type === 'paid';
+                  const isUserEnrolled = isEnrolled;
+                  const utcNow = new Date();
 
+                  let isLocked = false;
+                  let showDateText = 'Coming Soon';
 
-  return (
-    <div
-      key={video._id}
-      className="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-    >
-      {isLocked && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10 text-white">
-          <span className="text-lg font-semibold">🔒 Locked</span>
-          <span className="text-sm mt-1">{showDateText}</span>
-        </div>
-      )}
+                  if (isFree) {
+                    // Free videos might still be date-restricted by the course entry's live_date
+                    isLocked = liveDate && utcNow < liveDate;
+                    if (courseEntry.show_date && liveDate) {
+                      showDateText = isLocked
+                        ? `Available from ${liveDate.toLocaleString('en-US', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          hour12: true,
+                        })}`
+                        : '';
+                    } else {
+                      showDateText = 'Coming Soon';
+                    }
+                  } else if (isPaid) {
+                    if (!isUserEnrolled) {
+                      isLocked = true;
+                      showDateText = 'Purchase Required';
+                    } else {
+                      // Enrolled users might still wait for live date
+                      isLocked = liveDate && utcNow < liveDate;
+                      if (courseEntry.show_date && liveDate) {
+                        showDateText = isLocked
+                          ? `Available from ${liveDate.toLocaleString('en-US', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true,
+                          })}`
+                          : '';
+                      } else {
+                        showDateText = 'Coming Soon';
+                      }
+                    }
+                  }
 
-      <div
-        className="relative pt-[56.25%] bg-gray-100 cursor-pointer"
-        onClick={() => {
-          if (!isLocked) handleVideoSelect(video);
-        }}
-        tabIndex={!isLocked ? 0 : -1}
-        role="button"
-        aria-label={`Play video: ${video.title}`}
-        onKeyDown={(e) => !isLocked && e.key === 'Enter' && handleVideoSelect(video)}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center p-4">
-            <div className="w-16 h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center shadow-md mx-auto mb-3">
-              <svg
-                className="w-8 h-8 text-blue-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
-            </div>
-            <span className="text-gray-600 font-medium">Play: {video.topic}</span>
-          </div>
-        </div>
-      </div>
+                  const uniqueKey = `${courseEntry._id}-${vIndex}`;
 
-      <div className="p-6">
-        <h3 className="text-xl font-bold mb-3 text-gray-800 line-clamp-2">
-          {video.title}
-        </h3>
-        <div className="mb-4 space-y-2 text-gray-600">
-          <p><strong>Subject:</strong> {video.subject}</p>
-          <p><strong>Topic:</strong> {video.topic}</p>
-          {video.sub_topic && <p><strong>Sub-topic:</strong> {video.sub_topic}</p>}
-        </div>
+                  return (
+                    <div
+                      key={uniqueKey}
+                      className="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
+                    >
+                      {isLocked && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10 text-white rounded-lg">
+                          <span className="text-lg font-semibold">🔒 Locked</span>
+                          <span className="text-sm mt-1">{showDateText}</span>
+                        </div>
+                      )}
 
-        {video.pdf_link ? (
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={() => isFree ? handleDownloadClick(video.pdf_link) : null}
-              disabled={!isFree}
-              className={`inline-flex items-center px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                isFree ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-400 text-white cursor-not-allowed'
-              }`}
-            >
-              Download PDF
-            </button>
-          </div>
-        ) : (<button
-  disabled
-  className="mt-4 px-4 py-2 bg-gray-300 text-gray-600 rounded cursor-not-allowed text-sm mx-auto block"
->
-  PDF - Coming Soon...
-</button>
- )}
-      </div>
-    </div>
-  );
-})}
+                      <div
+                        className="relative pt-[56.25%] bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          if (!isLocked) handleVideoSelect(video);
+                        }}
+                        tabIndex={!isLocked ? 0 : -1}
+                        role="button"
+                        aria-label={`Play video: ${video.title}`}
+                        onKeyDown={(e) => !isLocked && e.key === 'Enter' && handleVideoSelect(video)}
+                      >
+                        {/* Live Badge */}
+                        {video.isLive && (
+                          <div className="absolute top-2 left-2 z-20 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded animate-pulse">
+                            Available
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center p-4">
+                            <div className="w-16 h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center shadow-md mx-auto mb-3 transition-transform transform hover:scale-110">
+                              <svg
+                                className="w-8 h-8 text-blue-600"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                              </svg>
+                            </div>
+                            <span className="text-gray-600 font-medium text-sm bg-white bg-opacity-90 px-2 py-1 rounded">
+                              Play
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 flex flex-col flex-grow">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-base font-bold text-gray-800 line-clamp-2 leading-tight" title={video.title}>
+                            {video.title}
+                          </h3>
+                          <span className={`text-xs px-2 py-0.5 rounded border ${isFree ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                            {isFree ? 'Free' : 'Paid'}
+                          </span>
+                        </div>
+
+                        <div className="mt-auto pt-3 border-t border-gray-100">
+                          <div className="text-xs text-gray-500 mb-2">
+                            <span className="font-semibold text-gray-700">Topic:</span> {courseEntry.topic}
+                          </div>
+
+                          {courseEntry.pdf_link ? (
+                            <button
+                              onClick={() => isFree || isUserEnrolled ? handleDownloadClick(courseEntry.pdf_link) : null}
+                              disabled={!isFree && !isUserEnrolled}
+                              className={`w-full flex items-center justify-center px-4 py-2 rounded-md font-medium text-sm transition-colors ${isFree || isUserEnrolled
+                                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                }`}
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                              {isFree || isUserEnrolled ? 'Download PDF' : 'PDF Locked'}
+                            </button>
+                          ) : (
+                            <div className="text-center text-xs text-gray-400 italic py-2">
+                              No PDF available
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })}
 
 
 

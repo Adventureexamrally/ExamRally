@@ -37,24 +37,51 @@ const Videojs = ({ options, onReady, courseId, backtolist }) => {
 
   useEffect(() => {
     const el = videoRef.current;
-    if (el && !playerRef.current) {
-      const player = videojs(el, options, () => onReady?.(player));
+
+    if (!playerRef.current && el) {
+      // Initialize player
+      const player = videojs(el, options, () => {
+        onReady?.(player);
+      });
+
       player.on('timeupdate', () => {
         setCurrentTime(player.currentTime());
         setDuration(player.duration());
       });
+
       player.on('ended', () => {
         setIsCompleted(true);
         postWatchedVideo(true, []);
       });
-      player.httpSourceSelector();
+
+      if (player.httpSourceSelector) {
+        player.httpSourceSelector();
+      }
+
       playerRef.current = player;
+    } else if (playerRef.current) {
+      // Update player
+      const player = playerRef.current;
+      const currentSrc = player.currentSrc();
+      const newSrc = options.sources?.[0]?.src;
+
+      if (newSrc && currentSrc !== newSrc) {
+        player.src(options.sources);
+      }
     }
-    return () => {
-      playerRef.current?.dispose();
-      playerRef.current = null;
-    };
   }, [options, onReady]);
+
+  // Dispose on unmount
+  useEffect(() => {
+    const player = playerRef.current;
+
+    return () => {
+      if (player && !player.isDisposed()) {
+        player.dispose();
+        playerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (user?._id && options.sources?.[0]?.src) {
@@ -139,23 +166,23 @@ const Videojs = ({ options, onReady, courseId, backtolist }) => {
     }
   };
 
-const handleDeleteNote = async (noteIdToDelete) => {
-  const updatedNotes = savedNotes.filter(note => note._id !== noteIdToDelete);
-  setSavedNotes(updatedNotes);
+  const handleDeleteNote = async (noteIdToDelete) => {
+    const updatedNotes = savedNotes.filter(note => note._id !== noteIdToDelete);
+    setSavedNotes(updatedNotes);
 
-  try {
-    await Api.post(`video-courses/users/${user._id}/watched-videos`, {
-      courseId,
-      video_url: options.sources?.[0]?.src,
-      duration: playerRef.current?.duration(),
-      completed: isCompleted,
-      notes: updatedNotes,
-      currentTime,
-    });
-  } catch (err) {
-    console.error("Error deleting note:", err);
-  }
-};
+    try {
+      await Api.post(`video-courses/users/${user._id}/watched-videos`, {
+        courseId,
+        video_url: options.sources?.[0]?.src,
+        duration: playerRef.current?.duration(),
+        completed: isCompleted,
+        notes: updatedNotes,
+        currentTime,
+      });
+    } catch (err) {
+      console.error("Error deleting note:", err);
+    }
+  };
 
 
   const handleSkip = (seconds) => {
@@ -164,6 +191,35 @@ const handleDeleteNote = async (noteIdToDelete) => {
       playerRef.current.currentTime(current + seconds);
     }
   };
+
+  if (options.embedded) {
+    return (
+      <div
+        className={`w-full h-full flex flex-col bg-black rounded-lg overflow-hidden absolute inset-0 ${options.className || ''}`}
+        style={options.style || {}}
+      >
+        <div data-vjs-player className="flex-1 w-full relative">
+          <video
+            ref={videoRef}
+            className="video-js vjs-default-skin vjs-big-play-centered w-full h-full"
+            controls
+            playsInline
+          />
+        </div>
+        <div className="flex justify-between items-center py-2 text-white text-sm px-4 bg-gray-900 w-full">
+          <button onClick={() => handleSkip(-10)} className="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700">
+            ⏪ 10s
+          </button>
+          <div className="font-mono">
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </div>
+          <button onClick={() => handleSkip(10)} className="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700">
+            10s ⏩
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:fixed inset-0 flex flex-col lg:flex-row h-screen bg-gray-100 overflow-hidden">
@@ -191,18 +247,18 @@ const handleDeleteNote = async (noteIdToDelete) => {
       </div>
 
       <div className="w-full lg:w-96 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 shadow-inner flex flex-col overflow-hidden">
-       <div className="container mx-auto flex flex-col items-center justify-center">
-      {/* Your other content here */}
-      
-      <button 
-        onClick={backtolist} 
-        className="mt-4 px-4 py-2 bg-green-500  fw-bold text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-2"
-      >
-        <i className="bi fw-bold bi-chevron-double-left"></i>
+        <div className="container mx-auto flex flex-col items-center justify-center">
+          {/* Your other content here */}
 
-        Back
-      </button>
-    </div>
+          <button
+            onClick={backtolist}
+            className="mt-4 px-4 py-2 bg-green-500  fw-bold text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-2"
+          >
+            <i className="bi fw-bold bi-chevron-double-left"></i>
+
+            Back
+          </button>
+        </div>
         <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center space-x-2">
             <FaBookmark className="text-blue-600" />
@@ -235,45 +291,45 @@ const handleDeleteNote = async (noteIdToDelete) => {
               <p className="text-sm text-gray-400">Add your first note by clicking the + button</p>
             </div>
           ) : (
-        <div className="space-y-3">
-  {savedNotes.map((note, index) => (
-    <div
-      key={index}
-      className="p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-blue-50 cursor-pointer transition-colors duration-150"
-      onClick={() => handleNoteClick(note.timestamp)}
-    >
-      <p className="text-sm text-gray-800 font-semibold">{note.content}</p>
+            <div className="space-y-3">
+              {savedNotes.map((note, index) => (
+                <div
+                  key={index}
+                  className="p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-blue-50 cursor-pointer transition-colors duration-150"
+                  onClick={() => handleNoteClick(note.timestamp)}
+                >
+                  <p className="text-sm text-gray-800 font-semibold">{note.content}</p>
 
-      <div className="flex justify-between items-center mt-2">
-        {/* Left side: Timer */}
-        <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
-          {note.time}
-        </span>
+                  <div className="flex justify-between items-center mt-2">
+                    {/* Left side: Timer */}
+                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                      {note.time}
+                    </span>
 
-        {/* Right side: Delete button */}
-        <div className="flex items-center space-x-2">
-          {index === savedNotes.length - 1 && isFirstTime && (
-            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-              New
-            </span>
-          )}
-          <button
-  className="p-1 rounded-full hover:bg-red-100 text-green-500 hover:text-red-700 transition-colors duration-150"
-  onClick={(e) => {
-    e.stopPropagation();
-    handleDeleteNote(note._id);
-  }}
-  title="Delete Note"
->
- <i className="bi bi-trash-fill"></i>
-</button>
+                    {/* Right side: Delete button */}
+                    <div className="flex items-center space-x-2">
+                      {index === savedNotes.length - 1 && isFirstTime && (
+                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                          New
+                        </span>
+                      )}
+                      <button
+                        className="p-1 rounded-full hover:bg-red-100 text-green-500 hover:text-red-700 transition-colors duration-150"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteNote(note._id);
+                        }}
+                        title="Delete Note"
+                      >
+                        <i className="bi bi-trash-fill"></i>
+                      </button>
 
 
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
           )}
         </div>
@@ -305,14 +361,14 @@ const handleDeleteNote = async (noteIdToDelete) => {
             />
 
             <div className="flex items-center justify-between mt-6">
-           <button
-  onClick={() => {}}
-  className="px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 bg-gray-200 text-gray-400 cursor-not-allowed"
-  disabled
->
-  <FaCheck size={14} />
-  <span>{isCompleted ? 'Completed' : 'Mark Complete'}</span>
-</button>
+              <button
+                onClick={() => { }}
+                className="px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 bg-gray-200 text-gray-400 cursor-not-allowed"
+                disabled
+              >
+                <FaCheck size={14} />
+                <span>{isCompleted ? 'Completed' : 'Mark Complete'}</span>
+              </button>
 
 
               <button
