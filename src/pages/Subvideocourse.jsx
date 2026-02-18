@@ -23,6 +23,7 @@ const Subvideocourse = () => {
   const [expireDate, setExpireDate] = useState(null);
   const [data, setData] = useState({}); // Placeholder for Coupon
   const [error, setError] = useState(null); // Added error state
+  const [activeFilter, setActiveFilter] = useState("All"); // Filter state
 
   // Fetch ad data
   useEffect(() => {
@@ -124,30 +125,57 @@ const Subvideocourse = () => {
           <HighlightsSection highlights={courseData.course_highlight} />
 
           {/* Subtopics */}
-          <h2 className="text-2xl font-semibold mb-4 bg-green-500 my-2 py-2 px-3 text-white rounded-lg">
-            {courseData.subject}
-          </h2>
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold bg-green-500 my-2 py-2 px-3 text-white rounded-lg">
+              {courseData.subject}
+            </h2>
+
+            {/* Filter Tabs */}
+            <div className="flex bg-gray-100 p-1 rounded-lg">
+              {["All", "Prelims", "Mains"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setActiveFilter(type)}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeFilter === type
+                    ? "bg-white text-green-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                    }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {subtopic?.map((sub, idx) =>
-              sub.topics?.map((topic, index) => (
-                <div key={`${idx}-${index}`} className="card scale-95 shadow-2xl border rounded-md hover:scale-100 transition duration-300">
-                  <div className="card-body text-center p-4">
-                    <h5 className="card-title font-semibold">{topic.name}</h5>
-                    <button
-                      className="mt-3 py-2 px-4 rounded w-full transition bg-green-500 text-white hover:bg-green-600"
-                      onClick={() => {
-                        // const video = courseData.video_courses?.filter(v => v.topic === topic.name);
-                        // setCurrentVideo(video);
-                        // setModalOpen(true);
-                        // Open in new tab
-                        window.open(`/videoplayer/${id}/${encodeURIComponent(topic.name)}`, '_blank');
-                      }}
-                    >
-                      View Videos
-                    </button>
+              sub.topics
+                ?.filter((topic) => {
+                  if (activeFilter === "All") return true;
+
+                  const type = topic.examType || "Prelims";
+                  // Show if type matches filter OR if type is "Both" (unless filter is "All", handled above)
+                  return type === activeFilter || type === "Both";
+                })
+                .map((topic, index) => (
+                  <div key={`${idx}-${index}`} className="card scale-95 shadow-2xl border rounded-md hover:scale-100 transition duration-300">
+                    <div className="card-body text-center p-4">
+                      <h5 className="card-title font-semibold">{topic.name}</h5>
+                      <button
+                        className="mt-3 py-2 px-4 rounded w-full transition bg-green-500 text-white hover:bg-green-600"
+                        onClick={() => {
+                          // const video = courseData.video_courses?.filter(v => v.topic === topic.name);
+                          // setCurrentVideo(video);
+                          // setModalOpen(true);
+                          // Open in new tab
+                          window.open(`/videoplayer/${id}/${encodeURIComponent(topic.name)}`, '_blank');
+                        }}
+                      >
+                        View Videos
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))
             )}
           </div>
         </div>
