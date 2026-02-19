@@ -599,7 +599,7 @@ const PdfCourse = () => {
                                                                             onClick={() => toggleSchedule(pdf._id)}
                                                                             className="w-full px-3 py-2 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-600 hover:text-white transition-all border border-green-200"
                                                                         >
-                                                                            📋 Schedule
+                                                                            Assessment Topics
                                                                         </button>
                                                                     </div>
                                                                 )}
