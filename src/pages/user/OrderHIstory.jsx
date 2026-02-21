@@ -1,168 +1,165 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import DashBoard from "./DashBoard";
-import Api from '../../service/Api';
+import Api from "../../service/Api";
 import { UserContext } from "../../context/UserProvider";
-import { 
-  ArrowPathIcon,
-  ReceiptRefundIcon,
-  ClockIcon,
-  CheckBadgeIcon,
-  XCircleIcon
-} from "@heroicons/react/24/outline";
+import {
+  FaReceipt, FaSync, FaClock, FaCheckCircle, FaTimesCircle,
+  FaRupeeSign, FaCalendarAlt, FaHashtag, FaBoxOpen,
+} from "react-icons/fa";
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+const fmt = (d) =>
+  d
+    ? new Date(d).toLocaleDateString("en-IN", {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    })
+    : "N/A";
+
+const STATUS_MAP = {
+  pending: { label: "Pending", icon: FaClock, cls: "bg-amber-50  text-amber-700  border-amber-200" },
+  completed: { label: "Completed", icon: FaCheckCircle, cls: "bg-green-50  text-green-700  border-green-200" },
+  failed: { label: "Failed", icon: FaTimesCircle, cls: "bg-red-50    text-red-700    border-red-200" },
+};
+
+const StatusBadge = ({ status = "" }) => {
+  const key = status.toLowerCase();
+  const { label, icon: Icon, cls } = STATUS_MAP[key] || {
+    label: status, icon: null, cls: "bg-gray-50 text-gray-600 border-gray-200",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cls}`}>
+      {Icon && <Icon className="text-xs" />}
+      {label}
+    </span>
+  );
+};
+
+const OrderCard = ({ payment }) => (
+  <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition p-4">
+    {/* Header */}
+    <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="p-2 bg-indigo-50 rounded-lg flex-shrink-0">
+          <FaReceipt className="text-indigo-500 text-sm" />
+        </div>
+        <h3 className="font-semibold text-gray-800 text-sm truncate">
+          {Array.isArray(payment.courseName)
+            ? payment.courseName.filter(Boolean).join(", ")
+            : payment.courseName || "Unnamed Course"}
+        </h3>
+      </div>
+      <StatusBadge status={payment.status} />
+    </div>
+
+    <div className="border-t border-gray-100 my-3" />
+
+    {/* Details grid */}
+    <div className="grid grid-cols-1 gap-2">
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <FaHashtag className="flex-shrink-0 text-gray-400" />
+        <span className="font-medium text-gray-700 truncate">{payment.orderId || "N/A"}</span>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <FaRupeeSign className="flex-shrink-0 text-gray-400" />
+        <span className="font-medium text-gray-700">
+          ₹{payment.amount?.toLocaleString("en-IN") || "0"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <FaCalendarAlt className="flex-shrink-0 text-gray-400" />
+        <span className="font-medium text-gray-700">{fmt(payment.purchaseDate || payment.createdAt)}</span>
+      </div>
+    </div>
+  </div>
+);
 
 const OrderHistory = () => {
   const [open, setOpen] = useState(false);
-  const [pendingPayments, setPendingPayments] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-
   const { user } = useContext(UserContext);
-  
-  const handleDrawerToggle = () => {
-    setOpen(!open);
-  };
 
-  const fetchPendingPayments = async () => {
+  const fetchPayments = useCallback(async () => {
+    if (!user?._id) return;
+    setRefreshing(true);
+    setError("");
     try {
-      setRefreshing(true);
-      const res = await Api.get(`orders/pending-payments/${user?._id}`);
-      setPendingPayments(res.data);
-      setError("");
+      const res = await Api.get(`orders/pending-payments/${user._id}`);
+      setPayments(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      setError(err.message || "Failed to load payments");
+      // 404 just means no pending orders — treat as empty, not an error
+      if (err?.response?.status === 404) {
+        setPayments([]);
+      } else {
+        setError(err?.response?.data?.message || err.message || "Failed to load orders.");
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [user?._id]);
 
-  useEffect(() => {
-    if (user?._id) {
-      fetchPendingPayments();
-    }
-  }, [user]);
-
-  const handleRefresh = () => {
-    fetchPendingPayments();
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getStatusBadge = (status) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower === 'pending') {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
-          <ClockIcon className="h-4 w-4 mr-1" />
-          {status}
-        </span>
-      );
-    }
-    if (statusLower === 'completed') {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-          <CheckBadgeIcon className="h-4 w-4 mr-1" />
-          {status}
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-        {status}
-      </span>
-    );
-  };
+  useEffect(() => { fetchPayments(); }, [fetchPayments]);
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen">
-      <DashBoard handleDrawerToggle={handleDrawerToggle} open={open} setOpen={setOpen} />
-      
-      <div className="flex-1 p-4 md:p-8">
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div className="flex items-center mb-4 md:mb-0">
-              <ReceiptRefundIcon className="h-8 w-8 text-indigo-600 mr-3" />
-              <h2 className="text-2xl font-bold text-gray-800">Pending Order History</h2>
+    <div className="flex flex-col md:flex-row">
+      <DashBoard handleDrawerToggle={() => setOpen(!open)} open={open} setOpen={setOpen} />
+
+      <div className="flex-1 bg-gray-50 min-h-screen p-4 md:p-8">
+        <div className="max-w-5xl mx-auto">
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Order History</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Track your pending & recent payment orders</p>
             </div>
             <button
-              onClick={handleRefresh}
+              onClick={fetchPayments}
               disabled={refreshing}
-              className={`flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium transition-colors
-                ${refreshing ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-400'}`}
+              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 hover:shadow transition"
             >
-              <ArrowPathIcon className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              <FaSync className={`text-xs ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Refreshing…" : "Refresh"}
             </button>
           </div>
 
-          <div className="border-b border-gray-200 mb-6"></div>
-
-          {loading && !refreshing ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          {/* States */}
+          {loading ? (
+            <div className="flex justify-center items-center h-52">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500" />
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <XCircleIcon className="h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Orders</h3>
-              <p className="text-gray-500 mb-4">{error}</p>
+            <div className="flex flex-col items-center justify-center h-52 bg-white rounded-2xl border border-gray-100 gap-3">
+              <FaTimesCircle className="text-red-400 text-4xl" />
+              <p className="text-sm font-medium text-gray-700">{error}</p>
               <button
-                onClick={handleRefresh}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                onClick={fetchPayments}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-xl hover:bg-indigo-700"
               >
-                Try Again
+                <FaSync /> Try Again
               </button>
             </div>
-          ) : pendingPayments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <ClockIcon className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Orders</h3>
-              <p className="text-gray-500">You don't have any pending payments at the moment.</p>
+          ) : payments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-52 bg-white rounded-2xl border border-gray-100 gap-3">
+              <FaBoxOpen className="text-gray-300 text-5xl" />
+              <p className="text-gray-500 font-medium text-sm">No pending orders found</p>
+              <p className="text-gray-400 text-xs">All your orders have been processed, or you haven't made any yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pendingPayments.map((payment) => (
-              <div key={payment._id} className="border-1 border-red-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2 md:mb-0">
-                    {payment.courseName?.join(", ") || "Unnamed Course"}
-                  </h3>
-                  {getStatusBadge(payment.status)}
-                </div>
-                
-                <div className="border-t border-gray-200 my-3"></div>
-                
-                <div className="grid grid-cols-1 gap-y-3">
-                  <div>
-                    <p className="text-sm text-gray-500">Order ID</p>
-                    <p className="font-medium text-gray-900 break-all">{payment.orderId}</p>
-                  </div>
-          
-                  <div>
-                    <p className="text-sm text-gray-500">Amount</p>
-                    <p className="font-medium text-gray-900">₹{payment.amount?.toLocaleString('en-IN') || '0'}</p>
-                  </div>
-          
-                  <div>
-                    <p className="text-sm text-gray-500">Purchase Date</p>
-                    <p className="font-medium text-gray-900">{formatDate(payment.purchaseDate)}</p>
-                  </div>
-                </div>
+            <>
+              <p className="text-xs text-gray-400 mb-4">{payments.length} order{payments.length !== 1 ? "s" : ""} found</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {payments.map((p) => (
+                  <OrderCard key={p._id} payment={p} />
+                ))}
               </div>
-            ))}
-          </div>
-          
+            </>
           )}
+
         </div>
       </div>
     </div>

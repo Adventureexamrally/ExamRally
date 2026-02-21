@@ -160,7 +160,7 @@ function App() {
   return (
     <Router>
       <Suspense fallback={<LoadingSpinner />}>
-        <MainApp />
+        <MainApp/>
       </Suspense>
     </Router>
   );

@@ -57,6 +57,11 @@ const NavBar = () => {
   useEffect(() => {
     const sendUserData = async () => {
       if (isLoaded && isSignedIn && user) {
+        // Capture referral code from URL (?ref=CODE) and store it
+        // so it survives Clerk's auth redirect
+        const urlRef = new URLSearchParams(window.location.search).get("ref");
+        if (urlRef) sessionStorage.setItem("referralCode", urlRef);
+
         const userAlreadySynced = localStorage.getItem(
           `user_synced_${user.id}`
         );
@@ -76,6 +81,7 @@ const NavBar = () => {
           profilePicture: user.imageUrl,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
+          referralCode: sessionStorage.getItem("referralCode") || undefined,
           customFields: {
             address: user.publicMetadata?.address || "N/A",
             city: user.publicMetadata?.city || "N/A",
@@ -99,8 +105,9 @@ const NavBar = () => {
             console.log("User signed up:", userData);
           }
 
-          // Mark as synced so it doesn't re-send next time
           localStorage.setItem(`user_synced_${user.id}`, "true");
+          // Clear referral code from session after successful sync
+          sessionStorage.removeItem("referralCode");
         } catch (error) {
           console.error("Error sending user data:", error);
           if (error.response && error.response.status === 403) {
