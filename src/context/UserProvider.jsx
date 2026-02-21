@@ -9,11 +9,13 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [utcNow, setUtcNow] = useState(null); // 👈 Add UTC state
+  const [isFetchingUser, setIsFetchingUser] = useState(true); // Track backend fetch status
 
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();
 
   // 🔁 Fetch user details from backend
   const fetchUserDetails = async () => {
+    setIsFetchingUser(true);
     try {
       const clerkId = clerkUser.id;
       const email = clerkUser.emailAddresses[0]?.emailAddress;
@@ -23,6 +25,8 @@ export const UserProvider = ({ children }) => {
       console.log("Fetched user from backend:", res.data);
     } catch (err) {
       console.error("Error fetching user details:", err);
+    } finally {
+      setIsFetchingUser(false);
     }
   };
 
@@ -38,13 +42,19 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      setIsFetchingUser(false); // Not signed in, so not fetching user
+      return;
+    }
+
     fetchUserDetails();
     fetchUtcTimeOnce(); // 👈 Fetch once only when user is loaded
   }, [isLoaded, isSignedIn, clerkUser]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, refreshUser: fetchUserDetails, utcNow }}>
+    <UserContext.Provider value={{ user, setUser, refreshUser: fetchUserDetails, utcNow, isFetchingUser }}>
       {children}
     </UserContext.Provider>
   );

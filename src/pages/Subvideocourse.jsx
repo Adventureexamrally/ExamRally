@@ -17,7 +17,7 @@ const Subvideocourse = () => {
   const [currentVideo, setCurrentVideo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [ad, setAD] = useState([]);
-  const { user, utcNow } = useContext(UserContext);
+  const { user, utcNow, isFetchingUser } = useContext(UserContext);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [expireDate, setExpireDate] = useState(null);
@@ -188,6 +188,7 @@ const Subvideocourse = () => {
             isEnrolled={isEnrolled}
             expireDays={expireDate}
             isSignedIn={isSignedIn}
+            isLoading={isFetchingUser}
             onBuy={() => {
               if (!isSignedIn) navigate('/sign-in');
               else setShowModal(true);
@@ -332,14 +333,20 @@ const InstructorSection = ({ authors }) => {
   );
 };
 
-const PricingSidebar = ({ courseData, isEnrolled, expireDays, isSignedIn, onBuy }) => {
+const PricingSidebar = ({ courseData, isEnrolled, expireDays, isSignedIn, onBuy, isLoading }) => {
   const discount = courseData.amount - courseData.discountedAmount;
 
   return (
     <div className="bg-white rounded-[2rem] shadow-xl border border-emerald-100 overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-green-500"></div>
       <div className="p-6 sm:p-8">
-        {!isEnrolled ? (
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mb-2"></div>
+            <p className="text-slate-500 font-medium text-sm">Checking status...</p>
+          </div>
+        ) : !isEnrolled ? (
           <div className="text-center mb-8">
             <div className="text-slate-400 line-through text-sm font-medium">MRP: ₹{courseData.amount}</div>
             <div className="flex items-baseline justify-center gap-1 my-1">
@@ -366,16 +373,18 @@ const PricingSidebar = ({ courseData, isEnrolled, expireDays, isSignedIn, onBuy 
           </div>
         )}
 
-        <button
-          onClick={onBuy}
-          disabled={isEnrolled}
-          className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl shadow-green-100 transition-all transform hover:-translate-y-1 active:translate-y-0 ${isEnrolled
-            ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-            : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white"
-            }`}
-        >
-          {isEnrolled ? "Continue Learning" : "Enroll Now"}
-        </button>
+        {!isLoading && (
+          <button
+            onClick={onBuy}
+            disabled={isEnrolled}
+            className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl shadow-green-100 transition-all transform hover:-translate-y-1 active:translate-y-0 ${isEnrolled
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+              : "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white"
+              }`}
+          >
+            {isEnrolled ? "Continue Learning" : "Enroll Now"}
+          </button>
+        )}
 
         <div className="mt-8 space-y-4">
           <div className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3">What's included</div>

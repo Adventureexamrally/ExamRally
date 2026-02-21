@@ -27,6 +27,7 @@ const PdfCourse = () => {
     const [refetchTrigger, setRefetchTrigger] = useState(0);
     const [generatingPdf, setGeneratingPdf] = useState({}); // Tracking loading state per examId
     const [selectedLanguage, setSelectedLanguage] = useState({}); // Language selection per examId (english/tamil/hindi)
+    const [pdfProducts, setPdfProducts] = useState([]); // Store valid PDF Course Products
 
     // 1. Fetch UTC time from server
     useEffect(() => {
@@ -48,7 +49,7 @@ const PdfCourse = () => {
         setOpenScheduleId((prevId) => (prevId === id ? null : id));
     }, []);
 
-    const { user } = useContext(UserContext);
+    const { user, isFetchingUser } = useContext(UserContext);
     const { level } = useParams();
 
     const { isSignedIn } = useUser();
@@ -60,20 +61,44 @@ const PdfCourse = () => {
     }, [level]);
 
     const run = async () => {
-        const response = await Api.get(`pdf-Course/courses`);
-        const filteredData = response.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
-        setAlldata(filteredData);
+        try {
+            const [coursesRes, examsRes, seoRes, adRes] = await Promise.all([
+                Api.get(`pdf-Course/courses`),
+                Api.get("/pdf-Course/Exams").catch(() => ({ data: [] })),
+                Api.get(`/get-Specific-page/pdf-course`).catch(() => ({ data: [] })),
+                Api.get(`/blog-Ad/getbypage/pdf-course`).catch(() => ({ data: [] }))
+            ]);
 
-        const pdfExams = await Api.get("/pdf-Course/Exams");
-        setAllExamsName(pdfExams.data);
-        console.log(pdfExams.data);
+            if (coursesRes?.data) {
+                const filteredData = coursesRes.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
+                setAlldata(filteredData);
+            }
 
-        const response2 = await Api.get(`/get-Specific-page/pdf-course`);
-        setSeo(response2.data);
-
-        const response3 = await Api.get(`/blog-Ad/getbypage/pdf-course`);
-        setAD(response3.data);
+            setAllExamsName(examsRes?.data || []);
+            setSeo(seoRes?.data || []);
+            setAD(adRes?.data || []);
+        } catch (error) {
+            console.error("Error fetching page data:", error);
+        }
     };
+
+    // Separate effect to fetch products, ensuring it runs independently of 'run'
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                // Using the standard endpoint that works in PdfCourseHome
+                const response = await Api.get('pdfcourseDetails/pdf-products');
+                if (Array.isArray(response.data)) {
+                    setPdfProducts(response.data);
+                } else {
+                    // console.log("PDF DEBUG - Products response is not array:", response.data); // Removed debug log
+                }
+            } catch (error) {
+                console.error("Failed to fetch PDF products:", error); // Changed to console.error
+            }
+        };
+        fetchProducts();
+    }, []);
 
     // Step 2: Now that alldata is updated, fetch results
     useEffect(() => {
@@ -292,24 +317,46 @@ const PdfCourse = () => {
         }
     };
 
-    // Check if user has ANY active PDF subscription (using context)
+    // Check if user has ANY active PDF subscription or enrollment (using context)
     const hasActiveSubscription = () => {
-        if (!user?.subscriptions || !utcNow) return false;
+        if ((!user?.subscriptions && !user?.enrolledCourses) || !utcNow) return false;
 
-        const activePdfSubscription = user.subscriptions.find(sub =>
+        // Helper to check expiry
+        const isActive = (expiryDate) => new Date(expiryDate) > utcNow;
+
+        // 1. Check Subscriptions (Standard PDF Subscription)
+        const activePdfSubscription = user?.subscriptions?.find(sub =>
             sub.status === 'Active' &&
             (Array.isArray(sub.courseName)
-                ? sub.courseName.some(name => name?.includes('PDF Course') || name?.includes('Pdf Course'))
-                : sub.courseName?.includes('PDF Course') || sub.courseName?.includes('Pdf Course')
+                ? sub.courseName.some(name => name?.toLowerCase().includes('pdf course'))
+                : sub.courseName?.toLowerCase().includes('pdf course')
             )
         );
+        if (activePdfSubscription && isActive(activePdfSubscription.expiryDate)) return true;
 
-        if (!activePdfSubscription) return false;
+        // 2. Check Enrolled Courses (Name Match - Backup)
+        const activeEnrolledCourseByName = user?.enrolledCourses?.find(course =>
+            course.status === 'Active' &&
+            (Array.isArray(course.courseName)
+                ? course.courseName.some(name => name?.toLowerCase().includes('pdf course'))
+                : course.courseName?.toLowerCase().includes('pdf course')
+            )
+        );
+        if (activeEnrolledCourseByName && isActive(activeEnrolledCourseByName.expiryDate)) return true;
 
-        const expiry = new Date(activePdfSubscription.expiryDate);
-        return expiry > utcNow;
+        // 3. Check Enrolled Courses (ID Match - For Combo Packages & Direct Buys)
+        if (pdfProducts.length > 0) {
+            const productIds = pdfProducts.map(item => item._id);
+            const activeEnrolledCourseByID = user?.enrolledCourses?.find(course =>
+                course.status === 'Active' &&
+                course.courseId?.some(id => productIds.includes(id))
+            );
+            if (activeEnrolledCourseByID && isActive(activeEnrolledCourseByID.expiryDate)) return true;
+        }
+
+        return false;
     };
-    console.log(alldata)
+
     return (
         <>
             <Helmet>
@@ -687,6 +734,15 @@ const PdfCourse = () => {
                                                                     {(() => {
                                                                         const examId = pdf.exams[0]?._id;
                                                                         const id = pdf.exams[0]?._id;
+
+                                                                        // Show Loading State while fetching user details
+                                                                        if (isFetchingUser) {
+                                                                            return (
+                                                                                <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-slate-500 bg-slate-100 px-4 py-2 rounded animate-pulse">
+                                                                                    Checking Access...
+                                                                                </div>
+                                                                            );
+                                                                        }
 
                                                                         // 🔒 LOCKED: If content is paid & user has no subscription
                                                                         if (pdf.exams[0]?.result_type === "paid" && !hasActiveSubscription()) {

@@ -101,16 +101,43 @@ const PdfCourseHome = () => {
     if (!data?.subscriptions) return [];
 
     const userSubscriptions = user?.subscriptions || [];
+    const userEnrollments = user?.enrolledCourses || [];
 
-    // Check if user has ANY active PDF subscription
+    // Helper to check expiry
+    const isActive = (expiryDate) => new Date(expiryDate) > utcNow;
+
+    // 1. Check Subscriptions (Standard PDF Subscription)
     const activePdfSubscription = userSubscriptions.find(sub =>
       sub.status === 'Active' &&
       (sub.courseName?.includes('PDF Course') || sub.courseName?.includes('Pdf Course'))
     );
 
-    // If user has an active PDF subscription, all plans show as purchased
-    if (activePdfSubscription) {
-      const expiryDate = activePdfSubscription.expiryDate;
+    // 2. Check Enrolled Courses (ID Match - For Combo Packages & Direct Buys)
+    // We check if the current Product ID (data._id) is in the enrollment's courseId array
+    const activeEnrolledCourseByID = userEnrollments.find(course =>
+      course.status === 'Active' &&
+      course.courseId?.some(id => id === data?._id)
+    );
+
+    // 3. Check Enrolled Courses (Name Match - Backup)
+    const activeEnrolledCourseByName = userEnrollments.find(course =>
+      course.status === 'Active' &&
+      (Array.isArray(course.courseName)
+        ? course.courseName.some(name => name?.toLowerCase().includes('pdf course'))
+        : course.courseName?.toLowerCase().includes('pdf course')
+      )
+    );
+
+    // Determine if ANY active access exists
+    const validAccess =
+      (activePdfSubscription && isActive(activePdfSubscription.expiryDate) ? activePdfSubscription : null) ||
+      (activeEnrolledCourseByID && isActive(activeEnrolledCourseByID.expiryDate) ? activeEnrolledCourseByID : null) ||
+      (activeEnrolledCourseByName && isActive(activeEnrolledCourseByName.expiryDate) ? activeEnrolledCourseByName : null);
+
+
+    // If user has an active PDF subscription/access, all plans show as purchased
+    if (validAccess) {
+      const expiryDate = validAccess.expiryDate;
       const daysLeft = expiryDate ? calculateDaysLeft(expiryDate, utcNow) : null;
       const isExpired = daysLeft !== null && daysLeft <= 0;
 
@@ -131,7 +158,7 @@ const PdfCourseHome = () => {
       expiryDate: null,
       isExpired: false
     }));
-  }, [data?.subscriptions, user?.subscriptions, utcNow]);
+  }, [data?.subscriptions, data?._id, user?.subscriptions, user?.enrolledCourses, utcNow]);
 
   // Memoized event handlers
   const handlePlanClick = useCallback((plan) => {

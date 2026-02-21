@@ -26,7 +26,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCouponSection, setShowCouponSection] = useState(false);
   const [accessDuration, setAccessDuration] = useState("");
- 
+
 
   // Calculate access duration based on package validity
   useEffect(() => {
@@ -113,9 +113,12 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
       setIsProcessing(true);
 
       // Validate courses
-      if (!pkg.coursesIncluded || !Array.isArray(pkg.coursesIncluded)) {
-        throw new Error("Invalid courses data");
-      }
+      // if (!pkg.coursesIncluded || !Array.isArray(pkg.coursesIncluded)) {
+      //   throw new Error("Invalid courses data");
+      // }
+
+      // For Group Packages, we send the package ID itself
+      const courseIdPayload = [pkg._id];
 
       const orderResponse = await Api.post("/orders/orders", {
         amount: Math.round(finalPrice * 100), // in paise
@@ -123,7 +126,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
         receipt: user?.email || `package-${pkg._id || Date.now()}`,
         payment_capture: 1,
         userId: user._id,
-        courseId: pkg.coursesIncluded,
+        courseId: courseIdPayload, // Send Group Package ID
         courseName: pkg?.name || pkg.subscriptionType || "Course Package",
         email: user?.email,
         phoneNumber: user?.phoneNumber,
@@ -157,7 +160,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
             const verifyRes = await Api.post("/orders/verify-payment", {
               userId: user._id,
-              courseId: pkg.coursesIncluded,
+              courseId: [pkg._id], // Send Group Package ID
               courseName: pkg.name || pkg.subscriptionType,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
@@ -209,8 +212,8 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
     } catch (error) {
       console.error("Payment error:", error);
       toast.error(
-        error.response?.data?.message || 
-        error.message || 
+        error.response?.data?.message ||
+        error.message ||
         "Payment processing failed"
       );
     } finally {
@@ -321,9 +324,8 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
 
               {message.text && (
                 <p
-                  className={`text-sm mt-1 ${
-                    message.type === "success" ? "text-green-600" : "text-red-600"
-                  }`}
+                  className={`text-sm mt-1 ${message.type === "success" ? "text-green-600" : "text-red-600"
+                    }`}
                 >
                   {message.text}
                 </p>
