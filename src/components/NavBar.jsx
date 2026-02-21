@@ -9,6 +9,7 @@ import {
   UserButton,
   SignUp,
   useUser,
+  useClerk,
 } from "@clerk/clerk-react";
 
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
@@ -19,6 +20,8 @@ import CustomUserMenu from "./CustomUserButton";
 
 const NavBar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const [bannedModalVisible, setBannedModalVisible] = useState(false);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -100,6 +103,10 @@ const NavBar = () => {
           localStorage.setItem(`user_synced_${user.id}`, "true");
         } catch (error) {
           console.error("Error sending user data:", error);
+          if (error.response && error.response.status === 403) {
+            setBannedModalVisible(true);
+            signOut();
+          }
         }
       }
     };
@@ -123,7 +130,43 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="bg-green-600 text-white font-semibold shadow-md py-2 relative z-50">
+      {/* Banned User Modal */}
+      {bannedModalVisible && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 99999,
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '16px', padding: '40px 32px',
+            maxWidth: '420px', width: '90%', textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>🚫</div>
+            <h2 style={{ color: '#ef4444', margin: '0 0 12px', fontSize: '24px', fontWeight: 700 }}>
+              Account Suspended
+            </h2>
+            <p style={{ color: '#64748b', fontSize: '15px', lineHeight: '1.6', margin: '0 0 28px' }}>
+              Your account has been banned.<br />
+              Please contact the administrator for assistance.
+            </p>
+            <button
+              onClick={() => setBannedModalVisible(false)}
+              style={{
+                backgroundColor: '#ef4444', color: '#fff',
+                border: 'none', borderRadius: '8px',
+                padding: '12px 32px', fontSize: '15px',
+                fontWeight: 600, cursor: 'pointer', width: '100%',
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      <nav className="bg-green-600 text-white font-semibold shadow-md py-2 relative z-30">
         <div className="container mx-auto flex justify-between items-center px-4">
           {/* Logo */}
 
@@ -209,7 +252,7 @@ const NavBar = () => {
             >
               PDF Course
             </Link>
-              <Link
+            <Link
               to="/video-course"
               className="relative hover:text-blue-600 transition duration-300"
             >
@@ -251,7 +294,7 @@ const NavBar = () => {
 
 
 
-          
+
             {/* <Link
               to="/blogs"
               className="hover:text-blue-600 transition duration-300"
