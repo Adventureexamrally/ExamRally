@@ -90,7 +90,18 @@ const PdfInstruction = () => {
               <td>{section.name}</td>
               <td>{section.t_question}</td>
               <td>{section.t_mark}</td>
-              <td>{section.t_time} Min </td>
+              {examData?.time?.toLowerCase() === "composite" ? (
+                index === 0 ? (
+                  <td
+                    rowSpan={examData.section.length}
+                    className="align-middle text-center"
+                  >
+                    {examData.duration} Min
+                  </td>
+                ) : null
+              ) : (
+                <td>{section.t_time} Min</td>
+              )}
             </tr>
           ))}
         </tbody>
