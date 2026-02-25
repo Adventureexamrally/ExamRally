@@ -91,9 +91,16 @@ const Dashboard = () => {
                   <Link
                     key={index}
                     to={link.linkUrl}
-                    className="text-sm font-bold text-slate-600 hover:text-green-600 transition-colors flex items-center gap-4 whitespace-nowrap"
+                    className="group flex items-center gap-2.5 whitespace-nowrap"
                   >
-                    {link.linkName}
+                    {link.new && (
+                      <span className="relative inline-flex items-center px-2 py-[3px] rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite] text-amber-900 text-[9px] font-black tracking-[0.15em] uppercase shadow-sm shadow-amber-200 border border-amber-300 leading-none gap-1">
+                        ✦ NEW
+                      </span>
+                    )}
+                    <span className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors duration-200">
+                      {link.linkName}
+                    </span>
                     <span className="text-green-200 font-normal">|</span>
                   </Link>
                 ))}
@@ -113,10 +120,10 @@ const Dashboard = () => {
         <section className="bg-white p-6 sm:p-10 rounded-[2.5rem] border border-green-100 shadow-sm relative">
           <div className="flex justify-between items-end mb-8 relative z-10">
             <div>
-              <h3 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-                Top Trending <span className="text-green-600 italic font-serif font-medium">Exams</span>
+              <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
+                Top Trending <span className="">Exams</span>
               </h3>
-              <p className="text-slate-400 text-sm font-medium mt-1">Select your goal to start practicing</p>
+              {/* <p className="text-slate-400 text-sm font-medium mt-1">Select your goal to start practicing</p> */}
             </div>
           </div>
 
@@ -178,7 +185,7 @@ const Dashboard = () => {
       <style jsx>{`
         .ticker-wrapper {
             display: flex;
-            width: max-content; /* Critical: allows content to define width beyond 100% */
+            width: max-content;
             animation: ticker-loop 30s linear infinite;
         }
 
@@ -187,14 +194,13 @@ const Dashboard = () => {
         }
 
         @keyframes ticker-loop {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                /* We move by 1/3 because we duplicated the array 3 times 
-                   to ensure no white space on extra wide screens */
-                transform: translateX(-33.33%);
-            }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-33.33%); }
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% center; }
+            100% { background-position: -200% center; }
         }
 
         .ticker-content {

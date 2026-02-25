@@ -112,7 +112,7 @@ const LiveTest = () => {
 
           return (
             <div className="bg-white p-4 rounded-2xl shadow-lg" key={title} id="live-tests">
-              <h3 className="font-bold text-lg mb-3">{title}</h3>
+              <h3 className="font-bold text-lg mb-3 text-center">{title}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 items-center">
                 {alldata
                   .filter((cat) => cat.testTypes === title) // Only show categories for the current topic

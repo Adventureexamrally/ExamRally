@@ -26,8 +26,8 @@ const PdfCourseAd = () => {
 
                             {/* Main Heading - Impressive Typography */}
                             <div>
-                                <h2 className="text-4xl lg:text-6xl font-extrabold text-slate-800 mb-4 leading-[1.1] tracking-tight">
-                                    365-Days <span className="text-green-600 italic font-serif font-bold">Rally</span>
+                                <h2 className="text-4xl lg:text-6xl font-bold text-slate-800 mb-4 leading-[1.1] tracking-tight">
+                                    365-Days <span className="">Rally</span>
                                     <span className="block">PDF Course</span>
                                 </h2>
                                 <p className="text-lg text-slate-500 leading-relaxed max-w-xl font-medium">
