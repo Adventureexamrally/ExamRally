@@ -309,6 +309,19 @@ const PdfCourse = () => {
                 language: language // Pass language to PDF generator
             });
 
+            // 4. Track the PDF View in the backend
+            if (user?._id) {
+                try {
+                    await Api.post('/pdf-views/track', {
+                        examId: examId,
+                        scheduleId: pdf._id,
+                        userId: user._id
+                    });
+                } catch (trackError) {
+                    console.error("Error tracking PDF view:", trackError);
+                }
+            }
+
         } catch (error) {
             console.error("Error generating PDF:", error);
             alert("Failed to generate PDF. Please try again later.");
