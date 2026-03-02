@@ -524,26 +524,81 @@ const PdfExamResultPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-100">
-              {sectionData.map((sect, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{sect.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.s_score}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
-                    {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
-                    {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td></tr>
-              ))}
+              {(() => {
+                const hasGroups = sectionData.some(s => s.group_name && s.is_sub_section);
+
+                if (!hasGroups) {
+                  return sectionData.map((sect, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{sect.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.s_score}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                        {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                        {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td></tr>
+                  ));
+                }
+
+                const renderGroups = [];
+                const groupsMap = {};
+
+                sectionData.forEach(sect => {
+                  const groupName = (sect.is_sub_section && sect.group_name) ? sect.group_name : sect.name;
+                  if (!groupsMap[groupName]) {
+                    groupsMap[groupName] = {
+                      name: groupName,
+                      isGroup: !!(sect.is_sub_section && sect.group_name),
+                      sections: []
+                    };
+                    renderGroups.push(groupsMap[groupName]);
+                  }
+                  groupsMap[groupName].sections.push(sect);
+                });
+
+                return renderGroups.map((group, groupIndex) => (
+                  <React.Fragment key={groupIndex}>
+                    {group.isGroup && (
+                      <tr className="bg-blue-100">
+                        <td colSpan="13" className="px-6 py-3 whitespace-nowrap text-sm font-medium fw-bold text-blue-900 border-b border-blue-200">
+                          {group.name} (Combined)
+                        </td>
+                      </tr>
+                    )}
+                    {group.sections.map((sect, sectIdx) => (
+                      <tr key={`${groupIndex}-${sectIdx}`} className={sectIdx % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${group.isGroup ? 'pl-10 text-blue-800' : 'font-medium text-blue-900'}`}>{sect.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.s_score}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                          {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                          {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ));
+              })()}
               <tr className="">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">Overall</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">{overallScore}</td>
@@ -662,34 +717,95 @@ const PdfExamResultPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-green-100">
-              {section.map((sect, index) => {
-                const correctMarks = sect.correct * sect.plus_mark;
-                const wrongMarks = sect.incorrect * sect.minus_mark;
-                const notAnsweredMarks = 0; // usually 0
-                const attemptedMarks = correctMarks - wrongMarks;
+              {(() => {
+                const hasGroups = section.some(s => s.group_name && s.is_sub_section);
 
-                return (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{sect.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.Attempted} / {(sect.Attempted * (section[0]?.plus_mark || 0)).toFixed(0)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.Not_Attempted} / {(notAnsweredMarks || 0).toFixed(2)}
-                    </td>
+                if (!hasGroups) {
+                  return section.map((sect, index) => {
+                    const correctMarks = sect.correct * sect.plus_mark;
+                    const wrongMarks = sect.incorrect * sect.minus_mark;
+                    const notAnsweredMarks = 0; // usually 0
+                    const attemptedMarks = correctMarks - wrongMarks;
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.correct} / {(correctMarks || 0).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.incorrect} / -{(wrongMarks || 0).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {(sect.s_score ?? 0).toFixed(2)} / -{(wrongMarks || 0).toFixed(2)}
-                    </td>
-                  </tr>
-                );
-              })}
+                    return (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{sect.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.Attempted} / {(sect.Attempted * (section[0]?.plus_mark || 0)).toFixed(0)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.Not_Attempted} / {(notAnsweredMarks || 0).toFixed(2)}
+                        </td>
+
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.correct} / {(correctMarks || 0).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.incorrect} / -{(wrongMarks || 0).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {(sect.s_score ?? 0).toFixed(2)} / -{(wrongMarks || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  });
+                }
+
+                const renderGroups = [];
+                const groupsMap = {};
+
+                section.forEach(sect => {
+                  const groupName = (sect.is_sub_section && sect.group_name) ? sect.group_name : sect.name;
+                  if (!groupsMap[groupName]) {
+                    groupsMap[groupName] = {
+                      name: groupName,
+                      isGroup: !!(sect.is_sub_section && sect.group_name),
+                      sections: []
+                    };
+                    renderGroups.push(groupsMap[groupName]);
+                  }
+                  groupsMap[groupName].sections.push(sect);
+                });
+
+                return renderGroups.map((group, groupIndex) => (
+                  <React.Fragment key={groupIndex}>
+                    {group.isGroup && (
+                      <tr className="bg-green-100">
+                        <td colSpan="6" className="px-6 py-3 whitespace-nowrap text-md fw-bold font-medium text-green-900 border-b border-green-200">
+                          {group.name} (Combined)
+                        </td>
+                      </tr>
+                    )}
+                    {group.sections.map((sect, sectIdx) => {
+                      const correctMarks = sect.correct * sect.plus_mark;
+                      const wrongMarks = sect.incorrect * sect.minus_mark;
+                      const notAnsweredMarks = 0; // usually 0
+
+                      return (
+                        <tr key={`${groupIndex}-${sectIdx}`} className={sectIdx % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${group.isGroup ? 'pl-10 text-green-800' : 'font-medium text-green-900'}`}>{sect.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.Attempted} / {(sect.Attempted * (section[0]?.plus_mark || 0)).toFixed(0)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.Not_Attempted} / {(notAnsweredMarks || 0).toFixed(2)}
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.correct} / {(correctMarks || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.incorrect} / -{(wrongMarks || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {(sect.s_score ?? 0).toFixed(2)} / -{(wrongMarks || 0).toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ));
+              })()}
               <tr className="">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">Overall</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">

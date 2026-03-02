@@ -16,21 +16,21 @@ const Mocksolution = () => {
     const [markedForReview, setMarkedForReview] = useState([]);
     const [ansmarkforrev, setAnsmarkforrev] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
-  const location = useLocation();
-  const  selectedLanguage= location.state?.language || "English";
-  
-  // Fetch exam data
-// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
-const [displayLanguage, setDisplayLanguage] = useState(null);
+    const location = useLocation();
+    const selectedLanguage = location.state?.language || "English";
 
-useEffect(() => {
-  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
-  if (sectionName === "english language") {
-    setDisplayLanguage("English");
-  } else {
-    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
-  }
-}, [currentSectionIndex, examData]);
+    // Fetch exam data
+    // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+    const [displayLanguage, setDisplayLanguage] = useState(null);
+
+    useEffect(() => {
+        const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+        if (sectionName === "english language") {
+            setDisplayLanguage("English");
+        } else {
+            setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+        }
+    }, [currentSectionIndex, examData]);
 
     const [isToggled, setIsToggled] = useState(false);
     const [isDataFetched, setIsDataFetched] = useState(false);
@@ -621,62 +621,104 @@ useEffect(() => {
             </div>
 
             <div>
-                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
-                    {examData?.section?.map((section, index) => {
-                        const sectionResults = resultsBySection[index] || {};
-                        return (
-                            <h1 key={index}>
-                                <h1
-                                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                        ${currentSectionIndex === index
-                                            ? ' font-medium underline'
-                                            : ''}`}
-                                    onClick={() => setCurrentSectionIndex(index)}
-                                >
-                                    {section.name}
-                                    <div className="relative group ml-2 d-inline-block">
-                                        <FaInfoCircle className="cursor-pointer text-blue-400" />
-                                        <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
-                            min-w-[220px] w-fit md:max-w-xs md:w-max
-                            left-1/2 -translate-x-1/2">
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.correct || 0}
+                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2 p-2">
+                    {(() => {
+                        const renderGroups = [];
+                        const groupsMap = {};
+
+                        // Group sections
+                        (examData?.section || []).forEach((section, index) => {
+                            const groupName = (section.is_sub_section && section.group_name) ? section.group_name : null;
+                            const keyName = groupName || section.name;
+
+                            if (!groupsMap[keyName]) {
+                                groupsMap[keyName] = {
+                                    name: keyName,
+                                    isGroup: !!groupName,
+                                    sections: [],
+                                    startIndex: index // keep track of original index to know if current section is in this group
+                                };
+                                renderGroups.push(groupsMap[keyName]);
+                            }
+                            groupsMap[keyName].sections.push({ ...section, originalIndex: index });
+                        });
+
+                        return renderGroups.map((group, groupIndex) => {
+                            // Check if current active section belongs to this group
+                            const isActiveGroup = group.sections.some(s => s.originalIndex === currentSectionIndex);
+
+                            // Calculate aggregate stats for the group tooltip
+                            let groupCorrect = 0, groupIncorrect = 0, groupUnseen = 0, groupSkipped = 0;
+                            group.sections.forEach(s => {
+                                const sectionResults = resultsBySection[s.originalIndex] || {};
+                                groupCorrect += sectionResults.correct || 0;
+                                groupIncorrect += sectionResults.incorrect || 0;
+                                groupUnseen += sectionResults.unseen || 0;
+                                groupSkipped += sectionResults.skipped || 0;
+                            });
+
+                            return (
+                                <div key={groupIndex} className="d-inline-flex flex-column align-items-start border-r-2 border-gray-300 pr-2">
+                                    <h1
+                                        className={`h6 p-2 text-blue-400 d-inline-flex align-items-center cursor-pointer hover:bg-blue-50 rounded transition-colors
+                                            ${isActiveGroup ? ' font-medium bg-blue-100' : ''}`}
+                                        onClick={() => setCurrentSectionIndex(group.sections[0].originalIndex)}
+                                    >
+                                        <span className={isActiveGroup ? "border-b-2 border-blue-500 pb-1" : ""}>
+                                            {group.name}
+                                        </span>
+                                        <div className="relative group ml-2 d-inline-block">
+                                            <FaInfoCircle className="cursor-pointer text-blue-400" />
+                                            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-2 min-w-[220px] w-fit md:max-w-xs md:w-max left-1/2 -translate-x-1/2">
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupCorrect}
+                                                    </div>
+                                                    <p>Correct</p>
                                                 </div>
-                                                <p>Correct</p>
-                                            </div>
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.incorrect || 0}
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupIncorrect}
+                                                    </div>
+                                                    <p>Wrong</p>
                                                 </div>
-                                                <p>Wrong</p>
-                                            </div>
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.unseen || 0}
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
+                                                        {groupUnseen}
+                                                    </div>
+                                                    <p>Unseen</p>
                                                 </div>
-                                                <p>Unseen</p>
-                                            </div>
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.skipped || 0}
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupSkipped}
+                                                    </div>
+                                                    <p>Skipped</p>
                                                 </div>
-                                                <p>Skipped</p>
                                             </div>
                                         </div>
-                                    </div>
-                                </h1>
-                            </h1>
-                        );
-                    })}
+                                    </h1>
+
+                                    {/* Render Sub-sections if this is an active group */}
+                                    {isActiveGroup && group.isGroup && group.sections.length > 1 && (
+                                        <div className="d-flex w-100 pl-2 gap-2 mt-2">
+                                            {group.sections.map((subSection) => (
+                                                <div
+                                                    key={subSection.originalIndex}
+                                                    className={`text-sm p-1 cursor-pointer rounded transition-colors ${currentSectionIndex === subSection.originalIndex ? 'bg-blue-200 text-blue-800 font-bold' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                                    onClick={() => setCurrentSectionIndex(subSection.originalIndex)}
+                                                >
+                                                    {subSection.name}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        });
+                    })()}
                 </div>
 
-
-
-
-
-
-                <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -740,29 +782,29 @@ useEffect(() => {
 
 
                                 <div className="flex justify-center items-center ">
-                {examData &&
-                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                    <div className="flex items-center mx-2">
-                      <select
-                        value={displayLanguage || selectedLanguage}
-                        onChange={(e) => setDisplayLanguage(e.target.value)}
-                        className="border rounded p-1"
-                      >
-                        {examData?.bilingual_status ? (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                          </>
-                        ) : (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                          </>
-                        )}
-                      </select>
-                    </div>
-                )}
+                                    {examData &&
+                                        examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                                            <div className="flex items-center mx-2">
+                                                <select
+                                                    value={displayLanguage || selectedLanguage}
+                                                    onChange={(e) => setDisplayLanguage(e.target.value)}
+                                                    className="border rounded p-1"
+                                                >
+                                                    {examData?.bilingual_status ? (
+                                                        <>
+                                                            {examData?.english_status && <option value="English">English</option>}
+                                                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {examData?.english_status && <option value="English">English</option>}
+                                                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                                                        </>
+                                                    )}
+                                                </select>
+                                            </div>
+                                        )}
                                     <h3>
                                         Question Time:
                                         {examData?.section[currentSectionIndex]?.questions?.[
@@ -795,18 +837,18 @@ useEffect(() => {
                                     {examData.section[currentSectionIndex]?.questions?.[
                                         selectedLanguage?.toLowerCase()
                                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                                          <div
-                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                                            <div
+                                                className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
                   ${isFullscreen
-                        ? 'h-[80vh] md:h-[80vh]'
-                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      }`
-                    }
-                      style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-                  >
+                                                        ? 'h-[80vh] md:h-[80vh]'
+                                                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                                                    }`
+                                                }
+                                                style={{
+                                                    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                                    overflowY: 'auto'
+                                                }}
+                                            >
                                                 <div
                                                     className="text-wrap"
                                                     style={{
@@ -817,7 +859,7 @@ useEffect(() => {
                                                         __html:
                                                             examData.section[currentSectionIndex]
                                                                 ?.questions?.[
-                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                                (displayLanguage || selectedLanguage)?.toLowerCase()
                                                             ]?.[clickedQuestionIndex - startingIndex]
                                                                 ?.common_data || "No common data available",
                                                     }}
@@ -826,21 +868,21 @@ useEffect(() => {
                                         )}
 
                                     {/* Right side for Question */}
-                                  <div
-                    className={`   ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                        ? "md:w-[50%]"
-                        : "md:w-full" // Make it full width when no common data
-                      }`}   style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-  
-                  >
+                                    <div
+                                        className={`   ${isFullscreen
+                                            ? 'h-[80vh] md:h-[80vh]'
+                                            : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                                            } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                                                selectedLanguage?.toLowerCase()
+                                            ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                                                ? "md:w-[50%]"
+                                                : "md:w-full" // Make it full width when no common data
+                                            }`} style={{
+                                                height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                                overflowY: 'auto'
+                                            }}
+
+                                    >
                                         {/* Content with dynamic height */}
 
 
@@ -855,7 +897,7 @@ useEffect(() => {
                                                 dangerouslySetInnerHTML={{
                                                     __html:
                                                         examData.section[currentSectionIndex]?.questions?.[
-                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
                                                         ]?.[clickedQuestionIndex - startingIndex]?.question || "No question available",
                                                 }}
                                             />
@@ -865,7 +907,7 @@ useEffect(() => {
                                                     selectedLanguage?.toLowerCase()
                                                 ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
                                                     const question = examData.section[currentSectionIndex]?.questions?.[
-                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                        (displayLanguage || selectedLanguage)?.toLowerCase()
                                                     ]?.[clickedQuestionIndex - startingIndex];
 
                                                     const selectedOption = question?.selectedOption;
@@ -970,7 +1012,7 @@ useEffect(() => {
                                                         dangerouslySetInnerHTML={{
                                                             __html:
                                                                 examData.section[currentSectionIndex]?.questions[
-                                                            (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                                    (displayLanguage || selectedLanguage)?.toLowerCase()
                                                                 ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                         }}
                                                     />
@@ -996,7 +1038,7 @@ useEffect(() => {
                                                                 dangerouslySetInnerHTML={{
                                                                     __html:
                                                                         examData.section[currentSectionIndex]?.questions[
-                                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
                                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                                 }}
                                                             />

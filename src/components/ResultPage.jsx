@@ -6,11 +6,11 @@ import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, L
 import ResultAnimation from '../animationeffect/ResultAnimation';
 import { UserContext } from '../context/UserProvider';
 import Percentile from './Percentile';
-import { 
-  FaCheckCircle, 
-  FaTimesCircle, 
-  FaChartLine, 
-  FaBullseye, 
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaChartLine,
+  FaBullseye,
   FaClipboardCheck,
   FaUser,
   FaUsers,
@@ -19,8 +19,8 @@ import {
   FaBook,
   FaTable
 } from 'react-icons/fa';
-import { 
-  MdQuestionAnswer, 
+import {
+  MdQuestionAnswer,
   MdOutlineSkipNext,
   MdScore,
   MdCompare
@@ -44,8 +44,8 @@ const ResultPage = () => {
 
     Api.get(`results/resultWithAnalysis/${user._id}/${id}`)
       .then(res => {
-        console.log("result Data",res.data);
-        
+        console.log("result Data", res.data);
+
         setResultData(res.data.result);
         setAnalysisData({
           overall: res.data.overallStats,
@@ -81,7 +81,7 @@ const ResultPage = () => {
     );
   }
 
-  const { overall, sections, comparison, rank, percentile, exam, allScores,totalUsers } = analysisData;
+  const { overall, sections, comparison, rank, percentile, exam, allScores, totalUsers } = analysisData;
 
   // Prepare chart data
   const chartData = [
@@ -266,18 +266,18 @@ const ResultPage = () => {
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
             <div className="flex items-center">
               <FaCheckCircle className="mr-2" />
-              <p className="font-medium">Cutoff Cleared: {typeof overall.totalScore === 'number' 
-          ? overall.totalScore.toFixed(2) 
-          : '0.00'} / {exam.cutoff_mark}</p>
+              <p className="font-medium">Cutoff Cleared: {typeof overall.totalScore === 'number'
+                ? overall.totalScore.toFixed(2)
+                : '0.00'} / {exam.cutoff_mark}</p>
             </div>
           </div>
         ) : (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
             <div className="flex items-center">
               <FaTimesCircle className="mr-2" />
-              <p className="font-medium">Cutoff Not Reached: {typeof overall.totalScore === 'number' 
-          ? overall.totalScore.toFixed(2) 
-          : '0.00'} / {exam.cutoff_mark}</p>
+              <p className="font-medium">Cutoff Not Reached: {typeof overall.totalScore === 'number'
+                ? overall.totalScore.toFixed(2)
+                : '0.00'} / {exam.cutoff_mark}</p>
             </div>
           </div>
         )}
@@ -309,27 +309,83 @@ const ResultPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-100">
-              {sections.map((sect, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
-                  <td className="px-6 py-4 whitespace-nowrap text-md fw-bold font-medium text-blue-900">{sect.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800"> {typeof sect.s_score === 'number' ? sect.s_score.toFixed(2) : '0.00'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
-                    {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
-                    {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td>
-                </tr>
-              ))}
+              {(() => {
+                // Determine layout: check if we have any groups to render them cleanly
+                const hasGroups = sections.some(s => s.group_name && s.is_sub_section);
+
+                if (!hasGroups) {
+                  return sections.map((sect, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-md fw-bold font-medium text-blue-900">{sect.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800"> {typeof sect.s_score === 'number' ? sect.s_score.toFixed(2) : '0.00'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                        {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                        {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td>
+                    </tr>
+                  ));
+                }
+
+                const renderGroups = [];
+                const groupsMap = {};
+
+                sections.forEach(sect => {
+                  const groupName = (sect.is_sub_section && sect.group_name) ? sect.group_name : sect.name;
+                  if (!groupsMap[groupName]) {
+                    groupsMap[groupName] = {
+                      name: groupName,
+                      isGroup: !!(sect.is_sub_section && sect.group_name),
+                      sections: []
+                    };
+                    renderGroups.push(groupsMap[groupName]);
+                  }
+                  groupsMap[groupName].sections.push(sect);
+                });
+
+                return renderGroups.map((group, groupIndex) => (
+                  <React.Fragment key={groupIndex}>
+                    {group.isGroup && (
+                      <tr className="bg-blue-100">
+                        <td colSpan="13" className="px-6 py-3 whitespace-nowrap text-md fw-bold font-medium text-blue-900 border-b border-blue-200">
+                          {group.name} (Combined)
+                        </td>
+                      </tr>
+                    )}
+                    {group.sections.map((sect, sectIdx) => (
+                      <tr key={`${groupIndex}-${sectIdx}`} className={sectIdx % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-blue-50 hover:bg-blue-100'}>
+                        <td className={`px-6 py-4 whitespace-nowrap text-md ${group.isGroup ? 'pl-10 text-blue-800' : 'fw-bold font-medium text-blue-900'}`}>{sect.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800"> {typeof sect.s_score === 'number' ? sect.s_score.toFixed(2) : '0.00'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Attempted}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.Not_Attempted}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.correct}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.incorrect}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                          {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
+                          {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.isVisited}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.NotVisited}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.cutoff_mark}</td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ));
+              })()}
               <tr className="">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900">Overall</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900"> {typeof overall.totalScore === 'number' ? overall.totalScore.toFixed(2) : '0.00'}</td>
@@ -358,21 +414,21 @@ const ResultPage = () => {
           <MdCompare className="text-purple-600 mr-2" />
           <h2 className="text-xl font-bold text-purple-800">Comparison With Toppers</h2>
         </div>
-        
+
         <div className="flex flex-wrap gap-2 mb-6">
           {sections.map((sect) => (
             <button
               key={sect.name}
               onClick={() => setSelectedComparisonSection(sect.name)}
-              className={`px-4 py-2 rounded-md transition ${selectedComparisonSection === sect.name 
-                ? 'bg-purple-600 text-white' 
+              className={`px-4 py-2 rounded-md transition ${selectedComparisonSection === sect.name
+                ? 'bg-purple-600 text-white'
                 : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
             >
               {sect.name}
             </button>
           ))}
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-purple-200">
             <thead className="bg-purple-50">
@@ -442,32 +498,92 @@ const ResultPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-green-100">
-              {sections.map((sect, index) => {
-                const correctMarks = sect.correct * sect.plus_mark;
-                const wrongMarks = sect.incorrect * sect.minus_mark;
-                const notAnsweredMarks = 0;
-                
-                return (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-md font-medium text-green-900 fw-bold">{sect.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.Attempted} / {(sect.Attempted * sect.plus_mark).toFixed(0)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.Not_Attempted} / {notAnsweredMarks.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.correct} / {correctMarks.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-                      {sect.incorrect} / -{wrongMarks.toFixed(2)}
-                    </td>
-                   <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
-  {sect?.s_score?.toFixed(2) ?? '0.00'} / -{wrongMarks?.toFixed(2) ?? '0.00'}
-</td>
-                  </tr>
-                );
-              })}
+              {(() => {
+                const hasGroups = sections.some(s => s.group_name && s.is_sub_section);
+
+                if (!hasGroups) {
+                  return sections.map((sect, index) => {
+                    const correctMarks = sect.correct * sect.plus_mark;
+                    const wrongMarks = sect.incorrect * sect.minus_mark;
+                    const notAnsweredMarks = 0;
+
+                    return (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
+                        <td className="px-6 py-4 whitespace-nowrap text-md font-medium text-green-900 fw-bold">{sect.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.Attempted} / {(sect.Attempted * sect.plus_mark).toFixed(0)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.Not_Attempted} / {notAnsweredMarks.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.correct} / {correctMarks.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect.incorrect} / -{wrongMarks.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                          {sect?.s_score?.toFixed(2) ?? '0.00'} / -{wrongMarks?.toFixed(2) ?? '0.00'}
+                        </td>
+                      </tr>
+                    );
+                  });
+                }
+
+                const renderGroups = [];
+                const groupsMap = {};
+
+                sections.forEach(sect => {
+                  const groupName = (sect.is_sub_section && sect.group_name) ? sect.group_name : sect.name;
+                  if (!groupsMap[groupName]) {
+                    groupsMap[groupName] = {
+                      name: groupName,
+                      isGroup: !!(sect.is_sub_section && sect.group_name),
+                      sections: []
+                    };
+                    renderGroups.push(groupsMap[groupName]);
+                  }
+                  groupsMap[groupName].sections.push(sect);
+                });
+
+                return renderGroups.map((group, groupIndex) => (
+                  <React.Fragment key={groupIndex}>
+                    {group.isGroup && (
+                      <tr className="bg-green-100">
+                        <td colSpan="6" className="px-6 py-3 whitespace-nowrap text-md fw-bold font-medium text-green-900 border-b border-green-200">
+                          {group.name} (Combined)
+                        </td>
+                      </tr>
+                    )}
+                    {group.sections.map((sect, sectIdx) => {
+                      const correctMarks = sect.correct * sect.plus_mark;
+                      const wrongMarks = sect.incorrect * sect.minus_mark;
+                      const notAnsweredMarks = 0;
+
+                      return (
+                        <tr key={`${groupIndex}-${sectIdx}`} className={sectIdx % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-green-50 hover:bg-green-100'}>
+                          <td className={`px-6 py-4 whitespace-nowrap text-md ${group.isGroup ? 'pl-10 text-green-800' : 'fw-bold font-medium text-green-900'}`}>{sect.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.Attempted} / {(sect.Attempted * sect.plus_mark).toFixed(0)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.Not_Attempted} / {notAnsweredMarks.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.correct} / {correctMarks.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect.incorrect} / -{wrongMarks.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800">
+                            {sect?.s_score?.toFixed(2) ?? '0.00'} / -{wrongMarks?.toFixed(2) ?? '0.00'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ));
+              })()}
               <tr className="">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">Overall</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">
@@ -505,16 +621,16 @@ const ResultPage = () => {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis ticks={[5,10,15,20,25,30,35,40,45,50,55,60]} />
+              <YAxis ticks={[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]} />
               <Tooltip />
               <Legend />
               {sections.map((sect, index) => (
-                <Line 
+                <Line
                   key={index}
-                  type="monotone" 
-                  dataKey={`section${index + 1}`} 
-                  name={sect.name} 
-                  stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random()*16777215).toString(16)}`} 
+                  type="monotone"
+                  dataKey={`section${index + 1}`}
+                  name={sect.name}
+                  stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random() * 16777215).toString(16)}`}
                   strokeWidth={2}
                 />
               ))}
@@ -529,21 +645,21 @@ const ResultPage = () => {
           <FaBook className="text-indigo-600 mr-2" />
           <h2 className="text-xl font-bold text-indigo-800">Scoring Blueprint</h2>
         </div>
-        
+
         <div className="flex flex-wrap gap-2 mb-6">
           {sections.map((sect, index) => (
             <button
               key={index}
               onClick={() => handleSectionClick(sect.name)}
-              className={`px-4 py-2 rounded-md transition ${selectedTopic === sect.name 
-                ? 'bg-indigo-600 text-white' 
+              className={`px-4 py-2 rounded-md transition ${selectedTopic === sect.name
+                ? 'bg-indigo-600 text-white'
                 : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
             >
               {sect.name}
             </button>
           ))}
         </div>
-        
+
         {selectedBlueprint && (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-indigo-200">
@@ -570,12 +686,12 @@ const ResultPage = () => {
 
       {/* Percentile Analysis */}
       <div className="mb-8">
-        <Percentile allScores={allScores} overallScore= {typeof overall.totalScore === 'number' ? overall.totalScore.toFixed(2) : '0.00'} initialPercentile={percentile} totelmark={overall.totelmark}/>
+        <Percentile allScores={allScores} overallScore={typeof overall.totalScore === 'number' ? overall.totalScore.toFixed(2) : '0.00'} initialPercentile={percentile} totelmark={overall.totelmark} />
       </div>
 
       {/* Result Animation */}
       <div>
-        <ResultAnimation/>
+        <ResultAnimation />
       </div>
     </div>
   );

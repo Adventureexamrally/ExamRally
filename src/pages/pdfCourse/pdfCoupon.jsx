@@ -147,6 +147,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
         courseName: "Pdf Course",
         email: user.email,
         phoneNumber: user.phoneNumber,
+        coupon: discountPercent > 0 ? couponCode : null,
       });
       console.log(orderResponse);
 
@@ -174,9 +175,10 @@ const PdfCoupon = ({ data, setshowmodel }) => {
                 orderId: response.razorpay_order_id,
                 signature: response.razorpay_signature,
                 amount: finalPrice,
-                expiryDays: data.months*30,
+                expiryDays: data.months * 30,
                 subscriptions: true,
                 subscriptionId: data._id,
+                coupon: discountPercent > 0 ? couponCode : null,
               }),
               Api.post("/pdf-subscriptions", {
                 userId: user._id,
@@ -247,8 +249,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
           });
 
           toast.error(
-            `Payment failed: ${
-              response.error.description || "Please try again"
+            `Payment failed: ${response.error.description || "Please try again"
             }`
           );
         } catch (err) {
@@ -397,11 +398,10 @@ const PdfCoupon = ({ data, setshowmodel }) => {
 
                 {message.text && (
                   <div
-                    className={`mt-2 p-2 rounded text-sm ${
-                      message.type === "success"
+                    className={`mt-2 p-2 rounded text-sm ${message.type === "success"
                         ? "bg-green-50 text-green-700 border border-green-200"
                         : "bg-red-50 text-red-700 border border-red-200"
-                    }`}
+                      }`}
                   >
                     {message.text}
                   </div>
