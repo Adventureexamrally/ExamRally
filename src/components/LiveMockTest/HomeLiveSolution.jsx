@@ -17,21 +17,21 @@ const HomeLiveSolution = () => {
     const [markedForReview, setMarkedForReview] = useState([]);
     const [ansmarkforrev, setAnsmarkforrev] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
-  const location = useLocation();
-  const  selectedLanguage= location.state?.language || "English";
-  
-  // Fetch exam data
-// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
-const [displayLanguage, setDisplayLanguage] = useState(null);
+    const location = useLocation();
+    const selectedLanguage = location.state?.language || "English";
 
-useEffect(() => {
-  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
-  if (sectionName === "english language") {
-    setDisplayLanguage("English");
-  } else {
-    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
-  }
-}, [currentSectionIndex, examData]);
+    // Fetch exam data
+    // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+    const [displayLanguage, setDisplayLanguage] = useState(null);
+
+    useEffect(() => {
+        const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+        if (sectionName === "english language") {
+            setDisplayLanguage("English");
+        } else {
+            setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+        }
+    }, [currentSectionIndex, examData]);
 
     const [isToggled, setIsToggled] = useState(false);
     const [isDataFetched, setIsDataFetched] = useState(false);
@@ -597,68 +597,168 @@ useEffect(() => {
         <div className="p-1 mock-font ">
             <div>
 
-                <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-evenly items-center">
-                    <h1 className="h3 font-bold mt-3">{show_name}</h1>
-                    <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-                    <button
-                        onClick={toggleFullScreen}
-                        className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-                    >
-                        {isFullscreen ? <FaCompress /> : <FaExpand />}
-                    </button>
+                <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+                    {/* Left Section: Logo & Show Name */}
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={logo}
+                            alt="logo"
+                            className="h-10 w-auto bg-white rounded p-0.5"
+                        />
+                        <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+                            {show_name}
+                        </h1>
+                    </div>
+
+                    {/* Right Section: Time & Fullscreen Controls */}
+                    <div className="flex items-center gap-3 md:gap-4">
+
+                        {/* Refined Time Display */}
+                        {/* <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+                      <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+                        Time Left:
+                      </span>
+                      <span className="text-sm md:text-base font-bold font-mono">
+                        {formatTime(timeminus)}
+                      </span>
+                    </div> */}
+
+                        {/* Fullscreen Toggle Button */}
+                        <button
+                            onClick={toggleFullScreen}
+                            className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+                            aria-label="Toggle Fullscreen"
+                            title="Toggle Fullscreen"
+                        >
+                            {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                        </button>
+                    </div>
                 </div>
 
             </div>
 
             <div>
-                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
-                    {examData?.section?.map((section, index) => {
-                        const sectionResults = resultsBySection[index] || {};
-                        return (
-                            <h1 key={index}>
-                                <h1
-                                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                        ${currentSectionIndex === index
-                                            ? ' font-medium underline'
-                                            : ''}`}
-                                    onClick={() => setCurrentSectionIndex(index)}
-                                >
-                                    {section.name}
-                                    <div className="relative group ml-2 d-inline-block">
-                                        <FaInfoCircle className="cursor-pointer text-blue-400" />
-                                        <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
-                            min-w-[220px] w-fit md:max-w-xs md:w-max
-                            left-1/2 -translate-x-1/2">
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.correct || 0}
+                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2 p-2">
+                    {(() => {
+                        const formattedSections = [];
+                        let currentGroupName = null;
+                        let combinedSection = null;
+
+                        (examData?.section || []).forEach((section, index) => {
+                            if (section.is_sub_section && section.group_name) {
+                                if (section.group_name !== currentGroupName) {
+                                    if (combinedSection) formattedSections.push(combinedSection);
+                                    currentGroupName = section.group_name;
+                                    combinedSection = {
+                                        ...section,
+                                        name: section.group_name,
+                                        isGroup: true,
+                                        originalSections: [{ ...section, originalIndex: index }],
+                                        t_question: Number(section.t_question) || 0,
+                                        t_time: Number(section.t_time) || 0,
+                                        t_mark: Number(section.t_mark) || 0,
+                                        originalIndex: index
+                                    };
+                                } else {
+                                    combinedSection.originalSections.push({ ...section, originalIndex: index });
+                                    combinedSection.t_question += Number(section.t_question) || 0;
+                                    combinedSection.t_time += Number(section.t_time) || 0;
+                                    combinedSection.t_mark += Number(section.t_mark) || 0;
+                                }
+                            } else {
+                                if (combinedSection) {
+                                    formattedSections.push(combinedSection);
+                                    combinedSection = null;
+                                    currentGroupName = null;
+                                }
+                                formattedSections.push({ ...section, isGroup: false, originalIndex: index });
+                            }
+                        });
+                        if (combinedSection) formattedSections.push(combinedSection);
+
+                        return formattedSections.map((group, groupIndex) => {
+                            // Calculate aggregate stats for the group tooltip
+                            let groupCorrect = 0, groupIncorrect = 0, groupUnseen = 0, groupSkipped = 0;
+                            const isActiveGroup = group.isGroup
+                                ? group.originalSections.some(s => s.originalIndex === currentSectionIndex)
+                                : group.originalIndex === currentSectionIndex;
+
+                            if (group.isGroup) {
+                                group.originalSections.forEach(s => {
+                                    const sectionResults = resultsBySection[s.originalIndex] || {};
+                                    groupCorrect += sectionResults.correct || 0;
+                                    groupIncorrect += sectionResults.incorrect || 0;
+                                    groupUnseen += sectionResults.unseen || 0;
+                                    groupSkipped += sectionResults.skipped || 0;
+                                });
+                            } else {
+                                const sectionResults = resultsBySection[group.originalIndex] || {};
+                                groupCorrect = sectionResults.correct || 0;
+                                groupIncorrect = sectionResults.incorrect || 0;
+                                groupUnseen = sectionResults.unseen || 0;
+                                groupSkipped = sectionResults.skipped || 0;
+                            }
+
+                            return (
+                                <div key={groupIndex} className="d-inline-flex flex-column align-items-start border-r-2 border-gray-300 pr-2">
+                                    <h1
+                                        className={`h6 p-2 text-blue-400 d-inline-flex align-items-center cursor-pointer hover:bg-blue-50 rounded transition-colors
+                                            ${isActiveGroup ? ' font-medium bg-blue-100' : ''}`}
+                                        onClick={() => setCurrentSectionIndex(group.isGroup ? group.originalSections[0].originalIndex : group.originalIndex)}
+                                    >
+                                        <span className={isActiveGroup ? "border-b-2 border-blue-500 pb-1" : ""}>
+                                            {group.name}
+                                        </span>
+                                        <div className="relative group ml-2 d-inline-block">
+                                            <FaInfoCircle className="cursor-pointer text-blue-400" />
+                                            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+                                                min-w-[220px] w-fit left-1/2 -translate-x-1/2">
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupCorrect}
+                                                    </div>
+                                                    <p>Correct</p>
                                                 </div>
-                                                <p>Correct</p>
-                                            </div>
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.incorrect || 0}
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupIncorrect}
+                                                    </div>
+                                                    <p>Wrong</p>
                                                 </div>
-                                                <p>Wrong</p>
-                                            </div>
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.unseen || 0}
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
+                                                        {groupUnseen}
+                                                    </div>
+                                                    <p>Unseen</p>
                                                 </div>
-                                                <p>Unseen</p>
-                                            </div>
-                                            <div className="mt-2 flex align-items-center">
-                                                <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                    {sectionResults.skipped || 0}
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupSkipped}
+                                                    </div>
+                                                    <p>Skipped</p>
                                                 </div>
-                                                <p>Skipped</p>
                                             </div>
                                         </div>
-                                    </div>
-                                </h1>
-                            </h1>
-                        );
-                    })}
+                                    </h1>
+
+                                    {/* Render Sub-sections if this is an active group */}
+                                    {isActiveGroup && group.isGroup && group.originalSections.length > 1 && (
+                                        <div className="d-flex w-100 pl-2 gap-2 mt-2">
+                                            {group.originalSections.map((subSection) => (
+                                                <div
+                                                    key={subSection.originalIndex}
+                                                    className={`text-sm p-1 cursor-pointer rounded transition-colors ${currentSectionIndex === subSection.originalIndex ? 'bg-blue-200 text-blue-800 font-bold' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                                    onClick={() => setCurrentSectionIndex(subSection.originalIndex)}
+                                                >
+                                                    {subSection.name}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        });
+                    })()}
                 </div>
 
 
@@ -730,29 +830,29 @@ useEffect(() => {
 
 
                                 <div className="flex justify-center items-center ">
-                {examData &&
-                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                    <div className="flex items-center mx-2">
-                      <select
-                        value={displayLanguage || selectedLanguage}
-                        onChange={(e) => setDisplayLanguage(e.target.value)}
-                        className="border rounded p-1"
-                      >
-                        {examData?.bilingual_status ? (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                          </>
-                        ) : (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                          </>
-                        )}
-                      </select>
-                    </div>
-                )}
+                                    {examData &&
+                                        examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                                            <div className="flex items-center mx-2">
+                                                <select
+                                                    value={displayLanguage || selectedLanguage}
+                                                    onChange={(e) => setDisplayLanguage(e.target.value)}
+                                                    className="border rounded p-1"
+                                                >
+                                                    {examData?.bilingual_status ? (
+                                                        <>
+                                                            {examData?.english_status && <option value="English">English</option>}
+                                                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {examData?.english_status && <option value="English">English</option>}
+                                                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                                                        </>
+                                                    )}
+                                                </select>
+                                            </div>
+                                        )}
                                     <h3>
                                         Question Time:
                                         {examData?.section[currentSectionIndex]?.questions?.[
@@ -802,7 +902,7 @@ useEffect(() => {
                                                         __html:
                                                             examData.section[currentSectionIndex]
                                                                 ?.questions?.[
-                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                                (displayLanguage || selectedLanguage)?.toLowerCase()
                                                             ]?.[clickedQuestionIndex - startingIndex]
                                                                 ?.common_data || "No common data available",
                                                     }}
@@ -832,7 +932,7 @@ useEffect(() => {
                                                 dangerouslySetInnerHTML={{
                                                     __html:
                                                         examData.section[currentSectionIndex]?.questions?.[
-                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
                                                         ]?.[clickedQuestionIndex - startingIndex]?.question || "No question available",
                                                 }}
                                             />
@@ -842,7 +942,7 @@ useEffect(() => {
                                                     selectedLanguage?.toLowerCase()
                                                 ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
                                                     const question = examData.section[currentSectionIndex]?.questions?.[
-                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                        (displayLanguage || selectedLanguage)?.toLowerCase()
                                                     ]?.[clickedQuestionIndex - startingIndex];
 
                                                     const selectedOption = question?.selectedOption;
@@ -947,7 +1047,7 @@ useEffect(() => {
                                                         dangerouslySetInnerHTML={{
                                                             __html:
                                                                 examData.section[currentSectionIndex]?.questions[
-                                                            (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                                    (displayLanguage || selectedLanguage)?.toLowerCase()
                                                                 ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                         }}
                                                     />
@@ -973,7 +1073,7 @@ useEffect(() => {
                                                                 dangerouslySetInnerHTML={{
                                                                     __html:
                                                                         examData.section[currentSectionIndex]?.questions[
-                                                                    (displayLanguage|| selectedLanguage)?.toLowerCase()
+                                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
                                                                         ]?.[clickedQuestionIndex - startingIndex]?.explanation,
                                                                 }}
                                                             />

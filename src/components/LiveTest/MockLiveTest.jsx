@@ -36,31 +36,31 @@ const MockLiveTest = () => {
   const { user } = useContext(UserContext);
   const [wordCount, setWordCount] = useState(0);
   const [descriptiveData, setDescriptiveData] = useState(
-  examData?.section?.map(() => ({
-    text: [""],
-    corrections: [],
-    scoreBreakdown: null,
-    scoreData: [],
-    keywords: [],
-    wordCount: 0
-  })) || []
-);
+    examData?.section?.map(() => ({
+      text: [""],
+      corrections: [],
+      scoreBreakdown: null,
+      scoreData: [],
+      keywords: [],
+      wordCount: 0
+    })) || []
+  );
   const location = useLocation();
-  const  selectedLanguage= location.state?.language || "English";
+  const selectedLanguage = location.state?.language || "English";
   const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
-const timerRef = useRef(null);
+  const timerRef = useRef(null);
   // Fetch exam data
-// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
-const [displayLanguage, setDisplayLanguage] = useState(null);
+  // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+  const [displayLanguage, setDisplayLanguage] = useState(null);
 
-useEffect(() => {
-  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
-  if (sectionName === "english language") {
-    setDisplayLanguage("English");
-  } else {
-    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
-  }
-}, [currentSectionIndex, examData]);
+  useEffect(() => {
+    const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+    if (sectionName === "english language") {
+      setDisplayLanguage("English");
+    } else {
+      setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+    }
+  }, [currentSectionIndex, examData]);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -130,34 +130,34 @@ useEffect(() => {
           if (response.data) {
             const state = response.data;
             setGetresult(state)
-            console.error("hello",state);
+            console.error("hello", state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
             let markedForReviewList = [];
             let absoluteIndexCounter = 0;
-  // Parse question times from backend
-          const questionTimesFromDB = {};
-          let absoluteIndex = 0;
-          
-          state.section.forEach((section) => {
-            const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-            console.log("Questions:", questions);
-            
-            questions.forEach((question) => {
-              if (question.q_on_time) {
-                console.log("Question time:", question.q_on_time);
-                
-                // Parse time string "minutes:seconds" to total seconds
-                const [minutes, seconds] = question.q_on_time.split(':').map(Number);
-                questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
-              }
-              absoluteIndex++;
+            // Parse question times from backend
+            const questionTimesFromDB = {};
+            let absoluteIndex = 0;
+
+            state.section.forEach((section) => {
+              const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+              console.log("Questions:", questions);
+
+              questions.forEach((question) => {
+                if (question.q_on_time) {
+                  console.log("Question time:", question.q_on_time);
+
+                  // Parse time string "minutes:seconds" to total seconds
+                  const [minutes, seconds] = question.q_on_time.split(':').map(Number);
+                  questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
+                }
+                absoluteIndex++;
+              });
             });
-          });
-          console.log("Question times from DB:", questionTimesFromDB);
-          
-          setQuestionTimes(questionTimesFromDB);
+            console.log("Question times from DB:", questionTimesFromDB);
+
+            setQuestionTimes(questionTimesFromDB);
             if (state.section) {
               state.section.forEach((section) => {
                 const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
@@ -190,12 +190,12 @@ useEffect(() => {
 
             // // Show the last visited question, or first question if none visited
             // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-        //     if (visitedQuestionsList.length > 0) {
-        //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-        // } else {
-        //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-        //   setVisitedQuestions([0]);  // Mark it as visited
-        // }
+            //     if (visitedQuestionsList.length > 0) {
+            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
+            // } else {
+            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+            //   setVisitedQuestions([0]);  // Mark it as visited
+            // }
           }
         })
 
@@ -304,13 +304,13 @@ useEffect(() => {
       }
 
       // Update the database with the new selection
-      const result=Api.post(`results/${user?._id}/${id}`, {
+      const result = Api.post(`results/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
         mark
       });
-console.log("handle option change result",result);
+      console.log("handle option change result", result);
 
       return updatedOptions;
     });
@@ -338,26 +338,26 @@ console.log("handle option change result",result);
   };
 
   // At the top of your component
-const [activeTimer, setActiveTimer] = useState(null); // 'question' or 'section'
+  const [activeTimer, setActiveTimer] = useState(null); // 'question' or 'section'
 
-// Cleanup all timers on unmount
-useEffect(() => {
-  return () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-  };
-}, []);
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
-useEffect(() => {
-  console.log('Timer setup for:', activeTimer);
-  // ... timer setup code ...
+  useEffect(() => {
+    console.log('Timer setup for:', activeTimer);
+    // ... timer setup code ...
 
-  return () => {
-    console.log('Cleaning up timer');
-    if (timerRef.current) clearInterval(timerRef.current);
-  };
-}, [clickedQuestionIndex]);
+    return () => {
+      console.log('Cleaning up timer');
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [clickedQuestionIndex]);
 
   const [questionStartTime, setQuestionStartTime] = useState(new Date());
   const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
@@ -445,10 +445,10 @@ useEffect(() => {
 
           // Transform the data
           const transformedData = {
-            bilingual_status:res.data.bilingual_status,
-            english_status:res.data.english_status,
-            hindi_status:res.data.hindi_status,
-            tamil_status:res.data.tamil_status,
+            bilingual_status: res.data.bilingual_status,
+            english_status: res.data.english_status,
+            hindi_status: res.data.hindi_status,
+            tamil_status: res.data.tamil_status,
             section: res.data.section.map((section) => ({
               name: section.name,
               t_question: section.t_question,
@@ -601,28 +601,28 @@ useEffect(() => {
   //     }
   //   }
   // };
-const handleNextClick = () => {
-  updateSectionTime();
+  const handleNextClick = () => {
+    updateSectionTime();
 
-  if (
-    examData &&
-    examData.section[currentSectionIndex] &&
-    examData.section[currentSectionIndex].questions?.[
+    if (
+      examData &&
+      examData.section[currentSectionIndex] &&
+      examData.section[currentSectionIndex].questions?.[
       selectedLanguage?.toLowerCase()
-    ]
-  ) {
-    const totalQuestions =
-      examData.section[currentSectionIndex].questions[
-        selectedLanguage?.toLowerCase()
-      ]?.length;
+      ]
+    ) {
+      const totalQuestions =
+        examData.section[currentSectionIndex].questions[
+          selectedLanguage?.toLowerCase()
+        ]?.length;
 
-    if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-      setClickedQuestionIndex(clickedQuestionIndex + 1);
-    } else {
-      setClickedQuestionIndex(startingIndex);
+      if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+        setClickedQuestionIndex(clickedQuestionIndex + 1);
+      } else {
+        setClickedQuestionIndex(startingIndex);
+      }
     }
-  }
-};
+  };
 
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
@@ -743,31 +743,31 @@ const handleNextClick = () => {
   };
 
   // Your submitExam function with the necessary modifications
-const handleSubmitSection = () => {
-  // Save current descriptive answer
-  handleDescriptiveTest();
+  const handleSubmitSection = () => {
+    // Save current descriptive answer
+    handleDescriptiveTest();
 
-  // Then proceed with section submission
-  updateSectionTime();
-  
-  // Calculate section summary
-  const currentSection = examData?.section[currentSectionIndex];
-  const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
-  
-  const sectionSummary = {
-    sectionName: currentSection.name,
-    answeredQuestions: questions.filter((q, index) => selectedOptions[index] !== null).length,
-    notAnsweredQuestions: questions.filter((q, index) => selectedOptions[index] === null).length,
-    visitedQuestionsCount: questions.filter((q, index) => selectedOptions[index] !== null || q.visited).length,
-    notVisitedQuestions: questions.filter((q, index) => !q.visited).length,
-    reviewedQuestions: questions.filter((q, index) => q.reviewed).length,
-    totalQuestions: questions.length,
-    descriptiveData: descriptiveData[currentSectionIndex]
+    // Then proceed with section submission
+    updateSectionTime();
+
+    // Calculate section summary
+    const currentSection = examData?.section[currentSectionIndex];
+    const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
+
+    const sectionSummary = {
+      sectionName: currentSection.name,
+      answeredQuestions: questions.filter((q, index) => selectedOptions[index] !== null).length,
+      notAnsweredQuestions: questions.filter((q, index) => selectedOptions[index] === null).length,
+      visitedQuestionsCount: questions.filter((q, index) => selectedOptions[index] !== null || q.visited).length,
+      notVisitedQuestions: questions.filter((q, index) => !q.visited).length,
+      reviewedQuestions: questions.filter((q, index) => q.reviewed).length,
+      totalQuestions: questions.length,
+      descriptiveData: descriptiveData[currentSectionIndex]
+    };
+
+    setSectionSummaryData(prev => [...prev, sectionSummary]);
+    setShowModal(true);
   };
-
-  setSectionSummaryData(prev => [...prev, sectionSummary]);
-  setShowModal(true);
-};
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
@@ -777,6 +777,11 @@ const handleSubmitSection = () => {
   const [timeTakenFromDB, settimeTakenFromDB] = useState();
 
   const [dataid, setDataid] = useState(null); // State to store the data
+
+  const pauseStartRef = useRef(null);
+  const pausedDurationRef = useRef(0);
+  const sectionTimerRef = useRef(null);
+  const [timerKey, setTimerKey] = useState(0);
 
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
@@ -794,24 +799,51 @@ const handleSubmitSection = () => {
 
 
   useEffect(() => {
-    const totalSectionTime =
-      examData?.section[currentSectionIndex]?.t_time * 60;
-    // Get time taken from resultData
-    const timeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-    // Store timeTaken in an array at the index of currentSectionIndex
-    settimeTakenFromDB(timeTaken);
+    if (!examData) return;
 
-    // Calculate remaining time
-    const remainingTime = totalSectionTime - timeTaken;
+    const currentSection = examData?.section?.[currentSectionIndex];
+    let totalSectionTime = 0;
+    let timeTakenForGroup = 0;
 
-    // Set remaining time
-    settimeminus(remainingTime);
+    if (currentSection?.is_sub_section && currentSection?.group_name) {
+      // Group timer: sum only t_time across all group sections
+      // For timeTaken: read ONLY the FIRST group section (to avoid double-counting).
+      let firstGroupSectionIdx = -1;
+      examData.section.forEach((s, idx) => {
+        if (s.is_sub_section && s.group_name === currentSection.group_name) {
+          totalSectionTime += (Number(s.t_time) || 0) * 60;
+          if (firstGroupSectionIdx === -1) firstGroupSectionIdx = idx;
+        }
+      });
+      timeTakenForGroup = Math.max(
+        0,
+        resultData?.section?.[firstGroupSectionIdx]?.timeTaken || 0
+      );
+    } else {
+      totalSectionTime = (Number(currentSection?.t_time) || 0) * 60;
+      timeTakenForGroup = Math.max(
+        0,
+        resultData?.section?.[currentSectionIndex]?.timeTaken || 0
+      );
+    }
+
+    // Only reset the timer if the DB time taken has actually changed during mount/fetch
+    if (timeTakenFromDB !== timeTakenForGroup || timeminus === 0) {
+      settimeTakenFromDB(timeTakenForGroup);
+
+      // Clamp to [0, totalSectionTime] so stale DB values can't exceed full section time
+      const remainingTime = Math.max(
+        0,
+        Math.min(totalSectionTime, totalSectionTime - timeTakenForGroup)
+      );
+      settimeminus(remainingTime);
+      setTimerKey(k => k + 1);
+    }
   }, [examData, currentSectionIndex, resultData]);
 
 
   const updateSectionTime = () => {
-    if (!examDataSubmission || timeTakenFromDB.length === 0) return;
+    if (!examDataSubmission || timeTakenFromDB == null) return;
 
     const {
       formattedSections,
@@ -821,33 +853,67 @@ const handleSubmitSection = () => {
       endTime,
     } = examDataSubmission;
 
-    const totalTimeInSeconds =
-      examData?.section[currentSectionIndex]?.t_time * 60 || 0;
-    const actualTimeTaken = totalTimeInSeconds - timeminus;
-    const timeTakenInSecondsUpdated =
-    (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
-  
-    const previousTimeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-    console.log("currentSectionIndex:", currentSectionIndex);
+    const currentSec = examData?.section?.[currentSectionIndex];
+    let totalTimeInSeconds = 0;
+    let isGroupSection = false;
+    let groupName = null;
 
-    console.log("Previous time taken for section:", previousTimeTaken);
+    if (currentSec?.is_sub_section && currentSec?.group_name) {
+      isGroupSection = true;
+      groupName = currentSec.group_name;
+      totalTimeInSeconds = examData.section
+        .filter(s => s.is_sub_section && s.group_name === groupName)
+        .reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60;
+    } else {
+      totalTimeInSeconds = (Number(currentSec?.t_time) || 0) * 60;
+    }
 
-    const finalTimeTaken = actualTimeTaken ; 
+    // actualTimeTaken = how many seconds of the group/section time have elapsed
+    const actualTimeTaken = Math.max(0, totalTimeInSeconds - timeminus);
 
-    console.log("Final time taken for section:", finalTimeTaken);
-    console.warn(formattedSections)
+    // Total exam timeTaken calculation
+    let cumulativeTimeTaken = 0;
+    examData?.section?.forEach((sec, idx) => {
+      if (sec.is_sub_section) {
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
+          .filter(i => i !== -1);
+        if (groupIndices[0] !== idx) return; // skip if not the first section of group
+      }
+
+      const isActiveSection = idx === currentSectionIndex || (currentSec?.is_sub_section && currentSec?.group_name === sec.group_name);
+      if (isActiveSection) {
+        cumulativeTimeTaken += actualTimeTaken;
+      } else {
+        cumulativeTimeTaken += Math.max(0, resultData?.section?.[idx]?.timeTaken || 0);
+      }
+    });
+
+    const timeTakenInSecondsUpdated = cumulativeTimeTaken;
 
     const updatedSections = formattedSections.map((section, idx) => {
+      const sec = examData?.section?.[idx];
+
+      if (isGroupSection) {
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === groupName ? i : -1))
+          .filter(i => i !== -1);
+        const firstGroupIdx = groupIndices[0];
+
+        if (idx === firstGroupIdx) {
+          return { ...section, timeTaken: actualTimeTaken };
+        }
+        if (sec?.is_sub_section && sec?.group_name === groupName) {
+          return { ...section, timeTaken: 0 };
+        }
+        return section;
+      }
+
       if (idx === currentSectionIndex) {
-        return {
-          ...section,
-          timeTaken: finalTimeTaken,
-        };
+        return { ...section, timeTaken: actualTimeTaken };
       }
       return section;
     });
-    console.warn(updatedSections)
 
     if (user?._id) {
       Api.post(`results/${user._id}/${id}`, {
@@ -859,7 +925,8 @@ const handleSubmitSection = () => {
         takenAt: examStartTime,
         submittedAt: endTime,
         status: isPaused ? "paused" : "completed",
-        sectionTimes, // Optional: make sure this matches backend schema
+        sectionTimes,
+        pausedDuration: pausedDurationRef.current || 0, // total seconds paused
       })
         .then((res) => {
           console.log("Submitted:", res.data);
@@ -919,27 +986,51 @@ const handleSubmitSection = () => {
     }
   }, [user?._id, id]);
 
- useEffect(() => {
-    if (timeminus > 0 && !isPaused) {
-      const timerInterval = setInterval(() => {
-        settimeminus((prevTime) => {
-          const newTime = prevTime - 1;
-          if (newTime === 0) {
-            clearInterval(timerInterval); // Stop the timer immediately
-            handleTimerEnd(); // Call an async handler
-          }
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(timerInterval);
+  const [timerEnded, setTimerEnded] = useState(false);
+  useEffect(() => {
+    if (timerEnded) {
+      handleTimerEnd();
+      setTimerEnded(false);
     }
-  }, [timeminus, isPaused]);
-  
- const handleTimerEnd = async () => {
-  handleSubmitSection(); // 1. Submits the section
-  await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
-  handleSectionCompletion(); // 4. Calls this after 1 second
-};
+  }, [timerEnded]);
+
+  // Stable section countdown — re-starts only when isPaused or timerKey changes
+  useEffect(() => {
+    if (sectionTimerRef.current) clearInterval(sectionTimerRef.current);
+
+    if (isPaused) {
+      pauseStartRef.current = Date.now();
+      return;
+    }
+
+    // Accumulate paused duration on resume
+    if (pauseStartRef.current) {
+      const elapsed = Math.floor((Date.now() - pauseStartRef.current) / 1000);
+      pausedDurationRef.current = (pausedDurationRef.current || 0) + elapsed;
+      pauseStartRef.current = null;
+    }
+
+    // Don't start if nothing is left
+    sectionTimerRef.current = setInterval(() => {
+      settimeminus(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          clearInterval(sectionTimerRef.current);
+          setTimerEnded(true);
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(sectionTimerRef.current);
+  }, [isPaused, timerKey]);
+
+  const handleTimerEnd = async () => {
+    handleSubmitSection(); // 1. Submits the section
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
+    handleSectionCompletion(); // 4. Calls this after 1 second
+  };
 
 
   const getKeywords = () => {
@@ -956,190 +1047,190 @@ const handleSubmitSection = () => {
 
 
   // ✅ Check grammar for the current section's text
-// Update your checkGrammar function
-const checkGrammar = async (text) => {
-  try {
-    // Validate input
-    if (typeof text !== 'string') {
-      console.warn("Invalid text input for grammar check:", text);
-      return {
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: calculateScore("", [])
-      };
-    }
-
-    const textToCheck = text.trim();
-    if (!textToCheck) {
-      return {
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: calculateScore("", [])
-      };
-    }
-
-    // Rest of your grammar check API call
-    const response = await axios.post(
-      "https://grammarbot.p.rapidapi.com/check",
-      new URLSearchParams({ text: textToCheck, language: "en-US" }),
-       {
-        headers: {
-          "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
-          "x-rapidapi-host": "grammarbot.p.rapidapi.com",
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+  // Update your checkGrammar function
+  const checkGrammar = async (text) => {
+    try {
+      // Validate input
+      if (typeof text !== 'string') {
+        console.warn("Invalid text input for grammar check:", text);
+        return {
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: calculateScore("", [])
+        };
       }
-    );
 
-    const corrections = response?.data?.matches || [];
-    const scoreData = calculateScore(textToCheck, corrections);
+      const textToCheck = text.trim();
+      if (!textToCheck) {
+        return {
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: calculateScore("", [])
+        };
+      }
 
-    return {
-      corrections,
-      scoreBreakdown: corrections.map(issue => ({
-        message: issue.message,
-        suggestion: issue.replacements?.[0]?.value || '',
-        offset: issue.offset,
-        length: issue.length,
-        context: issue.context,
-        type: issue.rule?.issueType?.toLowerCase().includes('spelling') ? 
-              'spelling' : 'grammar'
-      })),
-      scoreData
-    };
-  } catch (error) {
-    console.error("Grammar check failed:", error);
-    return {
-      corrections: [],
-      scoreBreakdown: null,
-      scoreData: calculateScore(text?.toString() || "", [])
-    };
-  }
-};
-  // Grammar check function
-// const calculateScore = async (issues) => {
-//   const keywords = getKeywords();
-//   const expectedWordCount =
-//     examData?.section?.[currentSectionIndex]?.questions?.[
-//       selectedLanguage?.toLowerCase()
-//     ]?.[0]?.words_limit || 100;
+      // Rest of your grammar check API call
+      const response = await axios.post(
+        "https://grammarbot.p.rapidapi.com/check",
+        new URLSearchParams({ text: textToCheck, language: "en-US" }),
+        {
+          headers: {
+            "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
+            "x-rapidapi-host": "grammarbot.p.rapidapi.com",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
 
-//   const currentText =
-//     descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+      const corrections = response?.data?.matches || [];
+      const scoreData = calculateScore(textToCheck, corrections);
 
-//   let spellingErrors = 0;
-//   let grammarErrors = 0;
-
-//   // Count spelling vs grammar issues
-//   issues.forEach((issue) => {
-//     const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
-//     if (category.includes("capitalization") || category.includes("spelling")) {
-//       spellingErrors++;
-//     } else {
-//       grammarErrors++;
-//     }
-//   });
-
-// //   // Word count
-//   const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
-
-//   // Score calculations
-//   const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
-//   const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
-//   const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
-
-//   // Keyword match score
-//   let matchedKeywords = 0;
-//   const lowerText = currentText.toLowerCase();
-//   keywords.forEach((kw) => {
-//     if (lowerText.includes(kw)) matchedKeywords++;
-//   });
-//   const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
-
-//   // Total score
-//   const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
-
-//   const scoreData = {
-//     spellingScore,
-//     grammarScore,
-//     wordCountScore,
-//     keywordScore,
-//     totalScore: Math.round(totalScore),
-//     totalWords,
-//   };
-
-//   setScoreData(scoreData);
-
-//   if (currentSectionIndex === examData?.section?.length - 1) {
-//     await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
-//   }
-
-//   // Debug logs
-//   console.log("✅ Score Data:", scoreData);
-//   console.log("Text:", currentText);
-//   console.log("Issues:", issues);
-//   console.log("Keywords:", keywords);
-//   console.log("Expected Word Count:", expectedWordCount);
-
-  
-// };
-
-
-const calculateScore = (text, corrections = []) => {
-  // Ensure text is a string
-  const textToScore = typeof text === 'string' ? text : '';
-  
-  const keywords = getKeywords();
-  const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[
-    selectedLanguage?.toLowerCase()
-  ]?.[0]?.words_limit || 100;
-
-  // Classify and validate corrections
-  const validCorrections = Array.isArray(corrections) ? corrections : [];
-  const issues = validCorrections.map(issue => ({
-    ...issue,
-    type: (issue?.rule?.issueType?.toLowerCase() || '').includes('spelling') ? 
-          'spelling' : 'grammar',
-    message: issue.message || 'Unknown issue',
-    suggestion: issue?.replacements?.[0]?.value || ''
-  }));
-
-  // Count errors
-  const spellingErrors = issues.filter(i => i.type === 'spelling').length;
-  const grammarErrors = issues.filter(i => i.type === 'grammar').length;
-
-  // Calculate word count safely
-  const wordCount = textToScore.trim().split(/\s+/).filter(w => w.trim().length > 0).length;
-
-  // Calculate scores with bounds checking
-  const spellingScore = Math.max(0, Math.min(35, 35 - (spellingErrors * 2)));
-  const grammarScore = Math.max(0, Math.min(35, 35 - (grammarErrors * 2)));
-  const wordCountScore = Math.max(0, Math.min(20, Math.round((wordCount / expectedWordCount) * 20)));
-  
-  // Keyword matching
-  const matchedKeywords = keywords.filter(kw => 
-    textToScore.toLowerCase().includes(kw.toLowerCase())
-  ).length;
-  const keywordScore = keywords.length > 0 
-    ? Math.round((matchedKeywords / keywords.length) * 10)
-    : 0;
-
-  return {
-    spellingScore,
-    grammarScore,
-    wordCountScore,
-    keywordScore,
-    totalScore: Math.min(100, spellingScore + grammarScore + wordCountScore + keywordScore),
-    totalWords: wordCount,
-    spellingErrors,
-    grammarErrors,
-    matchedKeywords,
-    keywordCount: keywords.length,
-    expectedWordCount,
-    issues
+      return {
+        corrections,
+        scoreBreakdown: corrections.map(issue => ({
+          message: issue.message,
+          suggestion: issue.replacements?.[0]?.value || '',
+          offset: issue.offset,
+          length: issue.length,
+          context: issue.context,
+          type: issue.rule?.issueType?.toLowerCase().includes('spelling') ?
+            'spelling' : 'grammar'
+        })),
+        scoreData
+      };
+    } catch (error) {
+      console.error("Grammar check failed:", error);
+      return {
+        corrections: [],
+        scoreBreakdown: null,
+        scoreData: calculateScore(text?.toString() || "", [])
+      };
+    }
   };
-};
-  const submitExam =async () => {
+  // Grammar check function
+  // const calculateScore = async (issues) => {
+  //   const keywords = getKeywords();
+  //   const expectedWordCount =
+  //     examData?.section?.[currentSectionIndex]?.questions?.[
+  //       selectedLanguage?.toLowerCase()
+  //     ]?.[0]?.words_limit || 100;
+
+  //   const currentText =
+  //     descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+
+  //   let spellingErrors = 0;
+  //   let grammarErrors = 0;
+
+  //   // Count spelling vs grammar issues
+  //   issues.forEach((issue) => {
+  //     const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
+  //     if (category.includes("capitalization") || category.includes("spelling")) {
+  //       spellingErrors++;
+  //     } else {
+  //       grammarErrors++;
+  //     }
+  //   });
+
+  // //   // Word count
+  //   const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
+
+  //   // Score calculations
+  //   const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+  //   const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
+  //   const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
+
+  //   // Keyword match score
+  //   let matchedKeywords = 0;
+  //   const lowerText = currentText.toLowerCase();
+  //   keywords.forEach((kw) => {
+  //     if (lowerText.includes(kw)) matchedKeywords++;
+  //   });
+  //   const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
+
+  //   // Total score
+  //   const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
+
+  //   const scoreData = {
+  //     spellingScore,
+  //     grammarScore,
+  //     wordCountScore,
+  //     keywordScore,
+  //     totalScore: Math.round(totalScore),
+  //     totalWords,
+  //   };
+
+  //   setScoreData(scoreData);
+
+  //   if (currentSectionIndex === examData?.section?.length - 1) {
+  //     await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
+  //   }
+
+  //   // Debug logs
+  //   console.log("✅ Score Data:", scoreData);
+  //   console.log("Text:", currentText);
+  //   console.log("Issues:", issues);
+  //   console.log("Keywords:", keywords);
+  //   console.log("Expected Word Count:", expectedWordCount);
+
+
+  // };
+
+
+  const calculateScore = (text, corrections = []) => {
+    // Ensure text is a string
+    const textToScore = typeof text === 'string' ? text : '';
+
+    const keywords = getKeywords();
+    const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+    ]?.[0]?.words_limit || 100;
+
+    // Classify and validate corrections
+    const validCorrections = Array.isArray(corrections) ? corrections : [];
+    const issues = validCorrections.map(issue => ({
+      ...issue,
+      type: (issue?.rule?.issueType?.toLowerCase() || '').includes('spelling') ?
+        'spelling' : 'grammar',
+      message: issue.message || 'Unknown issue',
+      suggestion: issue?.replacements?.[0]?.value || ''
+    }));
+
+    // Count errors
+    const spellingErrors = issues.filter(i => i.type === 'spelling').length;
+    const grammarErrors = issues.filter(i => i.type === 'grammar').length;
+
+    // Calculate word count safely
+    const wordCount = textToScore.trim().split(/\s+/).filter(w => w.trim().length > 0).length;
+
+    // Calculate scores with bounds checking
+    const spellingScore = Math.max(0, Math.min(35, 35 - (spellingErrors * 2)));
+    const grammarScore = Math.max(0, Math.min(35, 35 - (grammarErrors * 2)));
+    const wordCountScore = Math.max(0, Math.min(20, Math.round((wordCount / expectedWordCount) * 20)));
+
+    // Keyword matching
+    const matchedKeywords = keywords.filter(kw =>
+      textToScore.toLowerCase().includes(kw.toLowerCase())
+    ).length;
+    const keywordScore = keywords.length > 0
+      ? Math.round((matchedKeywords / keywords.length) * 10)
+      : 0;
+
+    return {
+      spellingScore,
+      grammarScore,
+      wordCountScore,
+      keywordScore,
+      totalScore: Math.min(100, spellingScore + grammarScore + wordCountScore + keywordScore),
+      totalWords: wordCount,
+      spellingErrors,
+      grammarErrors,
+      matchedKeywords,
+      keywordCount: keywords.length,
+      expectedWordCount,
+      issues
+    };
+  };
+  const submitExam = async () => {
     updateSectionTime()
     console.log("submitExam called");
     const now = new Date();
@@ -1158,10 +1249,10 @@ const calculateScore = (text, corrections = []) => {
         ...prev,
         [currentSectionIndex]: updatedTime,
       };
-  setQuestionTimes(prev => ({
-    ...prev,
-    [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
-  }));
+      setQuestionTimes(prev => ({
+        ...prev,
+        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
+      }));
       console.warn(
         `Section ${currentSectionIndex}: previous = ${previousTime}, new = ${timeSpent}, saved = ${updatedTime}`
       );
@@ -1182,7 +1273,7 @@ const calculateScore = (text, corrections = []) => {
     }
 
     const currentSection = examData.section[currentSectionIndex];
-        for (let i = 0; i < examData?.section?.length; i++) {
+    for (let i = 0; i < examData?.section?.length; i++) {
       await handleDescriptiveTest(i);
     }
 
@@ -1239,24 +1330,24 @@ const calculateScore = (text, corrections = []) => {
     ).length;
 
     const answersData = selectedOptions.map((selectedOption, index) => {
-        // Find which section this question belongs to
-    let sectionIndex = 0;
-    let questionIndexInSection = 0;
-    let currentSection;
+      // Find which section this question belongs to
+      let sectionIndex = 0;
+      let questionIndexInSection = 0;
+      let currentSection;
 
-        // Find the section and relative index for this question
-    let count = 0;
-    examData.section.forEach((section, sIndex) => {
-      const questions = section.questions[selectedLanguage.toLowerCase()] || [];
-      if (index >= count && index < count + questions.length) {
-        sectionIndex = sIndex;
-        questionIndexInSection = index - count;
-        currentSection = section;
-      }
-      count += questions.length;
-    });
+      // Find the section and relative index for this question
+      let count = 0;
+      examData.section.forEach((section, sIndex) => {
+        const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+        if (index >= count && index < count + questions.length) {
+          sectionIndex = sIndex;
+          questionIndexInSection = index - count;
+          currentSection = section;
+        }
+        count += questions.length;
+      });
 
-    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+      const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
 
       // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
@@ -1278,13 +1369,13 @@ const calculateScore = (text, corrections = []) => {
       //       : -question?.minus_mark
       //     : 0;
 
-          // Use section-specific marks
-    const questionScore = selectedOption !== null
-      ? selectedOption === question.answer
-        ? currentSection.plus_mark
-        : -currentSection.minus_mark
-      : 0;
-console.log("ques score",questionScore);
+      // Use section-specific marks
+      const questionScore = selectedOption !== null
+        ? selectedOption === question.answer
+          ? currentSection.plus_mark
+          : -currentSection.minus_mark
+        : 0;
+      console.log("ques score", questionScore);
 
 
       return {
@@ -1302,7 +1393,7 @@ console.log("ques score",questionScore);
         descriptive: descriptiveData[index] || [],
       };
     });
-console.log("answers dataaaaa",answersData);
+    console.log("answers dataaaaa", answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1348,7 +1439,7 @@ console.log("answers dataaaaa",answersData);
               : 0;
 
             return {
-              
+
               descriptive: descriptiveData[absoluteIndex],
               question: question.question,
               options: question.options || [],
@@ -1364,32 +1455,34 @@ console.log("answers dataaaaa",answersData);
             };
           }
         );
-console.log("section answers data",sectionAnswersData);
+        console.log("section answers data", sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
-  (q) => q.correct === 1
-).length;
+          (q) => q.correct === 1
+        ).length;
 
-const attemptedCount = sectionAnswersData.filter(
-  (q) => q.selectedOption !== undefined
-).length;
+        const attemptedCount = sectionAnswersData.filter(
+          (q) => q.selectedOption !== undefined
+        ).length;
 
-const incorrectCount = sectionAnswered - correctCount;
+        const incorrectCount = sectionAnswered - correctCount;
 
-// Use section-specific marks instead of hardcoded values
-const sectionScore = 
-  (correctCount * section.plus_mark) - 
-  (incorrectCount * section.minus_mark);
+        // Use section-specific marks instead of hardcoded values
+        const sectionScore =
+          (correctCount * section.plus_mark) -
+          (incorrectCount * section.minus_mark);
 
-const secaccuracy =
-  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+        const secaccuracy =
+          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
 
-console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
 
-const skippedQuestions = sectionVisited - sectionAnswered;
+        const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
+          group_name: section.group_name || "",
+          is_sub_section: section.is_sub_section || false,
           t_question: section.t_question,
           t_time: section.t_time,
           t_mark: section.t_mark,
@@ -1418,14 +1511,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
-            descriptive: descriptiveData[sectionStartIndex + index] || {
-              text: [""],
-              corrections: [],
-              scoreBreakdown: null,
-              scoreData: [],
-              keywords: [],
-              wordCount: 0
-            },
+              descriptive: descriptiveData[sectionStartIndex + index] || {
+                text: [""],
+                corrections: [],
+                scoreBreakdown: null,
+                scoreData: [],
+                keywords: [],
+                wordCount: 0
+              },
             })),
             hindi: section.questions.hindi.map((question, index) => ({
               question: question?.question,
@@ -1488,14 +1581,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
           timeTaken: (() => {
             const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
             const time2 = sectionTimes?.[sectionIndex];
-        
+
             if (typeof time1 === 'number' && typeof time2 === 'number') {
               return time1 + time2;
             }
-        
+
             return time1 ?? time2 ?? 0;
           })()
-      
+
         };
       })
       .filter(Boolean);
@@ -1532,127 +1625,127 @@ const skippedQuestions = sectionVisited - sectionAnswered;
     });
   };
 
-const handleDescriptiveTest = async (sectionIndex = currentSectionIndex) => {
-  try {
-    const currentText = descriptiveData?.[sectionIndex]?.text?.[0] || "";
-    
-    // Skip empty text
-    if (!currentText.trim()) {
-      return {
-        corrections: [],
-        scoreData: calculateScore("", []),
-        scoreBreakdown: null
-      };
-    }
+  const handleDescriptiveTest = async (sectionIndex = currentSectionIndex) => {
+    try {
+      const currentText = descriptiveData?.[sectionIndex]?.text?.[0] || "";
 
-    const { corrections, scoreData, scoreBreakdown } = await checkGrammar(currentText);
-    
-    // Update state immutably
-    setDescriptiveData(prev => {
-      const newData = [...prev];
-      
-      // Initialize section data if it doesn't exist
-      if (!newData[sectionIndex]) {
-        newData[sectionIndex] = {
-          text: [""],
+      // Skip empty text
+      if (!currentText.trim()) {
+        return {
           corrections: [],
-          scoreBreakdown: null,
-          scoreData: null,
-          keywords: [],
-          wordCount: 0
+          scoreData: calculateScore("", []),
+          scoreBreakdown: null
         };
       }
-      
-      // Update the specific section's data
-      newData[sectionIndex] = {
-        ...newData[sectionIndex],
-        text: [currentText],
-        corrections,
-        scoreBreakdown,
-        scoreData,
-        wordCount: scoreData?.totalWords || 0
-      };
-      
-      return newData;
-    });
 
-    // Update corrections and score data
-    if (sectionIndex === currentSectionIndex) {
-      setCorrections(corrections);
-      setScoreData(scoreData);
+      const { corrections, scoreData, scoreBreakdown } = await checkGrammar(currentText);
+
+      // Update state immutably
+      setDescriptiveData(prev => {
+        const newData = [...prev];
+
+        // Initialize section data if it doesn't exist
+        if (!newData[sectionIndex]) {
+          newData[sectionIndex] = {
+            text: [""],
+            corrections: [],
+            scoreBreakdown: null,
+            scoreData: null,
+            keywords: [],
+            wordCount: 0
+          };
+        }
+
+        // Update the specific section's data
+        newData[sectionIndex] = {
+          ...newData[sectionIndex],
+          text: [currentText],
+          corrections,
+          scoreBreakdown,
+          scoreData,
+          wordCount: scoreData?.totalWords || 0
+        };
+
+        return newData;
+      });
+
+      // Update corrections and score data
+      if (sectionIndex === currentSectionIndex) {
+        setCorrections(corrections);
+        setScoreData(scoreData);
+      }
+
+      return { corrections, scoreData, scoreBreakdown };
+    } catch (error) {
+      console.error(`Error in section ${sectionIndex} descriptive test:`, error);
+      return null;
     }
-
-    return { corrections, scoreData, scoreBreakdown };
-  } catch (error) {
-    console.error(`Error in section ${sectionIndex} descriptive test:`, error);
-    return null;
-  }
-};
+  };
 
 
-const handlePauseResume = () => {
-  if (pauseCount < 1) {
-    clearInterval(questionTimerRef.current);
-    setIsPaused(true);
-    setPauseCount(pauseCount + 1);
+  const handlePauseResume = () => {
+    if (pauseCount < 1) {
+      clearInterval(questionTimerRef.current);
+      setIsPaused(true);
+      setPauseCount(pauseCount + 1);
 
-    const now = new Date();
+      const now = new Date();
 
-    // ✅ Save current question time
-    if (questionStartTime && clickedQuestionIndex !== null) {
-      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-      setQuestionTimes((prev) => ({
+      // ✅ Save current question time
+      if (questionStartTime && clickedQuestionIndex !== null) {
+        const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+        setQuestionTimes((prev) => ({
+          ...prev,
+          [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+        }));
+        setQuestionStartTime(null);
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
+
+      // ✅ Save section time
+      const timeSpent = Math.floor(
+        (now - currentSectionStartTimeRef.current) / 1000
+      );
+      setSectionTimes((prev) => ({
         ...prev,
-        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+        [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
       }));
-      setQuestionStartTime(null);
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
+      currentSectionStartTimeRef.current = now;
 
-    // ✅ Save section time
-    const timeSpent = Math.floor(
-      (now - currentSectionStartTimeRef.current) / 1000
-    );
-    setSectionTimes((prev) => ({
-      ...prev,
-      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-    }));
-    currentSectionStartTimeRef.current = now;
+      // ✅ Store current exam state
+      const currentState = {
+        clickedQuestionIndex,
+        selectedOptions,
+        visitedQuestions,
+        markedForReview,
+        currentSectionIndex,
+      };
+      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
-    // ✅ Store current exam state
-    const currentState = {
-      clickedQuestionIndex,
-      selectedOptions,
-      visitedQuestions,
-      markedForReview,
-      currentSectionIndex,
-    };
-    localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-
-    Swal.fire({
-      title: "Pause Exam",
-      text: "Do you want to quit the exam?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, Quit",
-      cancelButtonText: "No, Resume",
-      position: "center",
-      width: "100vw",
-      height: "100vh",
-      padding: "100",
-      customClass: {
-        container: "swal-full-screen",
-        popup: "swal-popup-full-height",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        setIsPaused(true);
-        await submitExam();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        closeAndNotifyParent()
-      } else {
+      Swal.fire({
+        title: "Pause Exam",
+        text: "Do you want to quit the exam?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Quit",
+        cancelButtonText: "No, Resume",
+        position: "center",
+        width: "100vw",
+        height: "100vh",
+        padding: "100",
+        customClass: {
+          container: "swal-full-screen",
+          popup: "swal-popup-full-height",
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          setIsPaused(true);
+          await submitExam();
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          closeAndNotifyParent()
+        } else {
           setIsPaused(false);
           setPauseCount(0);
 
@@ -1672,9 +1765,9 @@ const handlePauseResume = () => {
           });
         }
 
-    });
-  }
-};
+      });
+    }
+  };
 
   const [words, setWords] = useState(); // default word limit
   const [countType, setCountType] = useState(" ");
@@ -1684,7 +1777,7 @@ const handlePauseResume = () => {
   useEffect(() => {
     const selectedQuestion =
       examData?.section?.[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
+      selectedLanguage?.toLowerCase()
       ]?.[0];
 
     if (selectedQuestion) {
@@ -1694,45 +1787,45 @@ const handlePauseResume = () => {
   }, [examData, currentSectionIndex, selectedLanguage]);
   // console.log("Set Text Value", "", text[currentSectionIndex]);
 
-const handleChange = (e) => {
-  const inputText = e.target.value;
-  const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
-  const currentCount = wordsArray.length;
-  
-  setWordCounto(currentCount);
+  const handleChange = (e) => {
+    const inputText = e.target.value;
+    const wordsArray = inputText.trim().split(/\s+/).filter(Boolean);
+    const currentCount = wordsArray.length;
 
-  const limitReached = 
-    (countType === "decrement" && currentCount >= words) ||
-    (countType === "increment" && currentCount >= words);
-  setLimitReached(limitReached);
+    setWordCounto(currentCount);
 
-  let finalText = inputText;
-  if (countType === "decrement" && currentCount > words) {
-    finalText = wordsArray.slice(0, words).join(" ");
-  }
+    const limitReached =
+      (countType === "decrement" && currentCount >= words) ||
+      (countType === "increment" && currentCount >= words);
+    setLimitReached(limitReached);
 
-  setDescriptiveData(prev => {
-    const updated = [...prev];
-    if (!updated[currentSectionIndex]) {
-      updated[currentSectionIndex] = {
-        text: [""],
-        corrections: [],
-        scoreBreakdown: null,
-        scoreData: [],
-        keywords: [],
-        wordCount: 0
-      };
+    let finalText = inputText;
+    if (countType === "decrement" && currentCount > words) {
+      finalText = wordsArray.slice(0, words).join(" ");
     }
-    
-    updated[currentSectionIndex] = {
-      ...updated[currentSectionIndex],
-      text: [finalText],
-      wordCount: currentCount
-    };
-    
-    return updated;
-  });
-};
+
+    setDescriptiveData(prev => {
+      const updated = [...prev];
+      if (!updated[currentSectionIndex]) {
+        updated[currentSectionIndex] = {
+          text: [""],
+          corrections: [],
+          scoreBreakdown: null,
+          scoreData: [],
+          keywords: [],
+          wordCount: 0
+        };
+      }
+
+      updated[currentSectionIndex] = {
+        ...updated[currentSectionIndex],
+        text: [finalText],
+        wordCount: currentCount
+      };
+
+      return updated;
+    });
+  };
   const preventShortcuts = (e) => {
     if (
       (e.ctrlKey || e.metaKey) &&
@@ -1792,7 +1885,7 @@ const handleChange = (e) => {
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
-    
+
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         // navigate(`/liveresult/${id}/${user?._id}`);
@@ -1839,72 +1932,72 @@ const handleChange = (e) => {
   //   return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   // };
 
-  
-  
+
+
   const [descriptiveTimeLeft, setDescriptiveTimeLeft] = useState(30 * 60); // 30 minutes in seconds
 
 
-const formatTime = (timeInSeconds) => {
-  const minutes = Math.floor(timeInSeconds / 60);
-  const seconds = timeInSeconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-};
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
-// // Initialize timer on first render and when question changes
-useEffect(() => {
- 
+  // // Initialize timer on first render and when question changes
+  useEffect(() => {
 
-  // Only start timer for descriptive questions
-  if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
-    // Reset timer to 30 minutes when new descriptive question is shown
-    setDescriptiveTimeLeft(30 * 60);
-    
-    // Start countdown timer
-    timerRef.current = setInterval(() => {
-      setDescriptiveTimeLeft(prev => {
-        if (prev <= 0) {
-          clearInterval(timerRef.current);
-          handleSubmitSection(); // Auto-submit when time runs out
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }
 
-  // // Cleanup function to clear timer when component unmounts
-  // return () => {
-  //   if (timerRef.current) {
-  //     clearInterval(timerRef.current);
+    // Only start timer for descriptive questions
+    if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
+      // Reset timer to 30 minutes when new descriptive question is shown
+      setDescriptiveTimeLeft(30 * 60);
+
+      // Start countdown timer
+      timerRef.current = setInterval(() => {
+        setDescriptiveTimeLeft(prev => {
+          if (prev <= 0) {
+            clearInterval(timerRef.current);
+            handleSubmitSection(); // Auto-submit when time runs out
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    // // Cleanup function to clear timer when component unmounts
+    // return () => {
+    //   if (timerRef.current) {
+    //     clearInterval(timerRef.current);
+    //   }
+    // };
+  }, [examData]); // Dependencies for when to reset timer
+
+
+  // // Add this useEffect to handle the countdown
+  // useEffect(() => {
+  //   if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
+  //     const timer = setInterval(() => {
+  //       setDescriptiveTimeLeft(prev => {
+  //         if (prev <= 0) {
+  //           clearInterval(timer);
+  //           handleSubmitSection(); // Auto-submit when time runs out
+  //           return 0;
+  //         }
+  //         return prev - 1;
+  //       });
+  //     }, 1000);
+
+  //     return () => clearInterval(timer);
   //   }
-  // };
-}, [ examData]); // Dependencies for when to reset timer
+  // }, [currentSectionIndex, clickedQuestionIndex, descriptiveTimeLeft]);
 
-
-// // Add this useEffect to handle the countdown
-// useEffect(() => {
-//   if (examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive") {
-//     const timer = setInterval(() => {
-//       setDescriptiveTimeLeft(prev => {
-//         if (prev <= 0) {
-//           clearInterval(timer);
-//           handleSubmitSection(); // Auto-submit when time runs out
-//           return 0;
-//         }
-//         return prev - 1;
-//       });
-//     }, 1000);
-
-//     return () => clearInterval(timer);
-//   }
-// }, [currentSectionIndex, clickedQuestionIndex, descriptiveTimeLeft]);
-
-//   useEffect(() => {
-//     const compositetime = examData?.duration * 60;
-//     console.log("Composite time:", compositetime);
-//     setDuration(compositetime);
-//   }, [examData, currentSectionIndex, duration, descriptiveTimeLeft]);
- const [isFullscreen, setIsFullscreen] = useState(false);
+  //   useEffect(() => {
+  //     const compositetime = examData?.duration * 60;
+  //     console.log("Composite time:", compositetime);
+  //     setDuration(compositetime);
+  //   }, [examData, currentSectionIndex, duration, descriptiveTimeLeft]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
@@ -2058,856 +2151,864 @@ useEffect(() => {
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
-     const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-  setQuestionTime(existingTime);
-  setQuestionStartTime(new Date());
+    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+    setQuestionTime(existingTime);
+    setQuestionStartTime(new Date());
 
-  if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
 
-  timerRef.current = setInterval(() => {
-    setQuestionTime((prev) => prev + 1);
-  }, 1000);
+    timerRef.current = setInterval(() => {
+      setQuestionTime((prev) => prev + 1);
+    }, 1000);
 
-  console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
+    console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
   };
 
   const finishTestAndOpenResult = async () => {
-  // try {
+    // try {
     // await submitExam();
-    
+
     // Build the result URL
     const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
-    
+
     // Open result in a new window without _blank target
     // const resultWindow = window.open('', '_self');
-    console.log("openerr",window.opener);
-    
-  if (window.opener) {
-    console.log("Closing the window and notifying parent");
-    window.opener.postMessage({
-      type: 'test-status-updated',
-      testId: id
-    }, window.location.origin);   
-     
-            window.open(resultUrl, '_blank');
+    console.log("openerr", window.opener);
 
-    // Allow time for message to send before closing
-    setTimeout(() => {
-      window.close();
-    }, 300);
-  } else {
-    console.log("Closing the window without parent notification");
+    if (window.opener) {
+      console.log("Closing the window and notifying parent");
+      window.opener.postMessage({
+        type: 'test-status-updated',
+        testId: id
+      }, window.location.origin);
+
+      window.open(resultUrl, '_blank');
+
+      // Allow time for message to send before closing
+      setTimeout(() => {
+        window.close();
+      }, 300);
+    } else {
+      console.log("Closing the window without parent notification");
+      window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
+    }
     window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
-  }
-   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
-        // window.open(resultUrl, '_blank');
+    // window.open(resultUrl, '_blank');
 
     // Close the current test window
     // window.close();
-  // } catch (error) {
-  //   console.error("Closing the window without notifying parent:", error);
-  //   // alert('Failed to submit the exam. Please try again.');
-  //   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
+    // } catch (error) {
+    //   console.error("Closing the window without notifying parent:", error);
+    //   // alert('Failed to submit the exam. Please try again.');
+    //   window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
 
-  // }
-};
-
-
-useEffect(() => {
-  // Timer interval setup
-  timerRef.current = setInterval(() => {
-    setQuestionTime(prev => prev + 1);
-  }, 1000);
-
-  return () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+    // }
   };
-}, []);
 
-useEffect(() => {
-  const now = new Date();
 
-  // 1️⃣ Save time for previous question
-  if (previousQuestionIndex !== null && questionStartTime) {
-    const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-    setQuestionTimes(prev => ({
-      ...prev,
-      [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
-    }));
-  }
+  useEffect(() => {
+    // Timer interval setup
+    timerRef.current = setInterval(() => {
+      setQuestionTime(prev => prev + 1);
+    }, 1000);
 
-  // 2️⃣ Clear previous timer
-  if (timerRef.current) clearInterval(timerRef.current);
-console.log("q",questionTimes,clickedQuestionIndex);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
-  // 3️⃣ Start timer for current question
-  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-  console.log("Existing time for question:", existingTime);
-  
-  setQuestionTime(existingTime);
-  setQuestionStartTime(now);
-console.log(questionTime);
+  useEffect(() => {
+    const now = new Date();
 
-  // 4️⃣ Live increment every second
-  timerRef.current = setInterval(() => {
-    setQuestionTime(prev => prev + 1);
-  }, 1000);
+    // 1️⃣ Save time for previous question
+    if (previousQuestionIndex !== null && questionStartTime) {
+      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+      setQuestionTimes(prev => ({
+        ...prev,
+        [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
+      }));
+    }
 
-  // 5️⃣ Track previous index for next time
-  setPreviousQuestionIndex(clickedQuestionIndex);
+    // 2️⃣ Clear previous timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    console.log("q", questionTimes, clickedQuestionIndex);
 
-  return () => clearInterval(timerRef.current);
-}, [clickedQuestionIndex]);
+    // 3️⃣ Start timer for current question
+    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+    console.log("Existing time for question:", existingTime);
+
+    setQuestionTime(existingTime);
+    setQuestionStartTime(now);
+    console.log(questionTime);
+
+    // 4️⃣ Live increment every second
+    timerRef.current = setInterval(() => {
+      setQuestionTime(prev => prev + 1);
+    }, 1000);
+
+    // 5️⃣ Track previous index for next time
+    setPreviousQuestionIndex(clickedQuestionIndex);
+
+    return () => clearInterval(timerRef.current);
+  }, [clickedQuestionIndex]);
 
   const closeAndNotifyParent = () => {
-  if (window.opener) {
-    console.log("Closing the window and notifying parent");
-    window.opener.postMessage({
-      type: 'test-status-updated',
-      testId: id
-    }, window.location.origin);
-    
-    // Allow time for message to send before closing
-    setTimeout(() => {
-      window.close();
-    }, 300);
-  } else {
-    console.log("Closing the window without parent notification");
-    navigate('/');
-  }
-};
+    if (window.opener) {
+      console.log("Closing the window and notifying parent");
+      window.opener.postMessage({
+        type: 'test-status-updated',
+        testId: id
+      }, window.location.origin);
+
+      // Allow time for message to send before closing
+      setTimeout(() => {
+        window.close();
+      }, 300);
+    } else {
+      console.log("Closing the window without parent notification");
+      navigate('/');
+    }
+  };
   return (
     <>
-  {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
-  <DescriptiveTest/>):(
-    <div className="mock-font " ref={commonDataRef}>
-      <div>
-       <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
-  {/* Show Name */}
-  <h1 className="mt-3 text-sm md:text-xl font-bold">{show_name}</h1>
+      {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
+        <DescriptiveTest />) : (
+        <div className="mock-font " ref={commonDataRef}>
+          <div>
+            <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+              {/* Left Section: Logo & Show Name */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={logo}
+                  alt="logo"
+                  className="h-10 w-auto bg-white rounded p-0.5"
+                />
+                <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+                  {show_name}
+                </h1>
+              </div>
 
-  {/* Logo */}
-  <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
+              {/* Right Section: Time & Fullscreen Controls */}
+              <div className="flex items-center gap-3 md:gap-4">
 
-  {/* Timer Display */}
-  {/* {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(descriptiveTimeLeft)}
-    </h1>
-  ) : (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(timeminus)}
-    </h1>
-  )} */}
-  {/* Fullscreen Toggle Button */}
-  <button
-    onClick={toggleFullScreen}
-    className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-  >
-    {isFullscreen ? <FaCompress /> : <FaExpand />}
-  </button>
-</div>
+                {/* Refined Time Display */}
+                <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+                  <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+                    Time Left:
+                  </span>
+                  <span className="text-sm md:text-base font-bold font-mono">
+                    {formatTime(timeminus)}
+                  </span>
+                </div>
 
-        {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
+                {/* Fullscreen Toggle Button */}
+                <button
+                  onClick={toggleFullScreen}
+                  className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+                  aria-label="Toggle Fullscreen"
+                  title="Toggle Fullscreen"
+                >
+                  {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                </button>
+              </div>
+            </div>
 
-        <div>
-          {/* Modal for showing section summary */}
-          {showModal && (
-            <div
-              className="modal"
-              tabIndex="-1"
-              id="staticBackdrop"
-              data-bs-backdrop="static"
-              data-bs-keyboard="false"
-              aria-labelledby="staticBackdropLabel"
-              aria-hidden="true"
-              style={{
-                display: "block",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                minHeight: "100vh",
-              }}
-            >
-              <div className="modal-dialog modal-xl">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h1
-                      className="modal-title fs-5 text-green-500"
-                      id="staticBackdropLabel"
-                    >
-                      Section Submit
-                    </h1>
-                    <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={popupmodal} // Manually hide the modal
-            ></button>
-                  </div>
-                  <div className="modal-body">
-                    <div className="table-responsive">
-                      <table className="table table-bordered">
-                        <thead className="table-success text-white">
-                          <tr>
-                            <th>Section Name</th>
-                            <th>Total Ques</th>
-                            <th>Answered</th>
-                            <th>Not Answered</th>
-                            <th>Visited Questions</th>
-                            <th>Not Visited Questions</th>
-                            <th>Marked for Review</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sectionSummaryData.map((summary, index) => (
-                            <tr key={index}>
-                              <td className="fw-bold">{summary.sectionName}</td>
-                              <td>{summary.totalQuestions}</td>
-                              <td>{summary.answeredQuestions}</td>
-                              <td>{summary.notAnsweredQuestions}</td>
-                              <td>{summary.visitedQuestionsCount}</td>
-                              <td>{summary.notVisitedQuestions}</td>
-                              <td>{summary.reviewedQuestions}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <div className="d-flex justify-content-center w-100">
-                      <button
-                        type="button"
-                        className="btn btn-success"
-                        data-bs-dismiss="modal"
-                        onClick={handleSectionCompletion} // Check completion and move to next section
-                      >
-                        {currentSectionIndex === examData?.section?.length - 1
-                          ? "Submit"
-                          : "Next Section"}
-                      </button>
+            {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
+
+            <div>
+              {/* Modal for showing section summary */}
+              {showModal && (
+                <div
+                  className="modal"
+                  tabIndex="-1"
+                  id="staticBackdrop"
+                  data-bs-backdrop="static"
+                  data-bs-keyboard="false"
+                  aria-labelledby="staticBackdropLabel"
+                  aria-hidden="true"
+                  style={{
+                    display: "block",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    minHeight: "100vh",
+                  }}
+                >
+                  <div className="modal-dialog modal-xl">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h1
+                          className="modal-title fs-5 text-green-500"
+                          id="staticBackdropLabel"
+                        >
+                          Section Submit
+                        </h1>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          aria-label="Close"
+                          onClick={popupmodal} // Manually hide the modal
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        <div className="table-responsive">
+                          <table className="table table-bordered">
+                            <thead className="table-success text-white">
+                              <tr>
+                                <th>Section Name</th>
+                                <th>Total Ques</th>
+                                <th>Answered</th>
+                                <th>Not Answered</th>
+                                <th>Visited Questions</th>
+                                <th>Not Visited Questions</th>
+                                <th>Marked for Review</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sectionSummaryData.map((summary, index) => (
+                                <tr key={index}>
+                                  <td className="fw-bold">{summary.sectionName}</td>
+                                  <td>{summary.totalQuestions}</td>
+                                  <td>{summary.answeredQuestions}</td>
+                                  <td>{summary.notAnsweredQuestions}</td>
+                                  <td>{summary.visitedQuestionsCount}</td>
+                                  <td>{summary.notVisitedQuestions}</td>
+                                  <td>{summary.reviewedQuestions}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div className="modal-footer">
+                        <div className="d-flex justify-content-center w-100">
+                          <button
+                            type="button"
+                            className="btn btn-success"
+                            data-bs-dismiss="modal"
+                            onClick={handleSectionCompletion} // Check completion and move to next section
+                          >
+                            {currentSectionIndex === examData?.section?.length - 1
+                              ? "Submit"
+                              : "Next Section"}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
-        </div>
-        {/* Toast Container */}
-        <ToastContainer />
-      </div>
+            {/* Toast Container */}
+            <ToastContainer />
+          </div>
 
-      <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
-        {examData?.section?.map((section, index) => {
-          // Calculate the starting index for this section
-          const startingIndex = examData.section
-            .slice(0, index)
-            .reduce(
-              (acc, sec) =>
-                acc +
-                (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length ||
-                  0),
-              0
-            );
+          <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2">
+            {examData?.section?.map((section, index) => {
+              // Calculate the starting index for this section
+              const startingIndex = examData.section
+                .slice(0, index)
+                .reduce(
+                  (acc, sec) =>
+                    acc +
+                    (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length ||
+                      0),
+                  0
+                );
 
-          // Get counts using fixed starting index
-          const sectionCounts = getSectionCounts(
-            section,
-            selectedOptions,
-            visitedQuestions,
-            markedForReview,
-            selectedLanguage,
-            startingIndex
-          );
+              // Get counts using fixed starting index
+              const sectionCounts = getSectionCounts(
+                section,
+                selectedOptions,
+                visitedQuestions,
+                markedForReview,
+                selectedLanguage,
+                startingIndex
+              );
 
-          return (
-            <div key={index}>
-              <h1
-                className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                      ${
-                        currentSectionIndex === index
-                          ? " font-medium underline"
-                          : ""
+              return (
+                <div key={index}>
+                  <h1
+                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
+                      ${currentSectionIndex === index
+                        ? " font-medium underline"
+                        : ""
                       }`}
-        onClick={() => {
-      const newStartingIndex = examData.section
-        .slice(0, index)
-        .reduce(
-          (acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-          0
-        );
-      setCurrentSectionIndex(index);
-      setClickedQuestionIndex(newStartingIndex);
-    }}
+                    onClick={() => {
+                      const newStartingIndex = examData.section
+                        .slice(0, index)
+                        .reduce(
+                          (acc, sec) => acc + (sec?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
+                          0
+                        );
+                      setCurrentSectionIndex(index);
+                      setClickedQuestionIndex(newStartingIndex);
+                    }}
 
-              >
-                {section.name}
-                <div className="relative group ml-2 d-inline-block">
-                  <FaInfoCircle className="cursor-pointer text-blue-400" />
-                  <div
-                    className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+                  >
+                    {section.name}
+                    <div className="relative group ml-2 d-inline-block">
+                      <FaInfoCircle className="cursor-pointer text-blue-400" />
+                      <div
+                        className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
   min-w-[220px]     w-fit md:max-w-xs md:w-max
   left-1/2 -translate-x-1/2
   "
+                      >
+                        <div className="mt-2 flex align-items-center">
+                          <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">
+                            {sectionCounts.answered}
+                          </div>
+                          <p className="ml-2 text-start text-lg-center mb-0">
+                            Answered
+                          </p>
+                        </div>
+                        <div className="mt-2 flex align-items-center">
+                          <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">
+                            {sectionCounts.notAnswered}
+                          </div>
+                          <p className="ml-2 text-start text-lg-center mb-0">
+                            Not Answered
+                          </p>
+                        </div>
+                        <div className="mt-2 flex align-items-center">
+                          <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">
+                            {sectionCounts.notVisited}
+                          </div>
+                          <p className="ml-2 text-start text-lg-center mb-0">
+                            Not Visited
+                          </p>
+                        </div>
+                        <div className="mt-2 flex align-items-center">
+                          <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+                            {sectionCounts.markedForReviewCount}
+                          </div>
+                          <p className="ml-2 text-start text-lg-center">
+                            Marked for Review
+                          </p>
+                        </div>
+                        <div className="mt-2 flex align-items-center">
+                          <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+                            {sectionCounts.answeredAndMarked}
+                          </div>
+                          <p className="ml-3 text-start text-lg-center mb-0">
+                            Answered & Marked for Review
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </h1>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile Hamburger Menu */}
+          <button onClick={toggleMenu} className="md:hidden text-black p-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              {/* // Hamburger icon when the menu is closed */}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+          <div className="flex ">
+            {/* Question Panel */}
+            <div className={` ${closeSideBar ? "md:w-full" : "md:w-4/5"}`}>
+              {!isSubmitted ? (
+                <>
+                  <div className="flex justify-between flex-col md:flex-row p-2 bg-gray-100 border-1 border-gray-300 font-extralight text-[14px]">
+                    <h3>
+                      Question No: {clickedQuestionIndex + 1}/{t_questions}
+                    </h3>
+
+                    <h1 className="flex flex-wrap md:flex-row">
+                      {/* Language dropdown added here */}
+                      {examData &&
+                        examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                          <div className="flex items-center mx-2">
+                            <select
+                              value={displayLanguage || selectedLanguage}
+                              onChange={(e) => setDisplayLanguage(e.target.value)}
+                              className="border rounded p-1"
+                            >
+                              {examData?.bilingual_status ? (
+                                <>
+                                  {examData?.english_status && <option value="English">English</option>}
+                                  {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                </>
+                              ) : (
+                                <>
+                                  {examData?.english_status && <option value="English">English</option>}
+                                  {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                  {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                                </>
+                              )}
+                            </select>
+                          </div>
+                        )}
+
+
+                      <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
+                        Qn Time : {formatTime(questionTime)}
+                      </span>
+                      <span className="font-normal m-1">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<b>Marks : </b>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span className="text-success">
+                          +
+                          {examData?.section &&
+                            examData.section[currentSectionIndex]
+                            ? examData.section[currentSectionIndex].plus_mark
+                            : "No plus marks"}
+                        </span>
+                        &nbsp;<span className="text-gray-400">|</span>&nbsp;
+                        <span className="text-danger">
+                          -
+                          {examData?.section &&
+                            examData.section[currentSectionIndex]
+                            ? examData.section[currentSectionIndex].minus_mark
+                            : "No minus marks"}
+                        </span>
+                      </span>
+                    </h1>
+                  </div>
+
+                  {examData?.section[currentSectionIndex] ? (
+                    <div className="flex flex-col md:flex-row p-0">
+                      {/* Left side for Common Data */}
+                      {examData.section[currentSectionIndex]?.questions?.[
+                        selectedLanguage?.toLowerCase()
+                      ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                          <div
+                            className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                  ${isFullscreen
+                                ? 'h-[80vh] md:h-[80vh]'
+                                : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                              }`
+                            }
+                            style={{
+                              height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                              overflowY: 'auto'
+                            }}
+                          >
+                            <div
+                              className="text-wrap"
+                              style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                              dangerouslySetInnerHTML={{
+                                __html:
+                                  examData.section[currentSectionIndex]?.questions?.[
+                                    (displayLanguage || selectedLanguage)?.toLowerCase()
+                                  ]?.[clickedQuestionIndex - startingIndex]
+                                    ?.common_data || "No common data available",
+                              }}
+                            />
+                          </div>
+                        )}
+
+                      {/* Right side for Question */}
+                      <div
+                        className={`   ${isFullscreen
+                          ? 'h-[80vh] md:h-[80vh]'
+                          : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                          } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
+                            selectedLanguage?.toLowerCase()
+                          ]?.[clickedQuestionIndex - startingIndex]?.common_data
+                            ? "md:w-[50%]"
+                            : "md:w-full" // Make it full width when no common data
+                          }`} style={{
+                            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                            overflowY: 'auto'
+                          }}
+
+                      >
+                        <div>
+                          <div
+                            className="text-wrap mb-2"
+                            style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                            dangerouslySetInnerHTML={{
+                              __html:
+                                examData.section[currentSectionIndex]?.questions?.[
+                                  (displayLanguage || selectedLanguage)?.toLowerCase()
+                                ]?.[clickedQuestionIndex - startingIndex]
+                                  ?.question || "No question available",
+                            }}
+                          />
+
+                          {examData.section[currentSectionIndex]?.questions?.[
+                            selectedLanguage?.toLowerCase()
+                          ]?.[clickedQuestionIndex - startingIndex]
+                            ?.question_type === "descriptive" ? (
+                            <div>
+                              <textarea
+                                value={
+                                  descriptiveData?.[currentSectionIndex]
+                                    ?.text?.[0] || ""
+                                }
+                                onChange={handleChange}
+                                onKeyDown={preventShortcuts}
+                                onCopy={(e) => e.preventDefault()}
+                                onCut={(e) => e.preventDefault()}
+                                onPaste={(e) => e.preventDefault()}
+                                disabled={limitReached}
+                                placeholder="Enter your text..."
+                                rows="6"
+                                cols="100"
+                                style={{
+                                  width: "100%",
+                                  height: "350px",
+                                  padding: "10px",
+                                  fontSize: "1rem",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  resize: "none",
+                                  backgroundColor: limitReached
+                                    ? "#f5f5f5"
+                                    : "#fff",
+                                }}
+                              />
+                              <div
+                                className="fw-bold text-right"
+                                style={{
+                                  marginTop: "8px",
+                                  color: limitReached ? "red" : "#555",
+                                }}
+                              >
+                                {limitReached
+                                  ? "Word limit reached"
+                                  : countType === "decrement"
+                                    ? `Words remaining: ${Math.max(
+                                      words - wordCounto,
+                                      0
+                                    )} / ${words}`
+                                    : `Words used: ${wordCounto} / ${words}`}
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {examData.section[currentSectionIndex]?.questions?.[
+                                (displayLanguage || selectedLanguage)?.toLowerCase()
+                              ]?.[clickedQuestionIndex - startingIndex]?.options ? (
+                                <div>
+                                  {examData.section[
+                                    currentSectionIndex
+                                  ]?.questions?.[selectedLanguage?.toLowerCase()]?.[
+                                    clickedQuestionIndex - startingIndex
+                                  ]?.options.map((option, index) => (
+                                    <div key={index} className="p-1 rounded-lg m-2">
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          marginBottom: "10px",
+                                        }}
+                                      >
+                                        <input
+                                          className="p-5"
+                                          type="radio"
+                                          id={`option-${index}`}
+                                          name="exam-option"
+                                          value={index}
+                                          checked={
+                                            selectedOptions[
+                                            clickedQuestionIndex
+                                            ] === index
+                                          }
+                                          onChange={() => handleOptionChange(index)}
+                                          style={{
+                                            accentColor: "#3B82F6",
+                                            width: "1.2rem",
+                                            height: "1.2rem",
+                                            marginRight: "8px",
+                                            marginTop: "0px", // Remove vertical offset
+                                          }}
+                                        />
+                                        &nbsp;&nbsp;
+                                        <label
+                                          htmlFor={`option-${index}`}
+                                          dangerouslySetInnerHTML={{
+                                            __html: option || "No option available",
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p>No options available</p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <div className="md:flex hidden items-center">
+                          <div
+                            className={`fixed top-1/2 ${closeSideBar ? "right-0" : ""
+                              } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
+                            onClick={toggleMenu2}
+                          >
+                            <FaChevronRight
+                              className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? "absalute left-0 rotate-180" : ""
+                                }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="d-flex justify-content-center align-items-center"
+                      style={{ height: '100vh' }} // Full viewport height
+                    >
+                      <div
+                        className="spinner-border text-primary"
+                        role="status"
+                        style={{ width: '3rem', height: '3rem' }}
+                      >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+
+                  )}
+                </>
+              ) : (
+                <div className="text-center">
+                  <h1 className="display-6 text-success">Test Completed!</h1>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar */}
+
+            <div
+              className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+ ${isFullscreen
+                  ? 'h-[87vh] md:h-[87vh]'
+                  : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
+                } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
+              style={{
+                height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                overflowY: 'auto'
+              }}
+            >
+              {isMobileMenuOpen && (
+                <button onClick={toggleMenu} className="md:hidden text-black p-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="w-6 h-6"
                   >
-                    <div className="mt-2 flex align-items-center">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+
+              <div className="container">
+                <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
+                  {/* Profile Image and Link */}
+                  <div>
+                    <Avatar
+                      alt={user?.firstName}
+                      src={user?.profilePicture}
+                      sx={{ width: 30, height: 30 }}
+                    />
+                  </div>
+
+                  {/* Profile Information */}
+                  <div>
+                    <h1 className=" text-white text-wrap break-words">
+                      {user?.firstName + user?.lastName}
+                    </h1>
+                  </div>
+                </div>
+                {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
+                  <h1 className="text-center text-black bg-gray-100 p-2">
+                    Time Left: {formatTime(descriptiveTimeLeft)}
+                  </h1>
+                ) : (
+                  <h1 className="text-center text-black bg-gray-100 p-2">
+                    Time Left: {formatTime(timeminus)}
+                  </h1>
+                )}
+                <center>
+                  <button
+                    onClick={handlePauseResume}
+                    className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused
+                      ? "bg-green-500 hover:bg-green-600 text-white"
+                      : "bg-red-500 hover:bg-red-600 text-white"
+                      }`}
+                  >
+                    Pause
+                  </button>
+                </center>
+
+                <div className="container mt-3">
+                  <div className="row align-items-center">
+                    <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                       <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">
-                        {sectionCounts.answered}
+                        {answeredCount}
                       </div>
                       <p className="ml-2 text-start text-lg-center mb-0">
                         Answered
                       </p>
                     </div>
-                    <div className="mt-2 flex align-items-center">
+                    <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                       <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">
-                        {sectionCounts.notAnswered}
+                        {notAnsweredCount}
                       </div>
                       <p className="ml-2 text-start text-lg-center mb-0">
                         Not Answered
                       </p>
                     </div>
-                    <div className="mt-2 flex align-items-center">
+                  </div>
+                </div>
+
+                <div className="container mb-3">
+                  <div className="row">
+                    <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                       <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">
-                        {sectionCounts.notVisited}
+                        {notVisitedCount}
                       </div>
                       <p className="ml-2 text-start text-lg-center mb-0">
                         Not Visited
                       </p>
                     </div>
-                    <div className="mt-2 flex align-items-center">
+                    <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
                       <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">
-                        {sectionCounts.markedForReviewCount}
+                        {markedForReviewCount}
                       </div>
                       <p className="ml-2 text-start text-lg-center">
                         Marked for Review
                       </p>
                     </div>
-                    <div className="mt-2 flex align-items-center">
-                      <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
-                        {sectionCounts.answeredAndMarked}
-                      </div>
-                      <p className="ml-3 text-start text-lg-center mb-0">
-                        Answered & Marked for Review
-                      </p>
+                  </div>
+                  <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
+                    <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
+                      {answeredAndMarkedCount}
                     </div>
+                    <p className="ml-3 text-start text-lg-center mb-0">
+                      Answered & Marked for Review
+                    </p>
                   </div>
                 </div>
-              </h1>
-            </div>
-          );
-        })}
-      </div>
+                <h1 className="mt-1 mb-1 text-sm  text-white bg-blue-500 p-1">Section : {show_name}</h1>
 
-      {/* Mobile Hamburger Menu */}
-      <button onClick={toggleMenu} className="md:hidden text-black p-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="w-6 h-6"
-        >
-          {/* // Hamburger icon when the menu is closed */}
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
-      <div className="flex ">
-        {/* Question Panel */}
-        <div className={` ${closeSideBar ? "md:w-full" : "md:w-4/5"}`}>
-          {!isSubmitted ? (
-            <>
-              <div className="flex justify-between flex-col md:flex-row p-2 bg-gray-100 border-1 border-gray-300 font-extralight text-[14px]">
-                <h3>
-                  Question No: {clickedQuestionIndex + 1}/{t_questions}
-                </h3>
-
-                <h1 className="flex flex-wrap md:flex-row">
-                                    {/* Language dropdown added here */}
-                {examData &&
-                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                    <div className="flex items-center mx-2">
-                      <select
-                        value={displayLanguage || selectedLanguage}
-                        onChange={(e) => setDisplayLanguage(e.target.value)}
-                        className="border rounded p-1"
-                      >
-                        {examData?.bilingual_status ? (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                          </>
-                        ) : (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                          </>
-                        )}
-                      </select>
-                    </div>
-                )}
-
-
-                  <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
-                    Qn Time : {formatTime(questionTime)}
-                  </span>
-                  <span className="font-normal m-1">
-                    &nbsp;&nbsp;&nbsp;&nbsp;<b>Marks : </b>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <span className="text-success">
-                      +
-                      {examData?.section &&
-                      examData.section[currentSectionIndex]
-                        ? examData.section[currentSectionIndex].plus_mark
-                        : "No plus marks"}
-                    </span>
-                    &nbsp;<span className="text-gray-400">|</span>&nbsp;
-                    <span className="text-danger">
-                      -
-                      {examData?.section &&
-                      examData.section[currentSectionIndex]
-                        ? examData.section[currentSectionIndex].minus_mark
-                        : "No minus marks"}
-                    </span>
-                  </span>
-                </h1>
-              </div>
-
-              {examData?.section[currentSectionIndex] ? (
-                <div className="flex flex-col md:flex-row p-0">
-                  {/* Left side for Common Data */}
-                  {examData.section[currentSectionIndex]?.questions?.[
+                <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+                  {examData?.section[currentSectionIndex]?.questions?.[
                     selectedLanguage?.toLowerCase()
-                  ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                    <div
-                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                  ${isFullscreen
-                        ? 'h-[80vh] md:h-[80vh]'
-                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      }`
+                  ]?.map((_, index) => {
+                    const fullIndex = startingIndex + index;
+                    const currentSection = examData.section[currentSectionIndex];
+                    const timeFormatted = formatTime(timeLeft);
+
+                    let className = "";
+                    if (selectedOptions[fullIndex] !== null) {
+                      className = "answerImg";
+                      if (markedForReview.includes(fullIndex)) {
+                        className += " mdansmarkedImg";
+                      } if (selectedOptions[fullIndex] == null) {
+                        className = "notansImg";
+                      }
                     }
-                      style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-                  >
-                      <div
-                        className="text-wrap"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                             (displayLanguage|| selectedLanguage)?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.common_data || "No common data available",
-                        }}
-                      />
-                    </div>
-                  )}
+                    else if (visitedQuestions.includes(fullIndex)) {
+                      className = "notansImg";
+                    } else {
+                      className = "notVisitImg";
+                    }
 
-                  {/* Right side for Question */}
-                  <div
-                    className={`   ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                        ? "md:w-[50%]"
-                        : "md:w-full" // Make it full width when no common data
-                      }`}   style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-  
-                  >
-                    <div>
-                      <div
-                        className="text-wrap mb-2"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                               (displayLanguage|| selectedLanguage)?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.question || "No question available",
-                        }}
-                      />
+                    if (markedForReview.includes(fullIndex)) {
+                      className += " reviewed mdmarkedImg";
+                    }
 
-                        {examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]
-                        ?.question_type === "descriptive" ? (
-                        <div>
-                          <textarea
-                            value={
-                              descriptiveData?.[currentSectionIndex]
-                                ?.text?.[0] || ""
-                            }
-                            onChange={handleChange}
-                            onKeyDown={preventShortcuts}
-                            onCopy={(e) => e.preventDefault()}
-                            onCut={(e) => e.preventDefault()}
-                            onPaste={(e) => e.preventDefault()}
-                            disabled={limitReached}
-                            placeholder="Enter your text..."
-                            rows="6"
-                            cols="100"
-                            style={{
-                              width: "100%",
-                              height: "350px",
-                              padding: "10px",
-                              fontSize: "1rem",
-                              borderRadius: "8px",
-                              border: "1px solid #ccc",
-                              resize: "none",
-                              backgroundColor: limitReached
-                                ? "#f5f5f5"
-                                : "#fff",
-                            }}
-                          />
-                          <div
-                            className="fw-bold text-right"
-                            style={{
-                              marginTop: "8px",
-                              color: limitReached ? "red" : "#555",
-                            }}
-                          >
-                            {limitReached
-                              ? "Word limit reached"
-                              : countType === "decrement"
-                              ? `Words remaining: ${Math.max(
-                                  words - wordCounto,
-                                  0
-                                )} / ${words}`
-                              : `Words used: ${wordCounto} / ${words}`}
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {examData.section[currentSectionIndex]?.questions?.[
-                            (displayLanguage|| selectedLanguage)?.toLowerCase()
-                          ]?.[clickedQuestionIndex - startingIndex]?.options ? (
-                            <div>
-                              {examData.section[
-                                currentSectionIndex
-                              ]?.questions?.[selectedLanguage?.toLowerCase()]?.[
-                                clickedQuestionIndex - startingIndex
-                              ]?.options.map((option, index) => (
-                                <div key={index} className="p-1 rounded-lg m-2">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      marginBottom: "10px",
-                                    }}
-                                  >
-                                    <input
-                                    className="p-5"
-                                      type="radio"
-                                      id={`option-${index}`}
-                                      name="exam-option"
-                                      value={index}
-                                      checked={
-                                        selectedOptions[
-                                          clickedQuestionIndex
-                                        ] === index
-                                      }
-                                      onChange={() => handleOptionChange(index)}
-                                      style={{
-                                        accentColor: "#3B82F6",
-                                        width: "1.2rem",
-                                        height: "1.2rem",
-                                        marginRight: "8px",
-                                        marginTop: "0px", // Remove vertical offset
-                                      }}
-                                    />
-                                    &nbsp;&nbsp;
-                                    <label
-                                      htmlFor={`option-${index}`}
-                                      dangerouslySetInnerHTML={{
-                                        __html: option || "No option available",
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p>No options available</p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                    <div className="md:flex hidden items-center">
-                      <div
-                        className={`fixed top-1/2 ${
-                          closeSideBar ? "right-0" : ""
-                        } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
-                        onClick={toggleMenu2}
-                      >
-                        <FaChevronRight
-                          className={`w-2 h-5 text-white transition-transform duration-300 ${
-                            closeSideBar ? "absalute left-0 rotate-180" : ""
-                          }`}
-                        />
+                    return (
+                      <div key={fullIndex}>
+                        <span
+                          onClick={() => {
+                            console.log("Clicked question index:", fullIndex);
+                            setClickedQuestionIndex(fullIndex);
+                            // setQuestionTime(0);
+                          }}
+                          className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                        >
+                          {fullIndex + 1}
+                        </span>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div
-                className="d-flex justify-content-center align-items-center"
-                style={{ height: '100vh' }} // Full viewport height
-              >
-                <div
-                  className="spinner-border text-primary"
-                  role="status"
-                  style={{ width: '3rem', height: '3rem' }}
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <h1 className="display-6 text-success">Test Completed!</h1>
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar */}
-
-        <div
-          className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
-        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
- ${isFullscreen
-              ? 'h-[87vh] md:h-[87vh]'
-              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-            style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-        >
-          {isMobileMenuOpen && (
-            <button onClick={toggleMenu} className="md:hidden text-black p-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          )}
-
-          <div className="container">
-            <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
-              {/* Profile Image and Link */}
-              <div>
-                <Avatar
-                  alt={user?.firstName}
-                  src={user?.profilePicture}
-                  sx={{ width: 30, height: 30 }}
-                />
-              </div>
-
-              {/* Profile Information */}
-              <div>
-                <h1 className=" text-white text-wrap break-words">
-                  {user?.firstName + user?.lastName}
-                </h1>
-              </div>
-            </div>
-          {examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.question_type === "descriptive" ? (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(descriptiveTimeLeft)}
-    </h1>
-  ) : (
-    <h1 className="text-center text-black bg-gray-100 p-2">
-      Time Left: {formatTime(timeminus)}
-    </h1>
-  )}
-            <center>
-              <button
-                onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
-                  isPaused
-                    ? "bg-green-500 hover:bg-green-600 text-white"
-                    : "bg-red-500 hover:bg-red-600 text-white"
-                }`}
-              >
-                Pause
-              </button>
-            </center>
-
-            <div className="container mt-3">
-              <div className="row align-items-center">
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">
-                    {answeredCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center mb-0">
-                    Answered
-                  </p>
-                </div>
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">
-                    {notAnsweredCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center mb-0">
-                    Not Answered
-                  </p>
+                    );
+                  })}
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="container mb-3">
-              <div className="row">
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">
-                    {notVisitedCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center mb-0">
-                    Not Visited
-                  </p>
+          {/* Footer Buttons */}
+          <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
+            <div className="flex justify-between flex-col md:flex-row w-full">
+              <div className="flex justify-between  md:w-3/4 m-1">
+                {/* Left side - Mark for Review and Clear Response */}
+                <div className="d-flex">
+                  <button
+                    onClick={handleMarkForReview}
+                    className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
+                  >
+                    <span className="block md:hidden">Mark & Next</span>
+                    <span className="hidden md:block">Mark for Review & Next</span>
+                  </button>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <button
+                    onClick={handleClearResponse}
+                    className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
+                  >
+                    <span className="block md:hidden">Clear</span>
+                    <span className="hidden md:block"> Clear Response</span>
+                  </button>
                 </div>
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">
-                    {markedForReviewCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center">
-                    Marked for Review
-                  </p>
-                </div>
-              </div>
-              <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
-                  {answeredAndMarkedCount}
-                </div>
-                <p className="ml-3 text-start text-lg-center mb-0">
-                  Answered & Marked for Review
-                </p>
-              </div>
-            </div>
-  <h1 className="mt-1 mb-1 text-sm  text-white bg-blue-500 p-1">Section : {show_name}</h1>
-
-            <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-              {examData?.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.map((_, index) => {
-                const fullIndex = startingIndex + index;
-                const currentSection = examData.section[currentSectionIndex];
-                const timeFormatted = formatTime(timeLeft);
-
-                let className = "";
-                if (selectedOptions[fullIndex] !== null) {
-                  className = "answerImg";
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " mdansmarkedImg";
-                  }if (selectedOptions[fullIndex] == null) {
-                    className="notansImg";
-                  }
-                }
-                 else if (visitedQuestions.includes(fullIndex)) {
-                  className = "notansImg";
-                } else {
-                  className = "notVisitImg";
-                }
-
-                if (markedForReview.includes(fullIndex)) {
-                  className += " reviewed mdmarkedImg";
-                }
-
-                return (
-                  <div key={fullIndex}>
-                    <span
-                      onClick={() => {
-                        console.log("Clicked question index:", fullIndex);
-                        setClickedQuestionIndex(fullIndex);
-                        // setQuestionTime(0);
-                      }}
-                      className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                {examData?.section?.[currentSectionIndex]?.questions?.[
+                  selectedLanguage?.toLowerCase()
+                ]?.length > 0 && (
+                    <button
+                      onClick={handleNextClick}
+                      className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
                     >
-                      {fullIndex + 1}
-                    </span>
-                  </div>
-                );
-              })}
+                      <span className="block md:hidden">Save</span>
+                      <span className="hidden md:block"> Save & Next</span>
+                    </button>
+                  )}
+              </div>
+              {/* Right side - Save & Next and Submit Section */}
+              <div className="flex justify-center md:w-[20%]">
+                <center>
+                  <button
+                    className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
+                    onClick={handleSubmitSection}
+                    data-bs-toggle="modal"
+                    data-bs-target="#staticBackdrop"
+                  >
+                    {currentSectionIndex === examData?.section?.length - 1
+                      ? "Submit Test"
+                      : "Submit Section"}
+                  </button>
+                </center>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer Buttons */}
-      <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
-        <div className="flex justify-between flex-col md:flex-row w-full">
-          <div className="flex justify-between  md:w-3/4 m-1">
-            {/* Left side - Mark for Review and Clear Response */}
-            <div className="d-flex">
-              <button
-                onClick={handleMarkForReview}
-                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
-              >
-                <span className="block md:hidden">Mark & Next</span>
-                <span className="hidden md:block">Mark for Review & Next</span>
-              </button>
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <button
-                onClick={handleClearResponse}
-                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
-              >
-                <span className="block md:hidden">Clear</span>
-                <span className="hidden md:block"> Clear Response</span>
-              </button>
-            </div>
-            {examData?.section?.[currentSectionIndex]?.questions?.[
-              selectedLanguage?.toLowerCase()
-            ]?.length > 0 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
-              >
-                <span className="block md:hidden">Save</span>
-                <span className="hidden md:block"> Save & Next</span>
-              </button>
-            )}
-          </div>
-          {/* Right side - Save & Next and Submit Section */}
-          <div className="flex justify-center md:w-[20%]">
-            <center>
-              <button
-                className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
-                onClick={handleSubmitSection}
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
-              >
-                {currentSectionIndex === examData?.section?.length - 1
-                  ? "Submit Test"
-                  : "Submit Section"}
-              </button>
-            </center>
-          </div>
-        </div>
-      </div>
-    </div>
-                )}
-                </>
+      )}
+    </>
   );
 };
 

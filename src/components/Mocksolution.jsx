@@ -606,29 +606,55 @@ const Mocksolution = () => {
     return (
         <div className="p-1 mock-font ">
             <div>
+                <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+                    {/* Left Section: Logo & Show Name */}
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={logo}
+                            alt="logo"
+                            className="h-10 w-auto bg-white rounded p-0.5"
+                        />
+                        <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+                            {show_name}
+                        </h1>
+                    </div>
 
-                <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-evenly items-center">
-                    <h1 className="h3 font-bold mt-3">{show_name}</h1>
-                    <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-                    <button
-                        onClick={toggleFullScreen}
-                        className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-                    >
-                        {isFullscreen ? <FaCompress /> : <FaExpand />}
-                    </button>
+                    {/* Right Section: Time & Fullscreen Controls */}
+                    <div className="flex items-center gap-3 md:gap-4">
+
+                        {/* Refined Time Display */}
+                        {/* <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+      <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+        Time Left:
+      </span>
+      <span className="text-sm md:text-base font-bold font-mono">
+        {formatTime(timeminus)}
+      </span>
+    </div> */}
+
+                        {/* Fullscreen Toggle Button */}
+                        <button
+                            onClick={toggleFullScreen}
+                            className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+                            aria-label="Toggle Fullscreen"
+                            title="Toggle Fullscreen"
+                        >
+                            {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                        </button>
+                    </div>
                 </div>
 
             </div>
 
             <div>
-                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2 p-2">
+                <div className="w-full flex flex-col bg-white shadow-sm">
                     {(() => {
                         const renderGroups = [];
                         const groupsMap = {};
 
-                        // Group sections
+                        // Group sections logic
                         (examData?.section || []).forEach((section, index) => {
-                            const groupName = (section.is_sub_section && section.group_name) ? section.group_name : null;
+                            const groupName = section.is_sub_section && section.group_name ? section.group_name : null;
                             const keyName = groupName || section.name;
 
                             if (!groupsMap[keyName]) {
@@ -636,85 +662,109 @@ const Mocksolution = () => {
                                     name: keyName,
                                     isGroup: !!groupName,
                                     sections: [],
-                                    startIndex: index // keep track of original index to know if current section is in this group
+                                    startIndex: index
                                 };
                                 renderGroups.push(groupsMap[keyName]);
                             }
                             groupsMap[keyName].sections.push({ ...section, originalIndex: index });
                         });
 
-                        return renderGroups.map((group, groupIndex) => {
-                            // Check if current active section belongs to this group
-                            const isActiveGroup = group.sections.some(s => s.originalIndex === currentSectionIndex);
+                        const activeGroup = renderGroups.find(g =>
+                            g.sections.some(s => s.originalIndex === currentSectionIndex)
+                        );
 
-                            // Calculate aggregate stats for the group tooltip
-                            let groupCorrect = 0, groupIncorrect = 0, groupUnseen = 0, groupSkipped = 0;
-                            group.sections.forEach(s => {
-                                const sectionResults = resultsBySection[s.originalIndex] || {};
-                                groupCorrect += sectionResults.correct || 0;
-                                groupIncorrect += sectionResults.incorrect || 0;
-                                groupUnseen += sectionResults.unseen || 0;
-                                groupSkipped += sectionResults.skipped || 0;
-                            });
+                        return (
+                            <>
+                                {/* Main Group Tabs Bar */}
+                                <div className="flex flex-wrap items-end border-b border-gray-200 bg-gray-50 px-2 pt-2 gap-y-1">
+                                    {renderGroups.map((group, groupIndex) => {
+                                        const isActiveGroup = group.sections.some(s => s.originalIndex === currentSectionIndex);
 
-                            return (
-                                <div key={groupIndex} className="d-inline-flex flex-column align-items-start border-r-2 border-gray-300 pr-2">
-                                    <h1
-                                        className={`h6 p-2 text-blue-400 d-inline-flex align-items-center cursor-pointer hover:bg-blue-50 rounded transition-colors
-                                            ${isActiveGroup ? ' font-medium bg-blue-100' : ''}`}
-                                        onClick={() => setCurrentSectionIndex(group.sections[0].originalIndex)}
-                                    >
-                                        <span className={isActiveGroup ? "border-b-2 border-blue-500 pb-1" : ""}>
-                                            {group.name}
-                                        </span>
-                                        <div className="relative group ml-2 d-inline-block">
-                                            <FaInfoCircle className="cursor-pointer text-blue-400" />
-                                            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-2 min-w-[220px] w-fit md:max-w-xs md:w-max left-1/2 -translate-x-1/2">
-                                                <div className="mt-2 flex align-items-center">
-                                                    <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                        {groupCorrect}
+                                        // Calculate aggregate stats for the group tooltip
+                                        let groupCorrect = 0, groupIncorrect = 0, groupUnseen = 0, groupSkipped = 0;
+                                        group.sections.forEach(s => {
+                                            const sectionResults = resultsBySection[s.originalIndex] || {};
+                                            groupCorrect += sectionResults.correct || 0;
+                                            groupIncorrect += sectionResults.incorrect || 0;
+                                            groupUnseen += sectionResults.unseen || 0;
+                                            groupSkipped += sectionResults.skipped || 0;
+                                        });
+
+                                        return (
+                                            <div key={groupIndex} className="relative flex-shrink-0">
+                                                <div
+                                                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all border-b-2 rounded-t-md ${isActiveGroup
+                                                        ? 'border-blue-600 text-blue-700 bg-white'
+                                                        : 'border-transparent text-gray-600 hover:text-blue-600 hover:bg-gray-100 hover:border-gray-300'
+                                                        }`}
+                                                >
+                                                    <span
+                                                        className="cursor-pointer"
+                                                        onClick={() => setCurrentSectionIndex(group.sections[0].originalIndex)}
+                                                    >
+                                                        {group.name}
+                                                    </span>
+
+                                                    {/* STANDARD 'group' Tooltip Wrapper with extra padding for easier hovering */}
+                                                    <div className="relative inline-block px-1 py-1 group cursor-help">
+                                                        <FaInfoCircle className={`text-sm transition-colors ${isActiveGroup ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-600'}`} />
+
+                                                        {/* Tooltip Dropdown (Using z-[9999] and standard group-hover) */}
+                                                        <div className="absolute z-[9999] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white text-gray-800 border border-gray-200 rounded-md p-3 shadow-xl mt-1 min-w-[200px] w-max left-1/2 -translate-x-1/2 top-full block">
+
+                                                            {/* Invisible Hover Bridge to stop flickering */}
+                                                            <div className="absolute -top-3 left-0 w-full h-4 bg-transparent"></div>
+
+                                                            <div className="flex flex-col gap-2.5">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="smanswerImg text-white font-bold flex items-center justify-center w-6 h-6 rounded shadow-sm">{groupCorrect}</div>
+                                                                    <p className="text-left m-0 text-sm font-medium">Correct</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="smnotansImg text-white font-bold flex items-center justify-center w-6 h-6 rounded shadow-sm">{groupIncorrect}</div>
+                                                                    <p className="text-left m-0 text-sm font-medium">Wrong</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="smnotVisitImg text-gray-700 font-bold flex items-center justify-center w-6 h-6 rounded border border-gray-300 bg-gray-50">{groupUnseen}</div>
+                                                                    <p className="text-left m-0 text-sm font-medium">Unseen</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="smskipimg text-white font-bold flex items-center justify-center w-6 h-6 rounded shadow-sm">{groupSkipped}</div>
+                                                                    <p className="text-left m-0 text-sm font-medium">Skipped</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <p>Correct</p>
-                                                </div>
-                                                <div className="mt-2 flex align-items-center">
-                                                    <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                        {groupIncorrect}
-                                                    </div>
-                                                    <p>Wrong</p>
-                                                </div>
-                                                <div className="mt-2 flex align-items-center">
-                                                    <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
-                                                        {groupUnseen}
-                                                    </div>
-                                                    <p>Unseen</p>
-                                                </div>
-                                                <div className="mt-2 flex align-items-center">
-                                                    <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
-                                                        {groupSkipped}
-                                                    </div>
-                                                    <p>Skipped</p>
+                                                    {/* End of Tooltip */}
+
                                                 </div>
                                             </div>
-                                        </div>
-                                    </h1>
+                                        );
+                                    })}
+                                </div>
 
-                                    {/* Render Sub-sections if this is an active group */}
-                                    {isActiveGroup && group.isGroup && group.sections.length > 1 && (
-                                        <div className="d-flex w-100 pl-2 gap-2 mt-2">
-                                            {group.sections.map((subSection) => (
-                                                <div
+                                {/* Sub-sections Bar */}
+                                {activeGroup && activeGroup.isGroup && activeGroup.sections.length > 1 && (
+                                    <div className="flex flex-wrap items-center gap-2 bg-white border-b border-gray-100 px-4 py-2.5 shadow-sm">
+                                        {activeGroup.sections.map((subSection) => {
+                                            const isSecActive = currentSectionIndex === subSection.originalIndex;
+                                            return (
+                                                <button
                                                     key={subSection.originalIndex}
-                                                    className={`text-sm p-1 cursor-pointer rounded transition-colors ${currentSectionIndex === subSection.originalIndex ? 'bg-blue-200 text-blue-800 font-bold' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
                                                     onClick={() => setCurrentSectionIndex(subSection.originalIndex)}
+                                                    className={`flex-shrink-0 px-4 py-1.5 text-sm font-medium transition-all rounded-md border ${isSecActive
+                                                        ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-800 hover:bg-gray-50 shadow-sm'
+                                                        }`}
                                                 >
                                                     {subSection.name}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        });
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </>
+                        );
                     })()}
                 </div>
 

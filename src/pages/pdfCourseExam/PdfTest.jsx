@@ -865,7 +865,10 @@ const Test = () => {
   const [dataid, setDataid] = useState(null); // State to store the data
 
 
-  console.log("timetakenfromdb:", timeTakenFromDB);
+  const pauseStartRef = useRef(null);
+  const pausedDurationRef = useRef(0);
+  const sectionTimerRef = useRef(null);
+  const [timerKey, setTimerKey] = useState(0);
 
   useEffect(() => {
     if (!examData) return;
@@ -882,16 +885,44 @@ const Test = () => {
       const remainingTime = totalDuration - timeTakenTotal;
 
       settimeminus(remainingTime > 0 ? remainingTime : 0);
+      setTimerKey(k => k + 1);
       console.log("Composite Timer Initialized:", remainingTime);
     } else {
-      // Sectional: per-section time
-      const totalSectionTime = (examData?.section?.[currentSectionIndex]?.t_time || 0) * 60;
-      const timeTaken = resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-      settimeTakenFromDB(timeTaken);
-      const remainingTime = totalSectionTime - timeTaken;
+      const currentSection = examData?.section?.[currentSectionIndex];
+      let totalSectionTime = 0;
+      let timeTakenForGroup = 0;
 
-      settimeminus(remainingTime > 0 ? remainingTime : 0);
-      console.log("Sectional Timer Initialized:", remainingTime);
+      if (currentSection?.is_sub_section && currentSection?.group_name) {
+        let firstGroupSectionIdx = -1;
+        examData.section.forEach((s, idx) => {
+          if (s.is_sub_section && s.group_name === currentSection.group_name) {
+            totalSectionTime += (Number(s.t_time) || 0) * 60;
+            if (firstGroupSectionIdx === -1) firstGroupSectionIdx = idx;
+          }
+        });
+        timeTakenForGroup = Math.max(
+          0,
+          resultData?.section?.[firstGroupSectionIdx]?.timeTaken || 0
+        );
+      } else {
+        totalSectionTime = (Number(currentSection?.t_time) || 0) * 60;
+        timeTakenForGroup = Math.max(
+          0,
+          resultData?.section?.[currentSectionIndex]?.timeTaken || 0
+        );
+      }
+
+      if (timeTakenFromDB !== timeTakenForGroup || timeminus === 0) {
+        settimeTakenFromDB(timeTakenForGroup);
+
+        const remainingTime = Math.max(
+          0,
+          Math.min(totalSectionTime, totalSectionTime - timeTakenForGroup)
+        );
+        settimeminus(remainingTime);
+        setTimerKey(k => k + 1);
+        console.log("Sectional Timer Initialized:", remainingTime);
+      }
     }
   }, [examData, currentSectionIndex, resultData]);
 
@@ -978,21 +1009,45 @@ const Test = () => {
 
 
 
+  const [timerEnded, setTimerEnded] = useState(false);
   useEffect(() => {
-    if (timeminus > 0 && !isPaused) {
-      const timerInterval = setInterval(() => {
-        settimeminus((prevTime) => {
-          const newTime = prevTime - 1;
-          if (newTime === 0) {
-            clearInterval(timerInterval); // Stop the timer immediately
-            handleTimerEnd(); // Call an async handler
-          }
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(timerInterval);
+    if (timerEnded) {
+      handleTimerEnd();
+      setTimerEnded(false);
     }
-  }, [timeminus, isPaused]);
+  }, [timerEnded]);
+
+  // Stable section countdown — re-starts only when isPaused or timerKey changes
+  useEffect(() => {
+    if (sectionTimerRef.current) clearInterval(sectionTimerRef.current);
+
+    if (isPaused) {
+      pauseStartRef.current = Date.now();
+      return;
+    }
+
+    // Accumulate paused duration on resume
+    if (pauseStartRef.current) {
+      const elapsed = Math.floor((Date.now() - pauseStartRef.current) / 1000);
+      pausedDurationRef.current = (pausedDurationRef.current || 0) + elapsed;
+      pauseStartRef.current = null;
+    }
+
+    // Don't start if nothing is left
+    sectionTimerRef.current = setInterval(() => {
+      settimeminus(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          clearInterval(sectionTimerRef.current);
+          setTimerEnded(true);
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(sectionTimerRef.current);
+  }, [isPaused, timerKey]);
 
   const handleTimerEnd = async () => {
     handleSubmitSection();
@@ -1299,6 +1354,8 @@ const Test = () => {
             })),
           },
 
+          group_name: section.group_name || "",
+          is_sub_section: section.is_sub_section || false,
           s_order: section.s_order || 0,
           s_score: sectionScore,
           correct: correctCount,
@@ -1855,20 +1912,42 @@ const Test = () => {
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-        <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
-          <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
-          <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-          <h1 className=" text-center text-black bg-gray-100 p-1">
-            Time Left:{formatTime(timeminus)}
-          </h1>
-          {/* Fullscreen Toggle Button */}
-          <button
-            onClick={toggleFullScreen}
-            className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-          >
-            {/* Show the appropriate icon based on fullscreen state */}
-            {isFullscreen ? <FaCompress /> : <FaExpand />}
-          </button>
+        <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+          {/* Left Section: Logo & Show Name */}
+          <div className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="logo"
+              className="h-10 w-auto bg-white rounded p-0.5"
+            />
+            <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+              {show_name}
+            </h1>
+          </div>
+
+          {/* Right Section: Time & Fullscreen Controls */}
+          <div className="flex items-center gap-3 md:gap-4">
+
+            {/* Refined Time Display */}
+            <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+              <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+                Time Left:
+              </span>
+              <span className="text-sm md:text-base font-bold font-mono">
+                {formatTime(timeminus)}
+              </span>
+            </div>
+
+            {/* Fullscreen Toggle Button */}
+            <button
+              onClick={toggleFullScreen}
+              className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Toggle Fullscreen"
+              title="Toggle Fullscreen"
+            >
+              {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+            </button>
+          </div>
         </div>
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
@@ -1961,20 +2040,41 @@ const Test = () => {
       <div className="w-full">
         {(() => {
           // Group sections
-          const groupedSections = [];
-          const sectionGroups = {};
+          const formattedSections = [];
+          let currentGroupName = null;
+          let combinedSection = null;
 
-          examData?.section?.forEach((section, index) => {
-            const isSubSection = section.is_sub_section;
-            const groupName = isSubSection ? section.group_name : section.name;
-
-            if (!sectionGroups[groupName]) {
-              const newGroup = { groupName, sections: [], isGroup: isSubSection };
-              sectionGroups[groupName] = newGroup;
-              groupedSections.push(newGroup);
+          (examData?.section || []).forEach((section, index) => {
+            if (section.is_sub_section && section.group_name) {
+              if (section.group_name !== currentGroupName) {
+                if (combinedSection) formattedSections.push(combinedSection);
+                currentGroupName = section.group_name;
+                combinedSection = {
+                  ...section,
+                  name: section.group_name,
+                  isGroup: true,
+                  originalSections: [{ ...section, globalIndex: index }],
+                  t_question: Number(section.t_question) || 0,
+                  t_time: Number(section.t_time) || 0,
+                  t_mark: Number(section.t_mark) || 0,
+                  globalIndex: index
+                };
+              } else {
+                combinedSection.originalSections.push({ ...section, globalIndex: index });
+                combinedSection.t_question += Number(section.t_question) || 0;
+                combinedSection.t_time += Number(section.t_time) || 0;
+                combinedSection.t_mark += Number(section.t_mark) || 0;
+              }
+            } else {
+              if (combinedSection) {
+                formattedSections.push(combinedSection);
+                combinedSection = null;
+                currentGroupName = null;
+              }
+              formattedSections.push({ ...section, isGroup: false, globalIndex: index });
             }
-            sectionGroups[groupName].sections.push({ ...section, globalIndex: index });
           });
+          if (combinedSection) formattedSections.push(combinedSection);
 
           const currentSection = examData?.section?.[currentSectionIndex];
           const activeGroupName = currentSection?.is_sub_section ? currentSection.group_name : currentSection?.name;
@@ -1984,25 +2084,38 @@ const Test = () => {
               {/* Main Group Tab Bar — matches Test.jsx layout */}
               <div className="flex items-center justify-between bg-white border-b border-gray-200 px-2">
                 <div className="flex flex-wrap">
-                  {groupedSections.map((group, groupIndex) => {
-                    const isActiveGroup = group.groupName === activeGroupName;
+                  {formattedSections.map((group, groupIndex) => {
+                    const isActiveGroup = group.name === activeGroupName;
 
                     let totalAnswered = 0, totalNotAnswered = 0, totalNotVisited = 0, totalMarked = 0, totalAnsMarked = 0;
-                    group.sections.forEach(sec => {
+
+                    if (group.isGroup) {
+                      group.originalSections.forEach(sec => {
+                        const startingIndex = examData.section
+                          .slice(0, sec.globalIndex)
+                          .reduce((acc, s) => acc + (s?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+                        const counts = getSectionCounts(sec, selectedOptions, visitedQuestions, markedForReview, selectedLanguage, startingIndex);
+                        totalAnswered += counts.answered;
+                        totalNotAnswered += counts.notAnswered;
+                        totalNotVisited += counts.notVisited;
+                        totalMarked += counts.markedForReviewCount;
+                        totalAnsMarked += counts.answeredAndMarked;
+                      });
+                    } else {
                       const startingIndex = examData.section
-                        .slice(0, sec.globalIndex)
+                        .slice(0, group.globalIndex)
                         .reduce((acc, s) => acc + (s?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-                      const counts = getSectionCounts(sec, selectedOptions, visitedQuestions, markedForReview, selectedLanguage, startingIndex);
-                      totalAnswered += counts.answered;
-                      totalNotAnswered += counts.notAnswered;
-                      totalNotVisited += counts.notVisited;
-                      totalMarked += counts.markedForReviewCount;
-                      totalAnsMarked += counts.answeredAndMarked;
-                    });
+                      const counts = getSectionCounts(group, selectedOptions, visitedQuestions, markedForReview, selectedLanguage, startingIndex);
+                      totalAnswered = counts.answered;
+                      totalNotAnswered = counts.notAnswered;
+                      totalNotVisited = counts.notVisited;
+                      totalMarked = counts.markedForReviewCount;
+                      totalAnsMarked = counts.answeredAndMarked;
+                    }
 
                     const handleGroupClick = () => {
-                      if (!isActiveGroup && group.sections.length > 0) {
-                        const firstSecIndex = group.sections[0].globalIndex;
+                      if (!isActiveGroup) {
+                        const firstSecIndex = group.isGroup ? group.originalSections[0].globalIndex : group.globalIndex;
                         if (examData.lock_section && currentSectionIndex !== firstSecIndex) {
                           toast.warning("Section switching is locked.");
                           return;
@@ -2025,7 +2138,7 @@ const Test = () => {
                             : 'border-transparent text-gray-600 hover:text-blue-500 hover:border-blue-300'
                             }`}
                         >
-                          <span>{group.groupName}</span>
+                          <span>{group.name}</span>
                           <div className="relative group inline-block">
                             <FaInfoCircle className={`text-xs cursor-pointer ${isActiveGroup ? 'text-blue-500' : 'text-gray-400'}`} />
                             <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-lg mt-1 min-w-[220px] w-max left-1/2 -translate-x-1/2 top-full">
@@ -2084,13 +2197,13 @@ const Test = () => {
 
               {/* Sub Tabs — only show when is_sub_section is enabled */}
               {(() => {
-                const activeGroup = groupedSections.find(g => g.groupName === activeGroupName);
+                const activeGroup = formattedSections.find(g => g.name === activeGroupName);
                 const shouldShowSubTabs = activeGroup && activeGroup.isGroup;
                 if (!shouldShowSubTabs) return null;
 
                 return (
                   <div className="flex flex-wrap items-center gap-1 bg-white border-b border-gray-200 px-4 py-1.5">
-                    {activeGroup.sections.map((sec, secIdx) => {
+                    {activeGroup.originalSections.map((sec, secIdx) => {
                       const isSecActive = currentSectionIndex === sec.globalIndex;
 
                       const handleSubSectionClick = () => {

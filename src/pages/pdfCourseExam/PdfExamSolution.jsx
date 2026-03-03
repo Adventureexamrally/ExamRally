@@ -535,15 +535,42 @@ const PdfExamSolution = () => {
         <div className="p-1 mock-font ">
             <div>
 
-                <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-evenly items-center">
-                    <h1 className="h3 font-bold mt-3">{show_name}</h1>
-                    <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-                    <button
-                        onClick={toggleFullScreen}
-                        className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-                    >
-                        {isFullscreen ? <FaCompress /> : <FaExpand />}
-                    </button>
+                <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+                    {/* Left Section: Logo & Show Name */}
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={logo}
+                            alt="logo"
+                            className="h-10 w-auto bg-white rounded p-0.5"
+                        />
+                        <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+                            {show_name}
+                        </h1>
+                    </div>
+
+                    {/* Right Section: Time & Fullscreen Controls */}
+                    <div className="flex items-center gap-3 md:gap-4">
+
+                        {/* Refined Time Display */}
+                        {/* <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+      <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+        Time Left:
+      </span>
+      <span className="text-sm md:text-base font-bold font-mono">
+        {formatTime(timeminus)}
+      </span>
+    </div> */}
+
+                        {/* Fullscreen Toggle Button */}
+                        <button
+                            onClick={toggleFullScreen}
+                            className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+                            aria-label="Toggle Fullscreen"
+                            title="Toggle Fullscreen"
+                        >
+                            {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -551,46 +578,71 @@ const PdfExamSolution = () => {
             <div>
                 <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2 p-2">
                     {(() => {
-                        const renderGroups = [];
-                        const groupsMap = {};
+                        const formattedSections = [];
+                        let currentGroupName = null;
+                        let combinedSection = null;
 
-                        // Group sections
                         (examData?.section || []).forEach((section, index) => {
-                            const groupName = (section.is_sub_section && section.group_name) ? section.group_name : null;
-                            const keyName = groupName || section.name;
-
-                            if (!groupsMap[keyName]) {
-                                groupsMap[keyName] = {
-                                    name: keyName,
-                                    isGroup: !!groupName,
-                                    sections: [],
-                                    startIndex: index // keep track of original index to know if current section is in this group
-                                };
-                                renderGroups.push(groupsMap[keyName]);
+                            if (section.is_sub_section && section.group_name) {
+                                if (section.group_name !== currentGroupName) {
+                                    if (combinedSection) formattedSections.push(combinedSection);
+                                    currentGroupName = section.group_name;
+                                    combinedSection = {
+                                        ...section,
+                                        name: section.group_name,
+                                        isGroup: true,
+                                        originalSections: [{ ...section, originalIndex: index }],
+                                        t_question: Number(section.t_question) || 0,
+                                        t_time: Number(section.t_time) || 0,
+                                        t_mark: Number(section.t_mark) || 0,
+                                        originalIndex: index
+                                    };
+                                } else {
+                                    combinedSection.originalSections.push({ ...section, originalIndex: index });
+                                    combinedSection.t_question += Number(section.t_question) || 0;
+                                    combinedSection.t_time += Number(section.t_time) || 0;
+                                    combinedSection.t_mark += Number(section.t_mark) || 0;
+                                }
+                            } else {
+                                if (combinedSection) {
+                                    formattedSections.push(combinedSection);
+                                    combinedSection = null;
+                                    currentGroupName = null;
+                                }
+                                formattedSections.push({ ...section, isGroup: false, originalIndex: index });
                             }
-                            groupsMap[keyName].sections.push({ ...section, originalIndex: index });
                         });
+                        if (combinedSection) formattedSections.push(combinedSection);
 
-                        return renderGroups.map((group, groupIndex) => {
-                            // Check if current active section belongs to this group
-                            const isActiveGroup = group.sections.some(s => s.originalIndex === currentSectionIndex);
-
+                        return formattedSections.map((group, groupIndex) => {
                             // Calculate aggregate stats for the group tooltip
                             let groupCorrect = 0, groupIncorrect = 0, groupUnseen = 0, groupSkipped = 0;
-                            group.sections.forEach(s => {
-                                const sectionResults = resultsBySection[s.originalIndex] || {};
-                                groupCorrect += sectionResults.correct || 0;
-                                groupIncorrect += sectionResults.incorrect || 0;
-                                groupUnseen += sectionResults.unseen || 0;
-                                groupSkipped += sectionResults.skipped || 0;
-                            });
+                            const isActiveGroup = group.isGroup
+                                ? group.originalSections.some(s => s.originalIndex === currentSectionIndex)
+                                : group.originalIndex === currentSectionIndex;
+
+                            if (group.isGroup) {
+                                group.originalSections.forEach(s => {
+                                    const sectionResults = resultsBySection[s.originalIndex] || {};
+                                    groupCorrect += sectionResults.correct || 0;
+                                    groupIncorrect += sectionResults.incorrect || 0;
+                                    groupUnseen += sectionResults.unseen || 0;
+                                    groupSkipped += sectionResults.skipped || 0;
+                                });
+                            } else {
+                                const sectionResults = resultsBySection[group.originalIndex] || {};
+                                groupCorrect = sectionResults.correct || 0;
+                                groupIncorrect = sectionResults.incorrect || 0;
+                                groupUnseen = sectionResults.unseen || 0;
+                                groupSkipped = sectionResults.skipped || 0;
+                            }
 
                             return (
                                 <div key={groupIndex} className="d-inline-flex flex-column align-items-start border-r-2 border-gray-300 pr-2">
                                     <h1
                                         className={`h6 p-2 text-blue-400 d-inline-flex align-items-center cursor-pointer hover:bg-blue-50 rounded transition-colors
                                             ${isActiveGroup ? ' font-medium bg-blue-100' : ''}`}
-                                        onClick={() => setCurrentSectionIndex(group.sections[0].originalIndex)}
+                                        onClick={() => setCurrentSectionIndex(group.isGroup ? group.originalSections[0].originalIndex : group.originalIndex)}
                                     >
                                         <span className={isActiveGroup ? "border-b-2 border-blue-500 pb-1" : ""}>
                                             {group.name}
@@ -628,9 +680,9 @@ const PdfExamSolution = () => {
                                     </h1>
 
                                     {/* Render Sub-sections if this is an active group */}
-                                    {isActiveGroup && group.isGroup && group.sections.length > 1 && (
+                                    {isActiveGroup && group.isGroup && group.originalSections.length > 1 && (
                                         <div className="d-flex w-100 pl-2 gap-2 mt-2">
-                                            {group.sections.map((subSection) => (
+                                            {group.originalSections.map((subSection) => (
                                                 <div
                                                     key={subSection.originalIndex}
                                                     className={`text-sm p-1 cursor-pointer rounded transition-colors ${currentSectionIndex === subSection.originalIndex ? 'bg-blue-200 text-blue-800 font-bold' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}

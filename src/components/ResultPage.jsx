@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Api from "../service/Api";
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
@@ -64,12 +64,29 @@ const ResultPage = () => {
       });
   }, [id, user]);
 
+  // Group sections logically
+  const renderGroups = [];
+  const groupsMap = {};
+
+  (sectionData || []).forEach(sect => {
+    const groupName = (sect.is_sub_section && sect.group_name) ? sect.group_name : sect.name;
+    if (!groupsMap[groupName]) {
+      groupsMap[groupName] = {
+        name: groupName,
+        isGroup: !!(sect.is_sub_section && sect.group_name),
+        sections: []
+      };
+      renderGroups.push(groupsMap[groupName]);
+    }
+    groupsMap[groupName].sections.push(sect);
+  });
+
   useEffect(() => {
-    if (sectionData && sectionData.length > 0) {
-      const defaultSection = sectionData[0];
-      setSelectedTopic(defaultSection.name);
-      setSelectedBlueprint(defaultSection.s_blueprint);
-      setSelectedComparisonSection(defaultSection.name);
+    if (renderGroups.length > 0) {
+      const defaultGroup = renderGroups[0];
+      setSelectedTopic(defaultGroup.name);
+      setSelectedBlueprint(defaultGroup.sections.flatMap(s => s.s_blueprint || []));
+      setSelectedComparisonSection(defaultGroup.name);
     }
   }, [sectionData]);
 
@@ -83,59 +100,101 @@ const ResultPage = () => {
 
   const { overall, sections, comparison, rank, percentile, exam, allScores, totalUsers } = analysisData;
 
-  // Prepare chart data
   const chartData = [
     {
       name: "s_score",
-      ...sections.reduce((acc, sect, index) => ({
-        ...acc,
-        [`section${index + 1}`]: sect.s_score || 0
-      }), {})
+      ...renderGroups.reduce((acc, group, index) => {
+        const total = group.sections.reduce((sum, s) => sum + (s.s_score || 0), 0);
+        return { ...acc, [`section${index + 1}`]: total };
+      }, {})
     },
     {
       name: "Attempted",
-      ...sections.reduce((acc, sect, index) => ({
-        ...acc,
-        [`section${index + 1}`]: sect.Attempted || 0
-      }), {})
+      ...renderGroups.reduce((acc, group, index) => {
+        const total = group.sections.reduce((sum, s) => sum + (s.Attempted || 0), 0);
+        return { ...acc, [`section${index + 1}`]: total };
+      }, {})
     },
     {
       name: "Not_Attempted",
-      ...sections.reduce((acc, sect, index) => ({
-        ...acc,
-        [`section${index + 1}`]: sect.Not_Attempted || 0
-      }), {})
+      ...renderGroups.reduce((acc, group, index) => {
+        const total = group.sections.reduce((sum, s) => sum + (s.Not_Attempted || 0), 0);
+        return { ...acc, [`section${index + 1}`]: total };
+      }, {})
     },
     {
       name: "Correct",
-      ...sections.reduce((acc, sect, index) => ({
-        ...acc,
-        [`section${index + 1}`]: sect.correct || 0
-      }), {})
+      ...renderGroups.reduce((acc, group, index) => {
+        const total = group.sections.reduce((sum, s) => sum + (s.correct || 0), 0);
+        return { ...acc, [`section${index + 1}`]: total };
+      }, {})
     },
     {
       name: "Incorrect",
-      ...sections.reduce((acc, sect, index) => ({
-        ...acc,
-        [`section${index + 1}`]: sect.incorrect || 0
-      }), {})
+      ...renderGroups.reduce((acc, group, index) => {
+        const total = group.sections.reduce((sum, s) => sum + (s.incorrect || 0), 0);
+        return { ...acc, [`section${index + 1}`]: total };
+      }, {})
     }
   ];
 
-  const handleSectionClick = (sectionName) => {
-    const selectedSection = sectionData.find(sect => sect.name === sectionName);
-    if (selectedSection) {
-      setSelectedTopic(sectionName);
-      setSelectedBlueprint(selectedSection.s_blueprint);
+  const handleSectionClick = (groupName) => {
+    const group = groupsMap[groupName];
+    if (group) {
+      setSelectedTopic(groupName);
+      setSelectedBlueprint(group.sections.flatMap(s => s.s_blueprint || []));
     }
   };
 
-  const getComparisonStats = (sectionName) => {
-    return comparison[sectionName] || {
-      you: {},
-      average: {},
-      topper: {}
+  const getComparisonStats = (groupName) => {
+    const group = groupsMap[groupName];
+    if (!group) {
+      return { you: {}, average: {}, topper: {} };
+    }
+
+    // Aggregate comparison data across all sections in the group
+    const aggregated = {
+      you: { score: 0, Attempted: 0, Not_Attempted: 0, correct: 0, incorrect: 0, timeTaken: 0, totalSections: 0, sumAccuracy: 0 },
+      average: { score: 0, Attempted: 0, Not_Attempted: 0, correct: 0, incorrect: 0, timeTaken: 0, totalSections: 0, sumAccuracy: 0 },
+      topper: { score: 0, Attempted: 0, Not_Attempted: 0, correct: 0, incorrect: 0, timeTaken: 0, totalSections: 0, sumAccuracy: 0 }
     };
+
+    group.sections.forEach(s => {
+      const sectStats = comparison[s.name] || { you: {}, average: {}, topper: {} };
+
+      // Aggregate "You"
+      aggregated.you.score += (sectStats.you.score || 0);
+      aggregated.you.Attempted += (sectStats.you.Attempted || 0);
+      aggregated.you.Not_Attempted += (sectStats.you.Not_Attempted || 0);
+      aggregated.you.correct += (sectStats.you.correct || 0);
+      aggregated.you.incorrect += (sectStats.you.incorrect || 0);
+      aggregated.you.timeTaken += (sectStats.you.timeTaken || 0);
+      if (sectStats.you.s_accuracy) {
+        aggregated.you.sumAccuracy += Number(sectStats.you.s_accuracy);
+        aggregated.you.totalSections += 1;
+      }
+
+      // Aggregate "Average"
+      aggregated.average.score += (sectStats.average.score || 0);
+      aggregated.average.Attempted += (sectStats.average.Attempted || 0);
+      aggregated.average.Not_Attempted += (sectStats.average.Not_Attempted || 0);
+      aggregated.average.correct += (sectStats.average.correct || 0);
+      aggregated.average.incorrect += (sectStats.average.incorrect || 0);
+      aggregated.average.timeTaken += (sectStats.average.timeTaken || 0);
+      if (sectStats.average.s_accuracy) {
+        aggregated.average.sumAccuracy += Number(sectStats.average.s_accuracy);
+        aggregated.average.totalSections += 1;
+      }
+
+      // Aggregate "Topper"
+      aggregated.topper.score += (sectStats.topper.score || 0);
+    });
+
+    // Compute average accuracies across sections for the group
+    if (aggregated.you.totalSections > 0) aggregated.you.s_accuracy = aggregated.you.sumAccuracy / aggregated.you.totalSections;
+    if (aggregated.average.totalSections > 0) aggregated.average.s_accuracy = aggregated.average.sumAccuracy / aggregated.average.totalSections;
+
+    return aggregated;
   };
 
   return (
@@ -416,15 +475,15 @@ const ResultPage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {sections.map((sect) => (
+          {renderGroups.map((group) => (
             <button
-              key={sect.name}
-              onClick={() => setSelectedComparisonSection(sect.name)}
-              className={`px-4 py-2 rounded-md transition ${selectedComparisonSection === sect.name
+              key={group.name}
+              onClick={() => setSelectedComparisonSection(group.name)}
+              className={`px-4 py-2 rounded-md transition ${selectedComparisonSection === group.name
                 ? 'bg-purple-600 text-white'
                 : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
             >
-              {sect.name}
+              {group.name}
             </button>
           ))}
         </div>
@@ -624,12 +683,12 @@ const ResultPage = () => {
               <YAxis ticks={[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]} />
               <Tooltip />
               <Legend />
-              {sections.map((sect, index) => (
+              {renderGroups.map((group, index) => (
                 <Line
                   key={index}
                   type="monotone"
                   dataKey={`section${index + 1}`}
-                  name={sect.name}
+                  name={group.name}
                   stroke={index === 0 ? "#15803d" : index === 1 ? "#1d4ed8" : index === 2 ? "#6d28d9" : `#${Math.floor(Math.random() * 16777215).toString(16)}`}
                   strokeWidth={2}
                 />
@@ -647,15 +706,15 @@ const ResultPage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {sections.map((sect, index) => (
+          {renderGroups.map((group, index) => (
             <button
               key={index}
-              onClick={() => handleSectionClick(sect.name)}
-              className={`px-4 py-2 rounded-md transition ${selectedTopic === sect.name
+              onClick={() => handleSectionClick(group.name)}
+              className={`px-4 py-2 rounded-md transition ${selectedTopic === group.name
                 ? 'bg-indigo-600 text-white'
                 : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
             >
-              {sect.name}
+              {group.name}
             </button>
           ))}
         </div>

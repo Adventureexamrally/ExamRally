@@ -128,17 +128,27 @@ const Test = () => {
             const questionTimesFromDB = {};
             let absoluteIndex = 0;
 
+            // Helper to handle both "MM:SS", strings, and raw numbers gracefully
+            const parseQuestionTime = (val) => {
+              if (val == null || val === "0" || val === 0) return 0;
+              if (typeof val === "number") return val;
+              if (typeof val === "string" && val.includes(":")) {
+                const parts = val.split(':');
+                if (parts.length === 2) {
+                  return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+                }
+              }
+              // Fallback for string numbers
+              return parseInt(val, 10) || 0;
+            };
+
             state.section.forEach((section) => {
               const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
               console.log("Questions:", questions);
 
               questions.forEach((question) => {
                 if (question.q_on_time) {
-                  console.log("Question time:", question.q_on_time);
-
-                  // Parse time string "minutes:seconds" to total seconds
-                  const [minutes, seconds] = question.q_on_time.split(':').map(Number);
-                  questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
+                  questionTimesFromDB[absoluteIndex] = parseQuestionTime(question.q_on_time);
                 }
                 absoluteIndex++;
               });
@@ -258,7 +268,7 @@ const Test = () => {
 
   useEffect(() => {
     const savedState = localStorage.getItem(`examState_${id}`);
-    console.warn(savedState)
+    console.warn(savedState);
     if (savedState) {
       const state = JSON.parse(savedState);
       setClickedQuestionIndex(state.clickedQuestionIndex);
@@ -603,6 +613,10 @@ const Test = () => {
   const [questionTime, setQuestionTime] = useState(0);
   const [questionTimerActive, setQuestionTimerActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const sectionTimerRef = useRef(null);        // stable interval for section countdown
+  const pauseStartRef = useRef(null);           // timestamp when pause began
+  const pausedDurationRef = useRef(0);          // total seconds paused this session
+  const [timerKey, setTimerKey] = useState(0);  // incremented to (re)start the countdown interval
   const questionTimerRef = useState(null);
 
   // let questionTimerInterval;
@@ -889,27 +903,51 @@ const Test = () => {
   console.log("timetakenfromdb:", timeTakenFromDB);
 
   useEffect(() => {
-    const totalSectionTime =
-      examData?.section[currentSectionIndex]?.t_time * 60;
+    if (!examData) return;
 
-    // Get time taken from resultData
-    const timeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
+    const currentSection = examData?.section?.[currentSectionIndex];
+    let totalSectionTime = 0;
+    let timeTakenForGroup = 0;
 
-    console.log("Time taken from DB:", timeTaken);
+    if (currentSection?.is_sub_section && currentSection?.group_name) {
+      // Group timer: sum only t_time across all group sections
+      // For timeTaken: read ONLY the FIRST group section (to avoid double-counting).
+      // We always store the group elapsed time on the first section only.
+      let firstGroupSectionIdx = -1;
+      examData.section.forEach((s, idx) => {
+        if (s.is_sub_section && s.group_name === currentSection.group_name) {
+          totalSectionTime += (Number(s.t_time) || 0) * 60;
+          if (firstGroupSectionIdx === -1) firstGroupSectionIdx = idx;
+        }
+      });
+      timeTakenForGroup = Math.max(
+        0,
+        resultData?.section?.[firstGroupSectionIdx]?.timeTaken || 0
+      );
+    } else {
+      totalSectionTime = (Number(currentSection?.t_time) || 0) * 60;
+      timeTakenForGroup = Math.max(
+        0,
+        resultData?.section?.[currentSectionIndex]?.timeTaken || 0
+      );
+    }
 
-    // Store timeTaken in an array at the index of currentSectionIndex
-    settimeTakenFromDB(timeTaken);
+    // Only reset the timer if the DB time taken has actually changed during mount/fetch
+    if (timeTakenFromDB !== timeTakenForGroup || timeminus === 0) {
+      settimeTakenFromDB(timeTakenForGroup);
 
-    // Calculate remaining time
-    const remainingTime = totalSectionTime - timeTaken;
-
-    // Set remaining time
-    settimeminus(remainingTime);
+      // Clamp to [0, totalSectionTime] so stale DB values can't exceed full section time
+      const remainingTime = Math.max(
+        0,
+        Math.min(totalSectionTime, totalSectionTime - timeTakenForGroup)
+      );
+      settimeminus(remainingTime);
+      setTimerKey(k => k + 1);
+    }
   }, [examData, currentSectionIndex, resultData]);
 
   const updateSectionTime = () => {
-    if (!examDataSubmission || timeTakenFromDB.length === 0) return;
+    if (!examDataSubmission) return;
 
     const {
       formattedSections,
@@ -919,33 +957,70 @@ const Test = () => {
       endTime,
     } = examDataSubmission;
 
-    const totalTimeInSeconds =
-      examData?.section[currentSectionIndex]?.t_time * 60 || 0;
-    const actualTimeTaken = totalTimeInSeconds - timeminus;
-    const timeTakenInSecondsUpdated =
-      (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
+    const currentSec = examData?.section?.[currentSectionIndex];
+    let totalTimeInSeconds = 0;
+    let isGroupSection = false;
+    let groupName = null;
 
-    const previousTimeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-    console.log("currentSectionIndex:", currentSectionIndex);
+    if (currentSec?.is_sub_section && currentSec?.group_name) {
+      isGroupSection = true;
+      groupName = currentSec.group_name;
+      totalTimeInSeconds = examData.section
+        .filter(s => s.is_sub_section && s.group_name === groupName)
+        .reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60;
+    } else {
+      totalTimeInSeconds = (Number(currentSec?.t_time) || 0) * 60;
+    }
 
-    console.log("Previous time taken for section:", previousTimeTaken);
+    // actualTimeTaken = how many seconds of the group/section time have elapsed
+    const actualTimeTaken = Math.max(0, totalTimeInSeconds - timeminus);
 
-    const finalTimeTaken = actualTimeTaken;
+    // Total exam timeTaken calculation uses the same logic we put in handleSubmitSection
+    let cumulativeTimeTaken = 0;
+    examData?.section?.forEach((sec, idx) => {
+      if (sec.is_sub_section) {
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
+          .filter(i => i !== -1);
+        if (groupIndices[0] !== idx) return; // skip if not the first section of group
+      }
 
-    console.log("Final time taken for section:", finalTimeTaken);
-    console.warn(formattedSections)
+      const isActiveSection = idx === currentSectionIndex || (currentSec?.is_sub_section && currentSec?.group_name === sec.group_name);
+      if (isActiveSection) {
+        cumulativeTimeTaken += actualTimeTaken;
+      } else {
+        cumulativeTimeTaken += Math.max(0, resultData?.section?.[idx]?.timeTaken || 0);
+      }
+    });
+
+    const timeTakenInSecondsUpdated = cumulativeTimeTaken;
 
     const updatedSections = formattedSections.map((section, idx) => {
+      const sec = examData?.section?.[idx];
+
+      if (isGroupSection) {
+        // Store group elapsed time ONLY on the FIRST section in the group.
+        // This prevents double-counting when the timer reads it back on resume.
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === groupName ? i : -1))
+          .filter(i => i !== -1);
+        const firstGroupIdx = groupIndices[0];
+
+        if (idx === firstGroupIdx) {
+          return { ...section, timeTaken: actualTimeTaken };
+        }
+        // Other sections in the group: keep their timeTaken as 0 (not used for resume)
+        if (sec?.is_sub_section && sec?.group_name === groupName) {
+          return { ...section, timeTaken: 0 };
+        }
+        return section;
+      }
+
       if (idx === currentSectionIndex) {
-        return {
-          ...section,
-          timeTaken: finalTimeTaken,
-        };
+        return { ...section, timeTaken: actualTimeTaken };
       }
       return section;
     });
-    console.warn(updatedSections)
 
     if (user?._id) {
       Api.post(`results/${user._id}/${id}`, {
@@ -957,7 +1032,8 @@ const Test = () => {
         takenAt: examStartTime,
         submittedAt: endTime,
         status: isPaused ? "paused" : "completed",
-        sectionTimes, // Optional: make sure this matches backend schema
+        sectionTimes,
+        pausedDuration: pausedDurationRef.current || 0, // total seconds paused
       })
         .then((res) => {
           console.log("Submitted:", res.data);
@@ -984,33 +1060,63 @@ const Test = () => {
 
   useEffect(() => {
     if (!user?._id || !id) return;
-    if (user?._id) {
-      Api.get(`results/${user?._id}/${id}`)
-        .then((response) => {
-          setResultData(response.data);
-          console.log("Result Data:", response.data);
-        })
-        .catch((error) => {
+    Api.get(`results/${user._id}/${id}`)
+      .then((response) => {
+        setResultData(response.data);
+        if (response.data && response.data.pausedDuration != null) {
+          pausedDurationRef.current = response.data.pausedDuration;
+        }
+      })
+      .catch((error) => {
+        // 404 = no prior attempt, which is normal for first-time exam takers
+        if (error?.response?.status === 404) {
+          setResultData(null);
+        } else {
           console.error("Error fetching result data:", error);
-        });
-    }
+        }
+      });
   }, [user?._id, id]);
 
+  const [timerEnded, setTimerEnded] = useState(false);
   useEffect(() => {
-    if (timeminus > 0 && !isPaused) {
-      const timerInterval = setInterval(() => {
-        settimeminus((prevTime) => {
-          const newTime = prevTime - 1;
-          if (newTime === 0) {
-            clearInterval(timerInterval); // Stop the timer immediately
-            handleTimerEnd(); // Call an async handler
-          }
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(timerInterval);
+    if (timerEnded) {
+      handleTimerEnd();
+      setTimerEnded(false);
     }
-  }, [timeminus, isPaused]);
+  }, [timerEnded]);
+
+  // Stable section countdown — re-starts only when isPaused or timerKey changes
+  useEffect(() => {
+    if (sectionTimerRef.current) clearInterval(sectionTimerRef.current);
+
+    if (isPaused) {
+      pauseStartRef.current = Date.now();
+      return;
+    }
+
+    // Accumulate paused duration on resume
+    if (pauseStartRef.current) {
+      const elapsed = Math.floor((Date.now() - pauseStartRef.current) / 1000);
+      pausedDurationRef.current = (pausedDurationRef.current || 0) + elapsed;
+      pauseStartRef.current = null;
+    }
+
+    // Don't start if nothing is left
+    // (timeminus is read via functional updater so no stale closure)
+    sectionTimerRef.current = setInterval(() => {
+      settimeminus(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          clearInterval(sectionTimerRef.current);
+          setTimerEnded(true);
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(sectionTimerRef.current);
+  }, [isPaused, timerKey]); // timerKey fires when timeminus is freshly initialized
 
   const handleTimerEnd = async () => {
     handleSubmitSection(); // 1. Submits the section
@@ -1064,7 +1170,41 @@ const Test = () => {
 
     const currentSection = examData.section[currentSectionIndex];
     const endTime = new Date();
-    const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
+
+    // Accumulate total time taken across ALL sections (including the just-finished one)
+    // We can't just use (endTime - examStartTime) because it resets on pause/resume.
+    let cumulativeTimeTaken = 0;
+
+    // Calculate the current active section's elapsed time properly
+    let currentSectionTotalTime = 0;
+    if (currentSection?.is_sub_section && currentSection?.group_name) {
+      currentSectionTotalTime = examData.section
+        .filter(s => s.is_sub_section && s.group_name === currentSection.group_name)
+        .reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60;
+    } else {
+      currentSectionTotalTime = (Number(currentSection?.t_time) || 0) * 60;
+    }
+    const currentActiveTimeTaken = Math.max(0, currentSectionTotalTime - timeminus);
+
+    // Sum all prior sections from DB + the current active one
+    examData.section.forEach((sec, idx) => {
+      // Avoid double-counting grouped sections (we only count their time once)
+      if (sec.is_sub_section) {
+        // If it's a grouped section, only add its time when we process the *first* section of that group
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
+          .filter(i => i !== -1);
+        if (groupIndices[0] !== idx) return; // skip if not the first
+      }
+
+      if (idx === currentSectionIndex || (currentSection?.is_sub_section && currentSection?.group_name === sec.group_name)) {
+        cumulativeTimeTaken += currentActiveTimeTaken;
+      } else {
+        cumulativeTimeTaken += Math.max(0, resultData?.section?.[idx]?.timeTaken || 0);
+      }
+    });
+
+    const timeTakenInSeconds = cumulativeTimeTaken;
     const formattedTotalTime = formatTime(timeTakenInSeconds);
 
     const formattime = now;
@@ -1262,6 +1402,8 @@ const Test = () => {
 
         return {
           name: section.name,
+          group_name: section.group_name || "",
+          is_sub_section: section.is_sub_section || false,
           t_question: section.t_question,
           t_time: section.t_time,
           t_mark: section.t_mark,
@@ -1283,10 +1425,8 @@ const Test = () => {
               common_data: question?.common_data,
               correct: answersData[sectionStartIndex + index]?.correct || 0,
               explanation: question?.explanation || "",
-              selectedOption:
-                answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time:
-                answersData[sectionStartIndex + index]?.q_on_time || "0",
+              selectedOption: answersData[sectionStartIndex + index]?.selectedOption,
+              q_on_time: formatTime(questionTimes[sectionStartIndex + index] || 0),
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
@@ -1298,10 +1438,8 @@ const Test = () => {
               common_data: question?.common_data,
               correct: answersData[sectionStartIndex + index]?.correct || 0,
               explanation: question?.explanation || "",
-              selectedOption:
-                answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time:
-                answersData[sectionStartIndex + index]?.q_on_time || "0",
+              selectedOption: answersData[sectionStartIndex + index]?.selectedOption,
+              q_on_time: formatTime(questionTimes[sectionStartIndex + index] || 0),
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
@@ -1313,10 +1451,8 @@ const Test = () => {
               common_data: question?.common_data,
               correct: answersData[sectionStartIndex + index]?.correct || 0,
               explanation: question?.explanation || "",
-              selectedOption:
-                answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time:
-                answersData[sectionStartIndex + index]?.q_on_time || "0",
+              selectedOption: answersData[sectionStartIndex + index]?.selectedOption,
+              q_on_time: formatTime(questionTimes[sectionStartIndex + index] || 0),
               isVisited: answersData[sectionStartIndex + index]?.isVisited,
               NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
               score: answersData[sectionStartIndex + index]?.score,
@@ -1797,20 +1933,42 @@ const Test = () => {
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-        <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
-          <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
-          <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-          <h1 className=" text-center text-black bg-gray-100 p-1">
-            Time Left:{formatTime(timeminus)}
-          </h1>
-          {/* Fullscreen Toggle Button */}
-          <button
-            onClick={toggleFullScreen}
-            className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-          >
-            {/* Show the appropriate icon based on fullscreen state */}
-            {isFullscreen ? <FaCompress /> : <FaExpand />}
-          </button>
+        <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+          {/* Left Section: Logo & Show Name */}
+          <div className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="logo"
+              className="h-10 w-auto bg-white rounded p-0.5"
+            />
+            <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+              {show_name}
+            </h1>
+          </div>
+
+          {/* Right Section: Time & Fullscreen Controls */}
+          <div className="flex items-center gap-3 md:gap-4">
+
+            {/* Refined Time Display */}
+            <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+              <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+                Time Left:
+              </span>
+              <span className="text-sm md:text-base font-bold font-mono">
+                {formatTime(timeminus)}
+              </span>
+            </div>
+
+            {/* Fullscreen Toggle Button */}
+            <button
+              onClick={toggleFullScreen}
+              className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Toggle Fullscreen"
+              title="Toggle Fullscreen"
+            >
+              {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+            </button>
+          </div>
         </div>
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
@@ -2055,11 +2213,28 @@ const Test = () => {
                       const handleSubSectionClick = () => {
                         if (sec.globalIndex === currentSectionIndex) return; // already here
 
+                        // Allow free switching within the SAME group
+                        const currentSection = examData?.section?.[currentSectionIndex];
+                        const sameGroup =
+                          currentSection?.is_sub_section &&
+                          currentSection?.group_name &&
+                          currentSection.group_name === sec.group_name;
+
+                        if (sameGroup) {
+                          // Free switching within the group — just navigate
+                          const newStartingIndex = examData.section
+                            .slice(0, sec.globalIndex)
+                            .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+                          setCurrentSectionIndex(sec.globalIndex);
+                          setClickedQuestionIndex(newStartingIndex);
+                          return;
+                        }
+
+                        // Cross-group navigation: check if submitted
                         if (submittedSections.has(sec.globalIndex)) {
                           toast.error("This section has already been submitted. You cannot go back.");
                           return;
                         }
-                        // Block direct switching — must submit current section first
                         toast.warning("Please submit the current section to proceed.");
                       };
 

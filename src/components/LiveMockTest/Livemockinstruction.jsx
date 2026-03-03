@@ -56,6 +56,41 @@ const Livemockinstruction = () => {
       .catch((err) => console.error("Error fetching data:", err)); // Logs any errors
   }, [id]);
 
+  const formattedSections = [];
+  if (examData?.section) {
+    let currentGroupName = null;
+    let combinedSection = null;
+
+    examData.section.forEach((section, index) => {
+      if (section.is_sub_section && section.group_name) {
+        if (section.group_name !== currentGroupName) {
+          if (combinedSection) formattedSections.push(combinedSection);
+          currentGroupName = section.group_name;
+          combinedSection = {
+            ...section,
+            name: section.group_name,
+            isGroup: true,
+            t_question: Number(section.t_question) || 0,
+            t_time: Number(section.t_time) || 0,
+            t_mark: Number(section.t_mark) || 0,
+          };
+        } else {
+          combinedSection.t_question += Number(section.t_question) || 0;
+          combinedSection.t_time += Number(section.t_time) || 0;
+          combinedSection.t_mark += Number(section.t_mark) || 0;
+        }
+      } else {
+        if (combinedSection) {
+          formattedSections.push(combinedSection);
+          combinedSection = null;
+          currentGroupName = null;
+        }
+        formattedSections.push({ ...section, isGroup: false });
+      }
+    });
+    if (combinedSection) formattedSections.push(combinedSection);
+  }
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center bg-blue-400  p-2 rounded-md">
@@ -84,7 +119,7 @@ const Livemockinstruction = () => {
           </tr>
         </thead>
         <tbody>
-          {examData?.section?.map((section, index) => (
+          {formattedSections.map((section, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
               <td>{section.name}</td>
@@ -93,7 +128,7 @@ const Livemockinstruction = () => {
               {examData?.time?.toLowerCase() === "composite" ? (
                 index === 0 ? (
                   <td
-                    rowSpan={examData.section.length}
+                    rowSpan={formattedSections.length}
                     className="align-middle text-center"
                   >
                     {examData.duration} Min

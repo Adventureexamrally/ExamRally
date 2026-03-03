@@ -36,21 +36,21 @@ const Livemocktest = () => {
   const [wordCount, setWordCount] = useState(0);
   const [descriptiveData, setDescriptiveData] = useState([]);
   const location = useLocation();
-  const  selectedLanguage= location.state?.language || "English";
+  const selectedLanguage = location.state?.language || "English";
   const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
-const timerRef = useRef(null);
+  const timerRef = useRef(null);
   // Fetch exam data
-// const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
-const [displayLanguage, setDisplayLanguage] = useState(null);
+  // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+  const [displayLanguage, setDisplayLanguage] = useState(null);
 
-useEffect(() => {
-  const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
-  if (sectionName === "english language") {
-    setDisplayLanguage("English");
-  } else {
-    setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
-  }
-}, [currentSectionIndex, examData]);
+  useEffect(() => {
+    const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+    if (sectionName === "english language") {
+      setDisplayLanguage("English");
+    } else {
+      setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+    }
+  }, [currentSectionIndex, examData]);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -118,34 +118,34 @@ useEffect(() => {
           if (response.data) {
             const state = response.data;
             setGetresult(state)
-            console.error("hello",state);
+            console.error("hello", state);
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
             let markedForReviewList = [];
             let absoluteIndexCounter = 0;
-  // Parse question times from backend
-          const questionTimesFromDB = {};
-          let absoluteIndex = 0;
-          
-          state.section.forEach((section) => {
-            const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-            console.log("Questions:", questions);
-            
-            questions.forEach((question) => {
-              if (question.q_on_time) {
-                console.log("Question time:", question.q_on_time);
-                
-                // Parse time string "minutes:seconds" to total seconds
-                const [minutes, seconds] = question.q_on_time.split(':').map(Number);
-                questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
-              }
-              absoluteIndex++;
+            // Parse question times from backend
+            const questionTimesFromDB = {};
+            let absoluteIndex = 0;
+
+            state.section.forEach((section) => {
+              const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+              console.log("Questions:", questions);
+
+              questions.forEach((question) => {
+                if (question.q_on_time) {
+                  console.log("Question time:", question.q_on_time);
+
+                  // Parse time string "minutes:seconds" to total seconds
+                  const [minutes, seconds] = question.q_on_time.split(':').map(Number);
+                  questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
+                }
+                absoluteIndex++;
+              });
             });
-          });
-          console.log("Question times from DB:", questionTimesFromDB);
-          
-          setQuestionTimes(questionTimesFromDB);
+            console.log("Question times from DB:", questionTimesFromDB);
+
+            setQuestionTimes(questionTimesFromDB);
             if (state.section) {
               state.section.forEach((section) => {
                 const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
@@ -178,12 +178,12 @@ useEffect(() => {
 
             // // Show the last visited question, or first question if none visited
             // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-        //     if (visitedQuestionsList.length > 0) {
-        //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-        // } else {
-        //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-        //   setVisitedQuestions([0]);  // Mark it as visited
-        // }
+            //     if (visitedQuestionsList.length > 0) {
+            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
+            // } else {
+            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
+            //   setVisitedQuestions([0]);  // Mark it as visited
+            // }
           }
         })
 
@@ -292,13 +292,13 @@ useEffect(() => {
       }
 
       // Update the database with the new selection
-      const result=Api.post(`results/${user?._id}/${id}`, {
+      const result = Api.post(`results/${user?._id}/${id}`, {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
         mark
       });
-console.log("handle option change result",result);
+      console.log("handle option change result", result);
 
       return updatedOptions;
     });
@@ -411,10 +411,10 @@ console.log("handle option change result",result);
 
           // Transform the data
           const transformedData = {
-            bilingual_status:res.data.bilingual_status,
-            english_status:res.data.english_status,
-            hindi_status:res.data.hindi_status,
-            tamil_status:res.data.tamil_status,
+            bilingual_status: res.data.bilingual_status,
+            english_status: res.data.english_status,
+            hindi_status: res.data.hindi_status,
+            tamil_status: res.data.tamil_status,
             section: res.data.section.map((section) => ({
               name: section.name,
               t_question: section.t_question,
@@ -567,28 +567,28 @@ console.log("handle option change result",result);
   //     }
   //   }
   // };
-const handleNextClick = () => {
-  updateSectionTime();
+  const handleNextClick = () => {
+    updateSectionTime();
 
-  if (
-    examData &&
-    examData.section[currentSectionIndex] &&
-    examData.section[currentSectionIndex].questions?.[
+    if (
+      examData &&
+      examData.section[currentSectionIndex] &&
+      examData.section[currentSectionIndex].questions?.[
       selectedLanguage?.toLowerCase()
-    ]
-  ) {
-    const totalQuestions =
-      examData.section[currentSectionIndex].questions[
-        selectedLanguage?.toLowerCase()
-      ]?.length;
+      ]
+    ) {
+      const totalQuestions =
+        examData.section[currentSectionIndex].questions[
+          selectedLanguage?.toLowerCase()
+        ]?.length;
 
-    if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-      setClickedQuestionIndex(clickedQuestionIndex + 1);
-    } else {
-      setClickedQuestionIndex(startingIndex);
+      if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+        setClickedQuestionIndex(clickedQuestionIndex + 1);
+      } else {
+        setClickedQuestionIndex(startingIndex);
+      }
     }
-  }
-};
+  };
 
   const [examStartTime, setExamStartTime] = useState(null);
   const [totalTime, setTotalTime] = useState("");
@@ -709,57 +709,57 @@ const handleNextClick = () => {
   };
 
   // Your submitExam function with the necessary modifications
-const handleSubmitSection = () => {
-  const now = new Date();
-  const questionsForSection =
-    examData?.section[currentSectionIndex]?.questions?.[
-      selectedLanguage?.toLowerCase()
-    ] || [];
-  const sectionStartIndex = startingIndex;
-  const sectionEndIndex = sectionStartIndex + questionsForSection.length - 1;
-
-  // ─── 2) If we were actually on a question in *this* section, save its time ───
-  if (
-    questionStartTime !== null &&
-    clickedQuestionIndex !== null &&
-    clickedQuestionIndex >= sectionStartIndex &&
-    clickedQuestionIndex <= sectionEndIndex
-  ) {
+  const handleSubmitSection = () => {
     const now = new Date();
-    const secondsSpent = Math.floor((now.getTime() - questionStartTime.getTime()) / 1000);
-    setQuestionTimes((prev) => ({
+    const questionsForSection =
+      examData?.section[currentSectionIndex]?.questions?.[
+      selectedLanguage?.toLowerCase()
+      ] || [];
+    const sectionStartIndex = startingIndex;
+    const sectionEndIndex = sectionStartIndex + questionsForSection.length - 1;
+
+    // ─── 2) If we were actually on a question in *this* section, save its time ───
+    if (
+      questionStartTime !== null &&
+      clickedQuestionIndex !== null &&
+      clickedQuestionIndex >= sectionStartIndex &&
+      clickedQuestionIndex <= sectionEndIndex
+    ) {
+      const now = new Date();
+      const secondsSpent = Math.floor((now.getTime() - questionStartTime.getTime()) / 1000);
+      setQuestionTimes((prev) => ({
+        ...prev,
+        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+      }));
+    }
+
+    // Stop question timer and clear interval
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Clear the current questionStartTime
+    setQuestionStartTime(null);
+
+    // Make sure you pause visually as well
+    setIsPaused(true);
+
+
+    // ─── 3) Always clear the question start time so we don’t double‑count ───
+    setQuestionStartTime(null);
+    console.log("Handling section submission...");
+    setIsPaused(true); // ⏸️ Pause the timer
+
+    // ✅ Save section-level time
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    setSectionTimes((prev) => ({
       ...prev,
-      [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
     }));
-  }
-
-  // Stop question timer and clear interval
-if (timerRef.current) {
-  clearInterval(timerRef.current);
-  timerRef.current = null;
-}
-
-// Clear the current questionStartTime
-setQuestionStartTime(null);
-
-// Make sure you pause visually as well
-setIsPaused(true);
-
-
-  // ─── 3) Always clear the question start time so we don’t double‑count ───
-  setQuestionStartTime(null);
-  console.log("Handling section submission...");
-  setIsPaused(true); // ⏸️ Pause the timer
-
-  // ✅ Save section-level time
-  const timeSpent = Math.floor(
-    (now - currentSectionStartTimeRef.current) / 1000
-  );
-  setSectionTimes((prev) => ({
-    ...prev,
-    [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-  }));
-  currentSectionStartTimeRef.current = new Date(); // Reset for next section
+    currentSectionStartTimeRef.current = new Date(); // Reset for next section
 
     // Reset timer for accuracy
     currentSectionStartTimeRef.current = new Date();
@@ -831,7 +831,7 @@ setIsPaused(true);
       );
       return [...updatedData, sectionSummary];
     });
-    
+
     updateSectionTime();
     // Display modal
     setShowModal(true);
@@ -873,6 +873,11 @@ setIsPaused(true);
 
   const [dataid, setDataid] = useState(null); // State to store the data
 
+  const pauseStartRef = useRef(null);
+  const pausedDurationRef = useRef(0);
+  const sectionTimerRef = useRef(null);
+  const [timerKey, setTimerKey] = useState(0);
+
   useEffect(() => {
     // Fetch the data when the component mounts or when `id` changes
     if (user?._id) {
@@ -889,27 +894,50 @@ setIsPaused(true);
   console.log("timetakenfromdb:", timeTakenFromDB);
 
   useEffect(() => {
-    const totalSectionTime =
-      examData?.section[currentSectionIndex]?.t_time * 60;
+    if (!examData) return;
 
-    // Get time taken from resultData
-    const timeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
+    const currentSection = examData?.section?.[currentSectionIndex];
+    let totalSectionTime = 0;
+    let timeTakenForGroup = 0;
 
-    console.log("Time taken from DB:", timeTaken);
+    if (currentSection?.is_sub_section && currentSection?.group_name) {
+      // Group timer: sum only t_time across all group sections
+      // For timeTaken: read ONLY the FIRST group section (to avoid double-counting).
+      let firstGroupSectionIdx = -1;
+      examData.section.forEach((s, idx) => {
+        if (s.is_sub_section && s.group_name === currentSection.group_name) {
+          totalSectionTime += (Number(s.t_time) || 0) * 60;
+          if (firstGroupSectionIdx === -1) firstGroupSectionIdx = idx;
+        }
+      });
+      timeTakenForGroup = Math.max(
+        0,
+        resultData?.section?.[firstGroupSectionIdx]?.timeTaken || 0
+      );
+    } else {
+      totalSectionTime = (Number(currentSection?.t_time) || 0) * 60;
+      timeTakenForGroup = Math.max(
+        0,
+        resultData?.section?.[currentSectionIndex]?.timeTaken || 0
+      );
+    }
 
-    // Store timeTaken in an array at the index of currentSectionIndex
-    settimeTakenFromDB(timeTaken);
+    // Only reset the timer if the DB time taken has actually changed during mount/fetch
+    if (timeTakenFromDB !== timeTakenForGroup || timeminus === 0) {
+      settimeTakenFromDB(timeTakenForGroup);
 
-    // Calculate remaining time
-    const remainingTime = totalSectionTime - timeTaken;
-
-    // Set remaining time
-    settimeminus(remainingTime);
+      // Clamp to [0, totalSectionTime] so stale DB values can't exceed full section time
+      const remainingTime = Math.max(
+        0,
+        Math.min(totalSectionTime, totalSectionTime - timeTakenForGroup)
+      );
+      settimeminus(remainingTime);
+      setTimerKey(k => k + 1);
+    }
   }, [examData, currentSectionIndex, resultData]);
 
   const updateSectionTime = () => {
-    if (!examDataSubmission || timeTakenFromDB.length === 0) return;
+    if (!examDataSubmission || timeTakenFromDB == null) return;
 
     const {
       formattedSections,
@@ -919,33 +947,67 @@ setIsPaused(true);
       endTime,
     } = examDataSubmission;
 
-    const totalTimeInSeconds =
-      examData?.section[currentSectionIndex]?.t_time * 60 || 0;
-    const actualTimeTaken = totalTimeInSeconds - timeminus;
-    const timeTakenInSecondsUpdated =
-    (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
-  
-    const previousTimeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-    console.log("currentSectionIndex:", currentSectionIndex);
+    const currentSec = examData?.section?.[currentSectionIndex];
+    let totalTimeInSeconds = 0;
+    let isGroupSection = false;
+    let groupName = null;
 
-    console.log("Previous time taken for section:", previousTimeTaken);
+    if (currentSec?.is_sub_section && currentSec?.group_name) {
+      isGroupSection = true;
+      groupName = currentSec.group_name;
+      totalTimeInSeconds = examData.section
+        .filter(s => s.is_sub_section && s.group_name === groupName)
+        .reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60;
+    } else {
+      totalTimeInSeconds = (Number(currentSec?.t_time) || 0) * 60;
+    }
 
-    const finalTimeTaken = actualTimeTaken ; 
+    // actualTimeTaken = how many seconds of the group/section time have elapsed
+    const actualTimeTaken = Math.max(0, totalTimeInSeconds - timeminus);
 
-    console.log("Final time taken for section:", finalTimeTaken);
-    console.warn(formattedSections)
+    // Total exam timeTaken calculation
+    let cumulativeTimeTaken = 0;
+    examData?.section?.forEach((sec, idx) => {
+      if (sec.is_sub_section) {
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
+          .filter(i => i !== -1);
+        if (groupIndices[0] !== idx) return; // skip if not the first section of group
+      }
+
+      const isActiveSection = idx === currentSectionIndex || (currentSec?.is_sub_section && currentSec?.group_name === sec.group_name);
+      if (isActiveSection) {
+        cumulativeTimeTaken += actualTimeTaken;
+      } else {
+        cumulativeTimeTaken += Math.max(0, resultData?.section?.[idx]?.timeTaken || 0);
+      }
+    });
+
+    const timeTakenInSecondsUpdated = cumulativeTimeTaken;
 
     const updatedSections = formattedSections.map((section, idx) => {
+      const sec = examData?.section?.[idx];
+
+      if (isGroupSection) {
+        const groupIndices = examData.section
+          .map((s, i) => (s.is_sub_section && s.group_name === groupName ? i : -1))
+          .filter(i => i !== -1);
+        const firstGroupIdx = groupIndices[0];
+
+        if (idx === firstGroupIdx) {
+          return { ...section, timeTaken: actualTimeTaken };
+        }
+        if (sec?.is_sub_section && sec?.group_name === groupName) {
+          return { ...section, timeTaken: 0 };
+        }
+        return section;
+      }
+
       if (idx === currentSectionIndex) {
-        return {
-          ...section,
-          timeTaken: finalTimeTaken,
-        };
+        return { ...section, timeTaken: actualTimeTaken };
       }
       return section;
     });
-    console.warn(updatedSections)
 
     if (user?._id) {
       Api.post(`results/${user._id}/${id}`, {
@@ -957,7 +1019,8 @@ setIsPaused(true);
         takenAt: examStartTime,
         submittedAt: endTime,
         status: isPaused ? "paused" : "completed",
-        sectionTimes, // Optional: make sure this matches backend schema
+        sectionTimes,
+        pausedDuration: pausedDurationRef.current || 0, // total seconds paused
       })
         .then((res) => {
           console.log("Submitted:", res.data);
@@ -988,6 +1051,9 @@ setIsPaused(true);
       Api.get(`results/${user?._id}/${id}`)
         .then((response) => {
           setResultData(response.data);
+          if (response.data && response.data.pausedDuration != null) {
+            pausedDurationRef.current = response.data.pausedDuration;
+          }
           console.log("Result Data:", response.data);
           const descriptiveArray = response.data.section.map(
             (section, index) => {
@@ -997,12 +1063,6 @@ setIsPaused(true);
 
               return {
                 text: [descriptiveQuestion?.text?.[0] || ""],
-                // corrections: [],
-                // scoreBreakdown: [],
-                // scoreData: [],
-                // expectedWordCount: [descriptiveQuestion?.wordCount || 0],
-                // keywords: descriptiveQuestion?.keywords || [],
-                // date: [new Date().toISOString()],
               };
             }
           );
@@ -1011,32 +1071,60 @@ setIsPaused(true);
           console.log("Descriptive Data:", descriptiveText);
         })
         .catch((error) => {
-          console.error("Error fetching result data:", error);
+          if (error?.response?.status === 404) {
+            setResultData(null);
+          } else {
+            console.error("Error fetching result data:", error);
+          }
         });
     }
   }, [user?._id, id]);
 
- useEffect(() => {
-    if (timeminus > 0 && !isPaused) {
-      const timerInterval = setInterval(() => {
-        settimeminus((prevTime) => {
-          const newTime = prevTime - 1;
-          if (newTime === 0) {
-            clearInterval(timerInterval); // Stop the timer immediately
-            handleTimerEnd(); // Call an async handler
-          }
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(timerInterval);
+  const [timerEnded, setTimerEnded] = useState(false);
+  useEffect(() => {
+    if (timerEnded) {
+      handleTimerEnd();
+      setTimerEnded(false);
     }
-  }, [timeminus, isPaused]);
-  
- const handleTimerEnd = async () => {
-  handleSubmitSection(); // 1. Submits the section
-  await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
-  handleSectionCompletion(); // 4. Calls this after 1 second
-};
+  }, [timerEnded]);
+
+  // Stable section countdown — re-starts only when isPaused or timerKey changes
+  useEffect(() => {
+    if (sectionTimerRef.current) clearInterval(sectionTimerRef.current);
+
+    if (isPaused) {
+      pauseStartRef.current = Date.now();
+      return;
+    }
+
+    // Accumulate paused duration on resume
+    if (pauseStartRef.current) {
+      const elapsed = Math.floor((Date.now() - pauseStartRef.current) / 1000);
+      pausedDurationRef.current = (pausedDurationRef.current || 0) + elapsed;
+      pauseStartRef.current = null;
+    }
+
+    // Don't start if nothing is left
+    sectionTimerRef.current = setInterval(() => {
+      settimeminus(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          clearInterval(sectionTimerRef.current);
+          setTimerEnded(true);
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(sectionTimerRef.current);
+  }, [isPaused, timerKey]);
+
+  const handleTimerEnd = async () => {
+    handleSubmitSection(); // 1. Submits the section
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
+    handleSectionCompletion(); // 4. Calls this after 1 second
+  };
 
 
   const getKeywords = () => {
@@ -1053,129 +1141,129 @@ setIsPaused(true);
 
 
   // ✅ Check grammar for the current section's text
-const checkGrammar = async (currentText) => {
-  try {
-    const textToCheck = currentText?.trim();
+  const checkGrammar = async (currentText) => {
+    try {
+      const textToCheck = currentText?.trim();
 
-    if (!textToCheck) {
-      console.warn("⚠️ No text provided for grammar check.");
+      if (!textToCheck) {
+        console.warn("⚠️ No text provided for grammar check.");
+        return {
+          corrections: [],
+          scoreBreakdown: {},
+          scoreData: {},
+        };
+      }
+
+      console.log("🔍 Checking grammar for text:", textToCheck);
+
+      const response = await axios.post(
+        "https://ginger4.p.rapidapi.com/correction",
+        textToCheck,
+        {
+          params: {
+            lang: "US",
+            generateRecommendations: "false",
+            flagInfomralLanguage: "true",
+          },
+          headers: {
+            "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
+            "x-rapidapi-host": "ginger4.p.rapidapi.com",
+            "Content-Type": "text/plain",
+          },
+        }
+      );
+
+      const issues = response?.data?.GingerTheDocumentResult?.Corrections || [];
+      console.log("✅ Grammar issues found:", issues);
+
+      // Update local state
+      setCorrections(issues);
+      const scoreData = calculateScore(issues); // This should return a score breakdown object
+      const scoreBreakdown = issues?.[0]?.Suggestions || [];
+
+      setScoreBreakdown(scoreBreakdown);
+
+      // Return structured data for use in the caller
+      return {
+        corrections: issues,
+        scoreBreakdown,
+        scoreData,
+      };
+    } catch (error) {
+      console.error("❌ Grammar check failed:", error?.response?.data || error.message);
       return {
         corrections: [],
         scoreBreakdown: {},
         scoreData: {},
       };
     }
-
-    console.log("🔍 Checking grammar for text:", textToCheck);
-
-    const response = await axios.post(
-      "https://ginger4.p.rapidapi.com/correction",
-      textToCheck,
-      {
-        params: {
-          lang: "US",
-          generateRecommendations: "false",
-          flagInfomralLanguage: "true",
-        },
-        headers: {
-          "x-rapidapi-key": "c48ef5be6emsh80d02bf4327c670p1ee925jsna0386eb081e7",
-          "x-rapidapi-host": "ginger4.p.rapidapi.com",
-          "Content-Type": "text/plain",
-        },
-      }
-    );
-
-    const issues = response?.data?.GingerTheDocumentResult?.Corrections || [];
-    console.log("✅ Grammar issues found:", issues);
-
-    // Update local state
-    setCorrections(issues);
-    const scoreData = calculateScore(issues); // This should return a score breakdown object
-    const scoreBreakdown = issues?.[0]?.Suggestions || [];
-
-    setScoreBreakdown(scoreBreakdown);
-
-    // Return structured data for use in the caller
-    return {
-      corrections: issues,
-      scoreBreakdown,
-      scoreData,
-    };
-  } catch (error) {
-    console.error("❌ Grammar check failed:", error?.response?.data || error.message);
-    return {
-      corrections: [],
-      scoreBreakdown: {},
-      scoreData: {},
-    };
-  }
-};
-
-  // Grammar check function
-const calculateScore = async (issues) => {
-  const keywords = getKeywords();
-  const expectedWordCount =
-    examData?.section?.[currentSectionIndex]?.questions?.[
-      selectedLanguage?.toLowerCase()
-    ]?.[0]?.words_limit || 100;
-
-  const currentText =
-    descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
-
-  let spellingErrors = 0;
-  let grammarErrors = 0;
-
-  // Count spelling vs grammar issues
-  issues.forEach((issue) => {
-    const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
-    if (category.includes("capitalization") || category.includes("spelling")) {
-      spellingErrors++;
-    } else {
-      grammarErrors++;
-    }
-  });
-
-  // Word count
-  const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
-
-  // Score calculations
-  const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
-  const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
-  const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
-
-  // Keyword match score
-  let matchedKeywords = 0;
-  const lowerText = currentText.toLowerCase();
-  keywords.forEach((kw) => {
-    if (lowerText.includes(kw)) matchedKeywords++;
-  });
-  const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
-
-  // Total score
-  const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
-
-  const scoreData = {
-    spellingScore,
-    grammarScore,
-    wordCountScore,
-    keywordScore,
-    totalScore: Math.round(totalScore),
-    totalWords,
   };
 
-  setScoreData(scoreData);
+  // Grammar check function
+  const calculateScore = async (issues) => {
+    const keywords = getKeywords();
+    const expectedWordCount =
+      examData?.section?.[currentSectionIndex]?.questions?.[
+        selectedLanguage?.toLowerCase()
+      ]?.[0]?.words_limit || 100;
 
-  if (currentSectionIndex === examData?.section?.length - 1) {
-    await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
-  }
+    const currentText =
+      descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
 
-  // Debug logs
-  console.log("✅ Score Data:", scoreData);
-  console.log("Text:", currentText);
-  console.log("Issues:", issues);
-  console.log("Keywords:", keywords);
-  console.log("Expected Word Count:", expectedWordCount);
-};
+    let spellingErrors = 0;
+    let grammarErrors = 0;
+
+    // Count spelling vs grammar issues
+    issues.forEach((issue) => {
+      const category = issue.TopCategoryIdDescription?.toLowerCase() || "";
+      if (category.includes("capitalization") || category.includes("spelling")) {
+        spellingErrors++;
+      } else {
+        grammarErrors++;
+      }
+    });
+
+    // Word count
+    const totalWords = currentText.trim().split(/\s+/).filter(Boolean).length;
+
+    // Score calculations
+    const spellingScore = spellingErrors === 0 ? 35 : Math.max(0, 35 - spellingErrors * 2);
+    const grammarScore = grammarErrors === 0 ? 35 : Math.max(0, 35 - grammarErrors * 2);
+    const wordCountScore = Math.round(Math.min((totalWords / expectedWordCount) * 20, 20));
+
+    // Keyword match score
+    let matchedKeywords = 0;
+    const lowerText = currentText.toLowerCase();
+    keywords.forEach((kw) => {
+      if (lowerText.includes(kw)) matchedKeywords++;
+    });
+    const keywordScore = keywords.length > 0 ? (matchedKeywords / keywords.length) * 10 : 0;
+
+    // Total score
+    const totalScore = spellingScore + grammarScore + wordCountScore + keywordScore;
+
+    const scoreData = {
+      spellingScore,
+      grammarScore,
+      wordCountScore,
+      keywordScore,
+      totalScore: Math.round(totalScore),
+      totalWords,
+    };
+
+    setScoreData(scoreData);
+
+    if (currentSectionIndex === examData?.section?.length - 1) {
+      await submitExam(descriptiveData.map(d => d.text?.[0] || ""), issues, scoreData, keywords, expectedWordCount);
+    }
+
+    // Debug logs
+    console.log("✅ Score Data:", scoreData);
+    console.log("Text:", currentText);
+    console.log("Issues:", issues);
+    console.log("Keywords:", keywords);
+    console.log("Expected Word Count:", expectedWordCount);
+  };
 
   const submitExam = () => {
     updateSectionTime()
@@ -1196,10 +1284,10 @@ const calculateScore = async (issues) => {
         ...prev,
         [currentSectionIndex]: updatedTime,
       };
-  setQuestionTimes(prev => ({
-    ...prev,
-    [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
-  }));
+      setQuestionTimes(prev => ({
+        ...prev,
+        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
+      }));
       console.warn(
         `Section ${currentSectionIndex}: previous = ${previousTime}, new = ${timeSpent}, saved = ${updatedTime}`
       );
@@ -1272,24 +1360,24 @@ const calculateScore = async (issues) => {
     ).length;
 
     const answersData = selectedOptions.map((selectedOption, index) => {
-        // Find which section this question belongs to
-    let sectionIndex = 0;
-    let questionIndexInSection = 0;
-    let currentSection;
+      // Find which section this question belongs to
+      let sectionIndex = 0;
+      let questionIndexInSection = 0;
+      let currentSection;
 
-        // Find the section and relative index for this question
-    let count = 0;
-    examData.section.forEach((section, sIndex) => {
-      const questions = section.questions[selectedLanguage.toLowerCase()] || [];
-      if (index >= count && index < count + questions.length) {
-        sectionIndex = sIndex;
-        questionIndexInSection = index - count;
-        currentSection = section;
-      }
-      count += questions.length;
-    });
+      // Find the section and relative index for this question
+      let count = 0;
+      examData.section.forEach((section, sIndex) => {
+        const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+        if (index >= count && index < count + questions.length) {
+          sectionIndex = sIndex;
+          questionIndexInSection = index - count;
+          currentSection = section;
+        }
+        count += questions.length;
+      });
 
-    const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+      const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
 
       // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
       const singleQuestionTime = formatTime(questionTimes[index] || 0);
@@ -1311,13 +1399,13 @@ const calculateScore = async (issues) => {
       //       : -question?.minus_mark
       //     : 0;
 
-          // Use section-specific marks
-    const questionScore = selectedOption !== null
-      ? selectedOption === question.answer
-        ? currentSection.plus_mark
-        : -currentSection.minus_mark
-      : 0;
-console.log("ques score",questionScore);
+      // Use section-specific marks
+      const questionScore = selectedOption !== null
+        ? selectedOption === question.answer
+          ? currentSection.plus_mark
+          : -currentSection.minus_mark
+        : 0;
+      console.log("ques score", questionScore);
 
       return {
         question: question?.question,
@@ -1334,7 +1422,7 @@ console.log("ques score",questionScore);
         descriptive: descriptiveData[index] || [],
       };
     });
-console.log("answers dataaaaa",answersData);
+    console.log("answers dataaaaa", answersData);
 
     const totalScore = answersData.reduce(
       (total, answerData) => total + answerData.score,
@@ -1380,7 +1468,7 @@ console.log("answers dataaaaa",answersData);
               : 0;
 
             return {
-              
+
               descriptive: descriptiveData[absoluteIndex],
               question: question.question,
               options: question.options || [],
@@ -1396,32 +1484,34 @@ console.log("answers dataaaaa",answersData);
             };
           }
         );
-console.log("section answers data",sectionAnswersData);
+        console.log("section answers data", sectionAnswersData);
 
         const correctCount = sectionAnswersData.filter(
-  (q) => q.correct === 1
-).length;
+          (q) => q.correct === 1
+        ).length;
 
-const attemptedCount = sectionAnswersData.filter(
-  (q) => q.selectedOption !== undefined
-).length;
+        const attemptedCount = sectionAnswersData.filter(
+          (q) => q.selectedOption !== undefined
+        ).length;
 
-const incorrectCount = sectionAnswered - correctCount;
+        const incorrectCount = sectionAnswered - correctCount;
 
-// Use section-specific marks instead of hardcoded values
-const sectionScore = 
-  (correctCount * section.plus_mark) - 
-  (incorrectCount * section.minus_mark);
+        // Use section-specific marks instead of hardcoded values
+        const sectionScore =
+          (correctCount * section.plus_mark) -
+          (incorrectCount * section.minus_mark);
 
-const secaccuracy =
-  sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+        const secaccuracy =
+          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
 
-console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
+        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
 
-const skippedQuestions = sectionVisited - sectionAnswered;
+        const skippedQuestions = sectionVisited - sectionAnswered;
 
         return {
           name: section.name,
+          group_name: section.group_name || "",
+          is_sub_section: section.is_sub_section || false,
           t_question: section.t_question,
           t_time: section.t_time,
           t_mark: section.t_mark,
@@ -1498,14 +1588,14 @@ const skippedQuestions = sectionVisited - sectionAnswered;
           timeTaken: (() => {
             const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
             const time2 = sectionTimes?.[sectionIndex];
-        
+
             if (typeof time1 === 'number' && typeof time2 === 'number') {
               return time1 + time2;
             }
-        
+
             return time1 ?? time2 ?? 0;
           })()
-      
+
         };
       })
       .filter(Boolean);
@@ -1543,97 +1633,97 @@ const skippedQuestions = sectionVisited - sectionAnswered;
   };
 
   const handleDescriptiveTest = async () => {
-  console.warn("▶ Function started: handleDescriptiveTest");
+    console.warn("▶ Function started: handleDescriptiveTest");
 
-  const prevText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
-  console.warn("📌 Previous text retrieved:", prevText);
+    const prevText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+    console.warn("📌 Previous text retrieved:", prevText);
 
-  const currentText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
-  console.warn("📌 Current text retrieved:", currentText);
-console.log("0",scoreData)
-  // Run first grammar check
-  const grammarResult = await checkGrammar(currentText);
-  console.warn("✅ Grammar check results received",grammarResult);
+    const currentText = descriptiveData?.[currentSectionIndex]?.text?.[0] || "";
+    console.warn("📌 Current text retrieved:", currentText);
+    console.log("0", scoreData)
+    // Run first grammar check
+    const grammarResult = await checkGrammar(currentText);
+    console.warn("✅ Grammar check results received", grammarResult);
 
-  const corrections = grammarResult?.corrections || [];
-  const scoreBreakdown = grammarResult?.scoreBreakdown || {};
-  // const scoreData = grammarResult?.scoreData || {};
-  
-  console.warn("🔧 Corrections:", corrections);
-  console.warn("📊 Score Breakdown:", scoreBreakdown);
-  console.warn("📈 Score Data:", scoreData[currentSectionIndex]);
+    const corrections = grammarResult?.corrections || [];
+    const scoreBreakdown = grammarResult?.scoreBreakdown || {};
+    // const scoreData = grammarResult?.scoreData || {};
 
-  const keywords = getKeywords(currentText);
-  console.warn("🔑 Extracted keywords:", keywords);
+    console.warn("🔧 Corrections:", corrections);
+    console.warn("📊 Score Breakdown:", scoreBreakdown);
+    console.warn("📈 Score Data:", scoreData[currentSectionIndex]);
 
-  const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.words_limit;
-  console.warn("🔢 Expected word count:", expectedWordCount);
+    const keywords = getKeywords(currentText);
+    console.warn("🔑 Extracted keywords:", keywords);
 
-  const currentDescriptiveData = {
-    corrections: Array.isArray(corrections) ? corrections : [],
-    scoreBreakdown: Object.entries(scoreBreakdown).map(([metric, value]) => ({ metric, value })),
-    scoreData: scoreData,
-    expectedWordCount: [expectedWordCount],
-    keywords: keywords,
-    date: [new Date().toISOString()],
-    text: [currentText],
+    const expectedWordCount = examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.words_limit;
+    console.warn("🔢 Expected word count:", expectedWordCount);
+
+    const currentDescriptiveData = {
+      corrections: Array.isArray(corrections) ? corrections : [],
+      scoreBreakdown: Object.entries(scoreBreakdown).map(([metric, value]) => ({ metric, value })),
+      scoreData: scoreData,
+      expectedWordCount: [expectedWordCount],
+      keywords: keywords,
+      date: [new Date().toISOString()],
+      text: [currentText],
+    };
+
+    console.warn("📦 Constructed currentDescriptiveData:", currentDescriptiveData);
+
+    // Update state
+    setDescriptiveData((prev) => {
+      console.warn("🛠 Updating descriptiveData state...");
+      const updated = [...prev];
+      updated[currentSectionIndex] = {
+        ...updated[currentSectionIndex],
+        ...currentDescriptiveData,
+      };
+      console.warn("🆕 Updated descriptiveData at index", currentSectionIndex, ":", updated[currentSectionIndex]);
+      return updated;
+    });
+
+    console.warn("🕒 Scheduling second grammar check after delay...");
+
+    setTimeout(async () => {
+      const newText = currentText;
+      console.warn("⏰ Timeout triggered. Rechecking grammar...");
+
+      if (prevText !== newText) {
+        console.warn("✏️ Text has changed. Running grammar check again...");
+        await checkGrammar(newText);
+      } else {
+        console.warn("🔁 Text hasn't changed. Running grammar check anyway...");
+        await checkGrammar(currentText);
+      }
+    }, 200);
   };
 
-  console.warn("📦 Constructed currentDescriptiveData:", currentDescriptiveData);
 
-  // Update state
-  setDescriptiveData((prev) => {
-    console.warn("🛠 Updating descriptiveData state...");
-    const updated = [...prev];
-    updated[currentSectionIndex] = {
-      ...updated[currentSectionIndex],
-      ...currentDescriptiveData,
-    };
-    console.warn("🆕 Updated descriptiveData at index", currentSectionIndex, ":", updated[currentSectionIndex]);
-    return updated;
-  });
+  const handlePauseResume = () => {
+    if (pauseCount < 1) {
+      clearInterval(questionTimerRef.current);
+      setIsPaused(true);
+      setPauseCount(pauseCount + 1);
 
-  console.warn("🕒 Scheduling second grammar check after delay...");
+      const now = new Date();
 
-  setTimeout(async () => {
-    const newText = currentText;
-    console.warn("⏰ Timeout triggered. Rechecking grammar...");
+      // ✅ Save current question time
+      if (questionStartTime && clickedQuestionIndex !== null) {
+        const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+        setQuestionTimes((prev) => ({
+          ...prev,
+          [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
+        }));
+        setQuestionStartTime(null);
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
 
-    if (prevText !== newText) {
-      console.warn("✏️ Text has changed. Running grammar check again...");
-      await checkGrammar(newText);
-    } else {
-      console.warn("🔁 Text hasn't changed. Running grammar check anyway...");
-      await checkGrammar(currentText);
-    }
-  }, 200);
-};
-
-
-const handlePauseResume = () => {
-  if (pauseCount < 1) {
-    clearInterval(questionTimerRef.current);
-    setIsPaused(true);
-    setPauseCount(pauseCount + 1);
-
-    const now = new Date();
-
-    // ✅ Save current question time
-    if (questionStartTime && clickedQuestionIndex !== null) {
-      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-      setQuestionTimes((prev) => ({
-        ...prev,
-        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
-      }));
-      setQuestionStartTime(null);
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
-
-    // ✅ Save section time
-    const timeSpent = Math.floor(
-      (now - currentSectionStartTimeRef.current) / 1000
-    );
- // ✅ Safely update the sectionTimes state
+      // ✅ Save section time
+      const timeSpent = Math.floor(
+        (now - currentSectionStartTimeRef.current) / 1000
+      );
+      // ✅ Safely update the sectionTimes state
       setSectionTimes((prev) => {
         console.log("Previous state (prev):", prev);
 
@@ -1657,42 +1747,42 @@ const handlePauseResume = () => {
 
         return previous;
       });
-    currentSectionStartTimeRef.current = now;
+      currentSectionStartTimeRef.current = now;
 
-    // ✅ Store current exam state
-    const currentState = {
-      clickedQuestionIndex,
-      selectedOptions,
-      visitedQuestions,
-      markedForReview,
-      currentSectionIndex,
-    };
-    localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
+      // ✅ Store current exam state
+      const currentState = {
+        clickedQuestionIndex,
+        selectedOptions,
+        visitedQuestions,
+        markedForReview,
+        currentSectionIndex,
+      };
+      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
-    Swal.fire({
-      title: "Pause Exam",
-      text: "Do you want to quit the exam?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, Quit",
-      cancelButtonText: "No, Resume",
-      position: "center",
-      width: "100vw",
-      height: "100vh",
-      padding: "100",
-      customClass: {
-        container: "swal-full-screen",
-        popup: "swal-popup-full-height",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        setIsPaused(true);
-        await submitExam();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        window.close();
-      } else {
+      Swal.fire({
+        title: "Pause Exam",
+        text: "Do you want to quit the exam?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Quit",
+        cancelButtonText: "No, Resume",
+        position: "center",
+        width: "100vw",
+        height: "100vh",
+        padding: "100",
+        customClass: {
+          container: "swal-full-screen",
+          popup: "swal-popup-full-height",
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          setIsPaused(true);
+          await submitExam();
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          window.close();
+        } else {
           setIsPaused(false);
           setPauseCount(0);
 
@@ -1712,9 +1802,9 @@ const handlePauseResume = () => {
           });
         }
 
-    });
-  }
-};
+      });
+    }
+  };
 
   const [words, setWords] = useState(); // default word limit
   const [countType, setCountType] = useState(" ");
@@ -1724,7 +1814,7 @@ const handlePauseResume = () => {
   useEffect(() => {
     const selectedQuestion =
       examData?.section?.[currentSectionIndex]?.questions?.[
-        selectedLanguage?.toLowerCase()
+      selectedLanguage?.toLowerCase()
       ]?.[0];
 
     if (selectedQuestion) {
@@ -1755,23 +1845,23 @@ const handlePauseResume = () => {
     // updatedText[currentSectionIndex] = inputText;
     // setText(updatedText);
 
-   setDescriptiveData((prev) => {
-  const updated = [...prev];
+    setDescriptiveData((prev) => {
+      const updated = [...prev];
 
-  // If the index is undefined, initialize it
-  if (!updated[currentSectionIndex]) {
-    updated[currentSectionIndex] = {};
-  }
+      // If the index is undefined, initialize it
+      if (!updated[currentSectionIndex]) {
+        updated[currentSectionIndex] = {};
+      }
 
-  updated[currentSectionIndex] = {
-    ...updated[currentSectionIndex],
-    text: [inputText],
-  };
+      updated[currentSectionIndex] = {
+        ...updated[currentSectionIndex],
+        text: [inputText],
+      };
 
-  // console.warn("Updated descriptiveData at index", currentSectionIndex, updated[currentSectionIndex]);
+      // console.warn("Updated descriptiveData at index", currentSectionIndex, updated[currentSectionIndex]);
 
-  return updated;
-});
+      return updated;
+    });
 
   };
 
@@ -1801,19 +1891,19 @@ const handlePauseResume = () => {
   // Function to show the toast and move to the next section (or result if last section)
 
   const closeAndNotifyParent = () => {
-  if (window.opener) {
-    console.log("Closing the window and notifying parent");
-    window.opener.postMessage('test-status-updated', window.location.origin);
-    
-    // Allow time for message to send before closing
-    setTimeout(() => {
-      window.close();
-    }, 500);
-  } else {
-    console.log("Closing the window without parent notification");
-    navigate('/homelivetest');
-  }
-};
+    if (window.opener) {
+      console.log("Closing the window and notifying parent");
+      window.opener.postMessage('test-status-updated', window.location.origin);
+
+      // Allow time for message to send before closing
+      setTimeout(() => {
+        window.close();
+      }, 500);
+    } else {
+      console.log("Closing the window without parent notification");
+      navigate('/homelivetest');
+    }
+  };
 
   const handleSectionCompletion = async () => {
     handleDescriptiveTest();
@@ -1850,7 +1940,7 @@ const handlePauseResume = () => {
       } else {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
-    
+
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
         // navigate(`/liveresult/${id}/${user?._id}`);
@@ -1897,7 +1987,7 @@ const handlePauseResume = () => {
     return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   };
 
- const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
@@ -2051,94 +2141,116 @@ const handlePauseResume = () => {
   const popupmodal = () => {
     setIsPaused(false);
     setShowModal(false);
-     const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-  setQuestionTime(existingTime);
-  setQuestionStartTime(new Date());
+    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+    setQuestionTime(existingTime);
+    setQuestionStartTime(new Date());
 
-  if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
 
-  timerRef.current = setInterval(() => {
-    setQuestionTime((prev) => prev + 1);
-  }, 1000);
+    timerRef.current = setInterval(() => {
+      setQuestionTime((prev) => prev + 1);
+    }, 1000);
 
-  console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
+    console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
   };
 
   const finishTestAndOpenResult = async () => {
-  try {
-    // await submitExam();
-    
-    // Build the result URL
-    const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
-    
-    // Open result in a new window without _blank target
-    // const resultWindow = window.open('', '_self');
-    
-    // resultWindow.location.href = resultUrl;
-        window.open(resultUrl, '_blank');
+    try {
+      // await submitExam();
 
-    // Close the current test window
-    window.close();
-  } catch (error) {
-    console.error("Error finishing test:", error);
-    alert('Failed to submit the exam. Please try again.');
-  }
-};
+      // Build the result URL
+      const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
 
-useEffect(() => {
-  const now = new Date();
+      // Open result in a new window without _blank target
+      // const resultWindow = window.open('', '_self');
 
-  // 1️⃣ Save time for previous question
-  if (previousQuestionIndex !== null && questionStartTime) {
-    const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-    setQuestionTimes(prev => ({
-      ...prev,
-      [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
-    }));
-  }
+      // resultWindow.location.href = resultUrl;
+      window.open(resultUrl, '_blank');
 
-  // 2️⃣ Clear previous timer
-  if (timerRef.current) clearInterval(timerRef.current);
-console.log("q",questionTimes,clickedQuestionIndex);
+      // Close the current test window
+      window.close();
+    } catch (error) {
+      console.error("Error finishing test:", error);
+      alert('Failed to submit the exam. Please try again.');
+    }
+  };
 
-  // 3️⃣ Start timer for current question
-  const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-  console.log("Existing time for question:", existingTime);
-  
-  setQuestionTime(existingTime);
-  setQuestionStartTime(now);
-console.log(questionTime);
+  useEffect(() => {
+    const now = new Date();
 
-  // 4️⃣ Live increment every second
-  timerRef.current = setInterval(() => {
-    setQuestionTime(prev => prev + 1);
-  }, 1000);
+    // 1️⃣ Save time for previous question
+    if (previousQuestionIndex !== null && questionStartTime) {
+      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
+      setQuestionTimes(prev => ({
+        ...prev,
+        [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
+      }));
+    }
 
-  // 5️⃣ Track previous index for next time
-  setPreviousQuestionIndex(clickedQuestionIndex);
+    // 2️⃣ Clear previous timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    console.log("q", questionTimes, clickedQuestionIndex);
 
-  return () => clearInterval(timerRef.current);
-}, [clickedQuestionIndex]);
+    // 3️⃣ Start timer for current question
+    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
+    console.log("Existing time for question:", existingTime);
 
-console.log(questionTime);
+    setQuestionTime(existingTime);
+    setQuestionStartTime(now);
+    console.log(questionTime);
+
+    // 4️⃣ Live increment every second
+    timerRef.current = setInterval(() => {
+      setQuestionTime(prev => prev + 1);
+    }, 1000);
+
+    // 5️⃣ Track previous index for next time
+    setPreviousQuestionIndex(clickedQuestionIndex);
+
+    return () => clearInterval(timerRef.current);
+  }, [clickedQuestionIndex]);
+
+  console.log(questionTime);
 
   return (
     <div className="mock-font " ref={commonDataRef}>
       <div>
-        <div className="bg-[#3476bb] text-white font-bold h-12 w-full flex justify-around items-center">
-          <h1 className="h3 font-bold mt-3 text-sm md:text-xl">{show_name}</h1>
-          <img src={logo} alt="logo" className="h-10 w-auto bg-white" />
-               <h1 className=" text-center text-black bg-gray-100 p-2">
-              Time Left:{formatTime(timeminus)}
+        <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+          {/* Left Section: Logo & Show Name */}
+          <div className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="logo"
+              className="h-10 w-auto bg-white rounded p-0.5"
+            />
+            <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+              {show_name}
             </h1>
-          {/* Fullscreen Toggle Button */}
-          <button
-            onClick={toggleFullScreen}
-            className="ml-8 bg-gray-600 p-2 rounded-full cursor-pointer text-white"
-          >
-            {/* Show the appropriate icon based on fullscreen state */}
-            {isFullscreen ? <FaCompress /> : <FaExpand />}
-          </button>
+          </div>
+
+          {/* Right Section: Time & Fullscreen Controls */}
+          <div className="flex items-center gap-3 md:gap-4">
+
+            {/* Refined Time Display */}
+            <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+              <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+                Time Left:
+              </span>
+              <span className="text-sm md:text-base font-bold font-mono">
+                {formatTime(timeminus)}
+              </span>
+            </div>
+
+            {/* Fullscreen Toggle Button */}
+            <button
+              onClick={toggleFullScreen}
+              className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Toggle Fullscreen"
+              title="Toggle Fullscreen"
+            >
+              {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+            </button>
+          </div>
         </div>
         {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
 
@@ -2169,11 +2281,11 @@ console.log(questionTime);
                       Section Submit
                     </h1>
                     <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={popupmodal} // Manually hide the modal
-            ></button>
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={popupmodal} // Manually hide the modal
+                    ></button>
                   </div>
                   <div className="modal-body">
                     <div className="table-responsive">
@@ -2255,11 +2367,10 @@ console.log(questionTime);
             <div key={index}>
               <h1
                 className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
-                      ${
-                        currentSectionIndex === index
-                          ? " font-medium underline"
-                          : ""
-                      }`}
+                      ${currentSectionIndex === index
+                    ? " font-medium underline"
+                    : ""
+                  }`}
               >
                 {section.name}
                 <div className="relative group ml-2 d-inline-block">
@@ -2347,30 +2458,30 @@ console.log(questionTime);
                 </h3>
 
                 <h1 className="flex flex-wrap md:flex-row">
-                                    {/* Language dropdown added here */}
-                {examData &&
-                  examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                    <div className="flex items-center mx-2">
-                      <select
-                        value={displayLanguage || selectedLanguage}
-                        onChange={(e) => setDisplayLanguage(e.target.value)}
-                        className="border rounded p-1"
-                      >
-                        {examData?.bilingual_status ? (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                          </>
-                        ) : (
-                          <>
-                            {examData?.english_status && <option value="English">English</option>}
-                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                          </>
-                        )}
-                      </select>
-                    </div>
-                )}
+                  {/* Language dropdown added here */}
+                  {examData &&
+                    examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                      <div className="flex items-center mx-2">
+                        <select
+                          value={displayLanguage || selectedLanguage}
+                          onChange={(e) => setDisplayLanguage(e.target.value)}
+                          className="border rounded p-1"
+                        >
+                          {examData?.bilingual_status ? (
+                            <>
+                              {examData?.english_status && <option value="English">English</option>}
+                              {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                            </>
+                          ) : (
+                            <>
+                              {examData?.english_status && <option value="English">English</option>}
+                              {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                              {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                            </>
+                          )}
+                        </select>
+                      </div>
+                    )}
 
 
                   <span className="border-1 border-gray-300 rounded-sm px-3 py-1 bg-white ">
@@ -2382,7 +2493,7 @@ console.log(questionTime);
                     <span className="text-success">
                       +
                       {examData?.section &&
-                      examData.section[currentSectionIndex]
+                        examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].plus_mark
                         : "No plus marks"}
                     </span>
@@ -2390,7 +2501,7 @@ console.log(questionTime);
                     <span className="text-danger">
                       -
                       {examData?.section &&
-                      examData.section[currentSectionIndex]
+                        examData.section[currentSectionIndex]
                         ? examData.section[currentSectionIndex].minus_mark
                         : "No minus marks"}
                     </span>
@@ -2404,31 +2515,31 @@ console.log(questionTime);
                   {examData.section[currentSectionIndex]?.questions?.[
                     selectedLanguage?.toLowerCase()
                   ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                    <div
-                    className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                  ${isFullscreen
-                        ? 'h-[80vh] md:h-[80vh]'
-                        : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      }`
-                    }
-                      style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-                  >
                       <div
-                        className="text-wrap"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                             (displayLanguage|| selectedLanguage)?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.common_data || "No common data available",
+                        className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
+                  ${isFullscreen
+                            ? 'h-[80vh] md:h-[80vh]'
+                            : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
+                          }`
+                        }
+                        style={{
+                          height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                          overflowY: 'auto'
                         }}
-                      />
-                    </div>
-                  )}
+                      >
+                        <div
+                          className="text-wrap"
+                          style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              examData.section[currentSectionIndex]?.questions?.[
+                                (displayLanguage || selectedLanguage)?.toLowerCase()
+                              ]?.[clickedQuestionIndex - startingIndex]
+                                ?.common_data || "No common data available",
+                          }}
+                        />
+                      </div>
+                    )}
 
                   {/* Right side for Question */}
                   <div
@@ -2440,11 +2551,11 @@ console.log(questionTime);
                       ]?.[clickedQuestionIndex - startingIndex]?.common_data
                         ? "md:w-[50%]"
                         : "md:w-full" // Make it full width when no common data
-                      }`}   style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
-  
+                      }`} style={{
+                        height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                        overflowY: 'auto'
+                      }}
+
                   >
                     <div>
                       <div
@@ -2453,7 +2564,7 @@ console.log(questionTime);
                         dangerouslySetInnerHTML={{
                           __html:
                             examData.section[currentSectionIndex]?.questions?.[
-                               (displayLanguage|| selectedLanguage)?.toLowerCase()
+                              (displayLanguage || selectedLanguage)?.toLowerCase()
                             ]?.[clickedQuestionIndex - startingIndex]
                               ?.question || "No question available",
                         }}
@@ -2464,38 +2575,38 @@ console.log(questionTime);
                       ]?.[clickedQuestionIndex - startingIndex]?.options ? (
                         <div>
                           {examData.section[currentSectionIndex]?.questions?.[
-                            (displayLanguage|| selectedLanguage)?.toLowerCase()
+                            (displayLanguage || selectedLanguage)?.toLowerCase()
                           ]?.[
                             clickedQuestionIndex - startingIndex
                           ]?.options.map((option, index) => (
                             <div key={index} className="p-1 rounded-lg m-2 ">
-                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-  <input
-    type="radio"
-    className="p-5"
-    id={`option-${index}`}
-    name="exam-option"
-    value={index}
-    checked={selectedOptions[clickedQuestionIndex] === index}
-    onChange={() => {
-      console.log("Selected Option Index:", index);
-      handleOptionChange(index);
-    }}
-    style={{
-      accentColor: "#3B82F6",
-      width: "1.2rem",
-      height: "1.2rem",
-      marginRight: "8px",
-      marginTop: "0px" // Remove vertical offset
-    }}
-  />
-  <label
-    htmlFor={`option-${index}`}
-    dangerouslySetInnerHTML={{
-      __html: option || "No option available",
-    }}
-  />
-</div>
+                              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                <input
+                                  type="radio"
+                                  className="p-5"
+                                  id={`option-${index}`}
+                                  name="exam-option"
+                                  value={index}
+                                  checked={selectedOptions[clickedQuestionIndex] === index}
+                                  onChange={() => {
+                                    console.log("Selected Option Index:", index);
+                                    handleOptionChange(index);
+                                  }}
+                                  style={{
+                                    accentColor: "#3B82F6",
+                                    width: "1.2rem",
+                                    height: "1.2rem",
+                                    marginRight: "8px",
+                                    marginTop: "0px" // Remove vertical offset
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`option-${index}`}
+                                  dangerouslySetInnerHTML={{
+                                    __html: option || "No option available",
+                                  }}
+                                />
+                              </div>
 
                             </div>
                           ))}
@@ -2506,15 +2617,13 @@ console.log(questionTime);
                     </div>
                     <div className="md:flex hidden items-center">
                       <div
-                        className={`fixed top-1/2 ${
-                          closeSideBar ? "right-0" : ""
-                        } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
+                        className={`fixed top-1/2 ${closeSideBar ? "right-0" : ""
+                          } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
                         onClick={toggleMenu2}
                       >
                         <FaChevronRight
-                          className={`w-2 h-5 text-white transition-transform duration-300 ${
-                            closeSideBar ? "absalute left-0 rotate-180" : ""
-                          }`}
+                          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? "absalute left-0 rotate-180" : ""
+                            }`}
                         />
                       </div>
                     </div>
@@ -2522,18 +2631,18 @@ console.log(questionTime);
                 </div>
               ) : (
                 <div
-                className="d-flex justify-content-center align-items-center"
-                style={{ height: '100vh' }} // Full viewport height
-              >
-                <div
-                  className="spinner-border text-primary"
-                  role="status"
-                  style={{ width: '3rem', height: '3rem' }}
+                  className="d-flex justify-content-center align-items-center"
+                  style={{ height: '100vh' }} // Full viewport height
                 >
-                  <span className="visually-hidden">Loading...</span>
+                  <div
+                    className="spinner-border text-primary"
+                    role="status"
+                    style={{ width: '3rem', height: '3rem' }}
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 </div>
-              </div>
-              
+
               )}
             </>
           ) : (
@@ -2553,10 +2662,10 @@ console.log(questionTime);
               ? 'h-[87vh] md:h-[87vh]'
               : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
             } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-            style={{
-    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-    overflowY: 'auto'
-  }}
+          style={{
+            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+            overflowY: 'auto'
+          }}
         >
           {isMobileMenuOpen && (
             <button onClick={toggleMenu} className="md:hidden text-black p-2">
@@ -2601,11 +2710,10 @@ console.log(questionTime);
             <center>
               <button
                 onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${
-                  isPaused
-                    ? "bg-green-500 hover:bg-green-600 text-white"
-                    : "bg-red-500 hover:bg-red-600 text-white"
-                }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused
+                  ? "bg-green-500 hover:bg-green-600 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
+                  }`}
               >
                 Pause
               </button>
@@ -2674,11 +2782,11 @@ console.log(questionTime);
                   className = "answerImg";
                   if (markedForReview.includes(fullIndex)) {
                     className += " mdansmarkedImg";
-                  }if (selectedOptions[fullIndex] == null) {
-                    className="notansImg";
+                  } if (selectedOptions[fullIndex] == null) {
+                    className = "notansImg";
                   }
                 }
-                 else if (visitedQuestions.includes(fullIndex)) {
+                else if (visitedQuestions.includes(fullIndex)) {
                   className = "notansImg";
                 } else {
                   className = "notVisitImg";
@@ -2733,14 +2841,14 @@ console.log(questionTime);
             {examData?.section?.[currentSectionIndex]?.questions?.[
               selectedLanguage?.toLowerCase()
             ]?.length > 0 && (
-              <button
-                onClick={handleNextClick}
-                className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
-              >
-                <span className="block md:hidden">Save</span>
-                <span className="hidden md:block"> Save & Next</span>
-              </button>
-            )}
+                <button
+                  onClick={handleNextClick}
+                  className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
+                >
+                  <span className="block md:hidden">Save</span>
+                  <span className="hidden md:block"> Save & Next</span>
+                </button>
+              )}
           </div>
           {/* Right side - Save & Next and Submit Section */}
           <div className="flex justify-center md:w-[20%]">
