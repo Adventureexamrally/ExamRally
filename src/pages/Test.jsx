@@ -910,9 +910,8 @@ const Test = () => {
     let timeTakenForGroup = 0;
 
     if (currentSection?.is_sub_section && currentSection?.group_name) {
-      // Group timer: sum only t_time across all group sections
-      // For timeTaken: read ONLY the FIRST group section (to avoid double-counting).
-      // We always store the group elapsed time on the first section only.
+      // ✅ GROUP TIMER: sum t_time for ALL sections in the same group
+      // Read elapsed time only from the FIRST group section to avoid double-counting on resume.
       let firstGroupSectionIdx = -1;
       examData.section.forEach((s, idx) => {
         if (s.is_sub_section && s.group_name === currentSection.group_name) {
@@ -925,6 +924,7 @@ const Test = () => {
         resultData?.section?.[firstGroupSectionIdx]?.timeTaken || 0
       );
     } else {
+      // ✅ NORMAL SECTION: use just this section's t_time
       totalSectionTime = (Number(currentSection?.t_time) || 0) * 60;
       timeTakenForGroup = Math.max(
         0,
@@ -932,11 +932,11 @@ const Test = () => {
       );
     }
 
-    // Only reset the timer if the DB time taken has actually changed during mount/fetch
+    // Only reset the timer if the DB time taken has actually changed (or first mount)
     if (timeTakenFromDB !== timeTakenForGroup || timeminus === 0) {
       settimeTakenFromDB(timeTakenForGroup);
 
-      // Clamp to [0, totalSectionTime] so stale DB values can't exceed full section time
+      // Clamp remaining time so stale DB values can't exceed the full section/group time
       const remainingTime = Math.max(
         0,
         Math.min(totalSectionTime, totalSectionTime - timeTakenForGroup)
@@ -1175,7 +1175,7 @@ const Test = () => {
     // We can't just use (endTime - examStartTime) because it resets on pause/resume.
     let cumulativeTimeTaken = 0;
 
-    // Calculate the current active section's elapsed time properly
+    // ✅ GROUP-AWARE: if the active section belongs to a group, sum t_time for the whole group
     let currentSectionTotalTime = 0;
     if (currentSection?.is_sub_section && currentSection?.group_name) {
       currentSectionTotalTime = examData.section
@@ -1186,15 +1186,14 @@ const Test = () => {
     }
     const currentActiveTimeTaken = Math.max(0, currentSectionTotalTime - timeminus);
 
-    // Sum all prior sections from DB + the current active one
+    // Sum all prior sections from DB + current active one.
+    // For grouped sections, count their time only ONCE (at the first section of the group).
     examData.section.forEach((sec, idx) => {
-      // Avoid double-counting grouped sections (we only count their time once)
       if (sec.is_sub_section) {
-        // If it's a grouped section, only add its time when we process the *first* section of that group
         const groupIndices = examData.section
           .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
           .filter(i => i !== -1);
-        if (groupIndices[0] !== idx) return; // skip if not the first
+        if (groupIndices[0] !== idx) return; // skip non-first group members
       }
 
       if (idx === currentSectionIndex || (currentSection?.is_sub_section && currentSection?.group_name === sec.group_name)) {
@@ -1641,25 +1640,65 @@ const Test = () => {
   // Function to show the toast and move to the next section (or result if last section)
   const handleSectionCompletion = async () => {
     setIsPaused(false);
+    setShowModal(false);
 
     // Mark current section as submitted — cannot go back
-    setSubmittedSections(prev => new Set([...prev, currentSectionIndex]));
+    const updatedSubmitted = new Set([...submittedSections, currentSectionIndex]);
+    setSubmittedSections(updatedSubmitted);
 
+    const currentSection = examData?.section?.[currentSectionIndex];
+
+    // ✅ GROUP-AWARE: if the just-submitted section belongs to a group,
+    // check whether there are more unsubmitted sub-sections in the same group.
+    if (currentSection?.is_sub_section && currentSection?.group_name) {
+      const groupMembers = examData.section
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) => s.is_sub_section && s.group_name === currentSection.group_name);
+
+      const nextGroupMember = groupMembers.find(({ i }) => !updatedSubmitted.has(i));
+
+      if (nextGroupMember) {
+        // ✅ More sub-sections remain in the group — switch freely, NO modal
+        const nextIndex = nextGroupMember.i;
+        setCurrentSectionIndex(nextIndex);
+        const newStartingIndex = examData.section
+          .slice(0, nextIndex)
+          .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+        setClickedQuestionIndex(newStartingIndex);
+        return;
+      }
+      // All group members done — fall through to advance to the next GROUP below
+    }
+
+    // ✅ ADVANCE TO NEXT SECTION / GROUP (or submit exam if last)
     if (currentSectionIndex < examData?.section?.length - 1) {
-      setShowModal(false);
       const nextIndex = currentSectionIndex + 1;
       setCurrentSectionIndex(nextIndex);
-      // Timer will auto-reset via the clickedQuestionIndex useEffect below
-      const newStartingIndex = examData?.section
-        ?.slice(0, nextIndex)
-        .reduce((acc, section) =>
-          acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-      setClickedQuestionIndex(newStartingIndex); // ← this triggers timer reset in useEffect
+      const newStartingIndex = examData.section
+        .slice(0, nextIndex)
+        .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+      setClickedQuestionIndex(newStartingIndex); // triggers timer reset via useEffect
     } else {
       // Last section — submit exam and navigate to results
       await submitExam();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate(`/result/${id}/${user?._id}`);
+    }
+  };
+
+  // ✅ Previous question handler — does NOT cross section boundaries
+  const handlePreviousClick = () => {
+    if (clickedQuestionIndex <= 0) return;
+
+    if (
+      examData &&
+      examData.section[currentSectionIndex] &&
+      examData.section[currentSectionIndex].questions?.[selectedLanguage?.toLowerCase()]
+    ) {
+      if (clickedQuestionIndex > startingIndex) {
+        setClickedQuestionIndex(clickedQuestionIndex - 1);
+        setQuestionTime(0);
+      }
     }
   };
 
@@ -2290,7 +2329,12 @@ const Test = () => {
               {/* Question info bar — matches reference layout */}
               <div className="flex items-center justify-between flex-wrap gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200 text-sm">
                 <span className="font-medium text-gray-700">
-                  Q: {clickedQuestionIndex + 1} / {t_questions}
+                  Q: {clickedQuestionIndex + 1} / {
+                    examData?.section?.reduce(
+                      (sum, s) => sum + (s.questions?.[(displayLanguage || selectedLanguage)?.toLowerCase()]?.length || 0),
+                      0
+                    ) || t_questions
+                  }
                 </span>
 
                 <div className="flex items-center gap-3 ml-auto">
@@ -2627,25 +2671,37 @@ const Test = () => {
       </div >
 
       {/* Footer Buttons */}
-      < div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50" >
+      <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
         <div className="flex justify-between flex-col md:flex-row w-full">
-          <div className="flex justify-between  md:w-3/4 m-1">
-            {/* Left side - Mark for Review and Clear Response */}
-            <div className="d-flex">
+          <div className="flex justify-between md:w-3/4 m-1">
+            {/* Left side - Previous, Mark for Review, Clear Response */}
+            <div className="d-flex gap-1 items-center">
+              {/* ✅ Previous button */}
+              <button
+                onClick={handlePreviousClick}
+                disabled={clickedQuestionIndex <= startingIndex}
+                className="btn bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm md:text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="flex items-center gap-1">
+                  <FaChevronLeft className="w-3 h-3" />
+                  <span className="hidden md:inline">Previous</span>
+                </span>
+              </button>
+              &nbsp;
               <button
                 onClick={handleMarkForReview}
-                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
+                className="btn bg-blue-300 hover:bg-blue-400 text-sm md:text-sm"
               >
-                <span className="block md:hidden">Mark & Next</span>
+                <span className="block md:hidden">Mark &amp; Next</span>
                 <span className="hidden md:block">Mark for Review</span>
               </button>
-              &nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp;
               <button
                 onClick={handleClearResponse}
-                className="btn bg-blue-300  hover:bg-blue-400 text-sm md:text-sm"
+                className="btn bg-blue-300 hover:bg-blue-400 text-sm md:text-sm"
               >
                 <span className="block md:hidden">Clear</span>
-                <span className="hidden md:block"> Clear Response</span>
+                <span className="hidden md:block">Clear Response</span>
               </button>
             </div>
             {examData?.section?.[currentSectionIndex]?.questions?.[
@@ -2653,18 +2709,18 @@ const Test = () => {
             ]?.length > 0 && (
                 <button
                   onClick={handleNextClick}
-                  className="btn bg-blue-500 text-white  hover:bg-blue-700 text-sm md:text-sm"
+                  className="btn bg-blue-500 text-white hover:bg-blue-700 text-sm md:text-sm"
                 >
                   <span className="block md:hidden">Save</span>
-                  <span className="hidden md:block"> Save & Next</span>
+                  <span className="hidden md:block">Save &amp; Next</span>
                 </button>
               )}
           </div>
-          {/* Right side - Save & Next and Submit Section */}
+          {/* Right side - Submit Section / Test */}
           <div className="flex justify-center md:w-[20%]">
             <center>
               <button
-                className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
+                className="btn bg-blue-500 text-white hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
                 onClick={handleSubmitSection}
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"
@@ -2676,7 +2732,7 @@ const Test = () => {
             </center>
           </div>
         </div>
-      </div >
+      </div>
     </div >
   );
 };

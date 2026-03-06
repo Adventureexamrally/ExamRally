@@ -5,8 +5,12 @@ import { fonts } from "./fonts.js";
 
 const LOGO_URL = "https://examrally.in/assets/logo-DuhjVB4Q.png";
 const LOGO_WIDTH = 25; // mm
+const PLAY_STORE_BADGE_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=io.examrally.in";
+const PLAY_STORE_WIDTH = 25; // mm
 
 let cachedLogo = null;
+let cachedPlayStoreBadge = null;
 let fontsRegistered = false;
 
 const loadImage = (url) =>
@@ -17,6 +21,30 @@ const loadImage = (url) =>
     img.onload = () => resolve(img);
     img.onerror = reject;
   });
+
+/* ================= SYMBOL MAPPINGS ================= */
+// Mapping Unicode characters to Adobe Symbol font decimal codes
+const SYMBOL_MAP = {
+  // Greek Upper
+  "Α": 65, "Β": 66, "Γ": 71, "Δ": 68, "Ε": 69, "Ζ": 90, "Η": 72, "Θ": 81,
+  "Ι": 73, "Κ": 75, "Λ": 76, "Μ": 77, "Ν": 78, "Ξ": 88, "Ο": 79, "Π": 80,
+  "Ρ": 82, "Σ": 83, "Τ": 84, "Υ": 85, "Φ": 70, "Χ": 67, "Ψ": 89, "Ω": 87,
+  // Greek Lower
+  "α": 97, "β": 98, "γ": 103, "δ": 100, "ε": 101, "ζ": 122, "η": 104, "θ": 113,
+  "ι": 105, "κ": 107, "λ": 108, "μ": 109, "ν": 110, "ξ": 120, "ο": 111, "π": 112,
+  "ρ": 114, "ς": 86, "σ": 115, "τ": 116, "υ": 117, "φ": 102, "χ": 99, "ψ": 121,
+  "ω": 119, "ϑ": 74, "ϕ": 106, "ϖ": 118,
+  // Math & Logic
+  "∫": 242, "∑": 229, "∞": 165, "√": 214, "∂": 182, "∇": 209, "±": 177, "×": 180,
+  "÷": 184, "≠": 185, "≈": 187, "≤": 163, "≥": 179, "∝": 181, "∠": 208, "∴": 92,
+  "∼": 126, "≅": 64, "≡": 186, "⊕": 197, "⊗": 196, "⊥": 94, "⋅": 215, "∏": 213,
+  "∈": 206, "∉": 207, "∩": 199, "∪": 200, "⊂": 204, "⊃": 201, "⊄": 203, "⊆": 205, "⊇": 202,
+  "¬": 216, "∧": 217, "∨": 218, "∀": 34, "∃": 36, "‰": 137, "′": 162, "″": 178, "°": 176,
+  "∴": 92, "≡": 186, "≈": 187, "…": 183, "∅": 198, "∖": 92, "Å": 197, "ℏ": 104,
+  // Arrows
+  "←": 172, "↑": 173, "→": 174, "↓": 175, "↔": 171, "⇒": 222, "⇐": 220,
+  "⇑": 221, "⇓": 223, "⇔": 219, "↵": 191
+};
 
 const registerFonts = (doc, language) => {
   if (!fonts) return;
@@ -95,8 +123,8 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     language === "tamil"
       ? "NotoSansTamil"
       : language === "hindi"
-      ? "NotoSansDevanagari"
-      : "helvetica";
+        ? "NotoSansDevanagari"
+        : "helvetica";
   let currentFont = baseFont;
 
   /* -------- PAGE CONFIG -------- */
@@ -123,6 +151,14 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     }
   }
 
+  if (!cachedPlayStoreBadge) {
+    try {
+      cachedPlayStoreBadge = await loadImage(PLAY_STORE_BADGE_URL);
+    } catch {
+      cachedPlayStoreBadge = null;
+    }
+  }
+
   /* -------- HEADER / FOOTER / WATERMARK -------- */
 
   /* -------- HEADER / FOOTER / WATERMARK -------- */
@@ -143,14 +179,20 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
   const addHeader = () => {
     addWatermark();
 
+    const titleY = 14; // Base Y for the title and fallback text
+
     if (cachedLogo) {
       const logoHeight = (cachedLogo.height * LOGO_WIDTH) / cachedLogo.width;
+      // Vertically center logo relative to the title's baseline region
+      // Title is at 14, font size 10 (approx 3.5mm height). 
+      // Middle of text is around 12.5.
+      const logoY = titleY - (logoHeight / 2) - 1;
 
       doc.addImage(
         cachedLogo,
         "PNG",
         MARGIN,
-        6,
+        logoY,
         LOGO_WIDTH,
         logoHeight,
         undefined,
@@ -160,14 +202,14 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(37, 138, 20); // Green
-      doc.text("examrally", MARGIN, 14);
+      doc.text("examrally", MARGIN, titleY);
     }
 
     // Exam Title on Right
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(0);
-    doc.text(title, pageWidth - MARGIN, 14, { align: "right" });
+    doc.text(title, pageWidth - MARGIN, titleY, { align: "right" });
 
     // Green Underline
     doc.setDrawColor(37, 138, 20);
@@ -179,6 +221,28 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
     doc.setDrawColor(37, 138, 20);
     doc.setLineWidth(0.5);
     doc.line(MARGIN, pageHeight - 15, pageWidth - MARGIN, pageHeight - 15);
+
+    // App Download Logo on Left
+    if (cachedPlayStoreBadge) {
+      const badgeHeight =
+        (cachedPlayStoreBadge.height * PLAY_STORE_WIDTH) /
+        cachedPlayStoreBadge.width;
+      doc.addImage(
+        cachedPlayStoreBadge,
+        "PNG",
+        MARGIN,
+        pageHeight - 13, // Positioning below the line
+        PLAY_STORE_WIDTH,
+        badgeHeight,
+        undefined,
+        "FAST"
+      );
+      // Add Clickable Link
+      doc.link(MARGIN, pageHeight - 13, PLAY_STORE_WIDTH, badgeHeight, {
+        url: PLAY_STORE_URL,
+      });
+    }
+
     doc.setFontSize(9);
     doc.setTextColor(120);
     doc.text(`Page ${pageNo} of ${total}`, pageWidth - MARGIN, pageHeight - 8, {
@@ -422,10 +486,13 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
       // Split by:
       // 1. Math symbols (×, ÷, +, −, =, *, |, √)
       // 2. Rupee symbol
-      // 3. Hindi Blocks (\u0900-\u097F)
-      // 4. Tamil Blocks (\u0B80-\u0BFF)
+      // 3. Greek Blocks (\u0370-\u03FF)
+      // 4. Arrows (\u2190-\u21FF)
+      // 5. Mathematical Operators (\u2200-\u22FF)
+      // 6. Hindi Blocks (\u0900-\u097F)
+      // 7. Tamil Blocks (\u0B80-\u0BFF)
       const segments = word.split(
-        /(₹|&#8377;|\u20B9|×|÷|\+|−|=|[*]|\||√|[\u0900-\u097F]+|[\u0B80-\u0BFF]+)/g
+        /(₹|&#8377;|\u20B9|[\u0370-\u03FF]|[\u2190-\u21FF]|[\u2200-\u22FF]|×|÷|\+|−|=|[*]|\||√|[\u0900-\u097F]+|[\u0B80-\u0BFF]+)/g
       );
 
       segments.forEach((seg) => {
@@ -439,25 +506,23 @@ export const generateImageEnabledPDF = async (questions, options = {}) => {
 
         // Check for specific content types to switch fonts
 
-        // 1. Square Root -> Use Symbol Font (Code 214 / 0xD6)
-        // NotoSans and Helvetica fail to render √ correctly in generic mode
-        if (activeText === "√") {
+        // 1. Symbol Mapping (Greek, Math, Arrows)
+        if (SYMBOL_MAP[activeText]) {
           font = "Symbol";
           activeStyle = "normal";
-          activeText = String.fromCharCode(214);
+          activeText = String.fromCharCode(SYMBOL_MAP[activeText]);
         }
-        // 2. Hindi Auto-detection (excluding √)
+        // 2. Hindi Auto-detection
         else if (/[\u0900-\u097F]/.test(activeText) || activeText === "₹") {
           font = "NotoSansDevanagari";
           activeStyle = "normal"; // Hindi font doesn't have bold, utilize normal
         }
-        // 2. Tamil Auto-detection
+        // 3. Tamil Auto-detection
         else if (/[\u0B80-\u0BFF]/.test(activeText)) {
           font = "NotoSansTamil";
           activeStyle = "normal";
         }
-        // 3. Math Symbols -> Force Helvetica
-        // Removed '√' from here as it needs a better font
+        // 4. Fallback Math Symbols -> Force Helvetica
         else if (["×", "÷", "+", "−", "=", "*", "|"].includes(activeText)) {
           font = "helvetica";
         }
