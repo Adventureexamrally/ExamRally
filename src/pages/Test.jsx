@@ -5,13 +5,14 @@ import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from "../assets/logo/sample-logo.png";
 import Swal from "sweetalert2";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaCompress,
-  FaExpand,
-  FaInfoCircle,
-} from "react-icons/fa";
+import ExamHeader from "../components/Test/ExamHeader";
+import SectionSummaryModal from "../components/Test/SectionSummaryModal";
+import SectionTabBar from "../components/Test/SectionTabBar";
+import QuestionViewer from "../components/Test/QuestionViewer";
+import QuestionPalette from "../components/Test/QuestionPalette";
+import ExamFooter from "../components/Test/ExamFooter";
+import { formatTime, getSectionCounts } from "../components/Test/testUtils";
+import { FaCompress, FaExpand, FaInfoCircle, FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
 import { Avatar } from "@mui/material";
 
@@ -880,6 +881,7 @@ const Test = () => {
 
   // Using useEffect to trigger submitExam when needed
   const [timeminus, settimeminus] = useState(0);
+  const lastPoolRef = useRef(null);
   // const [isPaused, setIsPaused] = useState(false);
   const [pauseCount, setPauseCount] = useState(0);
   const [resultData, setResultData] = useState(null);
@@ -907,39 +909,44 @@ const Test = () => {
 
     const currentSection = examData?.section?.[currentSectionIndex];
     let totalSectionTime = 0;
-    let timeTakenForGroup = 0;
+    let timeTakenForPool = 0;
+    let poolIdentifier = "";
 
-    if (currentSection?.is_sub_section && currentSection?.group_name) {
-      // ✅ GROUP TIMER: sum t_time for ALL sections in the same group
-      // Read elapsed time only from the FIRST group section to avoid double-counting on resume.
+    if (currentSection?.is_sub_section) {
+      // ✅ CUMULATIVE POOL: sum t_time for ALL sub-sections in the SAME group
+      const groupName = currentSection.group_name || "";
+      poolIdentifier = `group-pool-${groupName}`;
       let firstGroupSectionIdx = -1;
       examData.section.forEach((s, idx) => {
-        if (s.is_sub_section && s.group_name === currentSection.group_name) {
+        if (s.is_sub_section && s.group_name === groupName) {
           totalSectionTime += (Number(s.t_time) || 0) * 60;
           if (firstGroupSectionIdx === -1) firstGroupSectionIdx = idx;
         }
       });
-      timeTakenForGroup = Math.max(
+      timeTakenForPool = Math.max(
         0,
         resultData?.section?.[firstGroupSectionIdx]?.timeTaken || 0
       );
     } else {
       // ✅ NORMAL SECTION: use just this section's t_time
+      poolIdentifier = `normal-section-${currentSectionIndex}`;
       totalSectionTime = (Number(currentSection?.t_time) || 0) * 60;
-      timeTakenForGroup = Math.max(
+      timeTakenForPool = Math.max(
         0,
         resultData?.section?.[currentSectionIndex]?.timeTaken || 0
       );
     }
 
-    // Only reset the timer if the DB time taken has actually changed (or first mount)
-    if (timeTakenFromDB !== timeTakenForGroup || timeminus === 0) {
-      settimeTakenFromDB(timeTakenForGroup);
+    // Reset if the pool has changed OR the DB progress has updated (on resume)
+    const hasPoolChanged = lastPoolRef.current !== poolIdentifier;
 
-      // Clamp remaining time so stale DB values can't exceed the full section/group time
+    if (hasPoolChanged || (timeTakenFromDB !== timeTakenForPool) || (timeminus === 0 && totalSectionTime > 0)) {
+      lastPoolRef.current = poolIdentifier;
+      settimeTakenFromDB(timeTakenForPool);
+
       const remainingTime = Math.max(
         0,
-        Math.min(totalSectionTime, totalSectionTime - timeTakenForGroup)
+        Math.min(totalSectionTime, totalSectionTime - timeTakenForPool)
       );
       settimeminus(remainingTime);
       setTimerKey(k => k + 1);
@@ -959,12 +966,11 @@ const Test = () => {
 
     const currentSec = examData?.section?.[currentSectionIndex];
     let totalTimeInSeconds = 0;
-    let isGroupSection = false;
-    let groupName = null;
+    let isCumulativePool = false;
 
-    if (currentSec?.is_sub_section && currentSec?.group_name) {
-      isGroupSection = true;
-      groupName = currentSec.group_name;
+    if (currentSec?.is_sub_section) {
+      isCumulativePool = true;
+      const groupName = currentSec.group_name || "";
       totalTimeInSeconds = examData.section
         .filter(s => s.is_sub_section && s.group_name === groupName)
         .reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60;
@@ -979,13 +985,14 @@ const Test = () => {
     let cumulativeTimeTaken = 0;
     examData?.section?.forEach((sec, idx) => {
       if (sec.is_sub_section) {
+        const groupName = sec.group_name || "";
         const groupIndices = examData.section
-          .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
+          .map((s, i) => (s.is_sub_section && s.group_name === groupName ? i : -1))
           .filter(i => i !== -1);
-        if (groupIndices[0] !== idx) return; // skip if not the first section of group
+        if (groupIndices[0] !== idx) return; // skip if not the first section of this group
       }
 
-      const isActiveSection = idx === currentSectionIndex || (currentSec?.is_sub_section && currentSec?.group_name === sec.group_name);
+      const isActiveSection = idx === currentSectionIndex || (currentSec?.is_sub_section && sec.is_sub_section && currentSec.group_name === sec.group_name);
       if (isActiveSection) {
         cumulativeTimeTaken += actualTimeTaken;
       } else {
@@ -998,9 +1005,9 @@ const Test = () => {
     const updatedSections = formattedSections.map((section, idx) => {
       const sec = examData?.section?.[idx];
 
-      if (isGroupSection) {
-        // Store group elapsed time ONLY on the FIRST section in the group.
-        // This prevents double-counting when the timer reads it back on resume.
+      if (isCumulativePool) {
+        // Store pool elapsed time ONLY on the FIRST sub-section of this specific group.
+        const groupName = sec?.group_name || "";
         const groupIndices = examData.section
           .map((s, i) => (s.is_sub_section && s.group_name === groupName ? i : -1))
           .filter(i => i !== -1);
@@ -1009,7 +1016,7 @@ const Test = () => {
         if (idx === firstGroupIdx) {
           return { ...section, timeTaken: actualTimeTaken };
         }
-        // Other sections in the group: keep their timeTaken as 0 (not used for resume)
+        // Other sections in the same group: keep their timeTaken as 0
         if (sec?.is_sub_section && sec?.group_name === groupName) {
           return { ...section, timeTaken: 0 };
         }
@@ -1119,9 +1126,9 @@ const Test = () => {
   }, [isPaused, timerKey]); // timerKey fires when timeminus is freshly initialized
 
   const handleTimerEnd = async () => {
-    handleSubmitSection(); // 1. Submits the section
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
-    handleSectionCompletion(); // 4. Calls this after 1 second
+    handleSubmitSection();
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    handleSectionCompletion(true); // Pass true to indicate timer ended
   };
 
 
@@ -1638,27 +1645,58 @@ const Test = () => {
   // const navigate = useNavigate(); // For programmatic navigation
 
   // Function to show the toast and move to the next section (or result if last section)
-  const handleSectionCompletion = async () => {
+  const handleSectionCompletion = async (isTimerEnd = false) => {
     setIsPaused(false);
     setShowModal(false);
 
-    // Mark current section as submitted — cannot go back
-    const updatedSubmitted = new Set([...submittedSections, currentSectionIndex]);
-    setSubmittedSections(updatedSubmitted);
-
     const currentSection = examData?.section?.[currentSectionIndex];
+    let updatedSubmitted = new Set([...submittedSections, currentSectionIndex]);
 
-    // ✅ GROUP-AWARE: if the just-submitted section belongs to a group,
-    // check whether there are more unsubmitted sub-sections in the same group.
-    if (currentSection?.is_sub_section && currentSection?.group_name) {
+    if (isTimerEnd && currentSection?.is_sub_section) {
+      // ✅ TIMER ENDED: Skip all remaining sub-sections in this specific group
+      const groupName = currentSection.group_name || "";
       const groupMembers = examData.section
         .map((s, i) => ({ s, i }))
-        .filter(({ s }) => s.is_sub_section && s.group_name === currentSection.group_name);
+        .filter(({ s }) => s.is_sub_section && s.group_name === groupName);
+
+      // Mark ALL group members as submitted
+      groupMembers.forEach(({ i }) => updatedSubmitted.add(i));
+      setSubmittedSections(updatedSubmitted);
+
+      // Find the first section AFTER this group
+      const lastGroupMemberIdx = Math.max(...groupMembers.map(({ i }) => i));
+      const nextIndex = lastGroupMemberIdx + 1;
+
+      if (nextIndex < examData?.section?.length) {
+        setCurrentSectionIndex(nextIndex);
+        const newStartingIndex = examData.section
+          .slice(0, nextIndex)
+          .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+        setClickedQuestionIndex(newStartingIndex);
+        return;
+      } else {
+        // Last group in exam finished via timer — submit exam
+        await submitExam();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        navigate(`/result/${id}/${user?._id}`);
+        return;
+      }
+    }
+
+    // Normal completion (Modal "Move to next" OR mid-group switch)
+    setSubmittedSections(updatedSubmitted);
+
+    // ✅ GROUP-SPECIFIC POOL: check if there are more unsubmitted sub-sections in the same group
+    if (currentSection?.is_sub_section) {
+      const groupName = currentSection.group_name || "";
+      const groupMembers = examData.section
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) => s.is_sub_section && s.group_name === groupName);
 
       const nextGroupMember = groupMembers.find(({ i }) => !updatedSubmitted.has(i));
 
       if (nextGroupMember) {
-        // ✅ More sub-sections remain in the group — switch freely, NO modal
+        // ✅ More sub-sections remain in this group — switch freely
         const nextIndex = nextGroupMember.i;
         setCurrentSectionIndex(nextIndex);
         const newStartingIndex = examData.section
@@ -1667,7 +1705,7 @@ const Test = () => {
         setClickedQuestionIndex(newStartingIndex);
         return;
       }
-      // All group members done — fall through to advance to the next GROUP below
+      // All sub-sections done — fall through
     }
 
     // ✅ ADVANCE TO NEXT SECTION / GROUP (or submit exam if last)
@@ -1677,7 +1715,7 @@ const Test = () => {
       const newStartingIndex = examData.section
         .slice(0, nextIndex)
         .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-      setClickedQuestionIndex(newStartingIndex); // triggers timer reset via useEffect
+      setClickedQuestionIndex(newStartingIndex);
     } else {
       // Last section — submit exam and navigate to results
       await submitExam();
@@ -1734,11 +1772,6 @@ const Test = () => {
     }
   };
 
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
-  };
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -1846,50 +1879,7 @@ const Test = () => {
     startingIndex,
   ]);
 
-  const getSectionCounts = (
-    section,
-    selectedOptions,
-    visitedQuestions,
-    markedForReview,
-    selectedLanguage,
-    startingIndex
-  ) => {
-    let answered = 0;
-    let notAnswered = 0;
-    let notVisited = 0;
-    let markedForReviewCount = 0;
-    let answeredAndMarked = 0;
-
-    const questions = section?.questions?.[selectedLanguage?.toLowerCase()];
-
-    questions?.forEach((_, index) => {
-      const fullIndex = startingIndex + index;
-
-      const isAnswered = selectedOptions[fullIndex] !== null;
-      const isVisited = visitedQuestions.includes(fullIndex);
-      const isMarked = markedForReview.includes(fullIndex);
-
-      if (isMarked && isAnswered) {
-        answeredAndMarked++;
-      } else if (isMarked && !isAnswered) {
-        markedForReviewCount++;
-      } else if (isAnswered) {
-        answered++;
-      } else if (isVisited) {
-        notAnswered++;
-      } else {
-        notVisited++;
-      }
-    });
-
-    return {
-      answered,
-      notAnswered,
-      notVisited,
-      markedForReviewCount,
-      answeredAndMarked,
-    };
-  };
+  // getSectionCounts moved to testUtils.js
 
   const popupmodal = () => {
     setIsPaused(false);
@@ -1970,770 +1960,107 @@ const Test = () => {
   console.log(questionTime);
 
   return (
-    <div className="mock-font " ref={commonDataRef}>
+    <div className="mock-font" ref={commonDataRef}>
       <div>
-        <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
-          {/* Left Section: Logo & Show Name */}
-          <div className="flex items-center gap-3">
-            <img
-              src={logo}
-              alt="logo"
-              className="h-10 w-auto bg-white rounded p-0.5"
-            />
-            <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
-              {show_name}
-            </h1>
-          </div>
+        <ExamHeader
+          logo={logo}
+          show_name={show_name}
+          timeminus={timeminus}
+          formatTime={formatTime}
+          isFullscreen={isFullscreen}
+          toggleFullScreen={toggleFullScreen}
+          toggleMenu={toggleMenu}
+        />
 
-          {/* Right Section: Time & Fullscreen Controls */}
-          <div className="flex items-center gap-3 md:gap-4">
-
-            {/* Refined Time Display */}
-            <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
-              <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
-                Time Left:
-              </span>
-              <span className="text-sm md:text-base font-bold font-mono">
-                {formatTime(timeminus)}
-              </span>
-            </div>
-
-            {/* Fullscreen Toggle Button */}
-            <button
-              onClick={toggleFullScreen}
-              className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
-              aria-label="Toggle Fullscreen"
-              title="Toggle Fullscreen"
-            >
-              {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
-            </button>
-          </div>
-        </div>
-        {/* <p className="text-lg">Selected Language: {selectedLanguage}</p> */}
-
-        <div>
-          {/* Modal for showing section summary */}
-          {showModal && (
-            <div
-              className="modal"
-              tabIndex="-1"
-              id="staticBackdrop"
-              data-bs-backdrop="static"
-              data-bs-keyboard="false"
-              aria-labelledby="staticBackdropLabel"
-              aria-hidden="true"
-              style={{
-                display: "block",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                minHeight: "100vh",
-              }}
-            >
-              <div className="modal-dialog modal-xl">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h1
-                      className="modal-title fs-5 text-green-500"
-                      id="staticBackdropLabel"
-                    >
-                      Section Submit
-                    </h1>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      aria-label="Close"
-                      onClick={popupmodal} // Manually hide the modal
-                    ></button>
-                  </div>
-                  <div className="modal-body">
-                    <div className="table-responsive">
-                      <table className="table table-bordered">
-                        <thead className="table-success text-white">
-                          <tr>
-                            <th>Section Name</th>
-                            <th>Total Ques</th>
-                            <th>Answered</th>
-                            <th>Not Answered</th>
-                            <th>Visited Questions</th>
-                            <th>Not Visited Questions</th>
-                            <th>Marked for Review</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sectionSummaryData.map((summary, index) => (
-                            <tr key={index}>
-                              <td className="fw-bold">{summary.sectionName}</td>
-                              <td>{summary.totalQuestions}</td>
-                              <td>{summary.answeredQuestions}</td>
-                              <td>{summary.notAnsweredQuestions}</td>
-                              <td>{summary.visitedQuestionsCount}</td>
-                              <td>{summary.notVisitedQuestions}</td>
-                              <td>{summary.reviewedQuestions}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <div className="d-flex justify-content-center w-100">
-                      <button
-                        type="button"
-                        className="btn btn-success"
-                        data-bs-dismiss="modal"
-                        onClick={handleSectionCompletion} // Check completion and move to next section
-                      >
-                        {currentSectionIndex === examData?.section?.length - 1
-                          ? "Submit"
-                          : "Next Section"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Toast Container */}
-        <ToastContainer />
+        <SectionSummaryModal
+          showModal={showModal}
+          sectionSummaryData={sectionSummaryData}
+          popupmodal={popupmodal}
+          handleSectionCompletion={handleSectionCompletion}
+          currentSectionIndex={currentSectionIndex}
+          examData={examData}
+        />
       </div>
+
+      <ToastContainer />
 
       <div className="w-full">
-        {(() => {
-          // First, group sections
-          const groupedSections = [];
-          const sectionGroups = {};
-
-          examData?.section?.forEach((section, index) => {
-            const isSubSection = section.is_sub_section;
-            const groupName = isSubSection ? section.group_name : section.name;
-
-            if (!sectionGroups[groupName]) {
-              // Create new group
-              const newGroup = {
-                groupName,
-                sections: [],
-                isGroup: isSubSection,
-              };
-              sectionGroups[groupName] = newGroup;
-              groupedSections.push(newGroup);
-            }
-
-            sectionGroups[groupName].sections.push({
-              ...section,
-              globalIndex: index
-            });
-          });
-
-          // Check if current section is in a group
-          const currentSection = examData?.section?.[currentSectionIndex];
-          const activeGroupName = currentSection?.is_sub_section ? currentSection.group_name : currentSection?.name;
-
-          return (
-            <div className="w-full">
-              {/* Main Group Tab Bar — matches reference layout */}
-              <div className="flex items-center justify-between bg-white border-b border-gray-200 px-2">
-                <div className="flex flex-wrap">
-                  {groupedSections.map((group, groupIndex) => {
-                    const isActiveGroup = group.groupName === activeGroupName;
-
-                    // Calculate combined counts for the group
-                    let totalAnswered = 0, totalNotAnswered = 0, totalNotVisited = 0, totalMarked = 0, totalAnsMarked = 0;
-
-                    group.sections.forEach(sec => {
-                      const startingIndex = examData.section
-                        .slice(0, sec.globalIndex)
-                        .reduce((acc, s) => acc + (s?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-
-                      const counts = getSectionCounts(sec, selectedOptions, visitedQuestions, markedForReview, selectedLanguage, startingIndex);
-                      totalAnswered += counts.answered;
-                      totalNotAnswered += counts.notAnswered;
-                      totalNotVisited += counts.notVisited;
-                      totalMarked += counts.markedForReviewCount;
-                      totalAnsMarked += counts.answeredAndMarked;
-                    });
-
-                    const handleGroupClick = () => {
-                      // Section tab clicks are blocked — must use Submit Section to advance
-                      const firstSecIndex = group.sections[0].globalIndex;
-                      if (firstSecIndex === currentSectionIndex) return; // already on this section
-
-                      if (submittedSections.has(firstSecIndex)) {
-                        toast.error("This section has already been submitted. You cannot go back.");
-                        return;
-                      }
-                      // Prevent jumping ahead — must submit current section first
-                      toast.warning("Please submit the current section to proceed.");
-                    };
-
-                    return (
-                      <div key={groupIndex} className="relative group/tab">
-                        <div
-                          onClick={handleGroupClick}
-                          className={`flex items-center gap-1.5 px-4 py-2.5 cursor-pointer text-sm font-medium transition-colors border-b-2 ${isActiveGroup
-                            ? 'border-blue-500 text-blue-600'
-                            : group.sections.every(s => submittedSections.has(s.globalIndex))
-                              ? 'border-transparent text-gray-400 cursor-not-allowed'
-                              : 'border-transparent text-gray-600 hover:text-blue-500 hover:border-blue-300'
-                            }`}
-                        >
-                          <span>{group.groupName}</span>
-                          {/* Submitted checkmark */}
-                          {group.sections.every(s => submittedSections.has(s.globalIndex)) && (
-                            <span className="ml-1 text-green-500 text-xs">✓ Submitted</span>
-                          )}
-                          {/* Info tooltip */}
-                          <div className="relative group inline-block">
-                            <FaInfoCircle className={`text-xs cursor-pointer ${isActiveGroup ? 'text-blue-500' : 'text-gray-400'}`} />
-                            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-lg mt-1 min-w-[220px] w-max left-1/2 -translate-x-1/2 top-full">
-                              <div className="mt-2 flex align-items-center">
-                                <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">{totalAnswered}</div>
-                                <p className="ml-2 text-start mb-0 text-sm">Answered</p>
-                              </div>
-                              <div className="mt-2 flex align-items-center">
-                                <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">{totalNotAnswered}</div>
-                                <p className="ml-2 text-start mb-0 text-sm">Not Answered</p>
-                              </div>
-                              <div className="mt-2 flex align-items-center">
-                                <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">{totalNotVisited}</div>
-                                <p className="ml-2 text-start mb-0 text-sm">Not Visited</p>
-                              </div>
-                              <div className="mt-2 flex align-items-center">
-                                <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">{totalMarked}</div>
-                                <p className="ml-2 text-start mb-0 text-sm">Marked for Review</p>
-                              </div>
-                              <div className="mt-2 flex align-items-center">
-                                <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">{totalAnsMarked}</div>
-                                <p className="ml-2 text-start mb-0 text-sm">Answered & Marked for Review</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Language dropdown — right aligned in same row */}
-                {examData && examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                  <div className="flex-shrink-0 pr-2">
-                    <select
-                      value={displayLanguage || selectedLanguage}
-                      onChange={(e) => setDisplayLanguage(e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
-                    >
-                      {examData?.bilingual_status ? (
-                        <>
-                          {examData?.english_status && <option value="English">English</option>}
-                          {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                        </>
-                      ) : (
-                        <>
-                          {examData?.english_status && <option value="English">English</option>}
-                          {examData?.hindi_status && <option value="Hindi">Hindi</option>}
-                          {examData?.tamil_status && <option value="Tamil">Tamil</option>}
-                        </>
-                      )}
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* Sub Tabs — rectangular tabs matching reference image */}
-              {(() => {
-                const activeGroup = groupedSections.find(g => g.groupName === activeGroupName);
-                const shouldShowSubTabs = activeGroup && activeGroup.isGroup;
-                if (!shouldShowSubTabs) return null;
-
-                return (
-                  <div className="flex flex-wrap items-center gap-1 bg-white border-b border-gray-200 px-4 py-1.5">
-                    {activeGroup.sections.map((sec, secIdx) => {
-                      const isSecActive = currentSectionIndex === sec.globalIndex;
-
-                      const handleSubSectionClick = () => {
-                        if (sec.globalIndex === currentSectionIndex) return; // already here
-
-                        // Allow free switching within the SAME group
-                        const currentSection = examData?.section?.[currentSectionIndex];
-                        const sameGroup =
-                          currentSection?.is_sub_section &&
-                          currentSection?.group_name &&
-                          currentSection.group_name === sec.group_name;
-
-                        if (sameGroup) {
-                          // Free switching within the group — just navigate
-                          const newStartingIndex = examData.section
-                            .slice(0, sec.globalIndex)
-                            .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-                          setCurrentSectionIndex(sec.globalIndex);
-                          setClickedQuestionIndex(newStartingIndex);
-                          return;
-                        }
-
-                        // Cross-group navigation: check if submitted
-                        if (submittedSections.has(sec.globalIndex)) {
-                          toast.error("This section has already been submitted. You cannot go back.");
-                          return;
-                        }
-                        toast.warning("Please submit the current section to proceed.");
-                      };
-
-                      return (
-                        <button
-                          key={secIdx}
-                          onClick={handleSubSectionClick}
-                          className={`px-4 py-1 text-sm font-medium transition-all border rounded flex items-center gap-1 ${isSecActive
-                            ? 'bg-white border-gray-400 text-gray-800 shadow-sm'
-                            : submittedSections.has(sec.globalIndex)
-                              ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-                              : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700'
-                            }`}
-                        >
-                          {sec.name}
-                          {submittedSections.has(sec.globalIndex) && (
-                            <span className="text-green-500 text-xs">✓</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          );
-        })()}
+        <SectionTabBar
+          examData={examData}
+          currentSectionIndex={currentSectionIndex}
+          selectedLanguage={selectedLanguage}
+          selectedOptions={selectedOptions}
+          visitedQuestions={visitedQuestions}
+          markedForReview={markedForReview}
+          submittedSections={submittedSections}
+          displayLanguage={displayLanguage}
+          setDisplayLanguage={setDisplayLanguage}
+          setCurrentSectionIndex={setCurrentSectionIndex}
+          setClickedQuestionIndex={setClickedQuestionIndex}
+          toast={toast}
+        />
       </div>
 
-      {/* Mobile Hamburger Menu */}
-      <button onClick={toggleMenu} className="md:hidden text-black p-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="w-6 h-6"
-        >
-          {/* // Hamburger icon when the menu is closed */}
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M4 6h16M4 12h16M4 18h16"
+      <div className="flex">
+        <div className={closeSideBar ? "md:w-full" : "md:w-4/5"}>
+          <QuestionViewer
+            examData={examData}
+            currentSectionIndex={currentSectionIndex}
+            clickedQuestionIndex={clickedQuestionIndex}
+            startingIndex={startingIndex}
+            selectedLanguage={selectedLanguage}
+            displayLanguage={displayLanguage}
+            isFullscreen={isFullscreen}
+            closeSideBar={closeSideBar}
+            toggleMenu2={toggleMenu2}
+            selectedOptions={selectedOptions}
+            handleOptionChange={handleOptionChange}
+            isSubmitted={isSubmitted}
+            questionTime={questionTime}
+            formatTime={formatTime}
+            t_questions={t_questions}
           />
-        </svg>
-      </button>
-      <div className="flex ">
-        {/* Question Panel */}
-        <div className={` ${closeSideBar ? "md:w-full" : "md:w-4/5"}`}>
-          {!isSubmitted ? (
-            <>
-              {/* Question info bar — matches reference layout */}
-              <div className="flex items-center justify-between flex-wrap gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200 text-sm">
-                <span className="font-medium text-gray-700">
-                  Q: {clickedQuestionIndex + 1} / {
-                    examData?.section?.reduce(
-                      (sum, s) => sum + (s.questions?.[(displayLanguage || selectedLanguage)?.toLowerCase()]?.length || 0),
-                      0
-                    ) || t_questions
-                  }
-                </span>
-
-                <div className="flex items-center gap-3 ml-auto">
-                  <span className="flex items-center gap-1 text-gray-600">
-                    <span>Qn. Time :</span>
-                    <span className="font-medium">{formatTime(questionTime)}</span>
-                  </span>
-
-                  {/* Per-question marks */}
-                  {(() => {
-                    const currentSection = examData?.section?.[currentSectionIndex];
-                    const currentQuestion = currentSection?.questions?.[
-                      (displayLanguage || selectedLanguage)?.toLowerCase()
-                    ]?.[clickedQuestionIndex - startingIndex];
-                    const plusMark = currentQuestion?.plus_mark ?? currentSection?.plus_mark ?? '—';
-                    const minusMark = currentQuestion?.minus_mark ?? currentSection?.minus_mark ?? '—';
-                    return (
-                      <span className="flex items-center gap-1 font-medium">
-                        <span className="text-gray-600">Marks :</span>
-                        <span className="text-green-600">+{plusMark}</span>
-                        <span className="text-gray-400">|</span>
-                        <span className="text-red-500">-{minusMark}</span>
-                      </span>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              {examData?.section[currentSectionIndex] ? (
-                <div className="flex flex-col md:flex-row p-0">
-                  {/* Left side for Common Data */}
-                  {examData.section[currentSectionIndex]?.questions?.[
-                    selectedLanguage?.toLowerCase()
-                  ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
-                      <div
-                        className={`md:w-[50%] p-3  pb-5 md:border-r border-gray-300
-                  ${isFullscreen
-                            ? 'h-[80vh] md:h-[80vh]'
-                            : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                          }`
-                        }
-                        style={{
-                          height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-                          overflowY: 'auto'
-                        }}
-                      >
-                        <div
-                          className="text-wrap"
-                          style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              examData.section[currentSectionIndex]?.questions?.[
-                                (displayLanguage || selectedLanguage)?.toLowerCase()
-                              ]?.[clickedQuestionIndex - startingIndex]
-                                ?.common_data || "No common data available",
-                          }}
-                        />
-                      </div>
-                    )}
-
-                  {/* Right side for Question */}
-                  <div
-                    className={`   ${isFullscreen
-                      ? 'h-[80vh] md:h-[80vh]'
-                      : '    sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh]'
-                      } mb-24 md:mb-2 p-3 pb-5 flex flex-col md:flex-row justify-between ${examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.common_data
-                        ? "md:w-[50%]"
-                        : "md:w-full" // Make it full width when no common data
-                      }`} style={{
-                        height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-                        overflowY: 'auto'
-                      }}
-
-                  >
-                    <div>
-                      <div
-                        className="text-wrap mb-2"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            examData.section[currentSectionIndex]?.questions?.[
-                              (displayLanguage || selectedLanguage)?.toLowerCase()
-                            ]?.[clickedQuestionIndex - startingIndex]
-                              ?.question || "No question available",
-                        }}
-                      />
-
-                      {examData.section[currentSectionIndex]?.questions?.[
-                        selectedLanguage?.toLowerCase()
-                      ]?.[clickedQuestionIndex - startingIndex]?.options ? (
-                        <div>
-                          {examData.section[currentSectionIndex]?.questions?.[
-                            (displayLanguage || selectedLanguage)?.toLowerCase()
-                          ]?.[
-                            clickedQuestionIndex - startingIndex
-                          ]?.options.map((option, index) => (
-                            <div key={index} className="p-1 rounded-lg m-2 ">
-                              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                <input
-                                  type="radio"
-                                  className="p-5"
-                                  id={`option-${index}`}
-                                  name="exam-option"
-                                  value={index}
-                                  checked={selectedOptions[clickedQuestionIndex] === index}
-                                  onChange={() => {
-                                    console.log("Selected Option Index:", index);
-                                    handleOptionChange(index);
-                                  }}
-                                  style={{
-                                    accentColor: "#3B82F6",
-                                    width: "1.2rem",
-                                    height: "1.2rem",
-                                    marginRight: "8px",
-                                    marginTop: "0px" // Remove vertical offset
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`option-${index}`}
-                                  dangerouslySetInnerHTML={{
-                                    __html: option || "No option available",
-                                  }}
-                                />
-                              </div>
-
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No options available</p>
-                      )}
-                    </div>
-                    <div className="md:flex hidden items-center">
-                      <div
-                        className={`fixed top-1/2 ${closeSideBar ? "right-0" : ""
-                          } bg-gray-600 h-14 w-5 rounded-s-md flex justify-center items-center cursor-pointer`}
-                        onClick={toggleMenu2}
-                      >
-                        <FaChevronRight
-                          className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? "absalute left-0 rotate-180" : ""
-                            }`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="d-flex justify-content-center align-items-center"
-                  style={{ height: '100vh' }} // Full viewport height
-                >
-                  <div
-                    className="spinner-border text-primary"
-                    role="status"
-                    style={{ width: '3rem', height: '3rem' }}
-                  >
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <h1 className="display-6 text-success">Test Completed!</h1>
-            </div>
-          )}
         </div>
 
-        {/* Sidebar */}
-
-        <div
-          className={`mb-14 pb-7 bg-light transform transition-transform duration-300  border
-        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
-        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
- ${isFullscreen
-              ? 'h-[87vh] md:h-[87vh]'
-              : 'h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh]'
-            } fixed top-14 right-0 z-40 md:static shadow-sm md:block h-[79vh]`}
-          style={{
-            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
-            overflowY: 'auto'
-          }}
-        >
-          {isMobileMenuOpen && (
-            <button onClick={toggleMenu} className="md:hidden text-black p-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          )}
-
-          <div className="container">
-            <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
-              {/* Profile Image and Link */}
-              <div>
-                <Avatar
-                  alt={user?.firstName}
-                  src={user?.profilePicture}
-                  sx={{ width: 30, height: 30 }}
-                />
-              </div>
-
-              {/* Profile Information */}
-              <div>
-                <h1 className=" text-white text-wrap break-words">
-                  {user?.firstName + user?.lastName}
-                </h1>
-              </div>
-            </div>
-            <h1 className=" text-center text-black bg-gray-100 p-2">
-              Time Left:{formatTime(timeminus)}
-            </h1>
-            <center>
-              <button
-                onClick={handlePauseResume}
-                className={`px-4 py-2 rounded-lg font-semibold transition duration-300 mt-2 ${isPaused
-                  ? "bg-green-500 hover:bg-green-600 text-white"
-                  : "bg-red-500 hover:bg-red-600 text-white"
-                  }`}
-              >
-                Pause
-              </button>
-            </center>
-
-            <div className="container mt-3">
-              <div className="row align-items-center">
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smanswerImg text-white fw-bold flex align-items-center justify-content-center">
-                    {answeredCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center mb-0">
-                    Answered
-                  </p>
-                </div>
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smnotansImg text-white fw-bold flex align-items-center justify-content-center">
-                    {notAnsweredCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center mb-0">
-                    Not Answered
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="container mb-3">
-              <div className="row">
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smnotVisitImg fw-bold flex align-items-center justify-content-center">
-                    {notVisitedCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center mb-0">
-                    Not Visited
-                  </p>
-                </div>
-                <div className="mt-2 col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                  <div className="smmarkedImg text-white fw-bold flex align-items-center justify-content-center">
-                    {markedForReviewCount}
-                  </div>
-                  <p className="ml-2 text-start text-lg-center">
-                    Marked for Review
-                  </p>
-                </div>
-              </div>
-              <div className="col-12 col-lg-6 d-flex flex-lg-column flex-row align-items-center">
-                <div className="smansmarkedImg text-white fw-bold flex align-items-center justify-content-center">
-                  {answeredAndMarkedCount}
-                </div>
-                <p className="ml-3 text-start text-lg-center mb-0">
-                  Answered & Marked for Review
-                </p>
-              </div>
-            </div>
-            <h1 className="mt-1 mb-1 text-sm  text-white bg-blue-500 p-1">Section : {examData?.section[currentSectionIndex]?.name}</h1>
-            <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-              {examData?.section[currentSectionIndex]?.questions?.[
-                selectedLanguage?.toLowerCase()
-              ]?.map((_, index) => {
-                const fullIndex = startingIndex + index;
-                const currentSection = examData.section[currentSectionIndex];
-                const timeFormatted = formatTime(timeLeft);
-
-                let className = "";
-                if (selectedOptions[fullIndex] !== null) {
-                  className = "answerImg";
-                  if (markedForReview.includes(fullIndex)) {
-                    className += " mdansmarkedImg";
-                  } if (selectedOptions[fullIndex] == null) {
-                    className = "notansImg";
-                  }
-                }
-                else if (visitedQuestions.includes(fullIndex)) {
-                  className = "notansImg";
-                } else {
-                  className = "notVisitImg";
-                }
-
-                if (markedForReview.includes(fullIndex)) {
-                  className += " reviewed mdmarkedImg";
-                }
-
-                return (
-                  <div key={fullIndex}>
-                    <span
-                      onClick={() => {
-                        console.log("Clicked question index:", fullIndex);
-                        setClickedQuestionIndex(fullIndex);
-                        // setQuestionTime(0);
-                      }}
-                      className={`fw-bold flex align-items-center justify-content-center ${className}`}
-                    >
-                      {fullIndex + 1}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div >
-
-      {/* Footer Buttons */}
-      <div className="fixed bottom-0 left-0 w-full bg-gray-100 p-2 border-t border-gray-200 z-50">
-        <div className="flex justify-between flex-col md:flex-row w-full">
-          <div className="flex justify-between md:w-3/4 m-1">
-            {/* Left side - Previous, Mark for Review, Clear Response */}
-            <div className="d-flex gap-1 items-center">
-              {/* ✅ Previous button */}
-              <button
-                onClick={handlePreviousClick}
-                disabled={clickedQuestionIndex <= startingIndex}
-                className="btn bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm md:text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <span className="flex items-center gap-1">
-                  <FaChevronLeft className="w-3 h-3" />
-                  <span className="hidden md:inline">Previous</span>
-                </span>
-              </button>
-              &nbsp;
-              <button
-                onClick={handleMarkForReview}
-                className="btn bg-blue-300 hover:bg-blue-400 text-sm md:text-sm"
-              >
-                <span className="block md:hidden">Mark &amp; Next</span>
-                <span className="hidden md:block">Mark for Review</span>
-              </button>
-              &nbsp;
-              <button
-                onClick={handleClearResponse}
-                className="btn bg-blue-300 hover:bg-blue-400 text-sm md:text-sm"
-              >
-                <span className="block md:hidden">Clear</span>
-                <span className="hidden md:block">Clear Response</span>
-              </button>
-            </div>
-            {examData?.section?.[currentSectionIndex]?.questions?.[
-              selectedLanguage?.toLowerCase()
-            ]?.length > 0 && (
-                <button
-                  onClick={handleNextClick}
-                  className="btn bg-blue-500 text-white hover:bg-blue-700 text-sm md:text-sm"
-                >
-                  <span className="block md:hidden">Save</span>
-                  <span className="hidden md:block">Save &amp; Next</span>
-                </button>
-              )}
-          </div>
-          {/* Right side - Submit Section / Test */}
-          <div className="flex justify-center md:w-[20%]">
-            <center>
-              <button
-                className="btn bg-blue-500 text-white hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
-                onClick={handleSubmitSection}
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
-              >
-                {currentSectionIndex === examData?.section?.length - 1
-                  ? "Submit Test"
-                  : "Submit Section"}
-              </button>
-            </center>
-          </div>
-        </div>
+        <QuestionPalette
+          isMobileMenuOpen={isMobileMenuOpen}
+          closeSideBar={closeSideBar}
+          isFullscreen={isFullscreen}
+          toggleMenu={toggleMenu}
+          user={user}
+          timeminus={timeminus}
+          formatTime={formatTime}
+          handlePauseResume={handlePauseResume}
+          isPaused={isPaused}
+          answeredCount={answeredCount}
+          notAnsweredCount={notAnsweredCount}
+          notVisitedCount={notVisitedCount}
+          markedForReviewCount={markedForReviewCount}
+          answeredAndMarkedCount={answeredAndMarkedCount}
+          examData={examData}
+          currentSectionIndex={currentSectionIndex}
+          selectedLanguage={selectedLanguage}
+          startingIndex={startingIndex}
+          selectedOptions={selectedOptions}
+          markedForReview={markedForReview}
+          visitedQuestions={visitedQuestions}
+          setClickedQuestionIndex={setClickedQuestionIndex}
+        />
       </div>
-    </div >
+
+      <ExamFooter
+        handlePreviousClick={handlePreviousClick}
+        clickedQuestionIndex={clickedQuestionIndex}
+        startingIndex={startingIndex}
+        handleMarkForReview={handleMarkForReview}
+        handleClearResponse={handleClearResponse}
+        examData={examData}
+        currentSectionIndex={currentSectionIndex}
+        selectedLanguage={selectedLanguage}
+        handleNextClick={handleNextClick}
+        handleSubmitSection={handleSubmitSection}
+      />
+    </div>
   );
 };
 
