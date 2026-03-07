@@ -1,67 +1,128 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    currentQuestionIndex: 0,
-    selectedOptions: {},
+    examData: null,
+    currentSectionIndex: 0,
+    clickedQuestionIndex: 0,
     visitedQuestions: [],
-    reviewedQuestions: [], // Added missing state for reviewed questions
+    markedForReview: [],
+    ansmarkforrev: [],
+    selectedOptions: [],
+    timeminus: null,
+    questionTimes: {},
+    sectionTimes: {},
+    submittedSections: [], // Stored as array for serializability
+    sectionSummaryData: [],
     isSubmitted: false,
-    timeLeft: 3600, // 1 hour in seconds
-    markedForReview: [], // Defined markedForReview here
+    isPaused: false,
+    examStartTime: null, // Track when exam started
+    status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
 };
 
 const testSlice = createSlice({
     name: "test",
     initialState,
     reducers: {
-        nextQuestion: (state) => {
-            if (state.currentQuestionIndex < 100 - 1) {
-                state.currentQuestionIndex += 1;
-            }
+        setExamData: (state, action) => {
+            state.examData = action.payload;
+            state.status = "succeeded";
         },
-        prevQuestion: (state) => {
-            if (state.currentQuestionIndex > 0) {
-                state.currentQuestionIndex -= 1;
-            }
+        setLoading: (state) => {
+            state.status = "loading";
         },
-        selectOption: (state, action) => {
-            const { questionIndex, optionIndex } = action.payload;
-            state.selectedOptions[questionIndex] = optionIndex;
+        setError: (state) => {
+            state.status = "failed";
+        },
+        updateNavigation: (state, action) => {
+            const { sectionIndex, questionIndex } = action.payload;
+            if (sectionIndex !== undefined) state.currentSectionIndex = sectionIndex;
+            if (questionIndex !== undefined) state.clickedQuestionIndex = questionIndex;
+        },
+        setSelectedOption: (state, action) => {
+            const { index, option } = action.payload;
+            state.selectedOptions[index] = option;
+        },
+        setAllSelectedOptions: (state, action) => {
+            state.selectedOptions = action.payload;
         },
         markVisited: (state, action) => {
-            const questionIndex = action.payload;
-            if (!state.visitedQuestions.includes(questionIndex)) {
-                state.visitedQuestions.push(questionIndex);
+            const index = action.payload;
+            if (!state.visitedQuestions.includes(index)) {
+                state.visitedQuestions.push(index);
             }
         },
-        markForReview: (state, action) => {
-            const questionIndex = action.payload;
-            if (!state.markedForReview.includes(questionIndex)) {
-                state.markedForReview.push(questionIndex);
+        toggleMarkForReview: (state, action) => {
+            const index = action.payload;
+            if (state.markedForReview.includes(index)) {
+                state.markedForReview = state.markedForReview.filter(i => i !== index);
             } else {
-                state.markedForReview = state.markedForReview.filter((index) => index !== questionIndex);
+                state.markedForReview.push(index);
             }
         },
-        submitTest: (state) => {
-            state.isSubmitted = true;
+        setTimeminus: (state, action) => {
+            state.timeminus = action.payload;
         },
-        updateTime: (state) => {
-            if (state.timeLeft > 0) {
-                state.timeLeft -= 1;
+        tickTimeminus: (state) => {
+            if (state.timeminus > 0) state.timeminus -= 1;
+        },
+        updateQuestionTime: (state, action) => {
+            const { index, time } = action.payload;
+            state.questionTimes[index] = (state.questionTimes[index] || 0) + time;
+        },
+        setAllQuestionTimes: (state, action) => {
+            state.questionTimes = action.payload;
+        },
+        updateSectionTime: (state, action) => {
+            const { index, time } = action.payload;
+            state.sectionTimes[index] = (state.sectionTimes[index] || 0) + time;
+        },
+        markSectionSubmitted: (state, action) => {
+            const index = action.payload;
+            if (!state.submittedSections.includes(index)) {
+                state.submittedSections.push(index);
             }
         },
+        setSectionSummaryData: (state, action) => {
+            state.sectionSummaryData = action.payload;
+        },
+        setSubmitted: (state, action) => {
+            state.isSubmitted = action.payload;
+        },
+        setIsPaused: (state, action) => {
+            state.isPaused = action.payload;
+        },
+        setExamStartTime: (state, action) => {
+            state.examStartTime = action.payload;
+        },
+        tickQuestionTime: (state, action) => {
+            const { index } = action.payload;
+            state.questionTimes[index] = (state.questionTimes[index] || 0) + 1;
+        },
+        resetTestState: () => initialState,
     },
 });
 
-// Exporting the actions
 export const {
-    nextQuestion,
-    prevQuestion,
-    selectOption,
+    setExamData,
+    setLoading,
+    setError,
+    updateNavigation,
+    setSelectedOption,
+    setAllSelectedOptions,
     markVisited,
-    markForReview, // Ensure this is exported
-    submitTest,
-    updateTime,
+    toggleMarkForReview,
+    setTimeminus,
+    tickTimeminus,
+    updateQuestionTime,
+    setAllQuestionTimes,
+    updateSectionTime,
+    markSectionSubmitted,
+    setSectionSummaryData,
+    setSubmitted,
+    setIsPaused,
+    setExamStartTime,
+    tickQuestionTime,
+    resetTestState,
 } = testSlice.actions;
 
 export default testSlice.reducer;

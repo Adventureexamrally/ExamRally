@@ -148,9 +148,9 @@ const DescriptiveTest = () => {
                   console.log("Question time:", question.q_on_time);
 
                   // Parse time string "minutes:seconds" to total seconds
-                  const [minutes, seconds] = question.q_on_time
-                    .split(":")
-                    .map(Number);
+                  const parts = (question.q_on_time || "0:0").toString().split(':');
+                  const minutes = Number(parts[0]) || 0;
+                  const seconds = Number(parts[1]) || 0;
                   questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
                 }
                 absoluteIndex++;
@@ -699,8 +699,20 @@ const DescriptiveTest = () => {
         //   // Or you could wrap around to the first question
         //   setClickedQuestionIndex(0);
         //   setCurrentSectionIndex(0);
-        handleSectionCompletion();
-        console.log("Welcome our Coding...");
+        // handleSectionCompletion(); // REMOVED: Prevent premature submission on 'Next' click
+        console.log("Last question of last section reached.");
+        Swal.fire({
+          title: "Finish Test?",
+          text: "This is the last question. Would you like to submit your test?",
+          icon: "info",
+          showCancelButton: true,
+          confirmButtonText: "Submit Test",
+          cancelButtonText: "Stay & Review"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            handleSubmitTest();
+          }
+        });
       }
     } else {
       // Move to next question in current section
@@ -830,7 +842,8 @@ const DescriptiveTest = () => {
   const handleSubmitSection = () => {
     handleDescriptiveTest();
     updateSectionTime();
-    setPopupType('section'); // Set to section type
+    // Only set to 'section' if not already set to 'timeExpired'
+    setPopupType((prev) => (prev === "timeExpired" ? prev : "section"));
 
     // Calculate ONLY current section data
     const currentSection = examData?.section[currentSectionIndex];
@@ -959,7 +972,7 @@ const DescriptiveTest = () => {
         timeTakenInSeconds: timeTakenInSecondsUpdated,
         takenAt: examStartTime,
         submittedAt: endTime,
-        status: isPaused ? "paused" : "completed",
+        status: isPaused ? "paused" : "completed", // Changed from "completed" to "in-progress" for background updates
         sectionTimes, // Optional: make sure this matches backend schema
       })
         .then((res) => {
@@ -1012,7 +1025,7 @@ const DescriptiveTest = () => {
           );
 
           setDescriptiveData(descriptiveArray);
-          console.log("Descriptive Data:", descriptiveText);
+          console.log("Descriptive Data:", descriptiveData);
         })
         .catch((error) => {
           console.error("Error fetching result data:", error);
@@ -1042,17 +1055,15 @@ const DescriptiveTest = () => {
     let autoSubmitTimer;
 
     if (showModal && popupType === 'timeExpired') {
-      // Set a timer to automatically submit after 2 seconds
+      // Set a timer to automatically submit after 5 seconds
       autoSubmitTimer = setTimeout(async () => {
         console.log("⏰ Auto-submitting due to time expiry...");
-       
-
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000));
-         setShowModal(false);
+        setShowModal(false);
+        setIsSubmitted(true);
         finishTestAndOpenResult();
-
-      }, 2000); // 2 seconds delay
+      }, 5000); // 5 seconds delay
     }
 
     // Cleanup the timer if component unmounts or modal closes
@@ -2130,6 +2141,7 @@ const DescriptiveTest = () => {
     await setIsPaused(false);
 
     setShowModal(false);
+    // setIsSubmitted(true); // REMOVED: This causes premature "Test Completed" UI
 
     if (currentSectionIndex < examData?.section?.length - 1) {
       // Move to next section (only for normal flow)
@@ -2758,6 +2770,7 @@ const DescriptiveTest = () => {
                             // Time finished or Submit Test - go directly to result
                             await submitExam();
                             await new Promise((resolve) => setTimeout(resolve, 1000));
+                            setIsSubmitted(true); // ADDED: Set isSubmitted only when last section is complete
                             finishTestAndOpenResult();
                           } else {
                             // Normal section submit - use existing logic
@@ -2765,9 +2778,9 @@ const DescriptiveTest = () => {
                           }
                         }}
                       >
-                        {popupType === 'timeExpired' || popupType === 'test'
-                          ? 'Submit & View Result'
-                          : 'Submit'}
+                        {popupType === 'timeExpired' || popupType === 'test' || currentSectionIndex === examData?.section?.length - 1
+                          ? 'Submit'
+                          : 'Next Section'}
                       </button>
                     </div>
                   </div>
@@ -3310,8 +3323,7 @@ const DescriptiveTest = () => {
               <button
                 className="btn bg-blue-500 text-white hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
                 onClick={currentSectionIndex === examData?.section?.length - 1 ? handleSubmitTest : handleSubmitSection}
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
+              // Removed data-bs-toggle and data-bs-target to prevent Bootstrap/React modal conflict
               >
                 {currentSectionIndex === examData?.section?.length - 1 ? "Submit Test" : "Submit Section"}
               </button>

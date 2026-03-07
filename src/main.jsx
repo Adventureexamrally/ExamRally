@@ -4,7 +4,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
-import { store } from "./store/store.js";
+import { store, persistor } from "./store/store.js";
+import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from "react-redux";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -23,23 +24,25 @@ const Root = () => {
   useEffect(() => {
     // disableUserActions();
   }, []);
-const queryClient = new QueryClient({
+  const queryClient = new QueryClient({
     defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: true,
-      staleTime: 1000 * 30, // 30 seconds
-    },
-  }
-});
+      queries: {
+        refetchOnWindowFocus: true,
+        staleTime: 1000 * 30, // 30 seconds
+      },
+    }
+  });
   return (
     <QueryClientProvider client={queryClient}>
-    <Provider store={store}>
-      <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
-        <UserProvider>
-          <App />
-        </UserProvider>
-      </ClerkProvider>
-    </Provider>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
+            <UserProvider>
+              <App />
+            </UserProvider>
+          </ClerkProvider>
+        </PersistGate>
+      </Provider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

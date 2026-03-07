@@ -46,6 +46,7 @@
     "react-toastify": "^11.0.5",
     "react-youtube": "^10.1.0",
     "recharts": "^2.15.2",
+    "redux-persist": "^6.0.0",
     "slick-carousel": "^1.8.1",
     "sweetalert2": "^11.17.2",
     "video.js": "^7.21.3",

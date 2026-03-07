@@ -45,6 +45,7 @@ const MockLiveTest = () => {
       wordCount: 0
     })) || []
   );
+  const [popupType, setPopupType] = useState("section");
   const location = useLocation();
   const selectedLanguage = location.state?.language || "English";
   const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
@@ -148,8 +149,9 @@ const MockLiveTest = () => {
                 if (question.q_on_time) {
                   console.log("Question time:", question.q_on_time);
 
-                  // Parse time string "minutes:seconds" to total seconds
-                  const [minutes, seconds] = question.q_on_time.split(':').map(Number);
+                  const parts = (question.q_on_time || "0:0").toString().split(':');
+                  const minutes = Number(parts[0]) || 0;
+                  const seconds = Number(parts[1]) || 0;
                   questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
                 }
                 absoluteIndex++;
@@ -253,9 +255,12 @@ const MockLiveTest = () => {
       ?.slice(0, currentSectionIndex)
       .reduce(
         (acc, section) =>
-          acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+          acc +
+          (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
         0
       ) || 0;
+  const currentQuestion = examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex];
+  const isDescriptive = currentQuestion?.question_type === "descriptive";
 
   // Mark a question as visited when clicked
   useEffect(() => {
@@ -550,10 +555,6 @@ const MockLiveTest = () => {
     fetchData();
   }, [id]); // Ensure to add 'id' as a dependency for the effect
 
-  const handleSubmitTest = () => {
-    updateSectionTime();
-    setIsSubmitted(true); // Trigger the post call for total marks
-  };
   const handleClearResponse = () => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
@@ -744,13 +745,11 @@ const MockLiveTest = () => {
 
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
-    // Save current descriptive answer
     handleDescriptiveTest();
-
-    // Then proceed with section submission
     updateSectionTime();
+    // Only set to 'section' if not already set to 'timeExpired'
+    setPopupType((prev) => (prev === "timeExpired" ? prev : "section"));
 
-    // Calculate section summary
     const currentSection = examData?.section[currentSectionIndex];
     const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
 
@@ -765,7 +764,36 @@ const MockLiveTest = () => {
       descriptiveData: descriptiveData[currentSectionIndex]
     };
 
-    setSectionSummaryData(prev => [...prev, sectionSummary]);
+    setSectionSummaryData([sectionSummary]); // Show only current section for 'section' popup
+    setShowModal(true);
+  };
+
+  const handleSubmitTest = () => {
+    handleDescriptiveTest();
+    updateSectionTime();
+    setPopupType("test"); // Set to test type
+
+    // Calculate summary for ALL sections
+    const allSectionsData = examData.section.map((section, index) => {
+      const qs = section?.questions?.[selectedLanguage?.toLowerCase()] || [];
+      const s_startIdx = examData.section
+        .slice(0, index)
+        .reduce((acc, sec) => acc + (sec.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+
+      const counts = getSectionCounts(section, selectedOptions, visitedQuestions, markedForReview, selectedLanguage, s_startIdx);
+
+      return {
+        sectionName: section.name,
+        totalQuestions: qs.length,
+        answeredQuestions: counts.answered,
+        notAnsweredQuestions: counts.notAnswered,
+        visitedQuestionsCount: counts.answered + counts.notAnswered, // Adjusted for typical summary
+        notVisitedQuestions: counts.notVisited,
+        reviewedQuestions: counts.markedForReviewCount
+      };
+    });
+
+    setSectionSummaryData(allSectionsData);
     setShowModal(true);
   };
 
@@ -924,7 +952,7 @@ const MockLiveTest = () => {
         timeTakenInSeconds: timeTakenInSecondsUpdated,
         takenAt: examStartTime,
         submittedAt: endTime,
-        status: isPaused ? "paused" : "completed",
+        status: isPaused ? "paused" : "completed", // Changed from "completed" to "in-progress" for background updates
         sectionTimes,
         pausedDuration: pausedDurationRef.current || 0, // total seconds paused
       })
@@ -938,8 +966,10 @@ const MockLiveTest = () => {
   };
 
   useEffect(() => {
+    if (isDescriptive) return;
     updateSectionTime();
   }, [
+    isDescriptive,
     examDataSubmission,
     selectedOptions,
     id,
@@ -978,7 +1008,7 @@ const MockLiveTest = () => {
           );
 
           setDescriptiveData(descriptiveArray);
-          console.log("Descriptive Data:", descriptiveText);
+          console.log("Descriptive Data:", descriptiveArray);
         })
         .catch((error) => {
           console.error("Error fetching result data:", error);
@@ -988,15 +1018,32 @@ const MockLiveTest = () => {
 
   const [timerEnded, setTimerEnded] = useState(false);
   useEffect(() => {
-    if (timerEnded) {
+    if (timerEnded && !isDescriptive) {
       handleTimerEnd();
-      setTimerEnded(false);
+      // setTimerEnded(false); // keep true if we want to signal timer end state
     }
-  }, [timerEnded]);
+  }, [timerEnded, isDescriptive]);
+
+  // Handle auto-submission when timer expires
+  useEffect(() => {
+    let autoSubmitTimer;
+    if (showModal && popupType === "timeExpired" && !isDescriptive) {
+      console.log("⏰ Timer expired. Auto-submitting in 5 seconds...");
+      autoSubmitTimer = setTimeout(async () => {
+        console.log("🚀 Executing auto-submit...");
+        await submitExam();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsSubmitted(true);
+        finishTestAndOpenResult();
+      }, 5000); // 5 seconds delay
+    }
+    return () => clearTimeout(autoSubmitTimer);
+  }, [showModal, popupType]);
 
   // Stable section countdown — re-starts only when isPaused or timerKey changes
   useEffect(() => {
     if (sectionTimerRef.current) clearInterval(sectionTimerRef.current);
+    if (isDescriptive) return;
 
     if (isPaused) {
       pauseStartRef.current = Date.now();
@@ -1027,9 +1074,9 @@ const MockLiveTest = () => {
   }, [isPaused, timerKey]);
 
   const handleTimerEnd = async () => {
-    handleSubmitSection(); // 1. Submits the section
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 3. Waits 1 second
-    handleSectionCompletion(); // 4. Calls this after 1 second
+    setPopupType("timeExpired");
+    handleSubmitSection();
+    setTimerEnded(false);
   };
 
 
@@ -1888,7 +1935,7 @@ const MockLiveTest = () => {
 
         await submitExam();
         await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second
-        // navigate(`/liveresult/${id}/${user?._id}`);
+        setIsSubmitted(true); // SET isSubmitted at the end
         finishTestAndOpenResult();
       }
     }
@@ -2242,9 +2289,11 @@ const MockLiveTest = () => {
     console.log(questionTime);
 
     // 4️⃣ Live increment every second
-    timerRef.current = setInterval(() => {
-      setQuestionTime(prev => prev + 1);
-    }, 1000);
+    if (!isDescriptive) {
+      timerRef.current = setInterval(() => {
+        setQuestionTime(prev => prev + 1);
+      }, 1000);
+    }
 
     // 5️⃣ Track previous index for next time
     setPreviousQuestionIndex(clickedQuestionIndex);
@@ -2383,12 +2432,23 @@ const MockLiveTest = () => {
                           <button
                             type="button"
                             className="btn btn-success"
-                            data-bs-dismiss="modal"
-                            onClick={handleSectionCompletion} // Check completion and move to next section
+                            onClick={async () => {
+                              setShowModal(false);
+                              if (popupType === "timeExpired" || popupType === "test") {
+                                await submitExam();
+                                await new Promise((resolve) => setTimeout(resolve, 1000));
+                                setIsSubmitted(true);
+                                finishTestAndOpenResult();
+                              } else {
+                                handleSectionCompletion();
+                              }
+                            }}
                           >
-                            {currentSectionIndex === examData?.section?.length - 1
+                            {popupType === "timeExpired" || popupType === "test"
                               ? "Submit"
-                              : "Next Section"}
+                              : currentSectionIndex === examData?.section?.length - 1
+                                ? "Submit"
+                                : "Next Section"}
                           </button>
                         </div>
                       </div>
@@ -2994,9 +3054,8 @@ const MockLiveTest = () => {
                 <center>
                   <button
                     className="btn bg-blue-500 text-white  hover:bg-blue-700 mt-2 md:mt-0 px-7 text-sm md:text-sm"
-                    onClick={handleSubmitSection}
-                    data-bs-toggle="modal"
-                    data-bs-target="#staticBackdrop"
+                    onClick={currentSectionIndex === examData?.section?.length - 1 ? handleSubmitTest : handleSubmitSection}
+                  // Removed data-bs-toggle and data-bs-target to prevent Bootstrap/React modal conflict
                   >
                     {currentSectionIndex === examData?.section?.length - 1
                       ? "Submit Test"

@@ -127,11 +127,11 @@ const QuestionPalette = ({
                 </div>
 
                 <h1 className="mt-1 mb-1 text-sm text-white bg-blue-500 p-1">
-                    Section: {examData?.section[currentSectionIndex]?.name}
+                    Section: {examData?.section?.[currentSectionIndex]?.name}
                 </h1>
 
                 <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
-                    {examData?.section[currentSectionIndex]?.questions?.[
+                    {examData?.section?.[currentSectionIndex]?.questions?.[
                         selectedLanguage?.toLowerCase()
                     ]?.map((_, index) => {
                         const fullIndex = startingIndex + index;

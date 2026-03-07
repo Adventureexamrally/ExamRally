@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, useMemo ,useCallback} from "react";
 import Api from "../service/Api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,21 +15,116 @@ import { formatTime, getSectionCounts } from "../components/Test/testUtils";
 import { FaCompress, FaExpand, FaInfoCircle, FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
 import { Avatar } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setExamData,
+  setLoading,
+  setError,
+  updateNavigation,
+  setSelectedOption,
+  setAllSelectedOptions,
+  markVisited,
+  toggleMarkForReview,
+  setTimeminus,
+  tickTimeminus,
+  updateQuestionTime,
+  setAllQuestionTimes,
+  updateSectionTime as updateSectionTimeAction,
+  markSectionSubmitted,
+  setSectionSummaryData,
+  setSubmitted,
+  setIsPaused,
+  setExamStartTime as setExamStartTimeAction,
+  tickQuestionTime,
+  resetTestState
+} from "../slice/testSlice";
 
 const Test = () => {
-  const [examData, setExamData] = useState(null);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
-  const [visitedQuestions, setVisitedQuestions] = useState([]);
-  const [markedForReview, setMarkedForReview] = useState([]);
-  const [ansmarkforrev, setAnsmarkforrev] = useState([]);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  // Helper to handle both "MM:SS", strings, and raw numbers gracefully
+  const parseQuestionTime = (val) => {
+    if (val == null || val === "0" || val === 0) return 0;
+    if (typeof val === "number") return val;
+    if (typeof val === "string" && val.includes(":")) {
+      const parts = val.split(":");
+      if (parts.length === 2) {
+        return (
+          (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)
+        );
+      }
+    }
+    // Fallback for string numbers
+    return parseInt(val, 10) || 0;
+  };
+
+  const dispatch = useDispatch();
+  const testState = useSelector((state) => state.test);
+
+  const {
+    examData,
+    currentSectionIndex,
+    clickedQuestionIndex,
+    visitedQuestions,
+    markedForReview,
+    ansmarkforrev,
+    selectedOptions: reduxSelectedOptions,
+    timeminus,
+    questionTimes,
+    sectionTimes,
+    submittedSections: reduxSubmittedSections,
+    sectionSummaryData,
+    isSubmitted,
+    isPaused,
+    examStartTime,
+    status: examStatus,
+  } = testState;
+
+  // Redux-aware Proxy Functions to replace old local state setters
+  const setCurrentSectionIndex = (index) => {
+    dispatch(updateNavigation({ sectionIndex: index }));
+  };
+
+  const setClickedQuestionIndex = (index) => {
+    dispatch(updateNavigation({ questionIndex: index }));
+  };
+
+  const setExamStartTime = (time) => {
+    dispatch(setExamStartTimeAction(time));
+  };
+
+  const setSelectedOptions = (update) => {
+    if (typeof update === "function") {
+      dispatch(setAllSelectedOptions(update(reduxSelectedOptions)));
+    } else {
+      dispatch(setAllSelectedOptions(update));
+    }
+  };
+
+  const setVisitedQuestions = (update) => {
+    if (typeof update === "function") {
+      const next = update(visitedQuestions);
+      if (next.length > visitedQuestions.length) {
+        dispatch(markVisited(next[next.length - 1]));
+      }
+    } else {
+      // Direct set not common, but can be added if needed
+    }
+  };
+
+  const setMarkedForReview = (update) => {
+    if (typeof update === "function") {
+      // Toggle logic usually used for mark for review
+      dispatch(toggleMarkForReview(clickedQuestionIndex));
+    }
+  };
+
+  // Adapt Redux state (Arrays) to local needs (Sets/etc if necessary)
+  const submittedSections = useMemo(() => new Set(reduxSubmittedSections), [reduxSubmittedSections]);
+  const selectedOptions = reduxSelectedOptions;
+
   const [totalQuestions, setTotalQuestions] = useState(0);
+  const questionTime = questionTimes[clickedQuestionIndex] || 0;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [sectionTimes, setSectionTimes] = useState({});
-  // Track which section indices have been submitted (can't go back)
-  const [submittedSections, setSubmittedSections] = useState(new Set());
-  const currentSectionStartTimeRef = useRef(new Date()); // Add this at top with other hooks
+  const currentSectionStartTimeRef = useRef(new Date());
 
   const [previousQuestionIndex, setPreviousQuestionIndex] = useState(clickedQuestionIndex);
   const timerRef = useRef(null);
@@ -49,9 +144,9 @@ const Test = () => {
     if (sectionName === "english language") {
       setDisplayLanguage("English");
     } else {
-      setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+      setDisplayLanguage(selectedLanguage);
     }
-  }, [currentSectionIndex, examData]);
+  }, [currentSectionIndex, examData, selectedLanguage]);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -68,7 +163,6 @@ const Test = () => {
   //   return confirmationMessage;
   // });
 
-  // Prevent F5, Ctrl+R, Ctrl+Shift+R key presses
   window.addEventListener("keydown", function (e) {
     // Check if F5 or Ctrl+R or Ctrl+Shift+R is pressed
     if (
@@ -79,6 +173,8 @@ const Test = () => {
       e.preventDefault(); // Prevent F5, Ctrl+R, or Ctrl+Shift+R
     }
   });
+
+
 
   const toggleMenu = () => {
     setIsMobileMenuOpen((prevState) => !prevState);
@@ -92,115 +188,9 @@ const Test = () => {
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [show_name, setShow_name] = useState("");
   const [t_questions, sett_questions] = useState("");
-  useEffect(() => {
-    // Check if data has already been fetched
-    if (!isDataFetched) {
-      Api.get(`exams/getExam/${id}`)
-        .then((res) => {
-          if (res.data) {
-            setExamData(res.data);
-            console.log("res.data", res.data);
-            setIsDataFetched(true);
-            setShow_name(res.data.show_name);
-            sett_questions(res.data.t_questions); // Mark that data is fetched
-            console.log("kl", res.data.show_name);
-          }
-        })
-        .catch((err) => console.error("Error fetching data:", err));
-    }
-  }, [id]); // Only trigger when `id` changes
 
-  const [getresult, setGetresult] = useState([]);
-  // In the useEffect that fetches exam state
-  useEffect(() => {
-    if (user?._id && id) {
-      Api.get(`results/${user?._id}/${id}`)
-        .then(response => {
-          if (response.data) {
-            const state = response.data;
-            setGetresult(state)
-            console.error("hello", state);
-            const initialOptions = Array(t_questions).fill(null);
-            // let lastVisitedIndex = 0;
-            // let visitedQuestionsList = [];
-            let markedForReviewList = [];
-            let absoluteIndexCounter = 0;
-            // Parse question times from backend
-            const questionTimesFromDB = {};
-            let absoluteIndex = 0;
 
-            // Helper to handle both "MM:SS", strings, and raw numbers gracefully
-            const parseQuestionTime = (val) => {
-              if (val == null || val === "0" || val === 0) return 0;
-              if (typeof val === "number") return val;
-              if (typeof val === "string" && val.includes(":")) {
-                const parts = val.split(':');
-                if (parts.length === 2) {
-                  return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
-                }
-              }
-              // Fallback for string numbers
-              return parseInt(val, 10) || 0;
-            };
 
-            state.section.forEach((section) => {
-              const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-              console.log("Questions:", questions);
-
-              questions.forEach((question) => {
-                if (question.q_on_time) {
-                  questionTimesFromDB[absoluteIndex] = parseQuestionTime(question.q_on_time);
-                }
-                absoluteIndex++;
-              });
-            });
-            console.log("Question times from DB:", questionTimesFromDB);
-
-            setQuestionTimes(questionTimesFromDB);
-            if (state.section) {
-              state.section.forEach((section) => {
-                const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-                questions.forEach((question, questionIndex) => {
-                  const absoluteIndex = absoluteIndexCounter++;
-
-                  // Set selected option if exists
-                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
-                    initialOptions[absoluteIndex] = question.selectedOption;
-                  }
-
-                  // Track visited questions
-                  // if (question.isVisited === 1) {
-                  //   visitedQuestionsList.push(absoluteIndex);
-                  //   lastVisitedIndex = absoluteIndex; // Track most recently visited
-                  // }
-
-                  // Track marked for review
-                  // if (question.markforreview === 1 || question.ansmarkforrev === 1) {
-                  //   markedForReviewList.push(absoluteIndex);
-                  // }
-                });
-              });
-            }
-
-            setSelectedOptions(initialOptions);
-            // setVisitedQuestions(visitedQuestionsList);
-            // setMarkedForReview(markedForReviewList);
-            // setCurrentSectionIndex(state.currentSectionIndex || 0);
-
-            // // Show the last visited question, or first question if none visited
-            // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-            //     if (visitedQuestionsList.length > 0) {
-            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-            // } else {
-            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-            //   setVisitedQuestions([0]);  // Mark it as visited
-            // }
-          }
-        })
-
-        .catch(error => console.error('Error fetching exam state:', error));
-    }
-  }, [id, user?._id, t_questions]);
 
   const commonDataRef = useRef(null);
 
@@ -252,7 +242,7 @@ const Test = () => {
       ?.slice(0, currentSectionIndex)
       .reduce(
         (acc, section) =>
-          acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+          acc + (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
         0
       ) || 0;
 
@@ -264,282 +254,196 @@ const Test = () => {
   }, [clickedQuestionIndex]);
 
   const handleQuestionClick = (index) => {
-    setClickedQuestionIndex(index);
+    dispatch(updateNavigation({ questionIndex: index }));
   };
 
-  useEffect(() => {
-    const savedState = localStorage.getItem(`examState_${id}`);
-    console.warn(savedState);
-    if (savedState) {
-      const state = JSON.parse(savedState);
-      setClickedQuestionIndex(state.clickedQuestionIndex);
-      setSelectedOptions(state.selectedOptions);
-      setVisitedQuestions(state.visitedQuestions);
-      setMarkedForReview(state.markedForReview);
-      setCurrentSectionIndex(state.currentSectionIndex);
-    }
-  }, [id]);
-
-  // Modify handleOptionChange to update database
-  const handleOptionChange = async (index) => {
+  const handleOptionChange = (index) => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
       updatedOptions[clickedQuestionIndex] = index;
-      // Find current section
-      const currentSection = examData.section[currentSectionIndex];
-      // Find relative question index
-      const relativeIndex = clickedQuestionIndex - startingIndex;
-      const currentQuestion = currentSection.questions[selectedLanguage.toLowerCase()][relativeIndex];
-
-      // Use section-specific marks
-      const plus_mark = currentSection.plus_mark;
-      const minus_mark = currentSection.minus_mark;
-
-      let mark = 0;
-      if (currentQuestion.answer === index) {
-        mark = plus_mark;
-      } else {
-        mark = -minus_mark;
-      }
-
-      // Update the database with the new selection
-      const result = Api.post(`results/${user?._id}/${id}`, {
-        selectedOptions: updatedOptions,
-        currentQuestionIndex: clickedQuestionIndex,
-        sectionIndex: currentSectionIndex,
-        mark
-      });
-      console.log("handle option change result", result);
-
+      dispatch(setSelectedOption({ index: clickedQuestionIndex, option: index }));
       return updatedOptions;
     });
-
-    // let mark = 0;
-
-    // Check if the selected option matches the correct answer
-    // if (correctAnswerIndex === index) {
-    //   mark = 1.0; // Correct answer gets 1 mark
-    //   console.log("Correct Answer", correctAnswerIndex === index);
-    // } else {
-    //   mark = -0.25; // Incorrect answer gets -0.25 mark
-    // }
-
-    // Send the selected option along with the question data to the API
-    // const currentQuestionData = {
-    //   question: currentQuestion?.question,
-    //   options: currentQuestion?.options,
-    //   correctOption: currentQuestion?.answer,
-    //   selectedOption: currentQuestion?.options[index], // Store the selected option
-    //   isVisited: visitedQuestions.includes(clickedQuestionIndex), // Mark the question as visited
-    //   markforreview: markedForReview.includes(clickedQuestionIndex),
-    //   ansmarkforrev: ansmarkforrev.includes(clickedQuestionIndex),
-    // };
   };
 
-  const [questionStartTime, setQuestionStartTime] = useState(new Date());
-  const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
-
-  useEffect(() => {
-    if (!examStartTime) {
-      setExamStartTime(new Date()); // Store when the exam starts
-    }
-  }, []);
-
-  useEffect(() => {
-    if (questionStartTime) {
-      const now = new Date();
-      const timeSpent = Math.floor((now - questionStartTime) / 1000); // Time spent in seconds
-
-      setQuestionTimes((prev) => ({
-        ...prev,
-        [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-      }));
-
-      setQuestionStartTime(new Date()); // Reset time for next question
-    }
-  }, [currentSectionIndex]); // Runs when the user changes questions
-
-  // 2. Update section time tracking useEffect - REPLACE THIS SECTION
-  useEffect(() => {
-    const handleSectionTiming = () => {
-      const now = new Date();
-      const prevSectionIndex = currentSectionIndex - 1;
-
-      if (prevSectionIndex >= 0) {
-        const timeSpent = Math.floor(
-          (now - currentSectionStartTimeRef.current) / 1000
-        );
-
-        setSectionTimes((prev) => ({
-          ...prev,
-          [prevSectionIndex]: (prev[prevSectionIndex] || 0) + timeSpent,
-        }));
-      }
-
-      // Reset timer for new section
-      currentSectionStartTimeRef.current = new Date();
-    };
-
-    handleSectionTiming();
-  }, [currentSectionIndex]);
-
-  // 3. Add cleanup effect for final section timing - ADD THIS NEW EFFECT
-  useEffect(() => {
-    return () => {
-      const now = new Date();
-      const timeSpent = Math.floor(
-        (now - currentSectionStartTimeRef.current) / 1000
-      );
-
-      setSectionTimes((prev) => ({
-        ...prev,
-        [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
-      }));
-    };
-  }, [currentSectionIndex]);
-
-  // 4. Update initial data load useEffect - MODIFY THIS EXISTING EFFECT
-  useEffect(() => {
-    if (examData) {
-      const initialTimes = {};
-      examData.section.forEach((_, index) => {
-        initialTimes[index] = 0;
-      });
-      setSectionTimes(initialTimes);
-      currentSectionStartTimeRef.current = new Date(); // Initialize ref here
-    }
-  }, [examData]);
-
-  // API get method
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (user?._id) {
-        try {
-          // Fetch the exam data from your API
-          const res = await Api.get(`exams/getExam/${id}`);
-          console.log(res);
-
-          // Transform the data
-          const transformedData = {
-            bilingual_status: res.data.bilingual_status,
-            english_status: res.data.english_status,
-            hindi_status: res.data.hindi_status,
-            tamil_status: res.data.tamil_status,
-            section: res.data.section.map((section) => ({
-              name: section.name,
-              t_question: section.t_question,
-              t_time: section.t_time,
-              t_mark: section.t_mark,
-              plus_mark: section.plus_mark,
-              minus_mark: section.minus_mark,
-              cutoff_mark: section.cutoff_mark,
-              s_blueprint: section.s_blueprint.map((blueprint) => ({
-                subject: blueprint.subject,
-                topic: blueprint.topic,
-                tak_time: blueprint.tak_time,
-              })),
-              questions: {
-                english: section.questions.english.map((question) => ({
-                  question: question.question,
-                  options: question.options,
-                  correct: question.correct,
-                  Incorrect: 0,
-                  answer: question.answer,
-                  common_data: question.common_data,
-                  explanation: question.explanation,
-                  selectedOption: question.selectedOption,
-                  isVisited: 0,
-                  NotVisited: 0,
-                  q_on_time: 0,
-                  plus_mark: question.plus_mark,
-                  minus_mark: question.minus_mark,
-                })),
-                hindi: section.questions.hindi.map((question) => ({
-                  question: question.question,
-                  options: question.options,
-                  correct: question.correct,
-                  Incorrect: 0,
-                  answer: question.answer,
-                  common_data: question.common_data,
-                  explanation: question.explanation,
-                  selectedOption: question.selectedOption,
-                  isVisited: 0,
-                  NotVisited: 0,
-                  q_on_time: 0,
-                  plus_mark: question.plus_mark,
-                  minus_mark: question.minus_mark,
-                })),
-                tamil: section.questions.tamil.map((question) => ({
-                  question: question.question,
-                  options: question.options,
-                  correct: question.correct,
-                  Incorrect: 0,
-                  answer: question.answer,
-                  common_data: question.common_data,
-                  explanation: question.explanation,
-                  selectedOption: question.selectedOption,
-                  isVisited: 0,
-                  NotVisited: 0,
-                  q_on_time: 0,
-                  plus_mark: question.plus_mark,
-                  minus_mark: question.minus_mark,
-                })),
-              },
-              s_order: section.s_order || 0,
-              // ✅ REQUIRED for section grouping to work
-              is_sub_section: section.is_sub_section ?? false,
-              group_name: section.group_name ?? "",
-            })),
-            score: res.data.score || 0,
-            Attempted: res.data.Attempted || 0,
-            // timeTaken: res.data.timeTaken || 60,
-            Accuracy: res.data.Accuracy || 0,
-            takenAt: res.data.takenAt || new Date(),
-            submittedAt: res.data.submittedAt || new Date(),
-          };
-
-          // Set the transformed data to state
-          setExamData(transformedData);
-          console.log(transformedData);
-
-          // Set totalQuestions from the response
-          setTotalQuestions(res.data.t_questions || 0);
-
-          // Initialize selectedOptions with null for all questions
-          const initialOptions = Array(res.data.t_questions).fill(null);
-          setSelectedOptions(initialOptions);
-
-          // Now post the transformed data to your '/results' endpoint
-          const postResponse = await Api.post(
-            `/results/${user?._id}/${id}`,
-            transformedData
-          );
-          console.log("Data posted successfully:", postResponse);
-        } catch (error) {
-          console.error("Error occurred:", error.message);
-          // Handle error (show error message, etc.)
-        }
-      }
-    };
-
-    // Call the async function inside useEffect
-    fetchData();
-  }, [id]); // Ensure to add 'id' as a dependency for the effect
-
-  const handleSubmitTest = () => {
-    updateSectionTime();
-    setIsSubmitted(true); // Trigger the post call for total marks
-  };
   const handleClearResponse = () => {
     setSelectedOptions((prev) => {
       const updatedOptions = [...prev];
-      updatedOptions[clickedQuestionIndex] = undefined;
+      updatedOptions[clickedQuestionIndex] = null;
+      dispatch(setSelectedOption({ index: clickedQuestionIndex, option: null }));
       return updatedOptions;
     });
   };
 
+  const [questionStartTime, setQuestionStartTime] = useState(new Date());
 
+  useEffect(() => {
+    if (!examStartTime) {
+      dispatch(setExamStartTimeAction(new Date().toISOString()));
+    }
+  }, [examStartTime, dispatch]);
+
+  useEffect(() => {
+    if (questionStartTime && !isPaused) {
+      const now = new Date();
+      const timeSpent = Math.floor((now - questionStartTime) / 1000);
+      if (timeSpent > 0) {
+        dispatch(updateQuestionTime({
+          index: clickedQuestionIndex,
+          time: timeSpent
+        }));
+      }
+      setQuestionStartTime(new Date());
+    }
+  }, [clickedQuestionIndex, isPaused]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user?._id && id) {
+        let transformedSections = [];
+        try {
+          const res = await Api.get(`exams/getExam/${id}`);
+          if (!res.data) {
+            console.error("❌ No exam data returned");
+            setIsDataFetched(true);
+            return;
+          }
+
+          // RESET state if it's a DIFFERENT exam than the one in Redux
+          const reduxExamId = String(examData?._id?.$oid || examData?._id || "");
+          if (reduxExamId && reduxExamId !== String(id)) {
+            console.log("🔄 Switching exam, resetting Redux state...");
+            dispatch(resetTestState());
+          }
+
+          transformedSections = (res.data.section || []).map((section) => ({
+            ...section,
+            questions: {
+              english: (section.questions?.english || []).map(q => ({ ...q, q_on_time: String(q.q_on_time || "00:00") })),
+              hindi: (section.questions?.hindi || []).map(q => ({ ...q, q_on_time: String(q.q_on_time || "00:00") })),
+              tamil: (section.questions?.tamil || []).map(q => ({ ...q, q_on_time: String(q.q_on_time || "00:00") })),
+            }
+          }));
+
+          dispatch(setExamData({ ...res.data, section: transformedSections }));
+          setTotalQuestions(res.data.t_questions || 0);
+          setShow_name(res.data.show_name);
+          sett_questions(res.data.t_questions);
+
+          try {
+            const existingResult = await Api.get(`results/${user._id}/${id}`);
+            if (existingResult.data) {
+              const state = existingResult.data;
+              const questionTimesFromDB = {};
+              let absoluteIndex = 0;
+              state.section.forEach((section) => {
+                const qs = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                qs.forEach((q) => {
+                  questionTimesFromDB[absoluteIndex] = parseQuestionTime(q.q_on_time);
+                  if (q.selectedOption !== null && q.selectedOption !== undefined) {
+                    dispatch(setSelectedOption({ index: absoluteIndex, option: q.selectedOption }));
+                  }
+                  if (q.isVisited === 1) dispatch(markVisited(absoluteIndex));
+                  if (q.markforreview === 1) dispatch(toggleMarkForReview(absoluteIndex));
+                  absoluteIndex++;
+                });
+              });
+              dispatch(setAllQuestionTimes(questionTimesFromDB));
+              setResultData(state);
+
+              const resumeSubmission = {
+                formattedSections: state.section,
+                totalScore: state.o_score || 0,
+                timeTakenInSeconds: state.timeTakenInSeconds || 0,
+                status: state.status || "started"
+              };
+              setExamDataSubmission(resumeSubmission);
+
+              // if (state.status === "paused") dispatch(setIsPaused(true));
+              if (state.status === "paused") {
+                console.log("Test was paused in DB, auto-resuming...");
+                dispatch(setIsPaused(false));
+                updateSectionTime(null, "started");
+              }
+              if (state.pausedDuration != null) pausedDurationRef.current = state.pausedDuration;
+              const savedSectionIndex = state.sectionIndex !== undefined ? state.sectionIndex : state.currentSectionIndex;
+              const savedQuestionIndex = state.currentQuestionIndex !== undefined ? state.currentQuestionIndex : state.clickedQuestionIndex;
+
+              if (savedSectionIndex !== undefined && savedSectionIndex < res.data.section.length) {
+                dispatch(updateNavigation({
+                  sectionIndex: savedSectionIndex,
+                  questionIndex: savedQuestionIndex || 0
+                }));
+              } else {
+                dispatch(updateNavigation({ sectionIndex: 0, questionIndex: 0 }));
+              }
+              console.log("✅ Resume data loaded successfully");
+              setIsDataFetched(true);
+              return;
+            }
+          } catch (e) {
+            console.error("⚠️ Results fetch failed (common if new test):", e);
+          }
+
+          // Initial state for new exam
+          const initialOptions = Array(res.data.t_questions).fill(null);
+          dispatch(setAllSelectedOptions(initialOptions));
+
+          const initialSubmission = {
+            formattedSections: transformedSections,
+            totalScore: 0,
+            timeTakenInSeconds: 0,
+            formattedTotalTime: "00:00:00",
+            status: "started"
+          };
+          setExamDataSubmission(initialSubmission);
+          setResultData({ section: transformedSections.map(s => ({ ...s, timeTaken: 0 })) });
+
+          await Api.post(`/results/${user._id}/${id}`, {
+            ...res.data,
+            section: transformedSections,
+            status: "started"
+          });
+          console.log("✅ New exam result initialized");
+        } catch (error) {
+          console.error("🔥 Init error:", error);
+          // FALLBACK: allow loading with default empty resultData to prevent permanent spinner
+          if (transformedSections.length > 0) {
+            setResultData({ section: transformedSections.map(s => ({ ...s, timeTaken: 0 })) });
+          }
+        } finally {
+          setIsDataFetched(true);
+        }
+      }
+    };
+    fetchData();
+  }, [id, user?._id]);
+  const handleAutoResume = useCallback(() => {
+    if (!isPaused) return;
+    console.log("🚀 Automatically resuming test from visibility/focus...");
+    dispatch(setIsPaused(false));
+    // setPauseCount(0);
+    // setQuestionStartTime(new Date());
+
+    // // Update DB to status "started"
+    // updateSectionTime(null, "started");
+  }, [isPaused, dispatch]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleAutoResume();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleAutoResume);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleAutoResume);
+    };
+  }, [handleAutoResume]);
   const handleMarkForReview = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
@@ -548,162 +452,50 @@ const Test = () => {
   };
 
   const [showModal, setShowModal] = useState(false);
-  const [sectionSummaryData, setSectionSummaryData] = useState([]);
 
-  // const handleNextClick = () => {
-  //   updateSectionTime();
-  //   if (
-  //     examData &&
-  //     examData.section[currentSectionIndex] &&
-  //     examData.section[currentSectionIndex].questions?.[
-  //       selectedLanguage?.toLowerCase()
-  //     ]
-  //   ) {
-  //     const totalQuestions =
-  //       examData.section[currentSectionIndex].questions[
-  //         selectedLanguage?.toLowerCase()
-  //       ]?.length;
-
-  //     if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-  //       // Save current question time before moving to next
-  //       setQuestionTimes((prevTimes) => ({
-  //         ...prevTimes,
-  //         [clickedQuestionIndex]: questionTime,
-  //       }));
-  //       setClickedQuestionIndex(clickedQuestionIndex + 1);
-  //       setQuestionTime(0);
-  //     } else {
-  //       // If it's the last question, reset to the first question
-  //       setClickedQuestionIndex(startingIndex);
-  //     }
-  //   }
-  // };
+  // (Removed legacy handleNextClick)
   const handleNextClick = () => {
     updateSectionTime();
 
     if (
       examData &&
-      examData.section[currentSectionIndex] &&
-      examData.section[currentSectionIndex].questions?.[
+      examData?.section?.[currentSectionIndex] &&
+      examData?.section?.[currentSectionIndex].questions?.[
       selectedLanguage?.toLowerCase()
       ]
     ) {
       const totalQuestions =
-        examData.section[currentSectionIndex].questions[
+        examData?.section?.[currentSectionIndex].questions[
           selectedLanguage?.toLowerCase()
         ]?.length;
 
       if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
-        setClickedQuestionIndex(clickedQuestionIndex + 1);
+        dispatch(updateNavigation({ questionIndex: clickedQuestionIndex + 1 }));
       } else {
-        setClickedQuestionIndex(startingIndex);
+        dispatch(updateNavigation({ questionIndex: startingIndex }));
       }
     }
   };
 
-  const [examStartTime, setExamStartTime] = useState(null);
-  const [totalTime, setTotalTime] = useState("");
+  // Persisted in Redux
 
-  useEffect(() => {
-    // Set exam start time when the component mounts
-    if (!examStartTime) {
-      setExamStartTime(new Date());
-    }
-  }, []);
-
-  const [questionTime, setQuestionTime] = useState(0);
-  const [questionTimerActive, setQuestionTimerActive] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  // Persisted in Redux
   const sectionTimerRef = useRef(null);        // stable interval for section countdown
   const pauseStartRef = useRef(null);           // timestamp when pause began
   const pausedDurationRef = useRef(0);          // total seconds paused this session
   const [timerKey, setTimerKey] = useState(0);  // incremented to (re)start the countdown interval
-  const questionTimerRef = useState(null);
-
-  // let questionTimerInterval;
-
-  // useEffect(() => {
-  //   // setQuestionTime(0);
-  //   setQuestionTimerActive(true);
-  //   // Reset time when switching questions
-  //   if (questionTimerActive && !isPaused) {
-  //     questionTimerRef.current = setInterval(() => {
-  //       setQuestionTime((prev) => prev + 1);
-  //     }, 1000);
-  //   }
-
-  //   return () => clearInterval(questionTimerRef.current); // Cleanup interval on unmount
-  // }, [questionTimerActive, isPaused]);
 
   const datatime = examData?.duration ?? 0;
-  const [timeLeft, setTimeLeft] = useState(datatime * 60);
 
-  // const formatTime = (durationInSeconds) => {
-  //   const hours = Math.floor(durationInSeconds / 3600);
-  //   const minutes = Math.floor((durationInSeconds % 3600) / 60);
-  //   const seconds = durationInSeconds % 60;
-
-  //   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2, "0")}`;
-  // };
-
-  useEffect(() => {
-    setTimeLeft(datatime * 60); // Reset when duration changes
-  }, [datatime]);
 
   const [examDataSubmission, setExamDataSubmission] = useState(null); // Define examDataSubmission state
 
-  // useEffect(() => {
-
-  const [selectedOptions, setSelectedOptions] = useState(
-    Array(totalQuestions).fill(null)
-  );
-
-  // useEffect(() => {
-  //   console.log('selectedOptions:', selectedOptions); // Log the selectedOptions to verify
-
-  //   if (!id) return;
-
-  //   const storedSelectedOptions = localStorage.getItem(`selectedOptions_${id}`);
-  //   if (storedSelectedOptions) {
-  //     try {
-  //       const parsedOptions = JSON.parse(storedSelectedOptions);
-  //       setSelectedOptions(parsedOptions);
-  //     } catch (e) {
-  //       console.error('Error parsing stored selected options:', e);
-  //       // Initialize with null for all questions if parsing fails
-  //       const initialOptions = Array(totalQuestions).fill(null);
-  //       setSelectedOptions(initialOptions);
-  //     }
-  //   } else {
-  //     // Initialize with null for all questions if no data in localStorage
-  //     const initialOptions = Array(totalQuestions).fill(null);
-  //     setSelectedOptions(initialOptions);
-  //   }
-  // }, [id, totalQuestions]);
-
-  // useEffect(() => {
-  //   if (!id) return;
-
-  //   if (selectedOptions.length > 0) {
-  //     // Store selected options along with question number
-  //     const combinedData = selectedOptions.map((selectedOption, index) => ({
-  //       questionNumber: index,
-  //       selectedOption: selectedOption, // Could be null or the selected value
-  //     }));
-
-  //     // Save combined data to localStorage
-  //     localStorage.setItem(`selectedOptions_${id}`, JSON.stringify(combinedData));
-  //   } else {
-  //     // Remove the stored data from localStorage if no selections
-  //     localStorage.removeItem(`selectedOptions_${id}`);
-  //   }
-  // }, [selectedOptions, id]);
 
   useEffect(() => {
     if (!id) return;
     const initialOptions = Array(totalQuestions).fill(null);
-    setSelectedOptions(initialOptions);
-  }, [id, totalQuestions]);
+    dispatch(setAllSelectedOptions(initialOptions));
+  }, [id, totalQuestions, dispatch]);
 
   useEffect(() => {
     if (!id) return;
@@ -718,34 +510,23 @@ const Test = () => {
 
   // Function to update selected option for a specific question
   const updateSelectedOption = (newSelectedOption, questionIndex) => {
-    const updatedSelectedOptions = [...selectedOptions];
-    updatedSelectedOptions[questionIndex] = newSelectedOption; // Update specific question's selectedOption
-    setSelectedOptions(updatedSelectedOptions);
+    dispatch(setSelectedOption({ index: questionIndex, option: newSelectedOption }));
   };
 
   // Your submitExam function with the necessary modifications
   const handleSubmitSection = () => {
     const now = new Date();
     const questionsForSection =
-      examData?.section[currentSectionIndex]?.questions?.[
+      examData?.section?.[currentSectionIndex]?.questions?.[
       selectedLanguage?.toLowerCase()
       ] || [];
     const sectionStartIndex = startingIndex;
     const sectionEndIndex = sectionStartIndex + questionsForSection.length - 1;
 
     // ─── 2) If we were actually on a question in *this* section, save its time ───
-    if (
-      questionStartTime !== null &&
-      clickedQuestionIndex !== null &&
-      clickedQuestionIndex >= sectionStartIndex &&
-      clickedQuestionIndex <= sectionEndIndex
-    ) {
-      const now = new Date();
-      const secondsSpent = Math.floor((now.getTime() - questionStartTime.getTime()) / 1000);
-      setQuestionTimes((prev) => ({
-        ...prev,
-        [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
-      }));
+    // Save current question time if running (Handled by live tick, cleanup local)
+    if (questionStartTime && clickedQuestionIndex !== null) {
+      setQuestionStartTime(null);
     }
 
     // Stop question timer and clear interval
@@ -758,27 +539,23 @@ const Test = () => {
     setQuestionStartTime(null);
 
     // Make sure you pause visually as well
-    setIsPaused(true);
+    dispatch(setIsPaused(true));
 
-
-    // ─── 3) Always clear the question start time so we don’t double‑count ───
-    setQuestionStartTime(null);
     console.log("Handling section submission...");
-    setIsPaused(true); // ⏸️ Pause the timer
 
     // ✅ Save section-level time
     const timeSpent = Math.floor(
       (now - currentSectionStartTimeRef.current) / 1000
     );
-    setSectionTimes((prev) => ({
-      ...prev,
-      [currentSectionIndex]: (prev[currentSectionIndex] || 0) + timeSpent,
+    dispatch(updateSectionTimeAction({
+      index: currentSectionIndex,
+      time: timeSpent
     }));
     currentSectionStartTimeRef.current = new Date(); // Reset for next section
 
     // Reset timer for accuracy
     currentSectionStartTimeRef.current = new Date();
-    const currentSection = examData?.section[currentSectionIndex];
+    const currentSection = examData?.section?.[currentSectionIndex];
     console.log("Current Section:", currentSection);
 
     if (!currentSection) {
@@ -840,12 +617,10 @@ const Test = () => {
     console.log(questionTimes);
 
     // Store section summary
-    setSectionSummaryData((prevData) => {
-      const updatedData = prevData.filter(
-        (data) => data.sectionName !== sectionSummary.sectionName
-      );
-      return [...updatedData, sectionSummary];
-    });
+    const updatedSummary = sectionSummaryData.filter(
+      (data) => data.sectionName !== sectionSummary.sectionName
+    );
+    dispatch(setSectionSummaryData([...updatedSummary, sectionSummary]));
 
     updateSectionTime();
     // Display modal
@@ -858,20 +633,17 @@ const Test = () => {
 
       if (currentSectionIndex < examData.section.length - 1) {
         console.log("Moving to the next section.");
-        setCurrentSectionIndex((prev) => prev + 1);
-
         // Move to the first question of the next section
-        const newStartingIndex = examData?.section
-          ?.slice(0, currentSectionIndex + 1)
+        const nextIdx = currentSectionIndex + 1;
+        const nextStartingIndex = examData?.section
+          ?.slice(0, nextIdx)
           .reduce(
             (acc, section) =>
               acc +
-              section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+              (section.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
             0
           );
-        console.log("New Starting Index for Next Section:", newStartingIndex);
-
-        setClickedQuestionIndex(newStartingIndex);
+        dispatch(updateNavigation({ sectionIndex: nextIdx, questionIndex: nextStartingIndex }));
       } else {
         console.log("Submitting the exam.");
         submitExam();
@@ -880,7 +652,6 @@ const Test = () => {
   };
 
   // Using useEffect to trigger submitExam when needed
-  const [timeminus, settimeminus] = useState(0);
   const lastPoolRef = useRef(null);
   // const [isPaused, setIsPaused] = useState(false);
   const [pauseCount, setPauseCount] = useState(0);
@@ -889,23 +660,10 @@ const Test = () => {
 
   const [dataid, setDataid] = useState(null); // State to store the data
 
-  useEffect(() => {
-    // Fetch the data when the component mounts or when `id` changes
-    if (user?._id) {
-      Api.get(`results/${user?._id}/${id}`)
-        .then((response) => {
-          // Set the fetched data to state
-          setDataid(response.data._id);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
-    }
-  }, [id]);
   console.log("timetakenfromdb:", timeTakenFromDB);
 
   useEffect(() => {
-    if (!examData) return;
+    if (!examData || !resultData) return;
 
     const currentSection = examData?.section?.[currentSectionIndex];
     let totalSectionTime = 0;
@@ -938,31 +696,171 @@ const Test = () => {
     }
 
     // Reset if the pool has changed OR the DB progress has updated (on resume)
-    const hasPoolChanged = lastPoolRef.current !== poolIdentifier;
+    const isFirstRender = lastPoolRef.current === "";
+    const hasPoolChanged = !isFirstRender && lastPoolRef.current !== poolIdentifier;
 
-    if (hasPoolChanged || (timeTakenFromDB !== timeTakenForPool) || (timeminus === 0 && totalSectionTime > 0)) {
+    // Treat timeminus=null as uninitialized, meaning 0 time taken locally
+    const isUninitialized = timeminus === null && totalSectionTime > 0;
+    const reduxTimeTaken = isUninitialized ? 0 : Math.max(0, totalSectionTime - (timeminus || 0));
+
+    const dbHasMoreProgress = timeTakenForPool > reduxTimeTaken;
+
+    if (hasPoolChanged || isUninitialized || dbHasMoreProgress) {
       lastPoolRef.current = poolIdentifier;
-      settimeTakenFromDB(timeTakenForPool);
+      settimeTakenFromDB(timeTakenForPool); // Keep for backwards compatibility if needed elsewhere
 
       const remainingTime = Math.max(
         0,
         Math.min(totalSectionTime, totalSectionTime - timeTakenForPool)
       );
-      settimeminus(remainingTime);
+      dispatch(setTimeminus(remainingTime));
       setTimerKey(k => k + 1);
+    } else if (isFirstRender) {
+      lastPoolRef.current = poolIdentifier;
+      settimeTakenFromDB(timeTakenForPool);
     }
   }, [examData, currentSectionIndex, resultData]);
 
-  const updateSectionTime = () => {
-    if (!examDataSubmission) return;
+  const prepareSubmissionData = (explicitEndTime) => {
+    if (!examData) return null;
+
+    const endTime = explicitEndTime || new Date();
+    const currentSection = examData?.section?.[currentSectionIndex];
+
+    // Build absolute answers data
+    const answersData = selectedOptions.map((selectedOption, index) => {
+      let sectionIndex = 0;
+      let questionIndexInSection = 0;
+      let count = 0;
+      let activeSectionObj = null;
+
+      examData.section.forEach((section, sIndex) => {
+        const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+        if (index >= count && index < count + questions.length) {
+          sectionIndex = sIndex;
+          questionIndexInSection = index - count;
+          activeSectionObj = section;
+        }
+        count += questions.length;
+      });
+
+      if (!activeSectionObj) return null;
+      const question = activeSectionObj.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+
+      const optionsData = (question?.options || []).map((option, optIdx) => ({
+        option,
+        index: optIdx,
+        isSelected: optIdx === selectedOption,
+        isCorrect: optIdx === question?.answer,
+      }));
+
+      const isVisited = visitedQuestions.includes(index) ? 1 : 0;
+      const questionScore = selectedOption !== null
+        ? selectedOption === question.answer
+          ? activeSectionObj.plus_mark
+          : -activeSectionObj.minus_mark
+        : 0;
+
+      return {
+        question: question?.question,
+        options: optionsData,
+        correct: question?.answer === selectedOption,
+        explanation: question?.explanation,
+        answer: question?.answer,
+        common_data: question?.common_data,
+        selectedOption: selectedOption,
+        isVisited: isVisited,
+        NotVisited: isVisited ? 0 : 1,
+        q_on_time: formatTime(questionTimes[index] || 0),
+        score: questionScore,
+      };
+    }).filter(Boolean);
+
+    // Build formatted sections
+    let cumulativeTimeTaken = 0;
+    const formattedSections = examData.section.map((section, sectionIdx) => {
+      const sectionQuestions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+      const sectionStartIndex = examData.section
+        .slice(0, sectionIdx)
+        .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+      const sectionEndIndex = sectionStartIndex + sectionQuestions.length;
+
+      const sectionAnswers = answersData.slice(sectionStartIndex, sectionEndIndex);
+      const sectionAnswered = sectionAnswers.filter(q => q.selectedOption !== null).length;
+      const sectionVisited = sectionAnswers.filter(q => q.isVisited === 1).length;
+      const sectionCorrect = sectionAnswers.filter(q => q.correct).length;
+      const sectionScore = sectionAnswers.reduce((sum, q) => sum + q.score, 0);
+
+      // Section timing
+      let sectionTimeTaken = 0;
+      const isActiveGroupMember = (currentSection?.is_sub_section && section.is_sub_section && currentSection.group_name === section.group_name);
+
+      if (sectionIdx === currentSectionIndex || isActiveGroupMember) {
+        // Active section: calculate current elapsed
+        const groupTime = (currentSection?.is_sub_section && currentSection?.group_name)
+          ? examData.section.filter(s => s.is_sub_section && s.group_name === currentSection.group_name).reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60
+          : (Number(currentSection?.t_time) || 0) * 60;
+
+        const currentGroupTimeTaken = Math.max(0, groupTime - timeminus);
+
+        if (section.is_sub_section) {
+          const groupIndices = examData.section
+            .map((s, i) => (s.is_sub_section && s.group_name === section.group_name ? i : -1))
+            .filter(i => i !== -1);
+          sectionTimeTaken = groupIndices[0] === sectionIdx ? currentGroupTimeTaken : 0;
+        } else {
+          sectionTimeTaken = currentGroupTimeTaken;
+        }
+      } else {
+        sectionTimeTaken = resultData?.section?.[sectionIdx]?.timeTaken || 0;
+      }
+
+      // Add to total
+      if (section.is_sub_section) {
+        const groupIndices = examData.section.map((s, i) => (s.is_sub_section && s.group_name === section.group_name ? i : -1)).filter(i => i !== -1);
+        if (groupIndices[0] === sectionIdx) cumulativeTimeTaken += sectionTimeTaken;
+      } else {
+        cumulativeTimeTaken += sectionTimeTaken;
+      }
+
+      return {
+        ...section,
+        isVisited: sectionVisited,
+        NotVisited: sectionQuestions.length - sectionVisited,
+        questions: {
+          english: section.questions.english.map((q, i) => sectionAnswers[i] || q), // Simplified placeholder for now
+          hindi: section.questions.hindi?.map((q, i) => sectionAnswers[i] || q) || [],
+          tamil: section.questions.tamil?.map((q, i) => sectionAnswers[i] || q) || [],
+        },
+        s_score: sectionScore,
+        correct: sectionCorrect,
+        incorrect: sectionAnswered - sectionCorrect,
+        Attempted: sectionAnswered,
+        Not_Attempted: sectionQuestions.length - sectionAnswered,
+        timeTaken: sectionTimeTaken,
+      };
+    });
+
+    return {
+      formattedSections,
+      totalScore: formattedSections.reduce((sum, s) => sum + (s.s_score || 0), 0),
+      timeTakenInSeconds: cumulativeTimeTaken,
+      formattedTotalTime: formatTime(cumulativeTimeTaken),
+      endTime,
+    };
+  };
+
+  const updateSectionTime = (passedData, overrideStatus) => {
+    const submissionData = passedData || prepareSubmissionData();
+    if (!submissionData || timeminus === null) return Promise.resolve();
 
     const {
-      formattedSections,
-      totalScore,
-      formattedTotalTime,
-      timeTakenInSeconds,
-      endTime,
-    } = examDataSubmission;
+      formattedSections = [],
+      totalScore = 0,
+      formattedTotalTime = "00:00:00",
+      timeTakenInSeconds = 0,
+      endTime = new Date(),
+    } = submissionData;
 
     const currentSec = examData?.section?.[currentSectionIndex];
     let totalTimeInSeconds = 0;
@@ -1003,34 +901,56 @@ const Test = () => {
     const timeTakenInSecondsUpdated = cumulativeTimeTaken;
 
     const updatedSections = formattedSections.map((section, idx) => {
-      const sec = examData?.section?.[idx];
+      const secData = examData?.section?.[idx];
 
-      if (isCumulativePool) {
-        // Store pool elapsed time ONLY on the FIRST sub-section of this specific group.
-        const groupName = sec?.group_name || "";
+      // Update individual questions q_on_time from Redux
+      const updateQuestions = (qs, startIndex) => {
+        if (!qs) return [];
+        return qs.map((q, qIdx) => ({
+          ...q,
+          q_on_time: formatTime(questionTimes[startIndex + qIdx] || 0)
+        }));
+      };
+
+      // Calculate starting index for this section to map to absolute Redux keys
+      const sectionStartIndex = examData?.section
+        ?.slice(0, idx)
+        .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0) || 0;
+
+      const updatedQs = {
+        english: updateQuestions(section.questions?.english, sectionStartIndex),
+        hindi: updateQuestions(section.questions?.hindi, sectionStartIndex),
+        tamil: updateQuestions(section.questions?.tamil, sectionStartIndex),
+      };
+
+      let baseSection = { ...section, questions: updatedQs };
+
+      const isCurrentGroup = (currentSec?.is_sub_section && secData?.is_sub_section && currentSec.group_name === secData.group_name);
+
+      if (isCumulativePool && isCurrentGroup) {
         const groupIndices = examData.section
-          .map((s, i) => (s.is_sub_section && s.group_name === groupName ? i : -1))
+          .map((s, i) => (s.is_sub_section && s.group_name === currentSec.group_name ? i : -1))
           .filter(i => i !== -1);
         const firstGroupIdx = groupIndices[0];
 
         if (idx === firstGroupIdx) {
-          return { ...section, timeTaken: actualTimeTaken };
+          return { ...baseSection, timeTaken: actualTimeTaken };
         }
-        // Other sections in the same group: keep their timeTaken as 0
-        if (sec?.is_sub_section && sec?.group_name === groupName) {
-          return { ...section, timeTaken: 0 };
-        }
-        return section;
+        return { ...baseSection, timeTaken: 0 };
       }
 
       if (idx === currentSectionIndex) {
-        return { ...section, timeTaken: actualTimeTaken };
+        return { ...baseSection, timeTaken: actualTimeTaken };
       }
-      return section;
+
+      // Preserve existing timeTaken for other groups/sections
+      return { ...baseSection, timeTaken: section.timeTaken || 0 };
     });
 
     if (user?._id) {
-      Api.post(`results/${user._id}/${id}`, {
+      const currentPauseElapsed = pauseStartRef.current ? Math.floor((Date.now() - pauseStartRef.current) / 1000) : 0;
+
+      return Api.post(`results/${user._id}/${id}`, {
         ExamId: id,
         section: updatedSections,
         score: totalScore,
@@ -1038,17 +958,23 @@ const Test = () => {
         timeTakenInSeconds: timeTakenInSecondsUpdated,
         takenAt: examStartTime,
         submittedAt: endTime,
-        status: isPaused ? "paused" : "completed",
+        status: isSubmitted ? "completed" : (overrideStatus || (isPaused ? "paused" : "started")),
         sectionTimes,
-        pausedDuration: pausedDurationRef.current || 0, // total seconds paused
+        sectionIndex: currentSectionIndex,
+        currentSectionIndex: currentSectionIndex, // Send both for compatibility
+        currentQuestionIndex: clickedQuestionIndex,
+        pausedDuration: (pausedDurationRef.current || 0) + currentPauseElapsed,
       })
         .then((res) => {
-          console.log("Submitted:", res.data);
+          console.log("Auto-save successful:", res.data);
+          return res.data;
         })
         .catch((err) => {
-          console.error("Error submitting:", err);
+          console.error("Auto-save failed:", err);
+          throw err;
         });
     }
+    return Promise.resolve();
   };
 
   useEffect(() => {
@@ -1059,38 +985,14 @@ const Test = () => {
     id,
     currentSectionIndex,
     sectionTimes,
-    timeminus,
     examData,
-    isPaused,
     timeTakenFromDB,
   ]);
 
-  useEffect(() => {
-    if (!user?._id || !id) return;
-    Api.get(`results/${user._id}/${id}`)
-      .then((response) => {
-        setResultData(response.data);
-        if (response.data && response.data.pausedDuration != null) {
-          pausedDurationRef.current = response.data.pausedDuration;
-        }
-      })
-      .catch((error) => {
-        // 404 = no prior attempt, which is normal for first-time exam takers
-        if (error?.response?.status === 404) {
-          setResultData(null);
-        } else {
-          console.error("Error fetching result data:", error);
-        }
-      });
-  }, [user?._id, id]);
+
 
   const [timerEnded, setTimerEnded] = useState(false);
-  useEffect(() => {
-    if (timerEnded) {
-      handleTimerEnd();
-      setTimerEnded(false);
-    }
-  }, [timerEnded]);
+  // Handled by timeminus watcher
 
   // Stable section countdown — re-starts only when isPaused or timerKey changes
   useEffect(() => {
@@ -1111,522 +1013,147 @@ const Test = () => {
     // Don't start if nothing is left
     // (timeminus is read via functional updater so no stale closure)
     sectionTimerRef.current = setInterval(() => {
-      settimeminus(prev => {
-        const next = prev - 1;
-        if (next <= 0) {
-          clearInterval(sectionTimerRef.current);
-          setTimerEnded(true);
-          return 0;
-        }
-        return next;
-      });
+      dispatch(tickTimeminus());
+      // Logic for timer ending is now handled in a separate useEffect watching timeminus
     }, 1000);
 
     return () => clearInterval(sectionTimerRef.current);
-  }, [isPaused, timerKey]); // timerKey fires when timeminus is freshly initialized
+  }, [isPaused, timerKey, dispatch]); // Added missing bracket for the first useEffect
+
+  useEffect(() => {
+    if (timeminus !== null && timeminus <= 0 && !isSubmitted && examData) {
+      if (sectionTimerRef.current) clearInterval(sectionTimerRef.current);
+      handleTimerEnd();
+    }
+  }, [timeminus, isSubmitted, examData]);
 
   const handleTimerEnd = async () => {
-    handleSubmitSection();
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    handleSectionCompletion(true); // Pass true to indicate timer ended
+    // Save current question time if running (Handled by live tick, cleanup local)
+    if (questionStartTime !== null && clickedQuestionIndex !== null) {
+      setQuestionStartTime(null);
+    }
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setQuestionStartTime(null);
+    dispatch(setIsPaused(true));
+
+    // Save section-level time
+    const now = new Date();
+    const timeSpent = Math.floor((now - currentSectionStartTimeRef.current) / 1000);
+    dispatch(updateSectionTimeAction({ index: currentSectionIndex, time: timeSpent }));
+    currentSectionStartTimeRef.current = new Date();
+
+    // Directly trigger completion bypassing manual modal
+    await handleSectionCompletion(true);
   };
 
+  const submitExam = (explicitStatus) => {
+    console.log("submitExam called with status:", explicitStatus);
 
-  const submitExam = () => {
-    updateSectionTime()
-    console.log("submitExam called");
+    // Save current active timing before final submission
     const now = new Date();
-    const timeSpent = Math.floor(
-      (now - currentSectionStartTimeRef.current) / 1000
-    );
+    const timeSpent = Math.floor((now - currentSectionStartTimeRef.current) / 1000);
+    dispatch(updateSectionTimeAction({ index: currentSectionIndex, time: timeSpent }));
+    currentSectionStartTimeRef.current = now;
 
-    setSectionTimes((prev) => {
-      const previousTime = prev[currentSectionIndex] || 0;
-
-      // Only update if the new timeSpent is greater than previousTime
-      const shouldUpdate = timeSpent > previousTime;
-      const updatedTime = shouldUpdate ? timeSpent : previousTime;
-
-      const updated = {
-        ...prev,
-        [currentSectionIndex]: updatedTime,
-      };
-
-      console.warn(
-        `Section ${currentSectionIndex}: previous = ${previousTime}, new = ${timeSpent}, saved = ${updatedTime}`
-      );
-
-      // Optional: Show the full updated object
-      console.warn("All updated section times:", updated);
-
-      return updated;
-    });
-    setQuestionTimes(prev => ({
-      ...prev,
-      [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + questionTime
-    }));
-
-    if (
-      !examData ||
-      !examData.section ||
-      !examData.section[currentSectionIndex]
-    ) {
-      console.error("Exam data or section not available");
-      return;
-    }
-
-    const currentSection = examData.section[currentSectionIndex];
-    const endTime = new Date();
-
-    // Accumulate total time taken across ALL sections (including the just-finished one)
-    // We can't just use (endTime - examStartTime) because it resets on pause/resume.
-    let cumulativeTimeTaken = 0;
-
-    // ✅ GROUP-AWARE: if the active section belongs to a group, sum t_time for the whole group
-    let currentSectionTotalTime = 0;
-    if (currentSection?.is_sub_section && currentSection?.group_name) {
-      currentSectionTotalTime = examData.section
-        .filter(s => s.is_sub_section && s.group_name === currentSection.group_name)
-        .reduce((sum, s) => sum + (Number(s.t_time) || 0), 0) * 60;
-    } else {
-      currentSectionTotalTime = (Number(currentSection?.t_time) || 0) * 60;
-    }
-    const currentActiveTimeTaken = Math.max(0, currentSectionTotalTime - timeminus);
-
-    // Sum all prior sections from DB + current active one.
-    // For grouped sections, count their time only ONCE (at the first section of the group).
-    examData.section.forEach((sec, idx) => {
-      if (sec.is_sub_section) {
-        const groupIndices = examData.section
-          .map((s, i) => (s.is_sub_section && s.group_name === sec.group_name ? i : -1))
-          .filter(i => i !== -1);
-        if (groupIndices[0] !== idx) return; // skip non-first group members
-      }
-
-      if (idx === currentSectionIndex || (currentSection?.is_sub_section && currentSection?.group_name === sec.group_name)) {
-        cumulativeTimeTaken += currentActiveTimeTaken;
-      } else {
-        cumulativeTimeTaken += Math.max(0, resultData?.section?.[idx]?.timeTaken || 0);
-      }
-    });
-
-    const timeTakenInSeconds = cumulativeTimeTaken;
-    const formattedTotalTime = formatTime(timeTakenInSeconds);
-
-    const formattime = now;
-
-    console.log("check this ", formattime);
-
-    setTotalTime(formattedTotalTime);
-    if (!currentSection) return;
-
-    const questions =
-      currentSection.questions?.[selectedLanguage?.toLowerCase()];
-    if (!questions) return;
-
-    const totalQuestions = questions.length;
-
-    // Calculate answered and unanswered
-    const answeredQuestions = selectedOptions
-      .slice(startingIndex, startingIndex + totalQuestions)
-      .filter((option) => option !== null).length;
-
-    const notAnsweredQuestions = totalQuestions - answeredQuestions;
-
-    const visitedQuestionsCount = visitedQuestions.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    );
-
-    const notVisitedQuestions = Array.from(
-      { length: totalQuestions },
-      (_, index) =>
-        !visitedQuestionsCount.includes(index + startingIndex)
-          ? index + startingIndex
-          : null
-    ).filter((index) => index !== null);
-
-    const sectionSummary = {
-      visitedQuestionsCount:
-        visitedQuestionsCount.length > 0 ? visitedQuestionsCount[0] : null,
-      notVisitedQuestions:
-        notVisitedQuestions.length > 0 ? notVisitedQuestions[0] : null,
-    };
-
-    // setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
-
-    const reviewedQuestions = markedForReview.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
-
-    const answersData = selectedOptions.map((selectedOption, index) => {
-      // Find which section this question belongs to
-      let sectionIndex = 0;
-      let questionIndexInSection = 0;
-      let currentSection;
-
-      // Find the section and relative index for this question
-      let count = 0;
-      examData.section.forEach((section, sIndex) => {
-        const questions = section.questions[selectedLanguage.toLowerCase()] || [];
-        if (index >= count && index < count + questions.length) {
-          sectionIndex = sIndex;
-          questionIndexInSection = index - count;
-          currentSection = section;
-        }
-        count += questions.length;
-      });
-
-      const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
-
-      // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
-      const singleQuestionTime = formatTime(questionTimes[index] || 0);
-
-      const optionsData = question?.options?.map((option, optionIndex) => ({
-        option: option,
-        index: optionIndex,
-        isSelected: optionIndex === selectedOption,
-        isCorrect: optionIndex === question?.answer,
-      }));
-
-      const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
-      const notVisited = isVisited === 1 ? 0 : 1;
-
-      // const questionScore =
-      //   selectedOption !== undefined
-      //     ? selectedOption === question?.answer
-      //       ? question?.plus_mark
-      //       : -question?.minus_mark
-      //     : 0;
-
-      // Use section-specific marks
-      const questionScore = selectedOption !== null
-        ? selectedOption === question.answer
-          ? currentSection.plus_mark
-          : -currentSection.minus_mark
-        : 0;
-      console.log("ques score", questionScore);
-
-      return {
-        question: question?.question,
-        options: optionsData,
-        correct: question?.answer === selectedOption,
-        explanation: question?.explanation,
-        answer: question?.answer,
-        common_data: question?.common_data,
-        selectedOption: selectedOption,
-        isVisited: isVisited,
-        NotVisited: notVisited,
-        q_on_time: singleQuestionTime,
-        score: questionScore,
-      };
-    });
-    console.log("answers dataaaaa", answersData);
-
-    const totalScore = answersData.reduce(
-      (total, answerData) => total + answerData.score,
-      0
-    );
-
-    const formattedSections = examData.section
-      .map((section, sectionIndex) => {
-        const sectionQuestions =
-          section.questions?.[selectedLanguage?.toLowerCase()];
-        if (!sectionQuestions) return null;
-
-        const sectionStartIndex = examData.section
-          .slice(0, sectionIndex)
-          .reduce(
-            (acc, s) =>
-              acc +
-              (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-            0
-          );
-        const sectionEndIndex = sectionStartIndex + sectionQuestions.length;
-
-        const sectionAnswered = selectedOptions
-          .slice(sectionStartIndex, sectionEndIndex)
-          .filter((option) => option !== undefined && option !== null).length;
-
-        const sectionNotAnswered = sectionQuestions.length - sectionAnswered;
-
-        const sectionVisited = visitedQuestions.filter(
-          (index) => index >= sectionStartIndex && index < sectionEndIndex
-        ).length;
-
-        const sectionAnswersData = sectionQuestions.map(
-          (question, questionIndex) => {
-            const absoluteIndex = sectionStartIndex + questionIndex;
-            const selectedOption = selectedOptions[absoluteIndex];
-            const isVisited = visitedQuestions.includes(absoluteIndex) ? 1 : 0;
-            const notVisited = isVisited ? 0 : 1;
-            const questionScore = selectedOption !== undefined
-              ? selectedOption === question.answer
-                ? section.plus_mark
-                : -section.minus_mark
-              : 0;
-
-            return {
-              question: question.question,
-              options: question.options || [],
-              answer: question.answer,
-              common_data: question.common_data,
-              correct: question.answer === selectedOption ? 1 : 0,
-              explanation: question.explanation || "",
-              selectedOption: selectedOption,
-              q_on_time: formatTime(questionTimes[absoluteIndex] || 0),
-              isVisited: isVisited,
-              NotVisited: notVisited,
-              score: questionScore,
-            };
-          }
-        );
-        console.log("section answers data", sectionAnswersData);
-
-        const correctCount = sectionAnswersData.filter(
-          (q) => q.correct === 1
-        ).length;
-
-        const attemptedCount = sectionAnswersData.filter(
-          (q) => q.selectedOption !== undefined
-        ).length;
-
-        const incorrectCount = sectionAnswered - correctCount;
-
-        // Use section-specific marks instead of hardcoded values
-        const sectionScore =
-          (correctCount * section.plus_mark) -
-          (incorrectCount * section.minus_mark);
-
-        const secaccuracy =
-          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
-
-        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
-
-        const skippedQuestions = sectionVisited - sectionAnswered;
-
-        return {
-          name: section.name,
-          group_name: section.group_name || "",
-          is_sub_section: section.is_sub_section || false,
-          t_question: section.t_question,
-          t_time: section.t_time,
-          t_mark: section.t_mark,
-          plus_mark: section.plus_mark,
-          minus_mark: section.minus_mark,
-          cutoff_mark: section.cutoff_mark,
-          isVisited: sectionVisited,
-          NotVisited: sectionQuestions.length - sectionVisited,
-          s_blueprint: section.s_blueprint.map((bp) => ({
-            subject: bp.subject,
-            topic: bp.topic,
-            tak_time: bp.tak_time,
-          })),
-          questions: {
-            english: section.questions.english.map((question, index) => ({
-              question: question?.question,
-              options: question.options || [],
-              answer: question?.answer,
-              common_data: question?.common_data,
-              correct: answersData[sectionStartIndex + index]?.correct || 0,
-              explanation: question?.explanation || "",
-              selectedOption: answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time: formatTime(questionTimes[sectionStartIndex + index] || 0),
-              isVisited: answersData[sectionStartIndex + index]?.isVisited,
-              NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
-              score: answersData[sectionStartIndex + index]?.score,
-            })),
-            hindi: section.questions.hindi.map((question, index) => ({
-              question: question?.question,
-              options: question.options || [],
-              answer: question?.answer,
-              common_data: question?.common_data,
-              correct: answersData[sectionStartIndex + index]?.correct || 0,
-              explanation: question?.explanation || "",
-              selectedOption: answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time: formatTime(questionTimes[sectionStartIndex + index] || 0),
-              isVisited: answersData[sectionStartIndex + index]?.isVisited,
-              NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
-              score: answersData[sectionStartIndex + index]?.score,
-            })),
-            tamil: section.questions.tamil.map((question, index) => ({
-              question: question?.question,
-              options: question.options || [],
-              answer: question?.answer,
-              common_data: question?.common_data,
-              correct: answersData[sectionStartIndex + index]?.correct || 0,
-              explanation: question?.explanation || "",
-              selectedOption: answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time: formatTime(questionTimes[sectionStartIndex + index] || 0),
-              isVisited: answersData[sectionStartIndex + index]?.isVisited,
-              NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
-              score: answersData[sectionStartIndex + index]?.score,
-            })),
-          },
-
-          s_order: section.s_order || 0,
-          s_score: sectionScore,
-          correct: correctCount,
-          incorrect: incorrectCount,
-          Attempted: sectionAnswered,
-          Not_Attempted: sectionNotAnswered,
-          visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
-          notVisitedQuestions: sectionSummary.notVisitedQuestions,
-          s_accuracy: secaccuracy,
-          skipped: skippedQuestions,
-          timeTaken: (() => {
-            const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
-            const time2 = sectionTimes?.[sectionIndex];
-
-            if (typeof time1 === 'number' && typeof time2 === 'number') {
-              return time1 + time2;
-            }
-
-            return time1 ?? time2 ?? 0;
-          })()
-
-        };
-      })
-      .filter(Boolean);
-
-    const totalStats = formattedSections.reduce(
-      (acc, section) => ({
-        visitedCount: acc.visitedCount + (section.isVisited || 0),
-        notVisitedCount: acc.notVisitedCount + (section.NotVisited || 0),
-        answeredCount: acc.answeredCount + (section.Attempted || 0),
-        notAnsweredCount: acc.notAnsweredCount + (section.Not_Attempted || 0),
-      }),
-      {
-        visitedCount: 0,
-        notVisitedCount: 0,
-        answeredCount: 0,
-        notAnsweredCount: 0,
-      }
-    );
-
-    setExamDataSubmission({
-      formattedSections,
-      totalScore: formattedSections.reduce(
-        (sum, section) => sum + (section.s_score || 0),
-        0
-      ),
-      timeTakenInSeconds,
-      totalcheck: {
-        visitedQuestionsCount: totalStats.visitedCount,
-        notVisitedQuestions: totalStats.notVisitedCount,
-        answeredQuestions: totalStats.answeredCount,
-        notAnsweredQuestions: totalStats.notAnsweredCount,
-      },
-      endTime,
-    });
+    const submissionData = prepareSubmissionData(now);
+    return updateSectionTime(submissionData, explicitStatus);
   };
 
   const handlePauseResume = () => {
-    if (pauseCount < 1) {
-      clearInterval(questionTimerRef.current);
-      setIsPaused(true);
-      setPauseCount(pauseCount + 1);
+    if (isPaused) {
+      // 🟢 RESUME LOGIC
+      dispatch(setIsPaused(false));
+      setPauseCount(0);
+      setQuestionStartTime(new Date());
 
-      const now = new Date();
+      // Update DB to status "running" (use explicit "started" or "running" depending on backend expectations, usually "started")
+      updateSectionTime(null, "started");
+      return;
+    }
 
-      // ✅ Save current question time
-      if (questionStartTime && clickedQuestionIndex !== null) {
-        const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-        setQuestionTimes((prev) => ({
-          ...prev,
-          [clickedQuestionIndex]: (prev[clickedQuestionIndex] || 0) + secondsSpent,
-        }));
-        setQuestionStartTime(null);
-        if (timerRef.current) clearInterval(timerRef.current);
-      }
+    // 🔴 PAUSE LOGIC
+    dispatch(setIsPaused(true));
+    setPauseCount(pauseCount + 1);
 
-      // ✅ Save section time
-      const timeSpent = Math.floor(
-        (now - currentSectionStartTimeRef.current) / 1000
-      );
-      console.log("Time spent in current section (seconds):", timeSpent);
+    const now = new Date();
 
-      // ✅ Safely update the sectionTimes state
-      setSectionTimes((prev) => {
-        console.log("Previous state (prev):", prev);
+    // ✅ Save current question time (Live tick already updated state, just cleanup local)
+    if (questionStartTime && clickedQuestionIndex !== null) {
+      setQuestionStartTime(null);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
 
-        const currentTime = prev[currentSectionIndex] || 0;
-        console.log(
-          `Current time for section [${currentSectionIndex}]:`,
-          currentTime
-        );
+    // ✅ Save section time
+    const timeSpent = Math.floor(
+      (now - currentSectionStartTimeRef.current) / 1000
+    );
+    console.log("Time spent in current section (seconds):", timeSpent);
 
-        const updatedTime = currentTime + timeSpent;
-        console.log(
-          `Updated time for section [${currentSectionIndex}]:`,
-          updatedTime
-        );
+    // ✅ Safely update the sectionTimes state
+    // ✅ Safely update the sectionTimes state
+    dispatch(updateSectionTimeAction({
+      index: currentSectionIndex,
+      time: timeSpent
+    }));
+    currentSectionStartTimeRef.current = now;
 
-        const previous = {
-          ...prev,
-          [currentSectionIndex]: updatedTime,
-        };
-        console.log("Updated sectionTimes object to return:", previous);
+    // ✅ Store current exam state
+    const currentState = {
+      clickedQuestionIndex,
+      selectedOptions,
+      visitedQuestions,
+      markedForReview,
+      currentSectionIndex,
+    };
+    localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
 
-        return previous;
-      }); currentSectionStartTimeRef.current = now;
-
-      // ✅ Store current exam state
-      const currentState = {
-        clickedQuestionIndex,
-        selectedOptions,
-        visitedQuestions,
-        markedForReview,
-        currentSectionIndex,
-      };
-      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
-
-      Swal.fire({
-        title: "Pause Exam",
-        text: "Do you want to quit the exam?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, Quit",
-        cancelButtonText: "No, Resume",
-        position: "center",
-        width: "100vw",
-        height: "100vh",
-        padding: "100",
-        customClass: {
-          container: "swal-full-screen",
-          popup: "swal-popup-full-height",
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          setIsPaused(true);
-          await submitExam();
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          window.close();
-        } else {
-          setIsPaused(false);
-          setPauseCount(0);
-
-          // ⏳ Get updated time for current question from state AFTER pause update
-          setQuestionTimes((prev) => {
-            const updatedTime = prev?.[clickedQuestionIndex] || 0;
-            setQuestionTime(updatedTime); // 👈 resume from latest
-            setQuestionStartTime(new Date()); // reset base time for further tracking
-
-            // 🔁 Restart interval
-            if (timerRef.current) clearInterval(timerRef.current);
-            timerRef.current = setInterval(() => {
-              setQuestionTime((prev) => prev + 1);
-            }, 1000);
-
-            return prev; // Important: preserve state
-          });
+    Swal.fire({
+      title: "Pause Exam",
+      text: "Do you want to quit the exam?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, Quit",
+      cancelButtonText: "No, Resume",
+      position: "center",
+      width: "100vw",
+      height: "100vh",
+      padding: "100",
+      customClass: {
+        container: "swal-full-screen",
+        popup: "swal-popup-full-height",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await submitExam("paused");
+        } catch (err) {
+          console.error("Submission error during quit:", err);
         }
 
-      });
-    }
+        // Force close trick - works better in some browsers for manually opened tabs
+        window.open('', '_self', '');
+        window.close();
+
+        // Fallback if the browser prevented it from closing
+        setTimeout(() => {
+          navigate("/");
+        }, 100);
+      } else {
+        dispatch(setIsPaused(false));
+        setPauseCount(0);
+
+        // ⏳ Resuming: questionStartTime resets
+        setQuestionStartTime(new Date());
+
+        // Timer interval is restarted by the isPaused useEffect
+      }
+    });
   };
 
 
@@ -1646,7 +1173,7 @@ const Test = () => {
 
   // Function to show the toast and move to the next section (or result if last section)
   const handleSectionCompletion = async (isTimerEnd = false) => {
-    setIsPaused(false);
+    dispatch(setIsPaused(false));
     setShowModal(false);
 
     const currentSection = examData?.section?.[currentSectionIndex];
@@ -1660,19 +1187,24 @@ const Test = () => {
         .filter(({ s }) => s.is_sub_section && s.group_name === groupName);
 
       // Mark ALL group members as submitted
-      groupMembers.forEach(({ i }) => updatedSubmitted.add(i));
-      setSubmittedSections(updatedSubmitted);
+      groupMembers.forEach(({ i }) => {
+        updatedSubmitted.add(i);
+        dispatch(markSectionSubmitted(i));
+      });
 
       // Find the first section AFTER this group
       const lastGroupMemberIdx = Math.max(...groupMembers.map(({ i }) => i));
       const nextIndex = lastGroupMemberIdx + 1;
 
       if (nextIndex < examData?.section?.length) {
-        setCurrentSectionIndex(nextIndex);
         const newStartingIndex = examData.section
           .slice(0, nextIndex)
           .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-        setClickedQuestionIndex(newStartingIndex);
+
+        dispatch(updateNavigation({
+          sectionIndex: nextIndex,
+          questionIndex: newStartingIndex
+        }));
         return;
       } else {
         // Last group in exam finished via timer — submit exam
@@ -1684,7 +1216,8 @@ const Test = () => {
     }
 
     // Normal completion (Modal "Move to next" OR mid-group switch)
-    setSubmittedSections(updatedSubmitted);
+    updatedSubmitted.add(currentSectionIndex);
+    dispatch(markSectionSubmitted(currentSectionIndex));
 
     // ✅ GROUP-SPECIFIC POOL: check if there are more unsubmitted sub-sections in the same group
     if (currentSection?.is_sub_section) {
@@ -1698,11 +1231,14 @@ const Test = () => {
       if (nextGroupMember) {
         // ✅ More sub-sections remain in this group — switch freely
         const nextIndex = nextGroupMember.i;
-        setCurrentSectionIndex(nextIndex);
         const newStartingIndex = examData.section
           .slice(0, nextIndex)
           .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-        setClickedQuestionIndex(newStartingIndex);
+
+        dispatch(updateNavigation({
+          sectionIndex: nextIndex,
+          questionIndex: newStartingIndex
+        }));
         return;
       }
       // All sub-sections done — fall through
@@ -1711,11 +1247,14 @@ const Test = () => {
     // ✅ ADVANCE TO NEXT SECTION / GROUP (or submit exam if last)
     if (currentSectionIndex < examData?.section?.length - 1) {
       const nextIndex = currentSectionIndex + 1;
-      setCurrentSectionIndex(nextIndex);
       const newStartingIndex = examData.section
         .slice(0, nextIndex)
         .reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
-      setClickedQuestionIndex(newStartingIndex);
+
+      dispatch(updateNavigation({
+        sectionIndex: nextIndex,
+        questionIndex: newStartingIndex
+      }));
     } else {
       // Last section — submit exam and navigate to results
       await submitExam();
@@ -1730,12 +1269,12 @@ const Test = () => {
 
     if (
       examData &&
-      examData.section[currentSectionIndex] &&
-      examData.section[currentSectionIndex].questions?.[selectedLanguage?.toLowerCase()]
+      examData?.section?.[currentSectionIndex] &&
+      examData?.section?.[currentSectionIndex].questions?.[selectedLanguage?.toLowerCase()]
     ) {
       if (clickedQuestionIndex > startingIndex) {
-        setClickedQuestionIndex(clickedQuestionIndex - 1);
-        setQuestionTime(0);
+        dispatch(updateNavigation({ questionIndex: clickedQuestionIndex - 1 }));
+        // setQuestionTime(0); // This should also be in Redux or handled by updateNavigation
       }
     }
   };
@@ -1747,30 +1286,6 @@ const Test = () => {
     clickedQuestionIndex ===
     quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
 
-  // const [timeLeft, setTimeLeft] = useState(60); // Example starting time
-  const [isRunning, setIsRunning] = useState(false);
-
-  useEffect(() => {
-    let interval;
-    if (isRunning && !isPaused) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (!isRunning) {
-      clearInterval(interval);
-    }
-
-    return () => clearInterval(interval);
-  }, [isRunning, isPaused]);
-
-  const toggleTimer = () => {
-    if (isRunning && !isPaused) {
-      setIsPaused(true); // Pause the timer
-    } else {
-      setIsRunning((prev) => !prev); // Toggle play/pause
-      setIsPaused(false); // Ensure it's not paused when restarting
-    }
-  };
 
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -1839,7 +1354,7 @@ const Test = () => {
       let markedForReviewCount = 0;
       let answeredAndMarked = 0;
 
-      examData?.section[currentSectionIndex]?.questions?.[
+      examData?.section?.[currentSectionIndex]?.questions?.[
         selectedLanguage?.toLowerCase()
       ]?.forEach((_, index) => {
         const fullIndex = startingIndex + index;
@@ -1882,19 +1397,8 @@ const Test = () => {
   // getSectionCounts moved to testUtils.js
 
   const popupmodal = () => {
-    setIsPaused(false);
-    setShowModal(false);
-    // Resume timer for current question
+    // Resume timer logic handled by Redux
     const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-    setQuestionTime(existingTime);
-    setQuestionStartTime(new Date());
-
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    timerRef.current = setInterval(() => {
-      setQuestionTime((prev) => prev + 1);
-    }, 1000);
-
     console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
   };
 
@@ -1922,42 +1426,50 @@ const Test = () => {
   // When question changes
   // 💡 When question changes
   useEffect(() => {
-    const now = new Date();
-
-    // 1️⃣ Save time for previous question
-    if (previousQuestionIndex !== null && questionStartTime) {
-      const secondsSpent = Math.floor((now - questionStartTime) / 1000);
-      setQuestionTimes(prev => ({
-        ...prev,
-        [previousQuestionIndex]: (prev[previousQuestionIndex] || 0) + secondsSpent,
-      }));
-    }
-
     // 2️⃣ Clear previous timer
     if (timerRef.current) clearInterval(timerRef.current);
+
+    if (isPaused) return;
+
     console.log("q", questionTimes, clickedQuestionIndex);
 
-    // 3️⃣ Start timer for current question
-    const existingTime = questionTimes?.[clickedQuestionIndex] || 0;
-    console.log("Existing time for question:", existingTime);
-
-    setQuestionTime(existingTime);
-    setQuestionStartTime(now);
-    console.log(questionTime);
-
-    // 4️⃣ Live increment every second
+    // LIVE INCREMENT moved to Redux tick or simpler local tick dispatched to Redux
     timerRef.current = setInterval(() => {
-      setQuestionTime(prev => prev + 1);
+      dispatch(tickQuestionTime({ index: clickedQuestionIndex }));
     }, 1000);
 
     // 5️⃣ Track previous index for next time
     setPreviousQuestionIndex(clickedQuestionIndex);
 
     return () => clearInterval(timerRef.current);
-  }, [clickedQuestionIndex]);
+  }, [clickedQuestionIndex, isPaused]);
 
 
-  console.log(questionTime);
+  // Debug Logger
+  useEffect(() => {
+    if (examData || isDataFetched) {
+      console.log("📊 TEST STATE:", {
+        isDataFetched,
+        hasExamData: !!examData,
+        sections: examData?.section?.length,
+        currentIdx: currentSectionIndex,
+        isPaused,
+        timeminus,
+        urlId: id
+      });
+    }
+  }, [isDataFetched, examData, currentSectionIndex, isPaused, timeminus, id]);
+
+  console.log("currentTime:", questionTime);
+
+  if (!isDataFetched || !examData || !resultData) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-gray-50">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+        <p className="mt-4 text-gray-600 font-medium font-mock">Initializing exam session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mock-font" ref={commonDataRef}>
@@ -2065,3 +1577,4 @@ const Test = () => {
 };
 
 export default Test; // test 2
+
