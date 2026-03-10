@@ -176,6 +176,9 @@ const Test = () => {
             }
 
             setSelectedOptions(initialOptions);
+            // Restore navigation state from DB
+            setCurrentSectionIndex(state.sectionIndex !== undefined ? state.sectionIndex : (state.currentSectionIndex !== undefined ? state.currentSectionIndex : 0));
+            setClickedQuestionIndex(state.currentQuestionIndex !== undefined ? state.currentQuestionIndex : 0);
             // setVisitedQuestions(visitedQuestionsList);
             // setMarkedForReview(markedForReviewList);
             // setCurrentSectionIndex(state.currentSectionIndex || 0);
@@ -299,6 +302,7 @@ const Test = () => {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
+        currentSectionIndex: currentSectionIndex,
         mark
       });
 
@@ -980,8 +984,11 @@ const Test = () => {
           timeTakenInSeconds: timeTakenInSecondsUpdated,
           takenAt: examStartTime,
           submittedAt: endTime,
-          status: isPaused ? "paused" : "completed",
+          status: isSubmitted ? "completed" : (isPaused ? "paused" : "started"),
           sectionTimes,
+          sectionIndex: currentSectionIndex,
+          currentSectionIndex: currentSectionIndex,
+          currentQuestionIndex: clickedQuestionIndex,
         });
         logger.info("Progress updated:", response.data);
       } catch (err) {
@@ -993,9 +1000,7 @@ const Test = () => {
 
   useEffect(() => {
     // Only update progress when meaningful data changes, NOT every second
-    if (timeminus > 0) {
-      updateSectionTime();
-    }
+    updateSectionTime();
   }, [
     examDataSubmission,
     selectedOptions,
@@ -1004,7 +1009,6 @@ const Test = () => {
     sectionTimes,
     examData,
     isPaused,
-    timeTakenFromDB,
   ]);
 
 

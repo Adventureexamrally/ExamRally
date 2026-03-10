@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage';
 import userReducer from "../slice/userSlice";
 import questionReducer from "../slice/questionSlice";
 import testReducer from '../slice/testSlice';
+import forumReducer from '../slice/forumSlice';
 
 const persistConfig = {
     key: 'test',
@@ -18,6 +19,7 @@ export const store = configureStore({
         user: userReducer,
         questions: questionReducer,
         test: persistedTestReducer,
+        forum: forumReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

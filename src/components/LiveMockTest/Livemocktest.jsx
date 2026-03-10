@@ -172,18 +172,9 @@ const Livemocktest = () => {
             }
 
             setSelectedOptions(initialOptions);
-            // setVisitedQuestions(visitedQuestionsList);
-            // setMarkedForReview(markedForReviewList);
-            // setCurrentSectionIndex(state.currentSectionIndex || 0);
-
-            // // Show the last visited question, or first question if none visited
-            // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-            //     if (visitedQuestionsList.length > 0) {
-            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-            // } else {
-            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-            //   setVisitedQuestions([0]);  // Mark it as visited
-            // }
+            // Restore navigation state from DB
+            setCurrentSectionIndex(state.sectionIndex !== undefined ? state.sectionIndex : (state.currentSectionIndex !== undefined ? state.currentSectionIndex : 0));
+            setClickedQuestionIndex(state.currentQuestionIndex !== undefined ? state.currentQuestionIndex : 0);
           }
         })
 
@@ -296,6 +287,7 @@ const Livemocktest = () => {
         selectedOptions: updatedOptions,
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
+        currentSectionIndex: currentSectionIndex,
         mark
       });
       console.log("handle option change result", result);
@@ -1018,9 +1010,12 @@ const Livemocktest = () => {
         timeTakenInSeconds: timeTakenInSecondsUpdated,
         takenAt: examStartTime,
         submittedAt: endTime,
-        status: isPaused ? "paused" : "completed",
+        status: isSubmitted ? "completed" : (isPaused ? "paused" : "started"),
         sectionTimes,
         pausedDuration: pausedDurationRef.current || 0, // total seconds paused
+        sectionIndex: currentSectionIndex,
+        currentSectionIndex: currentSectionIndex,
+        currentQuestionIndex: clickedQuestionIndex,
       })
         .then((res) => {
           console.log("Submitted:", res.data);
@@ -1039,10 +1034,8 @@ const Livemocktest = () => {
     id,
     currentSectionIndex,
     sectionTimes,
-    timeminus,
     examData,
     isPaused,
-    timeTakenFromDB,
   ]);
 
   useEffect(() => {

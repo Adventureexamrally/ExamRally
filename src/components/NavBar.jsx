@@ -274,6 +274,12 @@ const NavBar = () => {
             >
               Blogs
             </Link>
+            {/* <Link
+              to="/forum"
+              className="hover:text-blue-600 transition duration-300"
+            >
+              Forums
+            </Link> */}
             <Link
               to="/rally-pro"
               className="hover:text-blue-600 transition duration-300"
