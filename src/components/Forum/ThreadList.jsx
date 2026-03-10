@@ -358,7 +358,7 @@ const ThreadList = () => {
                                                             <Clock size={9} />
                                                             {new Date(thread.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                             <span>·</span>
-                                                            {new Date(thread.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            {new Date(thread.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                                         </div>
                                                     </div>
                                                     {/* Report button */}

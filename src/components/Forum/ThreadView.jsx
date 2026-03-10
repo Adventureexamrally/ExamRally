@@ -245,7 +245,7 @@ const ThreadView = () => {
                                             <Clock size={9} />
                                             {new Date(thread.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             <span>·</span>
-                                            {new Date(thread.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(thread.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                         </div>
                                     </div>
                                 </div>
@@ -364,7 +364,7 @@ const ThreadView = () => {
                                                             </span>
                                                         </div>
                                                         <p className="text-[10px] font-semibold text-gray-400 mt-1">
-                                                            {new Date(post.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · {new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            {new Date(post.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · {new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                                         </p>
                                                     </div>
                                                     {/* Delete + Report */}
