@@ -15,7 +15,11 @@ import { UserContext } from "../../context/UserProvider";
 import Api from "../../service/Api";
 import { Avatar } from "@mui/material";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setResults } from "../../slice/userSlice";
+
 const DescriptiveTest = () => {
+  const dispatch = useDispatch();
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
@@ -44,6 +48,7 @@ const DescriptiveTest = () => {
   const [previousQuestionIndex, setPreviousQuestionIndex] =
     useState(clickedQuestionIndex);
   const timerRef = useRef(null);
+  const pausedDurationRef = useRef(0);
   // Fetch exam data
   // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
   const [displayLanguage, setDisplayLanguage] = useState(null);
@@ -100,113 +105,145 @@ const DescriptiveTest = () => {
   const [duration, setDuration] = useState(0);
   const [t_questions, sett_questions] = useState("");
   useEffect(() => {
-    // Check if data has already been fetched
-    if (!isDataFetched) {
-      Api.get(`exams/getExam/${id}`)
-        .then((res) => {
-          if (res.data) {
-            setExamData(res.data);
-            console.log("res.data", res.data);
-            setIsDataFetched(true);
-            setDestimer(res.data.duration);
-            setShow_name(res.data.show_name);
-            // setDuration(res.data.duration);
-            sett_questions(res.data.t_questions); // Mark that data is fetched
-            console.log("kl", res.data.show_name);
-          }
-        })
-        .catch((err) => console.error("Error fetching data:", err));
-    }
-  }, [id]); // Only trigger when `id` changes
+    const fetchData = async () => {
+      if (!user?._id || !id) return;
 
-  const [getresult, setGetresult] = useState([]);
-  // In the useEffect that fetches exam state
-  useEffect(() => {
-    if (user?._id && id) {
-      Api.get(`results/${user?._id}/${id}`)
-        .then((response) => {
-          if (response.data) {
-            const state = response.data;
-            setGetresult(state);
-            console.error("hello", state);
-            const initialOptions = Array(t_questions).fill(null);
-            // let lastVisitedIndex = 0;
-            // let visitedQuestionsList = [];
-            let markedForReviewList = [];
-            let absoluteIndexCounter = 0;
-            // Parse question times from backend
-            const questionTimesFromDB = {};
-            let absoluteIndex = 0;
+      try {
+        // 1. Fetch Exam Data
+        const examRes = await Api.get(`exams/getExam/${id}`);
+        if (!examRes.data) return;
 
-            state.section.forEach((section) => {
-              const questions =
-                section.questions?.[selectedLanguage?.toLowerCase()] || [];
-              console.log("Questions:", questions);
+        const resData = examRes.data;
+        setShow_name(resData.show_name);
+        setDestimer(resData.duration);
+        sett_questions(resData.t_questions);
+        setTotalQuestions(resData.t_questions || 0);
 
-              questions.forEach((question) => {
-                if (question.q_on_time) {
-                  console.log("Question time:", question.q_on_time);
-
-                  // Parse time string "minutes:seconds" to total seconds
-                  const parts = (question.q_on_time || "0:0").toString().split(':');
-                  const minutes = Number(parts[0]) || 0;
-                  const seconds = Number(parts[1]) || 0;
-                  questionTimesFromDB[absoluteIndex] = minutes * 60 + seconds;
-                }
-                absoluteIndex++;
-              });
-            });
-            console.log("Question times from DB:", questionTimesFromDB);
-
-            setQuestionTimes(questionTimesFromDB);
-            if (state.section) {
-              state.section.forEach((section) => {
-                const questions =
-                  section.questions?.[selectedLanguage?.toLowerCase()] || [];
-                questions.forEach((question, questionIndex) => {
-                  const absoluteIndex = absoluteIndexCounter++;
-
-                  // Set selected option if exists
-                  if (
-                    question.selectedOption !== undefined &&
-                    question.selectedOption !== null
-                  ) {
-                    initialOptions[absoluteIndex] = question.selectedOption;
-                  }
-
-                  // Track visited questions
-                  // if (question.isVisited === 1) {
-                  //   visitedQuestionsList.push(absoluteIndex);
-                  //   lastVisitedIndex = absoluteIndex; // Track most recently visited
-                  // }
-
-                  // Track marked for review
-                  // if (question.markforreview === 1 || question.ansmarkforrev === 1) {
-                  //   markedForReviewList.push(absoluteIndex);
-                  // }
-                });
-              });
+        // Transform exam data for local state
+        const transformedData = {
+          ...resData,
+          section: resData.section.map((section) => ({
+            ...section,
+            questions: {
+              english: (section.questions?.english || []).map(q => ({ ...q, q_on_time: String(q.q_on_time || "0") })),
+              hindi: (section.questions?.hindi || []).map(q => ({ ...q, q_on_time: String(q.q_on_time || "0") })),
+              tamil: (section.questions?.tamil || []).map(q => ({ ...q, q_on_time: String(q.q_on_time || "0") })),
             }
+          }))
+        };
+        setExamData(transformedData);
 
-            setSelectedOptions(initialOptions);
-            // setVisitedQuestions(visitedQuestionsList);
-            // setMarkedForReview(markedForReviewList);
-            // setCurrentSectionIndex(state.currentSectionIndex || 0);
+        // 2. Fetch Existing Result
+        let existingResult = null;
+        try {
+          const resultRes = await Api.get(`results/${user._id}/${id}`);
+          existingResult = resultRes.data;
+        } catch (e) {
+          console.log("No existing result found, will initialize new one.");
+        }
 
-            // // Show the last visited question, or first question if none visited
-            // setClickedQuestionIndex(visitedQuestionsList.length > -1 ? lastVisitedIndex : 0);
-            //     if (visitedQuestionsList.length > 0) {
-            //   setClickedQuestionIndex(visitedQuestionsList[0]   || lastVisitedIndex); // First visited question
-            // } else {
-            //   setClickedQuestionIndex(lastVisitedIndex); // Default to first question
-            //   setVisitedQuestions([0]);  // Mark it as visited
-            // }
+        const initialOptions = Array(resData.t_questions).fill(null);
+
+        if (existingResult) {
+          // 3a. Rehydrate Progress
+          setResultData(existingResult);
+          
+          // Sync with Redux
+          if (existingResult.status) {
+            dispatch(setResults({
+              [id]: {
+                status: existingResult.status,
+                lastQuestionIndex: existingResult.currentQuestionIndex,
+                selectedOptions: existingResult.selectedOptions,
+              }
+            }));
           }
-        })
 
-        .catch((error) => console.error("Error fetching exam state:", error));
-    }
-  }, [id, user?._id, t_questions]);
+          const questionTimesFromDB = {};
+          
+          // Rehydrate descriptive data
+          const descriptiveArray = existingResult.section.map((section) => {
+            const descriptiveQuestion = section.questions?.[selectedLanguage?.toLowerCase()]?.[0]?.descriptive?.[0];
+            return {
+              text: [descriptiveQuestion?.text?.[0] || ""],
+              corrections: descriptiveQuestion?.corrections || [],
+              scoreBreakdown: descriptiveQuestion?.scoreBreakdown || [],
+              scoreData: descriptiveQuestion?.scoreData || [],
+              expectedWordCount: [descriptiveQuestion?.wordCount || 0],
+              keywords: descriptiveQuestion?.keywords || [],
+              date: [new Date().toISOString()],
+            };
+          });
+          setDescriptiveData(descriptiveArray);
+
+          // Hydrate selected options from flat array (priority)
+          if (existingResult.selectedOptions && existingResult.selectedOptions.length > 0) {
+            existingResult.selectedOptions.forEach((opt, idx) => {
+              if (opt !== null && opt !== undefined && idx < initialOptions.length) {
+                initialOptions[idx] = opt;
+              }
+            });
+          }
+
+          // Hydrate status-specific fields (visited, marked, times)
+          let visitedList = [];
+          let markedList = [];
+          let currentAbsIdx = 0;
+
+          existingResult.section.forEach((section) => {
+            const questions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+            questions.forEach((question) => {
+              const globalIdx = currentAbsIdx++;
+
+              // Sync question times
+              const parts = (question.q_on_time || "0:0").toString().split(':');
+              const mins = Number(parts[0]) || 0;
+              const secs = Number(parts[1]) || 0;
+              questionTimesFromDB[globalIdx] = mins * 60 + secs;
+
+              // Visited/Marked status
+              if (question.isVisited === 1) visitedList.push(globalIdx);
+              if (question.markforreview === 1 || question.ansmarkforrev === 1) markedList.push(globalIdx);
+
+              // Fallback for options if root array was empty or missing
+              if ((!existingResult.selectedOptions || existingResult.selectedOptions.length === 0) && 
+                  question.selectedOption !== undefined && question.selectedOption !== null && question.selectedOption !== "") {
+                initialOptions[globalIdx] = question.selectedOption;
+              }
+            });
+          });
+
+          setQuestionTimes(questionTimesFromDB);
+          setSelectedOptions(initialOptions);
+          setVisitedQuestions(visitedList.length > 0 ? visitedList : [0]);
+          setMarkedForReview(markedList);
+          setCurrentSectionIndex(existingResult.currentSectionIndex || 0);
+          setClickedQuestionIndex(existingResult.currentQuestionIndex || 0);
+          
+          if (existingResult.pausedDuration != null) pausedDurationRef.current = existingResult.pausedDuration;
+          
+          setIsDataFetched(true);
+
+        } else {
+          // 3b. Initialize New Result
+          setSelectedOptions(initialOptions);
+          setVisitedQuestions([0]);
+          
+          await Api.post(`/results/${user._id}/${id}`, {
+            ...transformedData,
+            status: "started"
+          });
+          console.log("New exam result initialized");
+          setIsDataFetched(true);
+        }
+
+      } catch (error) {
+        console.error("Initialization error:", error);
+      }
+    };
+
+    fetchData();
+  }, [id, user?._id]);
 
   const commonDataRef = useRef(null);
 
@@ -273,18 +310,7 @@ const DescriptiveTest = () => {
     setClickedQuestionIndex(index);
   };
 
-  useEffect(() => {
-    const savedState = localStorage.getItem(`examState_${id}`);
-    console.warn(savedState);
-    if (savedState) {
-      const state = JSON.parse(savedState);
-      setClickedQuestionIndex(state.clickedQuestionIndex);
-      setSelectedOptions(state.selectedOptions);
-      setVisitedQuestions(state.visitedQuestions);
-      setMarkedForReview(state.markedForReview);
-      setCurrentSectionIndex(state.currentSectionIndex);
-    }
-  }, [id]);
+
 
   // Modify handleOptionChange to update database
   const handleOptionChange = async (index) => {
@@ -315,6 +341,14 @@ const DescriptiveTest = () => {
         currentQuestionIndex: clickedQuestionIndex,
         sectionIndex: currentSectionIndex,
         mark,
+      }).then(() => {
+        dispatch(setResults({
+          [id]: {
+            status: "paused",
+            lastQuestionIndex: clickedQuestionIndex,
+            selectedOptions: updatedOptions,
+          }
+        }));
       });
       console.log("handle option change result", result);
 
@@ -441,120 +475,7 @@ const DescriptiveTest = () => {
 
   // API get method
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (user?._id) {
-        try {
-          // Fetch the exam data from your API
-          const res = await Api.get(`exams/getExam/${id}`);
-          console.log(res);
 
-          // Transform the data
-          const transformedData = {
-            bilingual_status: res.data.bilingual_status,
-            english_status: res.data.english_status,
-            hindi_status: res.data.hindi_status,
-            tamil_status: res.data.tamil_status,
-            section: res.data.section.map((section) => ({
-              name: section.name,
-              t_question: section.t_question,
-              t_time: section.t_time,
-              t_mark: section.t_mark,
-              plus_mark: section.plus_mark,
-              minus_mark: section.minus_mark,
-              cutoff_mark: section.cutoff_mark,
-              s_blueprint: section.s_blueprint.map((blueprint) => ({
-                subject: blueprint.subject,
-                topic: blueprint.topic,
-                tak_time: blueprint.tak_time,
-              })),
-              questions: {
-                english: section.questions.english.map((question) => ({
-                  question: question.question,
-                  options: question.options,
-                  correct: question.correct,
-                  Incorrect: 0,
-                  answer: question.answer,
-                  common_data: question.common_data,
-                  explanation: question.explanation,
-                  selectedOption: question.selectedOption,
-                  keywords: question.keywords,
-                  words_limit: question.words_limit,
-                  question_type: question.question_type,
-                  isVisited: 0,
-                  NotVisited: 0,
-                  q_on_time: 0,
-                })),
-                hindi: section.questions.hindi.map((question) => ({
-                  question: question.question,
-                  options: question.options,
-                  correct: question.correct,
-                  Incorrect: 0,
-                  answer: question.answer,
-                  common_data: question.common_data,
-                  explanation: question.explanation,
-                  selectedOption: question.selectedOption,
-                  keywords: question.keywords,
-                  words_limit: question.words_limit,
-                  question_type: question.question_type,
-                  isVisited: 0,
-                  NotVisited: 0,
-                  q_on_time: 0,
-                })),
-                tamil: section.questions.tamil.map((question) => ({
-                  question: question.question,
-                  options: question.options,
-                  correct: question.correct,
-                  Incorrect: 0,
-                  answer: question.answer,
-                  common_data: question.common_data,
-                  explanation: question.explanation,
-                  selectedOption: question.selectedOption,
-                  keywords: question.keywords,
-                  question_type: question.question_type,
-                  words_limit: question.words_limit,
-                  isVisited: 0,
-                  NotVisited: 0,
-                  q_on_time: 0,
-                })),
-              },
-              s_order: section.s_order || 0,
-            })),
-            score: res.data.score || 0,
-            Attempted: res.data.Attempted || 0,
-            // timeTaken: res.data.timeTaken || 60,
-            Accuracy: res.data.Accuracy || 0,
-            takenAt: res.data.takenAt || new Date(),
-            submittedAt: res.data.submittedAt || new Date(),
-          };
-
-          // Set the transformed data to state
-          setExamData(transformedData);
-          console.log(transformedData);
-
-          // Set totalQuestions from the response
-          setTotalQuestions(res.data.t_questions || 0);
-
-          // Initialize selectedOptions with null for all questions
-          const initialOptions = Array(res.data.t_questions).fill(null);
-          setSelectedOptions(initialOptions);
-
-          // Now post the transformed data to your '/results' endpoint
-          const postResponse = await Api.post(
-            `/results/${user?._id}/${id}`,
-            transformedData
-          );
-          console.log("Data posted successfully:", postResponse);
-        } catch (error) {
-          console.error("Error occurred:", error.message);
-          // Handle error (show error message, etc.)
-        }
-      }
-    };
-
-    // Call the async function inside useEffect
-    fetchData();
-  }, [id]); // Ensure to add 'id' as a dependency for the effect
 
   const calculateAllSectionsData = () => {
     if (!examData?.section) return [];
@@ -814,11 +735,7 @@ const DescriptiveTest = () => {
   //   }
   // }, [selectedOptions, id]);
 
-  useEffect(() => {
-    if (!id) return;
-    const initialOptions = Array(totalQuestions).fill(null);
-    setSelectedOptions(initialOptions);
-  }, [id, totalQuestions]);
+
 
   useEffect(() => {
     if (!id) return;
@@ -906,7 +823,134 @@ const DescriptiveTest = () => {
           console.error("Error fetching data:", error);
         });
     }
-  }, [id]);
+  }, [id, user?._id, totalQuestions]); // Add totalQuestions to dependency array for correct initialization
+
+  const getFormattedSections = (opts = selectedOptions, visited = visitedQuestions) => {
+    if (!examData?.section) return { formattedSections: [], totalScore: 0, endTime: new Date() };
+
+    const endTime = new Date();
+    const answersData = opts.map((selectedOption, index) => {
+      let sectionIndex = 0;
+      let questionIndexInSection = 0;
+      let currentSection = null;
+      let count = 0;
+
+      examData.section.forEach((section, sIndex) => {
+        const questions = section.questions[selectedLanguage.toLowerCase()] || [];
+        if (index >= count && index < count + questions.length) {
+          sectionIndex = sIndex;
+          questionIndexInSection = index - count;
+          currentSection = section;
+        }
+        count += questions.length;
+      });
+
+      if (!currentSection) return null;
+
+      const question = currentSection.questions[selectedLanguage.toLowerCase()][questionIndexInSection];
+      const singleQuestionTime = formatTime(questionTimes[index] || 0);
+
+      const optionsData = (question?.options || []).map((option, optionIndex) => ({
+        option: option,
+        index: optionIndex,
+        isSelected: optionIndex === selectedOption,
+        isCorrect: optionIndex === question?.answer,
+      }));
+
+      const isVisited = visited?.includes(index) ? 1 : 0;
+      const notVisited = isVisited === 1 ? 0 : 1;
+
+      const questionScore = selectedOption !== null
+        ? selectedOption === question.answer
+          ? currentSection.plus_mark
+          : -currentSection.minus_mark
+        : 0;
+
+      return {
+        question: question?.question,
+        options: optionsData,
+        correct: question?.answer === selectedOption ? 1 : 0,
+        explanation: question?.explanation || "",
+        answer: question?.answer,
+        common_data: question?.common_data || "",
+        selectedOption: selectedOption,
+        isVisited: isVisited,
+        NotVisited: notVisited,
+        q_on_time: singleQuestionTime,
+        score: questionScore,
+        descriptive: descriptiveData[index] || [],
+      };
+    }).filter(Boolean);
+
+    const totalScore = answersData.reduce((total, ad) => total + ad.score, 0);
+
+    const formattedSections = examData.section.map((section, sectionIndex) => {
+      const sectionQuestions = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+      const sectionStartIndex = examData.section.slice(0, sectionIndex).reduce((acc, s) => acc + (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0), 0);
+      const sectionEndIndex = sectionStartIndex + sectionQuestions.length;
+
+      const sectionAnswered = opts.slice(sectionStartIndex, sectionEndIndex).filter((option) => option !== null).length;
+      const sectionVisited = visited.filter((idx) => idx >= sectionStartIndex && idx < sectionEndIndex).length;
+
+      const sectionAnswersData = answersData.slice(sectionStartIndex, sectionEndIndex);
+      const correctCount = sectionAnswersData.filter((q) => q.correct === 1).length;
+      const incorrectCount = sectionAnswered - correctCount;
+      const sectionScore = (correctCount * section.plus_mark) - (incorrectCount * section.minus_mark);
+      const secaccuracy = sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
+
+      return {
+        name: section.name,
+        group_name: section.group_name || "",
+        is_sub_section: section.is_sub_section || false,
+        t_question: section.t_question,
+        t_time: section.t_time,
+        t_mark: section.t_mark,
+        plus_mark: section.plus_mark,
+        minus_mark: section.minus_mark,
+        cutoff_mark: section.cutoff_mark,
+        isVisited: sectionVisited,
+        NotVisited: sectionQuestions.length - sectionVisited,
+        s_blueprint: section.s_blueprint.map((bp) => ({
+          subject: bp.subject,
+          topic: bp.topic,
+          tak_time: bp.tak_time,
+        })),
+        questions: {
+          english: section.questions.english.map((q, i) => answersData[sectionStartIndex + i]),
+          hindi: section.questions.hindi.map((q, i) => answersData[sectionStartIndex + i]),
+          tamil: section.questions.tamil.map((q, i) => answersData[sectionStartIndex + i]),
+        },
+        s_order: section.s_order || 0,
+        s_score: sectionScore,
+        correct: correctCount,
+        incorrect: incorrectCount,
+        Attempted: sectionAnswered,
+        Not_Attempted: sectionQuestions.length - sectionAnswered,
+        s_accuracy: secaccuracy,
+        skipped: sectionVisited - sectionAnswered,
+        timeTaken: (() => {
+          const time1 = resultData?.section?.[sectionIndex]?.timeTaken || 0;
+          const time2 = sectionTimes?.[sectionIndex] || 0;
+          return time1 + time2;
+        })()
+      };
+    });
+
+    const totalStats = formattedSections.reduce((acc, sec) => ({
+      visitedCount: acc.visitedCount + (sec.isVisited || 0),
+      answeredCount: acc.answeredCount + (sec.Attempted || 0),
+    }), { visitedCount: 0, answeredCount: 0 });
+
+    return {
+      formattedSections,
+      totalScore,
+      endTime,
+      totalcheck: {
+        visitedQuestionsCount: totalStats.visitedCount,
+        answeredQuestions: totalStats.answeredCount,
+      }
+    };
+  };
 
   useEffect(() => {
     const totalSectionTime =
@@ -924,114 +968,77 @@ const DescriptiveTest = () => {
     settimeminus(remainingTime);
   }, [examData, currentSectionIndex, resultData]);
 
-  const updateSectionTime = () => {
-    if (!examDataSubmission || timeTakenFromDB.length === 0) return;
+  const updateSectionTime = (explicitStatus = null) => {
+    if (!examData?.section || timeTakenFromDB == null) return;
 
     const {
       formattedSections,
       totalScore,
-      formattedTotalTime,
-      timeTakenInSeconds,
       endTime,
-    } = examDataSubmission;
+    } = getFormattedSections();
 
-    const totalTimeInSeconds =
-      destimer * 60 || 0;
+    const totalTimeInSeconds = destimer * 60 || 0;
     const actualTimeTaken = totalTimeInSeconds - timeminus;
-    const timeTakenInSecondsUpdated =
-      (resultData?.timeTakenInSeconds ?? 0) + timeTakenInSeconds;
+    
+    // Total exam timeTaken calculation
+    let cumulativeTimeTaken = 0;
+    examData?.section?.forEach((sec, idx) => {
+      if (idx === currentSectionIndex) {
+        cumulativeTimeTaken += actualTimeTaken;
+      } else {
+        cumulativeTimeTaken += Math.max(0, resultData?.section?.[idx]?.timeTaken || 0);
+      }
+    });
 
-    const previousTimeTaken =
-      resultData?.section?.[currentSectionIndex]?.timeTaken || 0;
-    console.log("currentSectionIndex:", currentSectionIndex);
-
-    console.log("Previous time taken for section:", previousTimeTaken);
-
-    const finalTimeTaken = actualTimeTaken;
-
-    console.log("Final time taken for section:", finalTimeTaken);
-    console.warn(formattedSections);
+    const timeTakenInSecondsUpdated = cumulativeTimeTaken;
 
     const updatedSections = formattedSections.map((section, idx) => {
       if (idx === currentSectionIndex) {
-        return {
-          ...section,
-          timeTaken: finalTimeTaken,
-        };
+        return { ...section, timeTaken: actualTimeTaken };
       }
       return section;
     });
-    console.warn(updatedSections);
 
     if (user?._id) {
-      Api.post(`results/${user._id}/${id}`, {
+      return Api.post(`results/${user._id}/${id}`, {
         ExamId: id,
         section: updatedSections,
         score: totalScore,
-        totalTime: formattedTotalTime,
+        totalTime: formatTime(timeTakenInSecondsUpdated),
         timeTakenInSeconds: timeTakenInSecondsUpdated,
         takenAt: examStartTime,
         submittedAt: endTime,
-        status: isPaused ? "paused" : "completed", // Changed from "completed" to "in-progress" for background updates
-        sectionTimes, // Optional: make sure this matches backend schema
+        status: (isSubmitted || explicitStatus === "completed") ? "completed" : (explicitStatus || (isPaused ? "paused" : "started")), 
+        sectionTimes,
+        selectedOptions: selectedOptions,
+        currentSectionIndex: currentSectionIndex,
+        currentQuestionIndex: clickedQuestionIndex,
+        pausedDuration: pausedDurationRef.current || 0,
       })
         .then((res) => {
           console.log("Submitted:", res.data);
+          dispatch(setResults({
+            [id]: {
+              status: (isSubmitted || explicitStatus === "completed") ? "completed" : (explicitStatus || (isPaused ? "paused" : "started")),
+              lastQuestionIndex: clickedQuestionIndex,
+              selectedOptions: selectedOptions,
+            }
+          }));
+          return res.data;
         })
         .catch((err) => {
           console.error("Error submitting:", err);
+          throw err;
         });
     }
+    return Promise.resolve();
   };
 
   useEffect(() => {
     updateSectionTime();
-  }, [
-    examDataSubmission,
-    selectedOptions,
-    id,
-    currentSectionIndex,
-    sectionTimes,
-    timeminus,
-    examData,
-    duration,
-    isPaused,
-    timeTakenFromDB,
-  ]);
+  }, [timeTakenFromDB]);
 
-  useEffect(() => {
-    if (!user?._id || !id) return;
-    if (user?._id) {
-      Api.get(`results/${user?._id}/${id}`)
-        .then((response) => {
-          setResultData(response.data);
-          console.log("Result Data:", response.data);
-          const descriptiveArray = response.data.section.map(
-            (section, index) => {
-              const descriptiveQuestion =
-                section.questions?.[selectedLanguage?.toLowerCase()]?.[0]
-                  ?.descriptive?.[0];
 
-              return {
-                text: [descriptiveQuestion?.text?.[0] || ""],
-                corrections: descriptiveQuestion?.corrections || [],
-                scoreBreakdown: descriptiveQuestion?.scoreBreakdown || [],
-                scoreData: descriptiveQuestion?.scoreData || [],
-                expectedWordCount: [descriptiveQuestion?.wordCount || 0],
-                keywords: descriptiveQuestion?.keywords || [],
-                date: [new Date().toISOString()],
-              };
-            }
-          );
-
-          setDescriptiveData(descriptiveArray);
-          console.log("Descriptive Data:", descriptiveData);
-        })
-        .catch((error) => {
-          console.error("Error fetching result data:", error);
-        });
-    }
-  }, [user?._id, id]);
 
   // In your timers, make sure they call handleTimerEnd
   useEffect(() => {
@@ -1339,8 +1346,8 @@ const DescriptiveTest = () => {
       corrections: validCorrections,
     };
   };
-  const submitExam = async () => {
-    updateSectionTime();
+  const submitExam = async (explicitStatus = null) => {
+    const res = await updateSectionTime(explicitStatus);
     console.log("submitExam called");
     const now = new Date();
     const timeSpent = Math.floor(
@@ -1387,353 +1394,21 @@ const DescriptiveTest = () => {
       await handleDescriptiveTest(i);
     }
 
-    const endTime = new Date();
+    const { formattedSections, totalScore, endTime } = getFormattedSections();
+
     const timeTakenInSeconds = Math.floor((endTime - examStartTime) / 1000);
     const formattedTotalTime = formatTime(timeTakenInSeconds);
 
-    const formattime = now;
-
-    console.log("check this ", formattime);
-
     setTotalTime(formattedTotalTime);
-    if (!currentSection) return;
-
-    const questions =
-      currentSection.questions?.[selectedLanguage?.toLowerCase()];
-    if (!questions) return;
-
-    const totalQuestions = questions.length;
-
-    // Calculate answered and unanswered
-    const answeredQuestions = selectedOptions
-      .slice(startingIndex, startingIndex + totalQuestions)
-      .filter((option) => option !== null).length;
-
-    const notAnsweredQuestions = totalQuestions - answeredQuestions;
-
-    const visitedQuestionsCount = visitedQuestions.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    );
-
-    const notVisitedQuestions = Array.from(
-      { length: totalQuestions },
-      (_, index) =>
-        !visitedQuestionsCount.includes(index + startingIndex)
-          ? index + startingIndex
-          : null
-    ).filter((index) => index !== null);
-
-    const sectionSummary = {
-      visitedQuestionsCount:
-        visitedQuestionsCount.length > 0 ? visitedQuestionsCount[0] : null,
-      notVisitedQuestions:
-        notVisitedQuestions.length > 0 ? notVisitedQuestions[0] : null,
-    };
-
-    // setSectionSummaryData((prevData) => [...prevData, sectionSummary]);
-
-    const reviewedQuestions = markedForReview.filter(
-      (index) =>
-        index >= startingIndex && index < startingIndex + totalQuestions
-    ).length;
-
-    const answersData = selectedOptions.map((selectedOption, index) => {
-      // Find which section this question belongs to
-      let sectionIndex = 0;
-      let questionIndexInSection = 0;
-      let currentSection;
-
-      // Find the section and relative index for this question
-      let count = 0;
-      examData.section.forEach((section, sIndex) => {
-        const questions =
-          section.questions[selectedLanguage.toLowerCase()] || [];
-        if (index >= count && index < count + questions.length) {
-          sectionIndex = sIndex;
-          questionIndexInSection = index - count;
-          currentSection = section;
-        }
-        count += questions.length;
-      });
-
-      const question =
-        currentSection.questions[selectedLanguage.toLowerCase()][
-        questionIndexInSection
-        ];
-
-      // const question =currentSection?.questions?.[selectedLanguage?.toLowerCase()]?.[index];
-      const singleQuestionTime = formatTime(questionTimes[index] || 0);
-
-      const optionsData = question?.options?.map((option, optionIndex) => ({
-        option: option,
-        index: optionIndex,
-        isSelected: optionIndex === selectedOption,
-        isCorrect: optionIndex === question?.answer,
-      }));
-
-      const isVisited = visitedQuestions?.includes(index) ? 1 : 0;
-      const notVisited = isVisited === 1 ? 0 : 1;
-
-      // const questionScore =
-      //   selectedOption !== undefined
-      //     ? selectedOption === question?.answer
-      //       ? question?.plus_mark
-      //       : -question?.minus_mark
-      //     : 0;
-
-      // Use section-specific marks
-      const questionScore =
-        selectedOption !== null
-          ? selectedOption === question.answer
-            ? currentSection.plus_mark
-            : -currentSection.minus_mark
-          : 0;
-      console.log("ques score", questionScore);
-
-      return {
-        question: question?.question,
-        options: optionsData,
-        correct: question?.answer === selectedOption,
-        explanation: question?.explanation,
-        answer: question?.answer,
-        common_data: question?.common_data,
-        selectedOption: selectedOption,
-        isVisited: isVisited,
-        NotVisited: notVisited,
-        q_on_time: singleQuestionTime,
-        score: questionScore,
-        descriptive: descriptiveData[index] || [],
-      };
-    });
-    console.log("answers dataaaaa", answersData);
-
-    const totalScore = answersData.reduce(
-      (total, answerData) => total + answerData.score,
-      0
-    );
-
-    const formattedSections = examData.section
-      .map((section, sectionIndex) => {
-        const sectionQuestions =
-          section.questions?.[selectedLanguage?.toLowerCase()];
-        if (!sectionQuestions) return null;
-
-        const sectionStartIndex = examData.section
-          .slice(0, sectionIndex)
-          .reduce(
-            (acc, s) =>
-              acc +
-              (s.questions?.[selectedLanguage?.toLowerCase()]?.length || 0),
-            0
-          );
-        const sectionEndIndex = sectionStartIndex + sectionQuestions.length;
-
-        const sectionAnswered = selectedOptions
-          .slice(sectionStartIndex, sectionEndIndex)
-          .filter((option) => option !== undefined && option !== null).length;
-
-        const sectionNotAnswered = sectionQuestions.length - sectionAnswered;
-
-        const sectionVisited = visitedQuestions.filter(
-          (index) => index >= sectionStartIndex && index < sectionEndIndex
-        ).length;
-
-        const sectionAnswersData = sectionQuestions.map(
-          (question, questionIndex) => {
-            const absoluteIndex = sectionStartIndex + questionIndex;
-            const selectedOption = selectedOptions[absoluteIndex];
-            const isVisited = visitedQuestions.includes(absoluteIndex) ? 1 : 0;
-            const notVisited = isVisited ? 0 : 1;
-            const questionScore =
-              selectedOption !== undefined
-                ? selectedOption === question.answer
-                  ? section.plus_mark
-                  : -section.minus_mark
-                : 0;
-
-            return {
-              descriptive: descriptiveData[absoluteIndex],
-              question: question.question,
-              options: question.options || [],
-              answer: question.answer,
-              common_data: question.common_data,
-              correct: question.answer === selectedOption ? 1 : 0,
-              explanation: question.explanation || "",
-              selectedOption: selectedOption,
-              q_on_time: formatTime(questionTimes[absoluteIndex] || 0),
-              isVisited: isVisited,
-              NotVisited: notVisited,
-              score: questionScore,
-            };
-          }
-        );
-        console.log("section answers data", sectionAnswersData);
-
-        const correctCount = sectionAnswersData.filter(
-          (q) => q.correct === 1
-        ).length;
-
-        const attemptedCount = sectionAnswersData.filter(
-          (q) => q.selectedOption !== undefined
-        ).length;
-
-        const incorrectCount = sectionAnswered - correctCount;
-
-        // Use section-specific marks instead of hardcoded values
-        const sectionScore =
-          correctCount * section.plus_mark -
-          incorrectCount * section.minus_mark;
-
-        const secaccuracy =
-          sectionAnswered > 0 ? (correctCount / sectionAnswered) * 100 : 0;
-
-        console.log("Section Accuracy:", secaccuracy.toFixed(2) + "%");
-
-        const skippedQuestions = sectionVisited - sectionAnswered;
-
-        return {
-          name: section.name,
-          t_question: section.t_question,
-          t_time: section.t_time,
-          t_mark: section.t_mark,
-          plus_mark: section.plus_mark,
-          minus_mark: section.minus_mark,
-          cutoff_mark: section.cutoff_mark,
-          isVisited: sectionVisited,
-          NotVisited: sectionQuestions.length - sectionVisited,
-          s_blueprint: section.s_blueprint.map((bp) => ({
-            subject: bp.subject,
-            topic: bp.topic,
-            tak_time: bp.tak_time,
-          })),
-          questions: {
-            english: section.questions.english.map((question, index) => ({
-              question: question?.question,
-              options: question.options || [],
-              answer: question?.answer,
-              common_data: question?.common_data,
-              correct: answersData[sectionStartIndex + index]?.correct || 0,
-              explanation: question?.explanation || "",
-              selectedOption:
-                answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time:
-                answersData[sectionStartIndex + index]?.q_on_time || "0",
-              isVisited: answersData[sectionStartIndex + index]?.isVisited,
-              NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
-              score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionStartIndex + index] || {
-                text: [""],
-                corrections: [],
-                scoreBreakdown: null,
-                scoreData: [],
-                keywords: [],
-                wordCount: 0,
-              },
-            })),
-            hindi: section.questions.hindi.map((question, index) => ({
-              question: question?.question,
-              options: question.options || [],
-              answer: question?.answer,
-              common_data: question?.common_data,
-              correct: answersData[sectionStartIndex + index]?.correct || 0,
-              explanation: question?.explanation || "",
-              selectedOption:
-                answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time:
-                answersData[sectionStartIndex + index]?.q_on_time || "0",
-              isVisited: answersData[sectionStartIndex + index]?.isVisited,
-              NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
-              score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionStartIndex + index] || {
-                text: [""],
-                corrections: [],
-                scoreBreakdown: null,
-                scoreData: [],
-                keywords: [],
-                wordCount: 0,
-              },
-            })),
-            tamil: section.questions.tamil.map((question, index) => ({
-              question: question?.question,
-              options: question.options || [],
-              answer: question?.answer,
-              common_data: question?.common_data,
-              correct: answersData[sectionStartIndex + index]?.correct || 0,
-              explanation: question?.explanation || "",
-              selectedOption:
-                answersData[sectionStartIndex + index]?.selectedOption,
-              q_on_time:
-                answersData[sectionStartIndex + index]?.q_on_time || "0",
-              isVisited: answersData[sectionStartIndex + index]?.isVisited,
-              NotVisited: answersData[sectionStartIndex + index]?.NotVisited,
-              score: answersData[sectionStartIndex + index]?.score,
-              descriptive: descriptiveData[sectionStartIndex + index] || {
-                text: [""],
-                corrections: [],
-                scoreBreakdown: null,
-                scoreData: [],
-                keywords: [],
-                wordCount: 0,
-              },
-            })),
-          },
-
-          s_order: section.s_order || 0,
-          s_score: sectionScore,
-          correct: correctCount,
-          incorrect: incorrectCount,
-          Attempted: sectionAnswered,
-          Not_Attempted: sectionNotAnswered,
-          visitedQuestionsCount: sectionSummary.visitedQuestionsCount,
-          notVisitedQuestions: sectionSummary.notVisitedQuestions,
-          s_accuracy: secaccuracy,
-          skipped: skippedQuestions,
-          timeTaken: (() => {
-            const time1 = resultData?.section?.[sectionIndex]?.timeTaken;
-            const time2 = sectionTimes?.[sectionIndex];
-
-            if (typeof time1 === "number" && typeof time2 === "number") {
-              return time1 + time2;
-            }
-
-            return time1 ?? time2 ?? 0;
-          })(),
-        };
-      })
-      .filter(Boolean);
-
-    const totalStats = formattedSections.reduce(
-      (acc, section) => ({
-        visitedCount: acc.visitedCount + (section.isVisited || 0),
-        notVisitedCount: acc.notVisitedCount + (section.NotVisited || 0),
-        answeredCount: acc.answeredCount + (section.Attempted || 0),
-        notAnsweredCount: acc.notAnsweredCount + (section.Not_Attempted || 0),
-      }),
-      {
-        visitedCount: 0,
-        notVisitedCount: 0,
-        answeredCount: 0,
-        notAnsweredCount: 0,
-      }
-    );
 
     setExamDataSubmission({
       formattedSections,
-      totalScore: formattedSections.reduce(
-        (sum, section) => sum + (section.s_score || 0),
-        0
-      ),
+      totalScore,
       timeTakenInSeconds,
-      totalcheck: {
-        visitedQuestionsCount: totalStats.visitedCount,
-        notVisitedQuestions: totalStats.notVisitedCount,
-        answeredQuestions: totalStats.answeredCount,
-        notAnsweredQuestions: totalStats.notAnsweredCount,
-      },
       endTime,
     });
   };
+
   // Add debounce for auto grammar check
   const [typingTimeout, setTypingTimeout] = useState(null);
 
@@ -1812,6 +1487,7 @@ const DescriptiveTest = () => {
 
       const { corrections, scoreData, scoreBreakdown, correctedText } = await checkGrammar(currentText, questionIndex);
 
+      let newDataSnapshot;
       // Update state immutably
       setDescriptiveData(prev => {
         const newData = [...prev];
@@ -1840,6 +1516,7 @@ const DescriptiveTest = () => {
           lastChecked: new Date().toISOString()
         };
 
+        newDataSnapshot = newData;
         return newData;
       });
 
@@ -1848,6 +1525,20 @@ const DescriptiveTest = () => {
         setCorrections(corrections);
         setScoreData(scoreData);
         setScoreBreakdown(scoreBreakdown);
+      }
+
+      // Auto-save descriptive data to backend
+      if (user?._id && id && newDataSnapshot) {
+        Api.post(`results/${user._id}/${id}`, {
+          descriptiveData: newDataSnapshot,
+          status: "paused" // intermittent save
+        }).then(() => {
+          dispatch(setResults({
+            [id]: {
+              status: "paused",
+            }
+          }));
+        }).catch(err => console.error("Auto-save failed", err));
       }
 
       console.log(`✅ Grammar check completed for Q${questionIndex + 1}`);
@@ -1936,7 +1627,7 @@ const DescriptiveTest = () => {
         if (result.isConfirmed) {
           // User chose to quit
           console.log("🚪 User chose to quit");
-          await submitExam();
+          await submitExam("paused");
           await new Promise((resolve) => setTimeout(resolve, 1000));
           closeAndNotifyParent();
         } else {
@@ -2563,25 +2254,28 @@ const DescriptiveTest = () => {
   };
 
   const finishTestAndOpenResult = async () => {
-    // try {
-    // await submitExam();
+    try {
+      await submitExam("completed");
 
-    // Build the result URL
-    const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
+      // Build the result URL
+      const resultUrl = `${window.location.origin}/liveresult/${id}/${user?._id}`;
 
-    // Open result in a new window without _blank target
-    // const resultWindow = window.open('', '_self');
-    console.log("openerr", window.opener);
+      // 1. Notify parent via postMessage (legacy/fallback)
+      if (window.opener) {
+        console.log("Notifying parent via postMessage");
+        window.opener.postMessage(
+          {
+            type: "test-status-updated",
+            testId: id,
+          },
+          window.location.origin
+        );
+      }
 
-    if (window.opener) {
-      console.log("Closing the window and notifying parent");
-      window.opener.postMessage(
-        {
-          type: "test-status-updated",
-          testId: id,
-        },
-        window.location.origin
-      );
+      // 2. Broadcast via BroadcastChannel for robust cross-tab sync
+      const channel = new BroadcastChannel('exam-status-channel');
+      channel.postMessage({ type: 'test-status-updated', testId: id });
+      channel.close();
 
       window.open(resultUrl, "_blank");
 
@@ -2589,9 +2283,9 @@ const DescriptiveTest = () => {
       setTimeout(() => {
         window.close();
       }, 300);
-    } else {
-      console.log("Closing the window without parent notification");
-      window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`; // fallback
+    } catch (error) {
+      console.error("Error finishing test:", error);
+      window.location.href = `${window.location.origin}/liveresult/${id}/${user?._id}`;
     }
   };
 
@@ -2644,7 +2338,7 @@ const DescriptiveTest = () => {
 
   const closeAndNotifyParent = () => {
     if (window.opener) {
-      console.log("Closing the window and notifying parent");
+      console.log("Notifying parent via postMessage");
       window.opener.postMessage(
         {
           type: "test-status-updated",
@@ -2652,15 +2346,16 @@ const DescriptiveTest = () => {
         },
         window.location.origin
       );
-
-      // Allow time for message to send before closing
-      setTimeout(() => {
-        window.close();
-      }, 300);
-    } else {
-      console.log("Closing the window without parent notification");
-      navigate("/");
     }
+
+    // Also broadcast via BroadcastChannel for robust cross-tab sync
+    const channel = new BroadcastChannel('exam-status-channel');
+    channel.postMessage({ type: 'test-status-updated', testId: id });
+    channel.close();
+
+    setTimeout(() => {
+      window.close();
+    }, 300);
   };
   return (
     <div className="mock-font " ref={commonDataRef}>
@@ -2768,7 +2463,8 @@ const DescriptiveTest = () => {
 
                           if (popupType === 'timeExpired' || popupType === 'test') {
                             // Time finished or Submit Test - go directly to result
-                            await submitExam();
+                  setIsPaused(true);
+          await submitExam("paused");
                             await new Promise((resolve) => setTimeout(resolve, 1000));
                             setIsSubmitted(true); // ADDED: Set isSubmitted only when last section is complete
                             finishTestAndOpenResult();

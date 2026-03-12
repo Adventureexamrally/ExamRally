@@ -104,11 +104,6 @@ const Packages = () => {
               </div>
 
               <div className="flex-grow space-y-1 mb-2 overflow-y-auto h-[200px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <style jsx>{`
-                  div::-webkit-scrollbar {
-                    display: none;
-                  }
-                `}</style>
                 {pkg.feature.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
                     <div className="mt-1 text-green-500">

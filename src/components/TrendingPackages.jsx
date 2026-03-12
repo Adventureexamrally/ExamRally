@@ -147,23 +147,6 @@ const TrendingPackages = () => {
         ))}
       </div>
 
-      {/* Custom Scrollbar Styles */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f8fafc;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #10b981;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #059669;
-        }
-      `}</style>
 
       {showModal && selectedPackage && (
         <PackageCoupon pkg={selectedPackage} setShowModal={setShowModal} />

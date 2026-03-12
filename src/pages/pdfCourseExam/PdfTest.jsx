@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -17,8 +18,10 @@ import {
   logger,
   EXAM_CONSTANTS
 } from './examUtils';
+import { setPDFResults } from "../../slice/userSlice";
 
 const Test = () => {
+  const dispatch = useDispatch();
   const [examData, setExamData] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
@@ -123,6 +126,18 @@ const Test = () => {
             setResultData(state);
             setDataid(state._id);
             console.log("Exam state and result data fetched:", state);
+            
+            // Sync with Redux
+            dispatch(setPDFResults({
+              [id]: {
+                status: state.status,
+                sectionIndex: state.sectionIndex,
+                currentSectionIndex: state.currentSectionIndex,
+                currentQuestionIndex: state.currentQuestionIndex,
+                timeTakenInSeconds: state.timeTakenInSeconds,
+              }
+            }));
+
             const initialOptions = Array(t_questions).fill(null);
             // let lastVisitedIndex = 0;
             // let visitedQuestionsList = [];
@@ -262,18 +277,7 @@ const Test = () => {
     setClickedQuestionIndex(index);
   };
 
-  useEffect(() => {
-    const savedState = localStorage.getItem(`examState_${id}`);
-    console.warn(savedState)
-    if (savedState) {
-      const state = JSON.parse(savedState);
-      setClickedQuestionIndex(state.clickedQuestionIndex);
-      setSelectedOptions(state.selectedOptions);
-      setVisitedQuestions(state.visitedQuestions);
-      setMarkedForReview(state.markedForReview);
-      setCurrentSectionIndex(state.currentSectionIndex);
-    }
-  }, [id]);
+  // Removed destructive localStorage state loader to prevent race conditions with backend data.
 
   // Modify handleOptionChange to update database
   const handleOptionChange = async (index) => {
@@ -508,7 +512,7 @@ const Test = () => {
     };
 
     // Call the async function inside useEffect
-    fetchData();
+    // fetchData(); // REMOVED: This was unconditionally overwriting the paused backend state
   }, [id]); // Ensure to add 'id' as a dependency for the effect
 
   const handleSubmitTest = () => {
@@ -679,11 +683,7 @@ const Test = () => {
   //   }
   // }, [selectedOptions, id]);
 
-  useEffect(() => {
-    if (!id) return;
-    const initialOptions = Array(totalQuestions).fill(null);
-    setSelectedOptions(initialOptions);
-  }, [id, totalQuestions]);
+  // Removed destructive selectedOptions nullifier on totalQuestions change
 
   useEffect(() => {
     if (!id) return;
@@ -991,6 +991,17 @@ const Test = () => {
           currentQuestionIndex: clickedQuestionIndex,
         });
         logger.info("Progress updated:", response.data);
+
+        // Sync with Redux
+        dispatch(setPDFResults({
+          [id]: {
+            status: isSubmitted ? "completed" : (isPaused ? "paused" : "started"),
+            sectionIndex: currentSectionIndex,
+            currentSectionIndex: currentSectionIndex,
+            currentQuestionIndex: clickedQuestionIndex,
+            timeTakenInSeconds: timeTakenInSecondsUpdated,
+          }
+        }));
       } catch (err) {
         logger.error("Error updating progress:", err);
         // Don't show toast for progress updates, only log the error
@@ -1056,7 +1067,8 @@ const Test = () => {
   const handleTimerEnd = async () => {
     handleSubmitSection();
     toast.success("Test Completed! Moving to result.");
-    await submitExam();
+    setIsSubmitted(true);
+    await submitExam("completed");
     await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
     // navigate(`/pdf/result/${id}/${user?._id}`);
     finishTestAndOpenResult();
@@ -1567,6 +1579,16 @@ const Test = () => {
           // currentSectionStartTimeRef will be used to calculate currentSessionTime
           await submitExam("paused"); // ✅ Explicitly pass "paused" status
           await new Promise((resolve) => setTimeout(resolve, 1000));
+          
+          // Broadcast status update before closing
+          try {
+            const channel = new BroadcastChannel('exam-status-channel');
+            channel.postMessage({ type: 'test-status-updated', examId: id });
+            channel.close();
+          } catch (broadcastErr) {
+            console.error("Error broadcasting pause status:", broadcastErr);
+          }
+          
           window.close();
         } else {
           setIsPaused(false);
@@ -1644,7 +1666,8 @@ const Test = () => {
         // If last section is complete, navigate to result
         console.log("Last section complete. Navigating to results.");
         toast.success("Test Completed! Moving to result.");
-        await submitExam();
+        setIsSubmitted(true);
+        await submitExam("completed");
         await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second
         // navigate(`/pdf/result/${id}`);
         finishTestAndOpenResult();
@@ -1864,6 +1887,15 @@ const Test = () => {
 
       // resultWindow.location.href = resultUrl;
       window.open(resultUrl, '_blank');
+
+      // Broadcast status update to other tabs
+      try {
+        const channel = new BroadcastChannel('exam-status-channel');
+        channel.postMessage({ type: 'test-status-updated', examId: id });
+        channel.close();
+      } catch (broadcastErr) {
+        console.error("Error broadcasting status update:", broadcastErr);
+      }
 
       // Close the current test window
       window.close();

@@ -22,6 +22,30 @@ const Banner = () => {
       });
   }, []);
 
+  const CustomPrevArrow = (props) => {
+    const { className, style, onClick, currentSlide, slideCount, ...rest } = props;
+    return (
+      <FaChevronLeft
+        {...rest}
+        className={className}
+        style={{ ...style, display: "block", color: "black" }}
+        onClick={onClick}
+      />
+    );
+  };
+
+  const CustomNextArrow = (props) => {
+    const { className, style, onClick, currentSlide, slideCount, ...rest } = props;
+    return (
+      <FaChevronRight
+        {...rest}
+        className={className}
+        style={{ ...style, display: "block", color: "black" }}
+        onClick={onClick}
+      />
+    );
+  };
+
   const settings = {
     dots: true,
     infinite: slides.length > 1,
@@ -30,8 +54,8 @@ const Banner = () => {
     slidesToScroll: 1,
     autoplay: slides.length > 1,
     autoplaySpeed: 3000,
-    prevArrow: <FaChevronLeft className="slick-prev w-2 h-5 text-black" />,
-    nextArrow: <FaChevronRight className="slick-next w-2 h-5 text-black" />,
+    prevArrow: <CustomPrevArrow />,
+    nextArrow: <CustomNextArrow />,
   };
 
   return (

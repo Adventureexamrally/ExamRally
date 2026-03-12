@@ -16,6 +16,8 @@ import axios from "axios";
 
 import { useUser } from "@clerk/clerk-react";
 import { UserContext } from "../../context/UserProvider";
+import { useDispatch } from "react-redux";
+import { setResults } from "../../slice/userSlice";
 import Coupon from "../../pages/Coupon";
 import { fetchUtcNow } from "../../service/timeApi";
 
@@ -39,6 +41,7 @@ const DetailedCategorie = () => {
   const [showmodel, setshowmodel] = useState(false);
   const [trending, setTrending] = useState({});
   const [expiredate, setExpirydate] = useState();
+  const dispatch = useDispatch();
 
   console.log(link);
 
@@ -95,6 +98,8 @@ const DetailedCategorie = () => {
       }
     }
   };
+
+
 
   //   const loadRazorpayScript = () => {
   //     return new Promise((resolve) => {
@@ -505,11 +510,6 @@ const DetailedCategorie = () => {
                       msOverflowStyle: "none",
                     }}
                   >
-                    <style jsx>{`
-                      div::-webkit-scrollbar {
-                        display: none;
-                      }
-                    `}</style>
                     {data.feature.map((item, index) => (
                       <div key={index} className="flex items-start gap-3">
                         <div className="mt-1 text-green-500">

@@ -20,15 +20,15 @@ import { AccessTime, EmojiEvents } from '@mui/icons-material';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { IoMdLock } from 'react-icons/io';
-import { UserContext } from '../../context/UserProvider';
-import { useUser } from '@clerk/clerk-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setResults } from '../../slice/userSlice';
 import Hometotaltest from './Hometotaltest';
 import { Helmet } from 'react-helmet';
 import { toast, ToastContainer } from 'react-toastify';
 
 const HomeLivetest = () => {
+  const dispatch = useDispatch();
   const [liveTests, setLiveTests] = useState([]);
-  const [resultLiveTests, setResultLiveTests] = useState({});
   const [loading, setLoading] = useState(true);
   const [enrolledExams, setEnrolledExams] = useState([]);
 
@@ -88,6 +88,8 @@ const HomeLivetest = () => {
     fetchEnrolledExams();
   }, [isSignedIn, user?._id]);
 
+  const results = useSelector((state) => state.user.results);
+
   const fetchTestStatuses = useCallback(async () => {
     console.log("Fetching test statuses...");
     const statusUpdates = {};
@@ -104,63 +106,17 @@ const HomeLivetest = () => {
             lastQuestionIndex: statusData.lastVisitedQuestionIndex,
             selectedOptions: statusData.selectedOptions,
           };
-          storeTestStatus(test._id, statusUpdates[test._id]);
         }
       } catch (err) {
         console.error(`Error fetching status for test ${test._id}:`, err);
-        const stored = getTestStatusFromStorage(test._id);
-        if (stored) {
-          statusUpdates[test._id] = stored;
-        }
       }
     }
 
-    console.log("Updating resultLiveTests with:", statusUpdates);
-    setResultLiveTests(prev => {
-      const newState = { ...prev, ...statusUpdates };
-      console.log("New resultLiveTests state:", newState);
-      return newState;
-    });
-  }, [liveTests, user?._id]); // Add dependencies here
-
-  useEffect(() => {
-    if (!user?._id || !utcNow || liveTests.length === 0) return;
-    fetchTestStatuses();
-  }, [liveTests, user?._id, utcNow]);
-
-  const getTestStatusFromStorage = (id) => {
-    try {
-      const raw = localStorage.getItem('testResults');
-      const all = raw ? JSON.parse(raw) : {};
-      return all[id] || null;
-    } catch {
-      return null;
+    if (Object.keys(statusUpdates).length > 0) {
+      console.log("Updating Redux with test statuses:", statusUpdates);
+      dispatch(setResults(statusUpdates));
     }
-  };
-
-  // Add this useEffect to handle focus
-  useEffect(() => {
-    window.addEventListener("focus", fetchTestStatuses);
-    return () => {
-      window.removeEventListener("focus", fetchTestStatuses);
-    };
-  }, [fetchTestStatuses]);
-
-  const storeTestStatus = (id, { status, lastQuestionIndex, selectedOptions }) => {
-    try {
-      const raw = localStorage.getItem('testResults') || '{}';
-      const all = JSON.parse(raw);
-      all[id] = {
-        status,
-        lastQuestionIndex,
-        selectedOptions,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem('testResults', JSON.stringify(all));
-    } catch (err) {
-      console.error('Error saving to localStorage:', err);
-    }
-  };
+  }, [liveTests, user?._id, dispatch]);
   // And in your main component add this effect:
   useEffect(() => {
     const handleMessage = (event) => {
@@ -381,17 +337,13 @@ const HomeLivetest = () => {
         <Grid container spacing={3} justifyContent="center">
           {liveTests.length > 0 ? (
             liveTests.map((test) => {
-              const res = isSignedIn
-                ? resultLiveTests[test._id] || getTestStatusFromStorage(test._id)
-                : null;
+              const res = isSignedIn ? results[test._id] : null;
               const status = res?.status;
 
               const start = new Date(test.livetestStartDate);
               const end = new Date(test.livetestEndDate);
-              const resultTime = test.liveResult ? new Date(test.liveResult) : null;
               const utcNow = new Date(); // Current UTC time
               const isEnrolled = enrolledExams.includes(test._id);
-              console.log("resultTime", resultTime, start, end, utcNow);
               console.log(isEnrolled, "isEnrolled");
 
               let buttonText = '';
@@ -808,23 +760,6 @@ const HomeLivetest = () => {
           </div>
         </div>
 
-        <style jsx>{`
-        .transition-all {
-          transition-property: all;
-        }
-        .transition-colors {
-          transition-property: background-color, border-color, color, fill, stroke;
-        }
-        .duration-200 {
-          transition-duration: 200ms;
-        }
-        .duration-300 {
-          transition-duration: 300ms;
-        }
-        .ease-in-out {
-          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-      `}</style>
       </section>
 
     </>

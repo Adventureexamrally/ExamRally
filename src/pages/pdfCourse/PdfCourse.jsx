@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet';
 import Api from '../../service/Api';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -56,6 +57,9 @@ const PdfCourse = () => {
     const pdfRefs = useRef({});
     const navigate = useNavigate();
 
+    // Fetch pdfResults from Redux store
+    const pdfResults = useSelector((state) => state.user.pdfResults);
+
     useEffect(() => {
         run(); // Step 1: only fetch and set alldata here
     }, [level]);
@@ -100,49 +104,7 @@ const PdfCourse = () => {
         fetchProducts();
     }, []);
 
-    // Step 2: Now that alldata is updated, fetch results
-    useEffect(() => {
-        if (!user?._id || !alldata.length) return;
-
-        alldata.forEach((pdf) => {
-            const examId = pdf.exams?.[0]?._id;
-            if (!examId) return;
-
-            Api.get(`/PDFresults/${user._id}/${examId}`)
-                .then((res) => {
-                    if (res.data?.status === "completed" || res.data?.status === "paused") {
-                        setResultData((prev) => ({
-                            ...prev,
-                            [examId]: {
-                                ...res.data,
-                                lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-                                selectedOptions: res.data.selectedOptions,
-                            },
-                        }));
-                    }
-                })
-                .catch((err) => {
-                    console.error("Error fetching result for", examId, ":", err);
-                });
-        });
-    }, [alldata, user?._id, level, refetchTrigger]);
-
-    // Listen for page visibility changes to refetch results when user returns
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-                // Trigger refetch when page becomes visible again
-                setRefetchTrigger(prev => prev + 1);
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, []);
-
+    // Removed local fetch logic for results since it's now handled by Redux.
 
     // Memoized calendar generation
     const generateCalendar = useCallback((year, month) => {
@@ -803,26 +765,26 @@ const PdfCourse = () => {
                                                                                 </button>
 
                                                                                 <button
-                                                                                    className={`flex-1 text-center text-white py-2 px-3 rounded-md text-sm font-medium transition-colors ${resultData?.[examId]?.status === "completed"
+                                                                                    className={`flex-1 text-center text-white py-2 px-3 rounded-md text-sm font-medium transition-colors ${pdfResults?.[examId]?.status === "completed"
                                                                                         ? "bg-green-600 hover:bg-green-700"
-                                                                                        : resultData?.[examId]?.status === "paused"
+                                                                                        : (pdfResults?.[examId]?.status === "paused" || pdfResults?.[examId]?.status === "started")
                                                                                             ? "bg-yellow-600 hover:bg-yellow-700"
                                                                                             : "bg-green-600 hover:bg-green-700"
                                                                                         }`}
                                                                                     onClick={() => {
-                                                                                        const results = resultData?.[examId];
+                                                                                        const results = pdfResults?.[examId];
                                                                                         if (results?.status === "completed") {
                                                                                             openNewWindow(`/pdf/result/${id}/${user._id}`);
-                                                                                        } else if (results?.status === "paused") {
+                                                                                        } else if (results?.status === "paused" || results?.status === "started") {
                                                                                             openNewWindow(`/pdf/mocktest/${id}/${user._id}`);
                                                                                         } else {
                                                                                             openNewWindow(`/pdf/instruction/${id}/${user._id}`);
                                                                                         }
                                                                                     }}
                                                                                 >
-                                                                                    {resultData?.[examId]?.status === "completed"
+                                                                                    {pdfResults?.[examId]?.status === "completed"
                                                                                         ? "View Result"
-                                                                                        : resultData?.[examId]?.status === "paused"
+                                                                                        : (pdfResults?.[examId]?.status === "paused" || pdfResults?.[examId]?.status === "started")
                                                                                             ? "Resume"
                                                                                             : "Take Test"}
                                                                                 </button>

@@ -3,6 +3,7 @@ import Api from "../service/Api";
 import { useNavigate } from "react-router-dom";
 import { FaChevronDown, FaCloudDownloadAlt, FaCalendarAlt, FaLock } from "react-icons/fa";
 import { UserContext } from "../context/UserProvider";
+import { useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
 import { generateImageEnabledPDF } from "../utils/pdfGenerator";
 
@@ -133,7 +134,7 @@ const CAmonth = () => {
   const [CA, setCA] = useState([]);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [expandedWeeks, setExpandedWeeks] = useState({});
-  const [resultData, setResultData] = useState({});
+  const results = useSelector((state) => state.user.results);
   const [loadingTests, setLoadingTests] = useState({});
   const [generatingPdf, setGeneratingPdf] = useState({});
   const [selectedLanguage, setSelectedLanguage] = useState({});
@@ -170,7 +171,6 @@ const CAmonth = () => {
   // ── enrollment + results ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!user?._id || !CA.length || !utcNow) return;
-    let alive = true;
 
     // Enrollment check
     const isActive = (expiryDate) => new Date(expiryDate) > utcNow;
@@ -179,83 +179,7 @@ const CAmonth = () => {
       user.subscriptions?.some((s) => s?.expiryDate && isActive(s.expiryDate)) ||
       false;
     setIsEnrolled(enrolled);
-
-    // Collect unique exam IDs using a Set (O(1) lookups)
-    const examIdSet = new Set();
-    CA.forEach((ca) =>
-      ca.currentAffair?.week?.forEach((week) =>
-        week?.model?.forEach((m) =>
-          m?.exams?.forEach((ex) => {
-            const id = ex?._id || ex;
-            if (id) examIdSet.add(id);
-          })
-        )
-      )
-    );
-
-    // Parallel fetch all results
-    Promise.allSettled(
-      [...examIdSet].map((id) =>
-        Api.get(`/results/${user._id}/${id}`).then((res) => ({ id, data: res.data }))
-      )
-    ).then((settled) => {
-      if (!alive) return;
-      const results = {};
-      settled.forEach((r) => {
-        if (r.status === "fulfilled") {
-          const { id, data } = r.value;
-          if (data?.status === "completed" || data?.status === "paused") {
-            results[id] = {
-              ...data,
-              lastQuestionIndex: data.lastVisitedQuestionIndex,
-              selectedOptions: data.selectedOptions,
-            };
-          }
-        }
-      });
-      setResultData(results);
-    });
-
-    return () => { alive = false; };
   }, [user, CA, utcNow]);
-
-  // ── postMessage listener (window-to-window test updates) ─────────────────────
-  const refreshResult = useCallback(
-    async (examId) => {
-      if (!user?._id) return;
-      try {
-        const res = await Api.get(`/results/${user._id}/${examId}`);
-        if (res.data?.status === "completed" || res.data?.status === "paused") {
-          setResultData((prev) => ({
-            ...prev,
-            [examId]: {
-              ...res.data,
-              lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-              selectedOptions: res.data.selectedOptions,
-            },
-          }));
-        }
-      } catch (e) {
-        console.error("refreshResult error:", e);
-      }
-    },
-    [user]
-  );
-
-  useEffect(() => {
-    const onMessage = (e) => {
-      if (e.origin !== window.location.origin) return;
-      if (e.data?.type === "test-status-updated" && e.data.testId) {
-        const id = e.data.testId;
-        setLoadingTests((p) => ({ ...p, [id]: true }));
-        refreshResult(id).finally(() =>
-          setLoadingTests((p) => ({ ...p, [id]: false }))
-        );
-      }
-    };
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [refreshResult]);
 
   // ── actions ──────────────────────────────────────────────────────────────────
   const openNewWindow = useCallback((url) => {
@@ -365,7 +289,7 @@ const CAmonth = () => {
                         {week.model.map((model) => {
                           const examObj = model.exams?.[0];
                           const examId = examObj?._id || examObj;
-                          const testStatus = resultData[examId]?.status;
+                          const testStatus = results[examId]?.status;
 
                           return (
                             <ExamCard

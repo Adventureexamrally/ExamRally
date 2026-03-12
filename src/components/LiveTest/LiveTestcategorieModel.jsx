@@ -12,6 +12,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { CircularProgress } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
+import { setResults } from "../../slice/userSlice";
 
 const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   const [showDifficulty, setShowDifficulty] = useState({});
@@ -19,9 +21,11 @@ const LiveTestcategorieModel = ({ data, topic, activeSection }) => {
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
   const { id } = useParams();
-  const queryClient = useQueryClient(); // Add this
-const [loadingTests, setLoadingTests] = useState({});
-console.error(data)
+  const dispatch = useDispatch();
+  const results = useSelector((state) => state.user.results);
+  const queryClient = useQueryClient();
+  const [loadingTests, setLoadingTests] = useState({});
+
   // Fetch UTC time
   const { 
     data: utcNow, 
@@ -31,47 +35,6 @@ console.error(data)
     queryKey: ['utcNow'],
     queryFn: fetchUtcNow,
     staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-
-  // Fetch results for all tests
-  const fetchResults = async (testId) => {
-    try {
-      const res = await Api.get(`/results/${user?._id}/${testId}`);
-      return res.data;
-    } catch (err) {
-      // console.error(`Error fetching result for test ${testId}:`, err);
-      return null;
-    }
-  };
-
-  const { 
-    data: resultsData = {}, 
-    isLoading: isResultsLoading, 
-    error: resultsError 
-  } = useQuery({
-    queryKey: ['testResults', user?._id],
-    queryFn: async () => {
-      if (!user?._id || !data?.exams) return {};
-      
-      const results = {};
-      await Promise.all(
-        data.exams.map(async (test) => {
-          const result = await fetchResults(test._id);
-          if (result?.status === "completed" || result?.status === "paused") {
-            results[test._id] = {
-              ...result,
-              lastQuestionIndex: result.lastVisitedQuestionIndex,
-              selectedOptions: result.selectedOptions,
-            };
-          }
-        })
-      );
-      return results;
-    },
-    enabled: !!user?._id && !!data?.exams,
-    staleTime: 1000 * 60, // 1 minute cache
-    refetchInterval: 1000 * 60,
-    refetchIntervalInBackground: true
   });
 
   // Check enrollment status
@@ -111,39 +74,8 @@ console.error(data)
   });
 
   // Combined loading state
-  const isLoading = isUtcLoading || isResultsLoading || isEnrollmentLoading;
-  const error = utcError || resultsError || enrollmentError;
-
-  // Utility functions for localStorage
-  const getTestStatusFromStorage = (testId) => {
-    const storedResults = localStorage.getItem('testResults');
-    if (!storedResults) return null;
-    
-    try {
-      const results = JSON.parse(storedResults);
-      return results[testId] || null;
-    } catch (error) {
-      console.error('Error parsing stored test results:', error);
-      return null;
-    }
-  };
-
-  const storeTestStatus = (testId, status, lastQuestionIndex = null, selectedOptions = null) => {
-    const storedResults = localStorage.getItem('testResults') || '{}';
-    
-    try {
-      const results = JSON.parse(storedResults);
-      results[testId] = {
-        status,
-        lastQuestionIndex,
-        selectedOptions,
-        timestamp: new Date().toISOString()
-      };
-      localStorage.setItem('testResults', JSON.stringify(results));
-    } catch (error) {
-      console.error('Error storing test result:', error);
-    }
-  };
+  const isLoading = isUtcLoading || isEnrollmentLoading;
+  const error = utcError || enrollmentError;
 
   const isPaidTest = (test) => {
     return test?.result_type?.toLowerCase() === "paid";
@@ -222,51 +154,7 @@ console.error(data)
   }
 
   
-  // Add this function
-  // Updated fetchTestStatuses
-const fetchTestStatuses = useCallback(async (testId) => {
-  if (testId) {
-    console.log(`Fetching status for test ${testId}`);
-    
-    setLoadingTests(prev => ({ ...prev, [testId]: true }));
-  }
 
-  try {
-    await queryClient.refetchQueries({
-      queryKey: ['testResults', user?._id],
-      exact: true,
-      refetchType: 'active',
-    });
-  } finally {
-    if (testId) {
-      setLoadingTests(prev => ({ ...prev, [testId]: false }));
-    }
-  }
-}, [queryClient, user?._id]);
-
-
-  // Add message listener
-  useEffect(() => {
-    const handleMessage = (event) => {
-      console.warn("Received message in modal:", event.data);
-      console.warn("Event origin:", event.origin , "Current origin:", window.location.origin);
-      
-      if (event.origin !== window.location.origin) return;
-      if (event.data.type === 'test-status-updated') {
-        fetchTestStatuses(event.data.testId);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [fetchTestStatuses]);
-
-    // Add focus listener
-  // useEffect(() => {
-  //   const handleFocus = () => fetchTestStatuses();
-  //   window.addEventListener("focus", handleFocus);
-  //   return () => window.removeEventListener("focus", handleFocus);
-  // }, [fetchTestStatuses]);
   
   console.warn("Results Data:", loadingTests);
   return (
@@ -422,11 +310,9 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                 ) : (
                                   <button
                                     className={`mt-3 py-2 px-4 rounded w-full transition ${
-                                      (resultsData?.[test._id]?.status === "completed" || 
-                                      getTestStatusFromStorage(test._id)?.status === "completed")
+                                      (results?.[test._id]?.status === "completed")
                                         ? "bg-green-500 text-white hover:bg-green-600"
-                                        : (resultsData?.[test._id]?.status === "paused" || 
-                                          getTestStatusFromStorage(test._id)?.status === "paused")
+                                        : (results?.[test._id]?.status === "paused")
                                         ? "bg-green-500 text-white hover:bg-green-600"
                                         : "bg-green-500 text-white hover:bg-green-600"
                                     }`}
@@ -439,12 +325,11 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                         return;
                                       }
 
-                                      const status = resultsData?.[test._id]?.status || 
-                                                    getTestStatusFromStorage(test._id)?.status;
+                                      const status = results?.[test._id]?.status;
 
                                       if (status === "completed") {
                                         openNewWindow(`/liveresult/${test._id}/${user?._id}`);
-                                      } else if (status === "paused") {
+                                      } else if (status === "paused" || status === "started") {
                                         openNewWindow(`/mocklivetest/${test._id}/${user?._id}`);
                                       } else {
                                         openNewWindow(`/instruct/${test._id}/${user?._id}`);
@@ -458,9 +343,9 @@ const fetchTestStatuses = useCallback(async (testId) => {
                                           <CircularProgress size={18} thickness={4} color="inherit" />
                                         </>
                                       ) : (
-                                        (resultsData?.[test._id]?.status === "completed" || getTestStatusFromStorage(test._id)?.status === "completed")
+                                        (results?.[test._id]?.status === "completed")
                                           ? "View Result"
-                                          : (resultsData?.[test._id]?.status === "paused" || getTestStatusFromStorage(test._id)?.status === "paused")
+                                          : (results?.[test._id]?.status === "paused" || results?.[test._id]?.status === "started")
                                             ? "Resume"
                                             : "Take Test"
                                       )}

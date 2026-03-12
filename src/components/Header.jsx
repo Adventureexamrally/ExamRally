@@ -67,96 +67,78 @@ const Header = () => {
   }, [currentTime, currentOffer]);
 
   return (
-    <header className="bg-white shadow-md">
-      <div className="container-fluid mx-auto px-4 py-3 flex flex-wrap items-center justify-around">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <Link to="/">
-            <img src={logo} alt="Brand Logo" className="h-10 cursor-pointer" />
+    <header className="bg-white shadow-sm border-b border-gray-100">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-4">
+        <div className="flex-shrink-0">
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="Brand Logo" className="h-9 lg:h-11 w-auto object-contain transition-transform hover:scale-105" />
           </Link>
         </div>
 
-        {/* Center search bar placeholder */}
-        <div className="flex-1 max-w-md mx-auto hidden lg:block ">
-          <div className="relative">
-            {/* Future search bar placeholder */}
-          </div>
-        </div>
+        {/* Center Section (Offer) */}
+        <div className="flex-grow flex justify-center overflow-hidden">
 
-        {/* Offer and Telegram/Sign-In */}
-        <div className="flex items-center space-x-4">
-          {/* Always show Offer if it exists */}
           {currentOffer && (
             <Link
               to={currentOffer.offerLink}
-              className="flex flex-col md:flex-row items-center lg:space-x-2"
+              className="flex items-center gap-3 bg-slate-50/80 px-4 py-1.5 rounded-2xl border border-slate-100/50 hover:bg-slate-100 transition-colors max-w-full"
             >
               <img
                 src={currentOffer.imageUrl || offerImage}
-                className="h-14 w-20 object-contain blink"
+                className="h-10 w-auto object-contain hidden sm:block"
                 alt={currentOffer.offerName}
               />
-              <div className="text-center lg:text-left">
-                <div className="d-flex">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 shrink-0">
+                <div className="flex items-center gap-1">
                   <motion.span
-                    animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1.2, 1] }}
-                    transition={{
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      duration: 1,
-                      ease: "easeInOut",
-                      times: [0, 0.25, 0.75, 1],
-                    }}
-                    className="ml-2 text-blue-400 inline-block text-xl origin-center"
+                    animate={{ rotate: [0, 15, -15, 0] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="text-blue-400 text-lg hidden lg:inline"
                   >
                     ✨
                   </motion.span>
-                  <h1 className="text-green text-sm lg:text-lg font-semibold">
+                  <h1 className="text-slate-800 text-xs lg:text-sm font-bold truncate max-w-[150px] lg:max-w-none">
                     {currentOffer.offerName}
                   </h1>
-                  <motion.span
-                    animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1.2, 1] }}
-                    transition={{
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      duration: 1,
-                      ease: "easeInOut",
-                      times: [0, 0.25, 0.75, 1],
-                    }}
-                    className="text-blue-400 inline-block text-xl origin-center"
-                  >
-                    ✨
-                  </motion.span>
                 </div>
+
                 {countdown && (
-                  <div className="bg-gradient-to-r from-purple-500 to-amber-600 p-0.5 rounded-lg animate-gradient-x">
-                    <p className="text-white bg-[#131656] text-xs lg:text-sm px-3 py-1 rounded-[0.25rem] font-semibold text-center">
-                      ⚡ Ends Soon: {countdown}
-                    </p>
+                  <div className="flex items-center bg-[#131656] text-white text-[10px] lg:text-xs px-2.5 py-1 rounded-lg font-bold whitespace-nowrap gap-1.5 shadow-sm shadow-blue-900/20">
+                    <span className="text-amber-400 animate-pulse">⚡</span>
+                    {countdown}
                   </div>
                 )}
               </div>
             </Link>
           )}
+        </div>
 
-          {/* Telegram & Sign-in */}
-          <div className="hidden md:flex lg:flex items-center space-x-3">
-            <Link
-              to="https://t.me/examrally"
-              target="_blank"
-              className="flex items-center space-x-1 text-[#24A1DE]"
-            >
-              <i className="bi bi-telegram text-2xl"></i>
-              <span>Join Telegram</span>
-            </Link>
+        {/* Telegram & Sign-in (Right) */}
+        <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0 text-sm font-semibold">
+          <Link
+            to="https://t.me/examrally"
+            target="_blank"
+            className="hidden md:flex items-center gap-2 text-[#24A1DE] hover:text-[#1a8bc4] transition-colors"
+          >
+            <i className="bi bi-telegram text-xl"></i>
+            <span className="hidden lg:inline">Join Telegram</span>
+          </Link>
 
+          <div className="h-8 w-[1px] bg-slate-100 hidden md:block"></div>
+
+          <div className="flex items-center gap-3">
             <SignedOut>
-              <SignInButton className="bg-[#000080] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                Sign In
+              <SignInButton mode="modal">
+                <button className="bg-[#000080] text-white py-2 px-5 rounded-xl hover:bg-[#000066] transition-all shadow-md shadow-blue-900/10 hover:-translate-y-0.5 whitespace-nowrap">
+                  Sign In
+                </button>
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              <CustomUserMenu />
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 hidden sm:inline">Hi,</span>
+                <CustomUserMenu />
+              </div>
             </SignedIn>
           </div>
         </div>

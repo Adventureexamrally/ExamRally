@@ -142,11 +142,6 @@ const Free_pdf = () => {
           {/* Topics Sidebar - 1/4 width */}
           <div className="w-1/4 pr-6">
             <div className="bg-white border border-gray-200 rounded-lg sticky top-10 overflow-y-auto h-[430px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              <style jsx>{`
-                div::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
               <button
                 onClick={() => setSelectedTopic('')}
                 className={`w-full text-left px-5 py-3.5 hover:bg-[#131656] hover:text-white transition-colors border-b ${

@@ -6,19 +6,19 @@ import questionReducer from "../slice/questionSlice";
 import testReducer from '../slice/testSlice';
 import forumReducer from '../slice/forumSlice';
 
-const persistConfig = {
-    key: 'test',
+const userPersistConfig = {
+    key: 'user',
     version: 1,
     storage,
 };
 
-const persistedTestReducer = persistReducer(persistConfig, testReducer);
+const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
 
 export const store = configureStore({
     reducer: {
-        user: userReducer,
+        user: persistedUserReducer,
         questions: questionReducer,
-        test: persistedTestReducer,
+        test: testReducer,
         forum: forumReducer,
     },
     middleware: (getDefaultMiddleware) =>

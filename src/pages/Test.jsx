@@ -38,6 +38,7 @@ import {
   tickQuestionTime,
   resetTestState
 } from "../slice/testSlice";
+import { setResults } from "../slice/userSlice";
 
 const Test = () => {
   // Helper to handle both "MM:SS", strings, and raw numbers gracefully
@@ -58,6 +59,7 @@ const Test = () => {
 
   const dispatch = useDispatch();
   const testState = useSelector((state) => state.test);
+  const isSavingRef = useRef(false);
 
   const {
     examData,
@@ -310,7 +312,7 @@ const Test = () => {
           }
 
           // RESET state if it's a DIFFERENT exam than the one in Redux
-          const reduxExamId = String(examData?._id?.$oid || examData?._id || "");
+          const reduxExamId = String(examData?._id || "");
           if (reduxExamId && reduxExamId !== String(id)) {
             console.log("🔄 Switching exam, resetting Redux state...");
             dispatch(resetTestState());
@@ -336,18 +338,34 @@ const Test = () => {
               const state = existingResult.data;
               const questionTimesFromDB = {};
               let absoluteIndex = 0;
-              state.section.forEach((section) => {
-                const qs = section.questions?.[selectedLanguage?.toLowerCase()] || [];
-                qs.forEach((q) => {
-                  questionTimesFromDB[absoluteIndex] = parseQuestionTime(q.q_on_time);
-                  if (q.selectedOption !== null && q.selectedOption !== undefined) {
-                    dispatch(setSelectedOption({ index: absoluteIndex, option: q.selectedOption }));
-                  }
-                  if (q.isVisited === 1) dispatch(markVisited(absoluteIndex));
-                  if (q.markforreview === 1) dispatch(toggleMarkForReview(absoluteIndex));
-                  absoluteIndex++;
+              if (state.selectedOptions && state.selectedOptions.length > 0) {
+                const flatOptions = state.selectedOptions;
+                dispatch(setAllSelectedOptions(flatOptions));
+                
+                // Still need a lightweight loop if we need to track questionTimes, visited, markforreview
+                state.section.forEach((section) => {
+                  const qs = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                  qs.forEach((q) => {
+                    questionTimesFromDB[absoluteIndex] = parseQuestionTime(q.q_on_time);
+                    if (q.isVisited === 1) dispatch(markVisited(absoluteIndex));
+                    if (q.markforreview === 1) dispatch(toggleMarkForReview(absoluteIndex));
+                    absoluteIndex++;
+                  });
                 });
-              });
+              } else {
+                state.section.forEach((section) => {
+                  const qs = section.questions?.[selectedLanguage?.toLowerCase()] || [];
+                  qs.forEach((q) => {
+                    questionTimesFromDB[absoluteIndex] = parseQuestionTime(q.q_on_time);
+                    if (q.selectedOption !== null && q.selectedOption !== undefined && q.selectedOption !== "") {
+                      dispatch(setSelectedOption({ index: absoluteIndex, option: q.selectedOption }));
+                    }
+                    if (q.isVisited === 1) dispatch(markVisited(absoluteIndex));
+                    if (q.markforreview === 1) dispatch(toggleMarkForReview(absoluteIndex));
+                    absoluteIndex++;
+                  });
+                });
+              }
               dispatch(setAllQuestionTimes(questionTimesFromDB));
               setResultData(state);
 
@@ -646,7 +664,7 @@ const Test = () => {
         dispatch(updateNavigation({ sectionIndex: nextIdx, questionIndex: nextStartingIndex }));
       } else {
         console.log("Submitting the exam.");
-        submitExam();
+        finishTestAndOpenResult();
       }
     }
   };
@@ -948,7 +966,17 @@ const Test = () => {
     });
 
     if (user?._id) {
+      if (isSavingRef.current && overrideStatus !== "completed") {
+        console.warn("⏳ Save already in progress, skipping auto-save...");
+        return Promise.resolve();
+      }
+      isSavingRef.current = true;
+
       const currentPauseElapsed = pauseStartRef.current ? Math.floor((Date.now() - pauseStartRef.current) / 1000) : 0;
+
+      const statusToSend = (isSubmitted || overrideStatus === "completed") 
+        ? "completed" 
+        : (overrideStatus || (isPaused ? "paused" : "started"));
 
       return Api.post(`results/${user._id}/${id}`, {
         ExamId: id,
@@ -958,36 +986,39 @@ const Test = () => {
         timeTakenInSeconds: timeTakenInSecondsUpdated,
         takenAt: examStartTime,
         submittedAt: endTime,
-        status: isSubmitted ? "completed" : (overrideStatus || (isPaused ? "paused" : "started")),
+        status: statusToSend,
         sectionTimes,
+        selectedOptions: testState.selectedOptions,
         sectionIndex: currentSectionIndex,
         currentSectionIndex: currentSectionIndex, // Send both for compatibility
         currentQuestionIndex: clickedQuestionIndex,
         pausedDuration: (pausedDurationRef.current || 0) + currentPauseElapsed,
       })
         .then((res) => {
-          console.log("Auto-save successful:", res.data);
+          console.log(`Auto-save successful (status: ${statusToSend}):`, res.data);
+          
+          dispatch(setResults({
+            [id]: {
+              status: statusToSend,
+              lastQuestionIndex: clickedQuestionIndex,
+              selectedOptions: testState.selectedOptions,
+            }
+          }));
+
           return res.data;
         })
         .catch((err) => {
           console.error("Auto-save failed:", err);
           throw err;
+        })
+        .finally(() => {
+          isSavingRef.current = false;
         });
     }
     return Promise.resolve();
   };
 
-  useEffect(() => {
-    updateSectionTime();
-  }, [
-    examDataSubmission,
-    selectedOptions,
-    id,
-    currentSectionIndex,
-    sectionTimes,
-    examData,
-    timeTakenFromDB,
-  ]);
+  // Aggressive auto-save useEffect removed to prevent 500 error version conflicts
 
 
 
@@ -1050,8 +1081,12 @@ const Test = () => {
     await handleSectionCompletion(true);
   };
 
-  const submitExam = (explicitStatus) => {
+  const submitExam = async (explicitStatus) => {
     console.log("submitExam called with status:", explicitStatus);
+
+    if (explicitStatus === "completed") {
+      dispatch(setSubmitted(true));
+    }
 
     // Save current active timing before final submission
     const now = new Date();
@@ -1060,7 +1095,7 @@ const Test = () => {
     currentSectionStartTimeRef.current = now;
 
     const submissionData = prepareSubmissionData(now);
-    return updateSectionTime(submissionData, explicitStatus);
+    return await updateSectionTime(submissionData, explicitStatus);
   };
 
   const handlePauseResume = () => {
@@ -1132,18 +1167,12 @@ const Test = () => {
       if (result.isConfirmed) {
         try {
           await submitExam("paused");
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          closeAndNotifyParent();
         } catch (err) {
           console.error("Submission error during quit:", err);
+          closeAndNotifyParent(); // Try to close anyway
         }
-
-        // Force close trick - works better in some browsers for manually opened tabs
-        window.open('', '_self', '');
-        window.close();
-
-        // Fallback if the browser prevented it from closing
-        setTimeout(() => {
-          navigate("/");
-        }, 100);
       } else {
         dispatch(setIsPaused(false));
         setPauseCount(0);
@@ -1208,9 +1237,7 @@ const Test = () => {
         return;
       } else {
         // Last group in exam finished via timer — submit exam
-        await submitExam();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        navigate(`/result/${id}/${user?._id}`);
+        await finishTestAndOpenResult();
         return;
       }
     }
@@ -1257,9 +1284,7 @@ const Test = () => {
       }));
     } else {
       // Last section — submit exam and navigate to results
-      await submitExam();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      navigate(`/result/${id}/${user?._id}`);
+      await finishTestAndOpenResult();
     }
   };
 
@@ -1404,23 +1429,55 @@ const Test = () => {
 
   const finishTestAndOpenResult = async () => {
     try {
-      // await submitExam();
+      console.log("🏁 Closing test and opening results...");
+      // Ensure we have a final save with "completed" status
+      await submitExam("completed");
 
       // Build the result URL
       const resultUrl = `${window.location.origin}/result/${id}/${user?._id}`;
 
-      // Open result in a new window without _blank target
-      // const resultWindow = window.open('', '_self');
+      // 1. Notify parent via postMessage (legacy/fallback)
+      if (window.opener) {
+        window.opener.postMessage({
+          type: 'test-status-updated',
+          testId: id
+        }, window.location.origin);
+      }
 
-      // resultWindow.location.href = resultUrl;
+      // 2. Broadcast via BroadcastChannel for robust cross-tab sync
+      const channel = new BroadcastChannel('exam-status-channel');
+      channel.postMessage({ type: 'test-status-updated', testId: id });
+      channel.close();
+
       window.open(resultUrl, '_blank');
 
-      // Close the current test window
-      window.close();
+        // Close the current test window
+      setTimeout(() => {
+        window.close();
+      }, 300);
     } catch (error) {
       console.error("Error finishing test:", error);
       alert('Failed to submit the exam. Please try again.');
     }
+  };
+
+  const closeAndNotifyParent = () => {
+    if (window.opener) {
+      console.log("Notifying parent via postMessage");
+      window.opener.postMessage({
+        type: 'test-status-updated',
+        testId: id
+      }, window.location.origin);
+    }
+
+    // Also broadcast via BroadcastChannel for robust cross-tab sync
+    const channel = new BroadcastChannel('exam-status-channel');
+    channel.postMessage({ type: 'test-status-updated', testId: id });
+    channel.close();
+
+    setTimeout(() => {
+      window.close();
+    }, 300);
   };
 
   // When question changes
@@ -1576,5 +1633,5 @@ const Test = () => {
   );
 };
 
-export default Test; // test 2
+export default Test; 
 

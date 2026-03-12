@@ -181,33 +181,6 @@ const Dashboard = () => {
         <Archivements />
       </div>
 
-      {/* Injected Styles for Ticker and Scrollbars */}
-      <style jsx>{`
-        .ticker-wrapper {
-            display: flex;
-            width: max-content;
-            animation: ticker-loop 30s linear infinite;
-        }
-
-        .ticker-wrapper:hover {
-            animation-play-state: paused;
-        }
-
-        @keyframes ticker-loop {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-33.33%); }
-        }
-
-        @keyframes shimmer {
-            0%   { background-position: 200% center; }
-            100% { background-position: -200% center; }
-        }
-
-        .ticker-content {
-            display: flex;
-            flex-shrink: 0;
-        }
-    `}</style>
     </div>
   );
 };

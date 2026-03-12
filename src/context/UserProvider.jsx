@@ -1,28 +1,58 @@
-// src/context/UserContext.js
 import React, { useEffect, useState, createContext } from 'react';
-import Api from '../service/Api'
-import { useUser } from '@clerk/clerk-react';
-import { fetchUtcNow } from '../service/timeApi'; // 👈 your existing time fetcher
+import Api from '../service/Api';
+import { useUser, useClerk } from '@clerk/clerk-react';
+import { fetchUtcNow } from '../service/timeApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser, clearUser, fetchUserResults, fetchUserPDFResults } from '../slice/userSlice';
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [utcNow, setUtcNow] = useState(null); // 👈 Add UTC state
-  const [isFetchingUser, setIsFetchingUser] = useState(true); // Track backend fetch status
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
+  const [utcNow, setUtcNow] = useState(null);
+  const [isFetchingUser, setIsFetchingUser] = useState(false);
+  const [lastSessionCheck, setLastSessionCheck] = useState(0);
 
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
-  // 🔁 Fetch user details from backend
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      dispatch(clearUser());
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.log("Token expired/Unauthorized. Logging out...");
+      handleLogout();
+    };
+
+    window.addEventListener('unauthorized', handleUnauthorized);
+
+    return () => {
+      window.removeEventListener('unauthorized', handleUnauthorized);
+    };
+  }, [signOut]);
+
   const fetchUserDetails = async () => {
+    if (!clerkUser) return;
     setIsFetchingUser(true);
     try {
       const clerkId = clerkUser.id;
       const email = clerkUser.emailAddresses[0]?.emailAddress;
 
       const res = await Api.get(`/auth/getUserDetails/${clerkId}/${email}`);
-      setUser(res.data);
-      console.log("Fetched user from backend:", res.data);
+      dispatch(setUser(res.data));
+      if (res.data?._id) {
+          dispatch(fetchUserResults(res.data._id));
+          dispatch(fetchUserPDFResults(res.data._id));
+      }
+      console.log("Synced user with Redux:", res.data);
     } catch (err) {
       console.error("Error fetching user details:", err);
     } finally {
@@ -30,12 +60,43 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // 🕒 Fetch UTC time once when signed in
+  useEffect(() => {
+    // 1. window.opener message listener (legacy/fallback)
+    const handleMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === 'test-status-updated' || event.data === 'refresh-needed') {
+        console.log("Received status update signal via postMessage, refreshing...");
+        if (user?._id) {
+          dispatch(fetchUserResults(user._id));
+          dispatch(fetchUserPDFResults(user._id));
+        }
+      }
+    };
+
+    // 2. BroadcastChannel for robust cross-tab sync
+    const channel = new BroadcastChannel('exam-status-channel');
+    channel.onmessage = (event) => {
+      console.log("Received status update signal via BroadcastChannel:", event.data);
+      if (event.data?.type === 'test-status-updated') {
+        if (user?._id) {
+          dispatch(fetchUserResults(user._id));
+          dispatch(fetchUserPDFResults(user._id));
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      channel.close();
+    };
+  }, [user?._id, dispatch]);
+
   const fetchUtcTimeOnce = async () => {
     try {
       const time = await fetchUtcNow("UserProvider");
       setUtcNow(time);
-      console.log("Fetched UTC time:", time.toISOString());
     } catch (err) {
       console.error("Failed to fetch UTC time:", err);
     }
@@ -45,16 +106,16 @@ export const UserProvider = ({ children }) => {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      setIsFetchingUser(false); // Not signed in, so not fetching user
+      dispatch(clearUser());
       return;
     }
 
     fetchUserDetails();
-    fetchUtcTimeOnce(); // 👈 Fetch once only when user is loaded
+    fetchUtcTimeOnce();
   }, [isLoaded, isSignedIn, clerkUser]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, refreshUser: fetchUserDetails, utcNow, isFetchingUser }}>
+    <UserContext.Provider value={{ user, setUser: (u) => dispatch(setUser(u)), refreshUser: fetchUserDetails, logout: handleLogout, utcNow, isFetchingUser }}>
       {children}
     </UserContext.Provider>
   );

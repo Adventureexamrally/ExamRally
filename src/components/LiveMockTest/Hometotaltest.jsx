@@ -3,43 +3,32 @@ import Api from '../../service/Api';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setResults } from '../../slice/userSlice';
 
 const HomeTotalTest = () => {
+  const dispatch = useDispatch();
   const [liveTests, setLiveTests] = useState([]);
-  const [resultLiveTests, setResultLiveTests] = useState({});
-
   const [loading, setLoading] = useState(true);
 
   const { user, utcNow } = useContext(UserContext);
+  const results = useSelector((state) => state.user.results);
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
+
   const hasRallyPro = user?.subscriptions?.some(
     (sub) =>
       sub.courseName === 'Rally Super pro' && sub.status === 'Active'
   );
 
   useEffect(() => {
-    const handleMessage = (event) => {
-      if (event?.data?.action === 'redirect') {
-        window.location.reload(); // or navigate('/homelivetest') if using react-router
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-
-  useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const [testsRes] = await Promise.all([
           Api.get('exams/live-test'),
-
         ]);
         const testsData = testsRes.data;
         setLiveTests(Array.isArray(testsData.result) ? testsData.result : []);
-        // setUtcNow(currentTime);
       } catch (err) {
         console.error('Error fetching live tests:', err);
         setLiveTests([]);
@@ -50,8 +39,6 @@ const HomeTotalTest = () => {
 
     fetchInitialData();
   }, [user]);
-
-  console.log('Live Tests:', liveTests);
 
   const fetchTestStatuses = useCallback(async () => {
     console.log("Fetching test statuses...");
@@ -69,41 +56,23 @@ const HomeTotalTest = () => {
             lastQuestionIndex: statusData.lastVisitedQuestionIndex,
             selectedOptions: statusData.selectedOptions,
           };
-          storeTestStatus(test._id, statusUpdates[test._id]);
         }
       } catch (err) {
         console.error(`Error fetching status for test ${test._id}:`, err);
-        const stored = getTestStatusFromStorage(test._id);
-        if (stored) {
-          statusUpdates[test._id] = stored;
-        }
       }
     }
 
-    console.log("Updating resultLiveTests with:", statusUpdates);
-    setResultLiveTests(prev => {
-      const newState = { ...prev, ...statusUpdates };
-      console.log("New resultLiveTests state:", newState);
-      return newState;
-    });
-  }, [liveTests, user?._id]); // Add dependencies here
+    if (Object.keys(statusUpdates).length > 0) {
+      console.log("Updating Redux with test statuses:", statusUpdates);
+      dispatch(setResults(statusUpdates));
+    }
+  }, [liveTests, user?._id, dispatch]);
 
   useEffect(() => {
     if (!user?._id || !utcNow || liveTests.length === 0) return;
     fetchTestStatuses();
   }, [liveTests, user?._id, utcNow]);
 
-  const getTestStatusFromStorage = (id) => {
-    try {
-      const raw = localStorage.getItem('testResults');
-      const all = raw ? JSON.parse(raw) : {};
-      return all[id] || null;
-    } catch {
-      return null;
-    }
-  };
-
-  // Add this useEffect to handle focus
   useEffect(() => {
     window.addEventListener("focus", fetchTestStatuses);
     return () => {
@@ -111,41 +80,19 @@ const HomeTotalTest = () => {
     };
   }, [fetchTestStatuses]);
 
-  const storeTestStatus = (id, { status, lastQuestionIndex, selectedOptions }) => {
-    try {
-      const raw = localStorage.getItem('testResults') || '{}';
-      const all = JSON.parse(raw);
-      all[id] = {
-        status,
-        lastQuestionIndex,
-        selectedOptions,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem('testResults', JSON.stringify(all));
-    } catch (err) {
-      console.error('Error saving to localStorage:', err);
-    }
-  };
-  // And in your main component add this effect:
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("Received message from parent window:", event.data);
-      console.log("Event origin:", event.origin, "Current origin:", window.location.origin);
-
-
       if (event.origin !== window.location.origin) return;
-
       if (event.data === 'test-status-updated') {
         console.log("Test status updated, refreshing data...");
-
-        fetchTestStatuses(); // Refresh test statuses
+        fetchTestStatuses();
       }
     };
 
-
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [fetchTestStatuses]);
 
 
   const formatDate = (dateString) => {
@@ -220,8 +167,8 @@ const HomeTotalTest = () => {
             </div>
           ) : (
             liveTests.map((test) => {
-              const testStatus = resultLiveTests[test._id]?.status;
-              const isPaused = testStatus === 'paused';
+              const testStatus = results[test._id]?.status;
+              const isPaused = testStatus === 'paused' || testStatus === 'started';
               const attempted = testStatus === 'completed' || isPaused;
               const showTakeTest = hasRallyPro && !attempted;
               const showViewResult = attempted;
@@ -268,7 +215,7 @@ const HomeTotalTest = () => {
                         </button>
                       )}
 
-                      {/* Resume Test (New Window - Paused Status) */}
+                      {/* Resume Test (New Window - Paused or Started Status) */}
                       {!hideActions && isPaused && hasRallyPro && (
                         <button
                           onClick={() =>

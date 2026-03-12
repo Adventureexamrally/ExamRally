@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageSquare, Heart, ArrowLeft, Send, Trash2,
     ShieldCheck, Clock, Camera, Share2, CheckCircle2,
-    Tag, Eye, Users2, CornerDownRight, Flag, AlertTriangle, X
+    Tag, Eye, Users2, CornerDownRight, Flag, AlertTriangle, X,
+    Edit3, MoreVertical
 } from 'lucide-react';
 import { UserContext } from '../../context/UserProvider';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchThreadDetails, createPost, likeThread, likePost, deletePost, selectCurrentThread, selectPosts, selectThreadStatus, clearCurrentThread, fetchForumStats, selectForumStats } from '../../slice/forumSlice';
+import { fetchThreadDetails, createPost, likeThread, likePost, deletePost, selectCurrentThread, selectPosts, selectThreadStatus, clearCurrentThread, fetchForumStats, selectForumStats, updateThread, deleteThread, updatePost } from '../../slice/forumSlice';
 import Api from '../../service/Api';
 
 const REPORT_REASONS = [
@@ -33,6 +34,12 @@ const ThreadView = () => {
     const [selectedImages, setSelectedImages] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [shareToast, setShareToast] = useState(false);
+    const [editThread, setEditThread] = useState(null);
+    const [showEditThreadForm, setShowEditThreadForm] = useState(false);
+    const [editPost, setEditPost] = useState(null);
+    const [showEditPostForm, setShowEditPostForm] = useState(false);
+    const [menuOpenId, setMenuOpenId] = useState(null);
+    const [removedImages, setRemovedImages] = useState([]); // Images to remove during edit
 
     // Report modal state
     const [reportTarget, setReportTarget] = useState(null); // { id, type, label }
@@ -40,6 +47,7 @@ const ThreadView = () => {
     const [reportNote, setReportNote] = useState('');
     const [reportSubmitting, setReportSubmitting] = useState(false);
     const [reportSuccess, setReportSuccess] = useState(false);
+    const [selectedFullImage, setSelectedFullImage] = useState(null);
 
     useEffect(() => {
         dispatch(fetchThreadDetails(id));
@@ -97,6 +105,57 @@ const ThreadView = () => {
             await dispatch(deletePost(postId)).unwrap();
         } catch (error) {
             console.error('Error deleting post:', error);
+        }
+    };
+
+    const handleUpdateThread = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('title', editThread.title);
+        formData.append('content', editThread.content);
+        if (removedImages.length > 0) {
+            formData.append('removedImages', JSON.stringify(removedImages));
+        }
+        selectedImages.forEach((image) => formData.append('images', image));
+
+        try {
+            await dispatch(updateThread({ threadId: id, formData })).unwrap();
+            setShowEditThreadForm(false);
+            setEditThread(null);
+            setSelectedImages([]);
+            setRemovedImages([]);
+        } catch (error) {
+            console.error('Error updating thread:', error);
+        }
+    };
+
+    const handleDeleteThread = async () => {
+        if (!window.confirm('Delete this entire discussion? This cannot be undone.')) return;
+        try {
+            await dispatch(deleteThread(id)).unwrap();
+            navigate('/forum');
+        } catch (error) {
+            console.error('Error deleting thread:', error);
+        }
+    };
+
+    const handleUpdatePost = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('content', editPost.content);
+        if (removedImages.length > 0) {
+            formData.append('removedImages', JSON.stringify(removedImages));
+        }
+        selectedImages.forEach((image) => formData.append('images', image));
+
+        try {
+            await dispatch(updatePost({ postId: editPost._id, formData })).unwrap();
+            setShowEditPostForm(false);
+            setEditPost(null);
+            setSelectedImages([]);
+            setRemovedImages([]);
+        } catch (error) {
+            console.error('Error updating post:', error);
         }
     };
 
@@ -170,7 +229,7 @@ const ThreadView = () => {
             </AnimatePresence>
 
             {/* ── Sticky Header ── */}
-            <div className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+            <div className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
@@ -206,7 +265,7 @@ const ThreadView = () => {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-white rounded-3xl shadow-sm border border-gray-50 overflow-hidden"
+                            className="bg-white rounded-3xl shadow-sm border border-gray-50"
                         >
                             {/* Thread Header */}
                             <div className="p-6 pb-4">
@@ -259,11 +318,21 @@ const ThreadView = () => {
                                 <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-wrap">
                                     {thread.content}
                                 </p>
+                                {/* Images */}
                                 {thread.images && thread.images.length > 0 && (
-                                    <div className={`mt-5 grid gap-3 ${thread.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                                    <div className="mt-4 flex flex-col gap-4 mb-4 w-full max-w-2xl">
                                         {thread.images.map((img, idx) => (
-                                            <div key={idx} className="rounded-2xl overflow-hidden border border-gray-100 cursor-zoom-in" onClick={() => window.open(img, '_blank')}>
-                                                <img src={img} alt="Attachment" className="w-full h-auto object-contain" />
+                                            <div
+                                                key={idx}
+                                                className="relative rounded-2xl overflow-hidden border border-gray-100 w-full group/img shadow-sm bg-gray-50 cursor-zoom-in"
+                                                onClick={() => setSelectedFullImage(img)}
+                                            >
+                                                <img
+                                                    src={img}
+                                                    alt={`Post image ${idx + 1}`}
+                                                    className="w-full h-auto max-h-[600px] object-contain block mx-auto transition-transform duration-500 group-hover/img:scale-[1.01]"
+                                                    loading="lazy"
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -308,13 +377,68 @@ const ThreadView = () => {
                                     <Share2 size={15} />
                                     Share
                                 </button>
-                                {/* Report thread */}
-                                <button
-                                    onClick={() => setReportTarget({ id: thread._id, type: 'thread', label: thread.title })}
-                                    className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl font-black text-xs text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
-                                >
-                                    <Flag size={13} /> Report
-                                </button>
+
+                                {/* Thread Actions Dropdown */}
+                                <div className="ml-auto flex items-center gap-1.5">
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setMenuOpenId(menuOpenId === thread._id ? null : thread._id)}
+                                            className="p-1.5 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-all"
+                                        >
+                                            <MoreVertical size={18} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {menuOpenId === thread._id && (
+                                                <>
+                                                    <div className="fixed inset-0 z-40" onClick={() => setMenuOpenId(null)} />
+                                                    <motion.div
+                                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                        className="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-[100] py-1 overflow-hidden"
+                                                    >
+                                                        {user && (user.id === (thread.author?._id || thread.author) || user._id === (thread.author?._id || thread.author)) ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setEditThread(thread);
+                                                                        setShowEditThreadForm(true);
+                                                                        setMenuOpenId(null);
+                                                                        setRemovedImages([]);
+                                                                        setSelectedImages([]);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                                                >
+                                                                    <Edit3 size={14} className="text-blue-500" /> Edit Discussion
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        handleDeleteThread();
+                                                                        setMenuOpenId(null);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors"
+                                                                >
+                                                                    <Trash2 size={14} /> Delete
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setReportTarget({ id: thread._id, type: 'thread', label: thread.title });
+                                                                    setMenuOpenId(null);
+                                                                }}
+                                                                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                                            >
+                                                                <Flag size={14} className="text-red-500" /> Report
+                                                            </button>
+                                                        )}
+                                                    </motion.div>
+                                                </>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
 
@@ -337,7 +461,7 @@ const ThreadView = () => {
                                             initial={{ opacity: 0, y: 12 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.04, type: 'spring', stiffness: 200 }}
-                                            className="bg-white rounded-2xl border border-gray-50 shadow-sm overflow-hidden"
+                                            className="bg-white rounded-2xl border border-gray-50 shadow-sm"
                                         >
                                             <div className="p-5">
                                                 {/* Reply author */}
@@ -367,20 +491,64 @@ const ThreadView = () => {
                                                             {new Date(post.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · {new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                                         </p>
                                                     </div>
-                                                    {/* Delete + Report */}
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        {canDelete && (
-                                                            <button onClick={() => handleDelete(post._id)} className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                                                <Trash2 size={14} />
-                                                            </button>
-                                                        )}
+                                                    {/* Actions Dropdown */}
+                                                    <div className="relative shrink-0">
                                                         <button
-                                                            onClick={() => setReportTarget({ id: post._id, type: 'post', label: `Reply by ${post.author?.firstName || 'User'}` })}
-                                                            title="Report this reply"
-                                                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                            onClick={() => setMenuOpenId(menuOpenId === post._id ? null : post._id)}
+                                                            className="p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-all"
                                                         >
-                                                            <Flag size={13} />
+                                                            <MoreVertical size={14} />
                                                         </button>
+
+                                                        <AnimatePresence>
+                                                            {menuOpenId === post._id && (
+                                                                <>
+                                                                    <div className="fixed inset-0 z-40" onClick={() => setMenuOpenId(null)} />
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                                        className="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 z-[100] py-1 overflow-hidden"
+                                                                    >
+                                                                        {user && (user.id === post.author?._id || user?._id === post.author?._id) ? (
+                                                                            <>
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setEditPost(post);
+                                                                                        setShowEditPostForm(true);
+                                                                                        setMenuOpenId(null);
+                                                                                        setRemovedImages([]);
+                                                                                        setSelectedImages([]);
+                                                                                    }}
+                                                                                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                                                                >
+                                                                                    <Edit3 size={12} className="text-blue-500" /> Edit
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        handleDelete(post._id);
+                                                                                        setMenuOpenId(null);
+                                                                                    }}
+                                                                                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 transition-colors"
+                                                                                >
+                                                                                    <Trash2 size={12} /> Delete
+                                                                                </button>
+                                                                            </>
+                                                                        ) : (
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setReportTarget({ id: post._id, type: 'post', label: `Reply by ${post.author?.firstName || 'User'}` });
+                                                                                    setMenuOpenId(null);
+                                                                                }}
+                                                                                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                                                            >
+                                                                                <Flag size={12} className="text-red-500" /> Report
+                                                                            </button>
+                                                                        )}
+                                                                    </motion.div>
+                                                                </>
+                                                            )}
+                                                        </AnimatePresence>
                                                     </div>
                                                 </div>
 
@@ -389,10 +557,19 @@ const ThreadView = () => {
                                                 </p>
 
                                                 {post.images && post.images.length > 0 && (
-                                                    <div className="flex flex-wrap gap-2 mb-4">
+                                                    <div className="mt-3 flex flex-col gap-4 mb-4 w-full">
                                                         {post.images.map((img, idx) => (
-                                                            <div key={idx} className="rounded-xl overflow-hidden border border-gray-100 cursor-zoom-in" onClick={() => window.open(img, '_blank')}>
-                                                                <img src={img} alt="Reply" className="w-full h-auto max-h-72 object-contain" />
+                                                            <div
+                                                                key={idx}
+                                                                className="relative w-full rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 group/img shadow-sm cursor-zoom-in"
+                                                                onClick={() => setSelectedFullImage(img)}
+                                                            >
+                                                                <img
+                                                                    src={img}
+                                                                    alt={`Post image ${idx + 1}`}
+                                                                    className="w-full h-auto max-h-[500px] object-contain block mx-auto transition-transform duration-500 group-hover/img:scale-[1.01]"
+                                                                // Using object-contain ensures the whole image is visible without being cropped
+                                                                />
                                                             </div>
                                                         ))}
                                                     </div>
@@ -526,6 +703,198 @@ const ThreadView = () => {
                 </div>
             </div>
 
+            {/* ── Edit Thread Modal ── */}
+            <AnimatePresence>
+                {showEditThreadForm && editThread && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                        onClick={(e) => e.target === e.currentTarget && setShowEditThreadForm(false)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
+                        >
+                            <div className="bg-[#0f2942] p-6 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Edit3 size={18} className="text-blue-400" />
+                                    <h3 className="text-lg font-black text-white">Edit Discussion</h3>
+                                </div>
+                                <button onClick={() => setShowEditThreadForm(false)} className="text-white/60 hover:text-white"><X size={20} /></button>
+                            </div>
+                            <form onSubmit={handleUpdateThread} className="p-6 space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Title</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm font-bold outline-none focus:border-green-500 transition-all"
+                                        value={editThread.title}
+                                        onChange={(e) => setEditThread({ ...editThread, title: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Content</label>
+                                    <textarea
+                                        className="w-full min-h-[160px] bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-green-500 transition-all resize-none"
+                                        value={editThread.content}
+                                        onChange={(e) => setEditThread({ ...editThread, content: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Existing Images with Remove Option */}
+                                {editThread.images && editThread.images.length > 0 && (
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Existing Images (Select to remove)</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {editThread.images.map((img, idx) => (
+                                                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 group">
+                                                    <img src={img} alt="" className={`w-full h-full object-cover transition-opacity ${removedImages.includes(img) ? 'opacity-30' : 'opacity-100'}`} />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setRemovedImages(prev =>
+                                                                prev.includes(img) ? prev.filter(i => i !== img) : [...prev, img]
+                                                            );
+                                                        }}
+                                                        className={`absolute inset-0 flex items-center justify-center transition-all ${removedImages.includes(img) ? 'bg-red-500/20' : 'bg-black/0 hover:bg-black/20'}`}
+                                                    >
+                                                        {removedImages.includes(img) ? (
+                                                            <X size={20} className="text-red-600" />
+                                                        ) : (
+                                                            <Trash2 size={16} className="text-white opacity-0 group-hover:opacity-100" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 pt-2">
+                                    <button type="button" onClick={() => setShowEditThreadForm(false)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 transition">Cancel</button>
+                                    <button type="submit" className="flex-1 bg-green-600 text-white rounded-xl font-black text-sm py-2.5 hover:bg-green-700 transition shadow-lg shadow-green-200">Save Changes</button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Edit Post Modal ── */}
+            <AnimatePresence>
+                {showEditPostForm && editPost && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                        onClick={(e) => e.target === e.currentTarget && setShowEditPostForm(false)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
+                        >
+                            <div className="bg-[#0f2942] p-6 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Edit3 size={18} className="text-blue-400" />
+                                    <h3 className="text-lg font-black text-white">Edit Reply</h3>
+                                </div>
+                                <button onClick={() => setShowEditPostForm(false)} className="text-white/60 hover:text-white"><X size={20} /></button>
+                            </div>
+                            <form onSubmit={handleUpdatePost} className="p-6 space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Content</label>
+                                    <textarea
+                                        className="w-full min-h-[160px] bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-green-500 transition-all resize-none"
+                                        value={editPost.content}
+                                        onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Existing Images with Remove Option */}
+                                {editPost.images && editPost.images.length > 0 && (
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Existing Images (Select to remove)</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {editPost.images.map((img, idx) => (
+                                                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 group">
+                                                    <img src={img} alt="" className={`w-full h-full object-cover transition-opacity ${removedImages.includes(img) ? 'opacity-30' : 'opacity-100'}`} />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setRemovedImages(prev =>
+                                                                prev.includes(img) ? prev.filter(i => i !== img) : [...prev, img]
+                                                            );
+                                                        }}
+                                                        className={`absolute inset-0 flex items-center justify-center transition-all ${removedImages.includes(img) ? 'bg-red-500/20' : 'bg-black/0 hover:bg-black/20'}`}
+                                                    >
+                                                        {removedImages.includes(img) ? (
+                                                            <X size={20} className="text-red-600" />
+                                                        ) : (
+                                                            <Trash2 size={16} className="text-white opacity-0 group-hover:opacity-100" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 pt-2">
+                                    <button type="button" onClick={() => setShowEditPostForm(false)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 transition">Cancel</button>
+                                    <button type="submit" className="flex-1 bg-green-600 text-white rounded-xl font-black text-sm py-2.5 hover:bg-green-700 transition shadow-lg shadow-green-200">Save Changes</button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Image Viewer Modal ── */}
+            <AnimatePresence>
+                {selectedFullImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-10"
+                        onClick={() => setSelectedFullImage(null)}
+                    >
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all z-[310]"
+                            onClick={() => setSelectedFullImage(null)}
+                        >
+                            <X size={24} />
+                        </motion.button>
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full h-full flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <img
+                                src={selectedFullImage}
+                                alt="Full screen"
+                                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* ── Report Modal ── */}
             <AnimatePresence>
                 {reportTarget && (
@@ -533,7 +902,7 @@ const ThreadView = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
                         onClick={(e) => e.target === e.currentTarget && setReportTarget(null)}
                     >
                         <motion.div

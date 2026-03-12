@@ -58,6 +58,26 @@ export const likeThread = createAsyncThunk("forum/likeThread", async ({ threadId
     }
 });
 
+export const updateThread = createAsyncThunk("forum/updateThread", async ({ threadId, formData }, { rejectWithValue }) => {
+    try {
+        const response = await Api.put(`/forum/threads/${threadId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data || error.message);
+    }
+});
+
+export const deleteThread = createAsyncThunk("forum/deleteThread", async (threadId, { rejectWithValue }) => {
+    try {
+        await Api.delete(`/forum/threads/${threadId}`);
+        return threadId;
+    } catch (error) {
+        return rejectWithValue(error.response?.data || error.message);
+    }
+});
+
 export const createPost = createAsyncThunk("forum/createPost", async ({ threadId, formData }, { rejectWithValue }) => {
     try {
         const response = await Api.post(`/forum/threads/${threadId}/posts`, formData, {
@@ -82,6 +102,17 @@ export const deletePost = createAsyncThunk("forum/deletePost", async (postId, { 
     try {
         await Api.delete(`/forum/posts/${postId}`);
         return postId;
+    } catch (error) {
+        return rejectWithValue(error.response?.data || error.message);
+    }
+});
+
+export const updatePost = createAsyncThunk("forum/updatePost", async ({ postId, formData }, { rejectWithValue }) => {
+    try {
+        const response = await Api.put(`/forum/posts/${postId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return response.data;
     } catch (error) {
         return rejectWithValue(error.response?.data || error.message);
     }
@@ -186,6 +217,25 @@ const forumSlice = createSlice({
                         : (state.currentThread.likes || []).filter(id => id !== userId);
                 }
             })
+            // Update Thread
+            .addCase(updateThread.fulfilled, (state, action) => {
+                const updatedThread = action.payload;
+                const index = state.threads.findIndex(t => t._id === updatedThread._id);
+                if (index !== -1) {
+                    state.threads[index] = { ...state.threads[index], ...updatedThread };
+                }
+                if (state.currentThread && state.currentThread._id === updatedThread._id) {
+                    state.currentThread = { ...state.currentThread, ...updatedThread };
+                }
+            })
+            // Delete Thread
+            .addCase(deleteThread.fulfilled, (state, action) => {
+                const threadId = action.payload;
+                state.threads = state.threads.filter(t => t._id !== threadId);
+                if (state.currentThread && state.currentThread._id === threadId) {
+                    state.currentThread = null;
+                }
+            })
             // Create Post
             .addCase(createPost.fulfilled, (state, action) => {
                 state.posts.push(action.payload);
@@ -208,6 +258,14 @@ const forumSlice = createSlice({
                 state.posts = state.posts.filter(p => p._id !== action.payload);
                 if (state.currentThread && state.currentThread.repliesCount > 0) {
                     state.currentThread.repliesCount -= 1;
+                }
+            })
+            // Update Post
+            .addCase(updatePost.fulfilled, (state, action) => {
+                const updatedPost = action.payload;
+                const index = state.posts.findIndex(p => p._id === updatedPost._id);
+                if (index !== -1) {
+                    state.posts[index] = { ...state.posts[index], ...updatedPost };
                 }
             });
     },

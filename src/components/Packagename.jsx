@@ -15,48 +15,36 @@ import { UserContext } from "../context/UserProvider";
 import { useUser } from "@clerk/clerk-react";
 import Coupon from "../pages/Coupon";
 import { fetchUtcNow } from "../service/timeApi";
+import { useDispatch, useSelector } from "react-redux";
+import { setResults } from "../slice/userSlice";
 
 const Packagename = () => {
+  const dispatch = useDispatch();
   const [data, setData] = useState({});
   const [faqs, setFaqs] = useState([]);
   const [showmodel, setshowmodel] = useState(false);
+  const results = useSelector((state) => state.user.results);
 
   const { id } = useParams();
-
   const navigate = useNavigate();
-  // Extracting the package content and exams information
-  // const packageContent = data?.package_content?.[0] || {}; // Assuming there is only one item in package_content array
+
   const exams = data?.exams || {};
-  // console.log("VAR", exams);
-  // Assuming there is only one exam object
   const subTitles = data?.sub_titles || [];
-
   const { isSignedIn } = useUser();
-  // console.log(subTitles);
 
-  const [activeSection, setActiveSection] = useState("prelims"); // Tracks active section (Prelims/Mains/Previous Year Questions)
-  const [selectedTopic, setSelectedTopic] = useState(null); // Selected topic
-  const [modalQuestions, setModalQuestions] = useState([]); // Stores questions for modal
-  const [timer, setTimer] = useState(600); // Timer (10 min)
-  const [isTimerRunning, setIsTimerRunning] = useState(false); // Timer control
-  const [modalType, setModalType] = useState(""); // Tracks Prelims or Mains modal
-  const [showDifficulty, setShowDifficulty] = useState({}); // State to manage difficulty visibility
+  const [activeSection, setActiveSection] = useState("prelims");
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [modalQuestions, setModalQuestions] = useState([]);
+  const [timer, setTimer] = useState(600);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [showDifficulty, setShowDifficulty] = useState({});
   const [seo, setSeo] = useState([]);
   const [ad, setAD] = useState([]);
   const [payment, setPayment] = useState("");
   const [responseId, setResponseId] = useState("");
   const [responseState, setResponseState] = useState([]);
 
-  // Handle topic selection & set modal questions
-  const handleTopicSelect = (section, testType) => {
-    setSelectedTopic(section.name);
-    setModalType(testType);
-    setModalQuestions(section.questions); // Set questions for the selected section
-    setIsTimerRunning(true);
-    setTimer(600); // Reset Timer on topic change
-  };
-
-  const [resultData, setResultData] = useState({});
   const { user, utcNow } = useContext(UserContext);
 
   const fetchPackageContent = async () => {
@@ -66,39 +54,6 @@ const Packagename = () => {
 
       setData(packageData);
       setFaqs(packageData.faqs);
-
-      // Reset result data before fetching new results
-      setResultData({});
-
-      // If user exists, fetch results
-      if (user?._id && packageData?.exams?.length > 0) {
-        const resultPromises = packageData.exams.map(async (test) => {
-          try {
-            const resultRes = await Api.get(`/results/${user._id}/${test._id}`);
-            return {
-              testId: test._id,
-              result: resultRes.data
-            };
-          } catch (err) {
-            console.error("Error fetching result for test:", test._id, err);
-            return null;
-          }
-        });
-
-        const results = await Promise.all(resultPromises);
-        results.forEach(item => {
-          if (item && (item.result?.status === "completed" || item.result?.status === "paused")) {
-            setResultData(prev => ({
-              ...prev,
-              [item.testId]: {
-                ...item.result,
-                lastQuestionIndex: item.result.lastVisitedQuestionIndex,
-                selectedOptions: item.result.selectedOptions,
-              },
-            }));
-          }
-        });
-      }
 
       if (typeof run === "function") {
         run();
@@ -112,48 +67,6 @@ const Packagename = () => {
   useEffect(() => {
     fetchPackageContent();
   }, [id, user?._id]);
-
-  useEffect(() => {
-    if (user?._id && data?.exams?.length > 0) {
-      data.exams.forEach((test) => {
-        if (test?._id) {
-          Api.get(`/results/${user._id}/${test._id}`)
-            .then((res) => {
-              if (res.data?.status === "completed" || res.data?.status === "paused") {
-                setResultData((prev) => ({
-                  ...prev,
-                  [test._id]: {
-                    ...res.data,
-                    lastQuestionIndex: res.data.lastVisitedQuestionIndex,
-                    selectedOptions: res.data.selectedOptions,
-                  },
-                }));
-                storeTestStatus(
-                  test._id,
-                  res.data.status,
-                  res.data.lastVisitedQuestionIndex,
-                  res.data.selectedOptions
-                );
-              }
-            })
-            .catch((err) => {
-              console.error("Error fetching result:", err);
-              const storedStatus = getTestStatusFromStorage(test._id);
-              if (storedStatus) {
-                setResultData((prev) => ({
-                  ...prev,
-                  [test._id]: {
-                    status: storedStatus.status,
-                    lastVisitedQuestionIndex: storedStatus.lastQuestionIndex,
-                    selectedOptions: storedStatus.selectedOptions,
-                  },
-                }));
-              }
-            });
-        }
-      });
-    }
-  }, [data?.exams, user?._id]);
 
   // useEffect(() => {
   //   const handleVisibilityChange = async () => {
@@ -405,7 +318,7 @@ const Packagename = () => {
 
   // TestCard Component for optimization
   const TestCard = ({ test }) => {
-    const status = resultData?.[test._id]?.status || getTestStatusFromStorage(test._id)?.status;
+    const status = results?.[test._id]?.status;
 
     return (
       <div className="card scale-95 shadow-2xl border-1 rounded-3 transform transition-all duration-300 ease-in-out border-gray-300 hover:scale-100 flex flex-col justify-between h-full w-full ">
@@ -508,7 +421,7 @@ const Packagename = () => {
 
                 if (status === "completed") {
                   openNewWindow(`/result/${test._id}/${user?._id}`);
-                } else if (status === "paused") {
+                } else if (status === "paused" || status === "started") {
                   openNewWindow(`/mocktest/${test._id}/${user?._id}`);
                 } else {
                   openNewWindow(`/instruction/${test._id}/${user?._id}`);
@@ -517,7 +430,7 @@ const Packagename = () => {
             >
               {status === "completed"
                 ? "View Result"
-                : status === "paused"
+                : (status === "paused" || status === "started")
                   ? "Resume"
                   : "Take Test"}
             </button>
@@ -528,17 +441,7 @@ const Packagename = () => {
   };
 
 
-  // And in your main component add this effect:
-  useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data === 'refresh-needed') {
-        fetchPackageContent();
-      }
-    };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
 
 
   return (

@@ -12,7 +12,7 @@ import {
   useClerk,
 } from "@clerk/clerk-react";
 
-import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
+import { FaChevronDown, FaChevronUp, FaChevronRight } from "react-icons/fa"; // Import the icons
 import { Avatar } from "@mui/material";
 import User from "./User";
 import Api from "../service/Api";
@@ -173,37 +173,31 @@ const NavBar = () => {
         </div>
       )}
 
-      <nav className="bg-green-600 text-white font-semibold shadow-md py-2 relative z-30">
-        <div className="container mx-auto flex justify-between items-center px-4">
-          {/* Logo */}
-
+      <nav className="bg-green-600 text-white font-semibold shadow-md relative z-30 border-t border-green-500/30">
+        <div className="max-w-[1440px] mx-auto flex justify-between items-center px-4 sm:px-6 h-12 lg:h-14">
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-4 xl:gap-6 text-sm xl:text-base whitespace-nowrap">
+          <nav className="hidden md:flex items-center gap-4 xl:gap-8 text-sm xl:text-[15px] whitespace-nowrap h-full">
             <Link
               to="/"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Home
             </Link>
             <div
-              className="relative group"
+              className="relative group h-full flex items-center"
               onMouseEnter={() => setIsDropdownOpen(true)}
               onMouseLeave={() => {
                 setIsDropdownOpen(false);
                 setActiveSubMenu(null);
               }}
             >
-              <button className="flex items-center hover:text-blue-600 transition duration-300 text-white">
+              <button className="flex items-center hover:text-green-100 transition duration-300 text-white h-full px-1 border-b-2 border-transparent group-hover:border-white/30">
                 Exams
-                {isDropdownOpen ? (
-                  <FaChevronUp className="ml-2 text-sm" />
-                ) : (
-                  <FaChevronDown className="ml-2 text-sm" />
-                )}
+                <FaChevronDown className={`ml-2 text-[10px] transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute -left-3 mt-0 p-4 bg-white shadow-lg rounded-lg w-56 z-50">
+                <div className="absolute top-full -left-4 p-4 bg-white shadow-xl rounded-b-xl w-64 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div
                     className="relative group"
                     onMouseEnter={() => setActiveSubMenu(0)}
@@ -211,25 +205,25 @@ const NavBar = () => {
                   >
                     <Link
                       to="/subscriptions"
-                      className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                      className="flex items-center justify-between px-4 py-3 text-slate-700 hover:bg-green-50 hover:text-green-700 rounded-lg transition-all font-bold"
                     >
                       Banking & Insurance
+                      <FaChevronRight className="text-[10px] opacity-30" />
                     </Link>
 
                     {activeSubMenu === 0 && (
-                      <div className="absolute left-full top-0 mt-0 bg-white shadow-lg rounded-lg w-48 z-50">
+                      <div className="absolute left-full top-0 ml-1 bg-white shadow-xl rounded-xl w-56 z-50 py-2 border border-slate-50 animate-in fade-in slide-in-from-left-2 duration-200">
                         {packages.map((item, index) => (
                           <Link
                             key={index}
                             to={`/top-trending-exams/${item.link_name}`}
-                            className="block px-4 py-2 text-black hover:bg-blue-100 hover:text-blue-600 transition duration-300"
+                            className="block px-5 py-2.5 text-slate-600 hover:bg-green-50 hover:text-green-700 transition-colors text-sm font-medium"
                           >
                             {item.name}
                           </Link>
                         ))}
                       </div>
                     )}
-                    <hr className="border-t border-gray-300" />
                   </div>
                 </div>
               )}
@@ -237,83 +231,64 @@ const NavBar = () => {
 
             <Link
               to="/subscriptions"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Test Series
             </Link>
             <Link
               to="/All-Packages"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Packages
             </Link>
             <Link
               to="/free-pdf"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Free PDF
             </Link>
             <Link
               to="/pdf-course"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               PDF Course
             </Link>
             <Link
               to="/video-course"
-              className="relative hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Video Course
-              {/* <span className="absolute -top-3 -right-6 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full animate-pulse font-bold shadow-sm">
-                New
-              </span> */}
             </Link>
             <Link
               to="/blog"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Blogs
             </Link>
-            {/* <Link
-              to="/forum"
-              className="hover:text-blue-600 transition duration-300"
-            >
-              Forums
-            </Link> */}
             <Link
               to="/rally-pro"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Rally Pro
             </Link>
             <Link
               to="/rally-super-pro"
-              className="hover:text-blue-600 transition duration-300"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
             >
               Rally Super Pro
             </Link>
 
             <Link
               to='/homelivetest'
-              className="hover:text-blue-600 transition duration-300 flex items-center gap-1"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30 gap-1.5"
             >
               Live Test
               {liveTests.length > 0 && (
-                <span className="ml-1 bg-[#7E57C2] text-white text-xs px-1 py-0.5 rounded-full animate-pulse">
-                  New
+                <span className="bg-white text-green-700 text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse">
+                  Live
                 </span>
               )}
             </Link>
-
-
-
-
-            {/* <Link
-              to="/blogs"
-              className="hover:text-blue-600 transition duration-300"
-            >
-              Blogs
-            </Link> */}
           </nav>
 
           {/* "Get App" Button */}
@@ -321,19 +296,14 @@ const NavBar = () => {
             to="https://play.google.com/store/apps/details?id=io.examrally.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0"
+            className="hidden lg:flex items-center"
           >
-            <button className="text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
-                alt="Get it on Google Play"
-                className="h-10 w-auto px-5"
-              />
-            </button>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
+              alt="Get it on Google Play"
+              className="h-8 w-auto hover:brightness-110 transition-all active:scale-95"
+            />
           </Link>
-
-          {/* <Link to="/profile"><Avatar alt="Remy Sharp" src="user.jpeg" /></Link>  */}
-          {/* <User /> */}
 
           {/* Mobile Hamburger Menu */}
           <button onClick={toggleMenu} className="md:hidden text-white hover:text-green-100 transition-colors">
@@ -395,7 +365,6 @@ const NavBar = () => {
                   >
                     Banking & Insurance
                   </Link>
-                  {/* Add more sub-items here if needed, mirroring desktop */}
                 </div>
               )}
             </div>
@@ -442,20 +411,6 @@ const NavBar = () => {
             >
               Blogs
             </Link>
-            {/* <Link
-              to="/rally-pro"
-              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
-               onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Rally Pro
-            </Link> */}
-            {/* <Link
-              to="/rally-super-pro"
-              className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
-               onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Rally Super Pro
-            </Link> */}
 
             <Link
               to='/homelivetest'

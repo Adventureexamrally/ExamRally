@@ -125,13 +125,13 @@ const ForumMain = () => {
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active</p>
                             </div>
                             {/* Active Now */}
-                            <div className="bg-orange-50 border border-orange-100 rounded-2xl px-5 py-4 text-center min-w-[100px]">
+                            {/* <div className="bg-orange-50 border border-orange-100 rounded-2xl px-5 py-4 text-center min-w-[100px]">
                                 <div className="flex items-center justify-center gap-1 text-orange-500 mb-1">
                                     <Flame size={15} />
                                 </div>
                                 <p className="text-2xl font-black text-[#0f2942]">{stats.activeNow?.toLocaleString() || 1}</p>
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Online</p>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </motion.div>
