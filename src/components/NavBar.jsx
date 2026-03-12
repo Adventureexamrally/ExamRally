@@ -289,6 +289,12 @@ const NavBar = () => {
                 </span>
               )}
             </Link>
+            <Link
+              to="/forum"
+              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+            >
+              Forum
+            </Link>
           </nav>
 
           {/* "Get App" Button */}
@@ -421,6 +427,13 @@ const NavBar = () => {
               {liveTests.length > 0 && (
                 <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">New</span>
               )}
+            </Link>
+            <Link
+            to="/forum"
+            className="block px-6 py-3 font-semibold hover:bg-green-50 hover:text-green-700 transition duration-300"
+            onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Forum
             </Link>
 
             <div className="border-t border-slate-100 pt-4 pb-2 px-6 space-y-4">

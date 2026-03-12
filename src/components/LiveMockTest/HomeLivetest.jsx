@@ -25,6 +25,8 @@ import { setResults } from '../../slice/userSlice';
 import Hometotaltest from './Hometotaltest';
 import { Helmet } from 'react-helmet';
 import { toast, ToastContainer } from 'react-toastify';
+import { useUser } from '@clerk/clerk-react';
+import { UserContext } from '../../context/UserProvider';
 
 const HomeLivetest = () => {
   const dispatch = useDispatch();
@@ -35,6 +37,7 @@ const HomeLivetest = () => {
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
   const { user, utcNow } = useContext(UserContext);
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
