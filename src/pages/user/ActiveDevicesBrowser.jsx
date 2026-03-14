@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import DashBoard from './DashBoard';
+import Api from '../../service/Api';
 import { useUser } from "@clerk/clerk-react";
 import { UserContext } from '../../context/UserProvider';
 import { FiMonitor, FiGlobe, FiClock, FiUser, FiHardDrive, FiKey, FiTrash2 } from 'react-icons/fi';
@@ -10,8 +11,27 @@ const ActiveDevicesBrowser = () => {
         setOpen(!open);
     };
 
+    const [devices, setDevices] = useState([]);
+    const [loading, setLoading] = useState(true);
     const { user } = useContext(UserContext);
-    const devices = user?.device || [];
+
+    React.useEffect(() => {
+        const fetchDevices = async () => {
+            try {
+                // Using the centralized Api service which handles auth and baseURL
+                const response = await Api.get('/auth/active-devices');
+                if (response.data.success) {
+                    setDevices(response.data.devices);
+                }
+            } catch (error) {
+                console.error("Error fetching devices:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDevices();
+    }, []);
 
     // Function to format date
     const formatDate = (dateString) => {
@@ -75,7 +95,11 @@ const ActiveDevicesBrowser = () => {
             <div className="flex-1 p-6">
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">Active Devices</h1>
                 
-                {devices.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center p-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+                    </div>
+                ) : devices.length === 0 ? (
                     <div className="bg-white rounded-lg shadow p-6 text-center">
                         <p className="text-gray-600">No active devices found</p>
                     </div>

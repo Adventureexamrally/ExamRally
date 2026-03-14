@@ -1,10 +1,11 @@
-import React, { useContext, useState, useCallback } from "react";
+import React, { useContext, useState, useCallback, useEffect } from "react";
 import DashBoard from "./DashBoard";
 import { UserContext } from "../../context/UserProvider";
 import {
   FaGift, FaCopy, FaCheck, FaWhatsapp, FaTwitter,
-  FaUsers, FaTrophy, FaShareAlt, FaStar,
+  FaUsers, FaTrophy, FaShareAlt, FaStar, FaCoins, FaClipboardList
 } from "react-icons/fa";
+import Api from "../../service/Api";
 
 const STEPS = [
   { icon: "📤", title: "Share Your Code", desc: "Share your unique referral code or link with friends." },
@@ -29,9 +30,29 @@ const ReferAndEarn = () => {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const { user } = useContext(UserContext);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const referralCode = user?.referralCode || "—";
-  const referralCount = user?.referralCount ?? 0;
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await Api.get("/referral/stats");
+      setStats(res.data);
+    } catch (err) {
+      console.error("Error fetching referral stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const referralCode = stats?.referralCode || user?.referralCode || "—";
+  const referralCount = stats?.referralCount ?? user?.referralCount ?? 0;
+  const coinBalance = stats?.coins ?? user?.coins ?? 0;
+  const history = stats?.referralHistory || [];
+
   const referralLink = referralCode !== "—"
     ? `${window.location.origin}/sign-up?ref=${referralCode}`
     : "";
@@ -102,10 +123,9 @@ const ReferAndEarn = () => {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <StatPill icon={FaUsers} label="Friends Referred" value={referralCount} color="indigo" />
-            <StatPill icon={FaTrophy} label="Rewards Earned" value={referralCount > 0 ? "Active" : "—"} color="purple" />
+            <StatPill icon={FaCoins} label="Coins Earned" value={coinBalance} color="yellow" />
           </div>
 
           {/* Your Code */}
@@ -185,6 +205,45 @@ const ReferAndEarn = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Referral History */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-6">
+            <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <FaClipboardList className="text-indigo-500" /> Referral History
+            </h3>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              </div>
+            ) : history.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="text-gray-400 font-medium border-b border-gray-50">
+                    <tr>
+                      <th className="py-3 px-2">Friend</th>
+                      <th className="py-3 px-2">Date</th>
+                      <th className="py-3 px-2 text-right">Reward</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {history.map((record, i) => (
+                      <tr key={i} className="text-gray-700">
+                        <td className="py-3 px-2 font-medium">{record.referredEmail || "Friend"}</td>
+                        <td className="py-3 px-2 text-gray-500">{new Date(record.awardedAt).toLocaleDateString()}</td>
+                        <td className="py-3 px-2 text-right">
+                          <span className="text-green-600 font-bold">+{record.coinsEarned} <FaCoins className="inline text-xs mb-0.5" /></span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 border-2 border-dashed border-gray-50 rounded-xl">
+                <p className="text-gray-400 text-sm">No referrals yet. Start sharing!</p>
+              </div>
+            )}
           </div>
 
         </div>

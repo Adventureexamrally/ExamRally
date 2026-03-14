@@ -54,14 +54,18 @@ const NavBar = () => {
     setActiveSubMenu(activeSubMenu === index ? null : index);
   };
 
+  // Capture referral code from URL (?ref=CODE) as soon as possible
+  useEffect(() => {
+    const urlRef = new URLSearchParams(window.location.search).get("ref");
+    if (urlRef) {
+      console.log("Captured referral code from URL:", urlRef);
+      sessionStorage.setItem("referralCode", urlRef);
+    }
+  }, []);
+
   useEffect(() => {
     const sendUserData = async () => {
       if (isLoaded && isSignedIn && user) {
-        // Capture referral code from URL (?ref=CODE) and store it
-        // so it survives Clerk's auth redirect
-        const urlRef = new URLSearchParams(window.location.search).get("ref");
-        if (urlRef) sessionStorage.setItem("referralCode", urlRef);
-
         const userAlreadySynced = localStorage.getItem(
           `user_synced_${user.id}`
         );

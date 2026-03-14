@@ -31,7 +31,7 @@ import Resultanalysis from "./components/Resultanalysis";
 
 // Lazy load less frequently used components
 const SignIn = lazy(() => import("@clerk/clerk-react").then(module => ({ default: module.SignIn })));
-const SignUp = lazy(() => import("@clerk/clerk-react").then(module => ({ default: module.SignUp })));
+const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const Privacy_Policy = lazy(() => import("./components/Privacy_Policy"));
 const Terms_Condition = lazy(() => import("./components/Terms_Condition"));
 const Rally_pro = lazy(() => import("./pages/Rally_pro"));
@@ -333,7 +333,7 @@ function MainApp() {
   const publicRoutes = useMemo(() => [
     { path: "/", element: <Home /> },
     { path: "/sigin", element: <SignIn /> },
-    { path: "/sign-up", element: <SignUp /> },
+    { path: "/sign-up", element: <SignUpPage /> },
     { path: "/free-pdf", element: <Free_pdf /> },
     { path: "/subscriptions", element: <TestSeries /> },
     { path: "/rally-pro", element: <Rally_pro /> },
