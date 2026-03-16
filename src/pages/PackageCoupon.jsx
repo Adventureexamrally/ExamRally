@@ -315,7 +315,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-sm line-clamp-2">
-                {pkg?.name || pkg.subscriptionType || "Course Package"}
+                {pkg?.name || pkg?.title || pkg?.Title || pkg.subscriptionType || "Course Package"}
               </h2>
             </div>
           </div>
@@ -508,7 +508,7 @@ const PackageCoupon = ({ pkg, setShowModal }) => {
           </div>
 
           <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-4">
-            <img src="https://static.razorpay.com/static/combined/payments-icons.png" alt="Payment Methods" className="h-4 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" />
+            <img src="https://help.zazzle.com/hc/article_attachments/360010513393/Payment_Methods.png" alt="Payment Methods" className="h-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" />
             <span className="h-3 w-[1px] bg-slate-200"></span>
             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">Secure SSL Encrypted Gateway</p>
           </div>

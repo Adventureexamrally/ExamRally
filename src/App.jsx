@@ -31,6 +31,7 @@ import Resultanalysis from "./components/Resultanalysis";
 
 // Lazy load less frequently used components
 const SignIn = lazy(() => import("@clerk/clerk-react").then(module => ({ default: module.SignIn })));
+const GoogleOneTap = lazy(() => import("@clerk/clerk-react").then(module => ({ default: module.GoogleOneTap })));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const Privacy_Policy = lazy(() => import("./components/Privacy_Policy"));
 const Terms_Condition = lazy(() => import("./components/Terms_Condition"));
@@ -372,6 +373,7 @@ function MainApp() {
   return (
     <>
       <Analytics />
+      <GoogleOneTap />
 
       {/* Header and Navbar */}
       {!isMockTestRoute && (

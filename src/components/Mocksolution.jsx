@@ -695,7 +695,7 @@ const Mocksolution = () => {
                                                 <div
                                                     className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all border-b-2 rounded-t-md ${isActiveGroup
                                                         ? 'border-blue-600 text-blue-700 bg-white'
-                                                        : 'border-transparent text-gray-600 hover:text-blue-600 hover:bg-gray-100 hover:border-gray-300'
+                                                        : 'border-transparent text-gray-600 hover:text-blue-700 hover:bg-gray-100 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <span

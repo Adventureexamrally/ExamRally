@@ -114,7 +114,7 @@ const Header = () => {
         </div>
 
         {/* Telegram & Sign-in (Right) */}
-        <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0 text-sm font-semibold">
+        <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0 text-sm font-semibold">
           <Link
             to="https://t.me/examrally"
             target="_blank"
@@ -124,12 +124,12 @@ const Header = () => {
             <span className="hidden lg:inline">Join Telegram</span>
           </Link>
 
-          <div className="h-8 w-[1px] bg-slate-100 hidden md:block"></div>
+          <div className="h-8 w-[1px] bg-slate-100 hidden lg:block"></div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="bg-[#000080] text-white py-2 px-5 rounded-xl hover:bg-[#000066] transition-all shadow-md shadow-blue-900/10 hover:-translate-y-0.5 whitespace-nowrap">
+                <button className="bg-[#000080] text-white py-2 px-3 sm:px-5 rounded-xl hover:bg-[#000066] transition-all shadow-md shadow-blue-900/10 hover:-translate-y-0.5 whitespace-nowrap text-xs sm:text-sm">
                   Sign In
                 </button>
               </SignInButton>

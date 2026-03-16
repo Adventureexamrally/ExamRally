@@ -89,8 +89,8 @@ const SectionTabBar = ({
                             <div key={groupIndex} className="relative group/tab">
                                 <div
                                     onClick={handleGroupClick}
-                                    className={`flex items-center gap-1.5 px-4 py-2.5 cursor-pointer text-sm font-medium transition-colors border-b-2 ${isActiveGroup
-                                        ? 'border-blue-500 text-blue-600'
+                                    className={`flex items-center gap-1.5 px-4 py-2.5 cursor-pointer text-sm font-semibold transition-colors border-b-2 ${isActiveGroup
+                                        ? 'border-blue-500 text-blue-700'
                                         : group.sections.every(s => submittedSections.has(s.globalIndex))
                                             ? 'border-transparent text-gray-400 cursor-not-allowed'
                                             : 'border-transparent text-gray-600 hover:text-blue-500 hover:border-blue-300'

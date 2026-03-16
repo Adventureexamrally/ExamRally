@@ -143,7 +143,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
         payment_capture: 1,
         userId: user._id,
         courseId: data?._id || data?.months,
-        courseName: data?.Title || "PDF Course",
+        courseName: data?.title || data?.Title || data?.name || "PDF Course",
         email: user?.email,
         phoneNumber: user?.phoneNumber,
         coupon: discountPercent > 0 ? couponCode : null,
@@ -154,7 +154,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
           email: user?.email,
           phoneNumber: user?.phoneNumber,
           courseId: data?._id || data?.months,
-          courseName: data?.Title,
+          courseName: data?.title || data?.Title || data?.name,
           couponCode: discountPercent > 0 ? couponCode : null,
           isPdf: true
         }
@@ -165,7 +165,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
         amount: Math.round(displayFinalPrice * 100),
         currency: "INR",
         name: "Exam Rally",
-        description: `Secure PDF Access: ${data?.Title || "PDF Title"}`,
+        description: `Secure PDF Access: ${data?.title || data?.Title || data?.name || "PDF Title"}`,
         image: "https://examrally.in/favicon.svg",
         order_id: orderResponse.data?.order_id,
         handler: async function (response) {
@@ -173,7 +173,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
             await Api.post("/orders/verify-payment", {
               userId: user._id,
               courseId: data?._id,
-              courseName: "PDF Course",
+              courseName: data?.title || data?.Title || data?.name || "PDF Course",
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
@@ -284,7 +284,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-sm line-clamp-2">
-                {data?.Title || "Expert Study Material"}
+                {data?.title || data?.Title || data?.name || "Expert Study Material"}
               </h2>
             </div>
           </div>
@@ -478,7 +478,7 @@ const PdfCoupon = ({ data, setshowmodel }) => {
           </div>
 
           <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-4">
-            <img src="https://static.razorpay.com/static/combined/payments-icons.png" alt="Payment Methods" className="h-4 grayscale opacity-40" />
+            <img src="https://help.zazzle.com/hc/article_attachments/360010513393/Payment_Methods.png" alt="Payment Methods" className="h-6 grayscale opacity-40" />
             <span className="h-3 w-[1px] bg-slate-200"></span>
             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">Powered by Razorpay Secure</p>
           </div>

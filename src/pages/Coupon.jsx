@@ -143,7 +143,7 @@ const Coupon = ({ data, setshowmodel }) => {
         payment_capture: 1,
         userId: user._id,
         courseId: data._id,
-        courseName: data?.name || data?.Title || data?.categorys || "Course",
+        courseName: data?.name || data?.title || data?.Title || data?.categorys || "Course",
         email: user?.email,
         phoneNumber: user?.phoneNumber,
         coupon: discountPercent > 0 ? couponCode : null,
@@ -154,7 +154,7 @@ const Coupon = ({ data, setshowmodel }) => {
           email: user?.email,
           phoneNumber: user?.phoneNumber,
           courseId: data._id,
-          courseName: data?.name || data?.Title,
+          courseName: data?.name || data?.title || data?.Title,
           couponCode: discountPercent > 0 ? couponCode : null,
           expiryDays: data.expiryDays
         }
@@ -168,7 +168,7 @@ const Coupon = ({ data, setshowmodel }) => {
         amount: Math.round(finalPrice * 100),
         currency: 'INR',
         name: "Exam Rally",
-        description: `Secure Purchase: ${data?.name || "Course"}`,
+        description: `Secure Purchase: ${data?.name || data?.title || data?.Title || "Course"}`,
         image: "https://examrally.in/favicon.svg",
         order_id: orderResponse.data?.order_id,
         handler: async function (response) {
@@ -176,7 +176,7 @@ const Coupon = ({ data, setshowmodel }) => {
             await Api.post('/orders/verify-payment', {
               userId: user._id,
               courseId: data._id,
-              courseName: data?.name || data?.Title || data?.title,
+              courseName: data?.name || data?.title || data?.Title,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
@@ -263,7 +263,7 @@ const Coupon = ({ data, setshowmodel }) => {
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-sm line-clamp-2">
-                {data?.name || data?.Title || data?.categorys || "Course Package"}
+                {data?.name || data?.title || data?.Title || data?.categorys || "Course Package"}
               </h2>
             </div>
           </div>
@@ -457,7 +457,7 @@ const Coupon = ({ data, setshowmodel }) => {
           </div>
 
           <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-4">
-            <img src="https://static.razorpay.com/static/combined/payments-icons.png" alt="Payment Methods" className="h-4 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-not-allowed" title="Multiple Secure Payment Options" />
+            <img src="https://help.zazzle.com/hc/article_attachments/360010513393/Payment_Methods.png" alt="Payment Methods" className="h-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" title="Multiple Secure Payment Options" />
             <span className="h-3 w-[1px] bg-slate-200"></span>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">PCI-DSS Compliant Gateway</p>
           </div>

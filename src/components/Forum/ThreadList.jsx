@@ -222,15 +222,15 @@ const ThreadList = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 py-6">
                 <div className="flex flex-col lg:flex-row gap-6">
 
                     {/* ── Left Sidebar ── */}
-                    <div className="lg:w-60 xl:w-64 shrink-0 space-y-4 hidden lg:block">
+                    <div className="lg:w-64 xl:w-64 shrink-0 space-y-4 hidden lg:block">
 
                         {/* Post Type Filter */}
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-50">
-                            <div className="flex items-center gap-2 mb-4">
+                        <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-50">
+                            <div className="flex items-center  justify-center gap-2 mb-2 p-2">
                                 <Filter size={13} className="text-green-600" />
                                 <h3 className="text-[11px] font-black text-[#0f2942] uppercase tracking-widest">Filter Posts</h3>
                             </div>
@@ -252,13 +252,15 @@ const ThreadList = () => {
                             </div>
                         </div>
 
+            
                         {/* Categories */}
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-50">
-                            <div className="flex items-center gap-2 mb-4">
+                        <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-50">
+                            <div className="flex items-center justify-center gap-2 mb-2 p-2">
                                 <BookOpen size={13} className="text-green-600" />
                                 <h3 className="text-[11px] font-black text-[#0f2942] uppercase tracking-widest">Categories</h3>
                             </div>
-                            <div className="space-y-0.5 max-h-72 overflow-y-auto pr-1">
+                            {/* Removed max-h-72 and overflow-y-auto to let the list grow fully */}
+                            <div className="space-y-0.5 pr-1">
                                 {categories.map(cat => (
                                     <Link
                                         key={cat._id}
@@ -272,7 +274,8 @@ const ThreadList = () => {
                                             ? <div className="w-2 h-2 rounded-full bg-green-600 shrink-0" />
                                             : <div className="w-2 h-2 rounded-full bg-gray-200 shrink-0" />
                                         }
-                                        <span className="truncate">{cat.name}</span>
+                                        {/* Removed truncate and added break-words/leading-tight for multi-line support */}
+                                        <span className="break-words leading-tight py-1 flex-1">{cat.name}</span>
                                         {cat._id === id && <ChevronRight size={12} className="ml-auto text-green-500 shrink-0" />}
                                     </Link>
                                 ))}
@@ -487,22 +490,22 @@ const ThreadList = () => {
                                                     {thread.images && thread.images.length > 0 && (
                                                         <div className="mt-2 flex flex-col gap-3 mb-4 w-full max-w-2xl">
                                                             {thread.images.map((img, idx) => (
-                                                                    <div
-                                                                        key={idx}
-                                                                        className="relative rounded-xl overflow-hidden border border-gray-100 w-full group/img shadow-sm cursor-zoom-in"
-                                                                        style={{ maxHeight: '400px' }} // Prevents images from being too tall on mobile
-                                                                        onClick={(e) => {
-                                                                            e.preventDefault();
-                                                                            e.stopPropagation();
-                                                                            setSelectedFullImage(img);
-                                                                        }}
-                                                                    >
-                                                                        <img
-                                                                            src={img}
-                                                                            alt={`Post image ${idx + 1}`}
-                                                                            className="w-full h-auto object-cover transition-transform duration-300 group-hover/img:scale-[1.02]"
-                                                                        />
-                                                                    </div>
+                                                                <div
+                                                                    key={idx}
+                                                                    className="relative rounded-xl overflow-hidden border border-gray-100 w-full group/img shadow-sm cursor-zoom-in"
+                                                                    style={{ maxHeight: '400px' }} // Prevents images from being too tall on mobile
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        setSelectedFullImage(img);
+                                                                    }}
+                                                                >
+                                                                    <img
+                                                                        src={img}
+                                                                        alt={`Post image ${idx + 1}`}
+                                                                        className="w-full h-auto object-cover transition-transform duration-300 group-hover/img:scale-[1.02]"
+                                                                    />
+                                                                </div>
                                                             ))}
                                                         </div>
                                                     )}

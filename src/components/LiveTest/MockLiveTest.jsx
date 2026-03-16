@@ -2201,7 +2201,7 @@ const MockLiveTest = () => {
               return (
                 <div key={index}>
                   <h1
-                    className={`h6 p-2 text-blue-400 d-inline-flex align-items-center  border-r-2 border-gray-300
+                    className={`h6 p-2 text-blue-700 font-semibold d-inline-flex align-items-center  border-r-2 border-gray-300
                       ${currentSectionIndex === index
                         ? " font-medium underline"
                         : ""
