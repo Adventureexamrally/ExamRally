@@ -2,5 +2,265 @@
 @tailwind components;
 @tailwind utilities;
 
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
 
 
+/* Custom styles for slick arrows */
+.slick-prev,
+.slick-next {
+  position: absolute;
+  /* Make them absolutely positioned */
+  top: 50%;
+  /* Vertically center the arrows */
+  transform: translateY(-50%);
+  /* Adjust to center them */
+  color: black !important;
+  /* Set the arrow color */
+  z-index: 1000;
+  /* Ensure they appear above other content */
+  cursor: pointer;
+  /* Show a pointer cursor on hover */
+  background-color: white;
+  /* Optional: Add a background for visibility */
+  padding: 10px;
+  /* Make the arrows larger and clickable */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  /* Set width of arrow button */
+  height: 20%;
+  /* Set height of arrow button */
+  transition: background-color 0.3s ease;
+  /* Smooth hover transition */
+  border-radius: 5px;
+}
+
+/* Make the arrows appear when hovering */
+.slick-prev:hover,
+.slick-next:hover {
+  background-color: white;
+  /* Slight dark background on hover */
+  color: #FF6347;
+  /* Change color on hover to give it a visible effect */
+}
+
+/* Position the left arrow */
+.slick-prev {
+  left: 2px;
+  /* Position the left arrow on the left side */
+}
+
+/* Position the right arrow */
+.slick-next {
+  right: 2px;
+  /* Position the right arrow on the right side */
+}
+
+
+/* Customize scrollbar */
+::-webkit-scrollbar {
+  width: 16px;
+  /* Increased width of the scrollbar */
+  height: 16px;
+  /* Increased height for horizontal scrolling */
+}
+
+/* Customize the track (background) of the scrollbar */
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  /* Light gray background */
+  border-radius: 50px;
+  /* Make it more circular-like, like a bubble */
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.7);
+  /* Create a bubble effect */
+}
+
+/* Customize the thumb (the draggable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  /* Gray color for the thumb */
+  border-radius: 10px;
+  /* Rounded corners */
+  border: 4px solid #f1f1f1;
+  /* Border around the thumb */
+}
+
+/* Customize the thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+  /* Darker gray when hovered */
+}
+
+/* Custom Scrollbar Utilities */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+
+/* Animation and Layout Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes ticker-loop {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.33%); }
+}
+
+.ticker-wrapper {
+  display: flex;
+  width: max-content;
+  animation: ticker-loop 30s linear infinite;
+}
+
+.ticker-wrapper:hover {
+  animation-play-state: paused;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* table td {
+  border: 2px solid grey;
+ }
+  
+ */
+
+/* table {
+  border-collapse: collapse;
+  width: 80%;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+table th, table td {
+  border: 2px solid grey;
+  padding: 10px;
+  text-align: center;
+}
+
+table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+table tr:nth-child(even) {
+  background-color: #eaeceb;
+}
+
+table tr:hover {
+  background-color: #c6f7d2;
+} */
+
+/* TinyMCE Content Styles */
+.tinymce-content {
+  line-height: 1.6;
+  /* Default fallback */
+}
+
+.tinymce-content p {
+  margin-bottom: 1em;
+}
+
+.tinymce-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.tinymce-content th,
+.tinymce-content td {
+  padding: 0.75em;
+  border: 1px solid #ddd;
+}
+
+/* Preserve all inline styles from TinyMCE */
+/* Preserve all inline styles from TinyMCE */
+/* .tinymce-content *[style] {
+  all: revert;
+} */
+
+.tinymce-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5em 0;
+  /* Reduced margin */
+}
+
+.tinymce-content *[style*="line-height"] {
+  line-height: inherit !important;
+}
+
+.tinymce-content ul {
+  list-style-type: disc;
+  margin-left: 1.5em;
+  padding-left: 1.5em;
+  margin-bottom: 0.5em;
+  /* Reduced margin */
+}
+
+.tinymce-content ol {
+  list-style-type: decimal;
+  margin-left: 1.5em;
+  padding-left: 1.5em;
+  margin-bottom: 0.5em;
+  /* Reduced margin */
+}
+
+.tinymce-content li {
+  margin-bottom: 0.25em;
+  /* Reduced margin */
+}
+
+.tinymce-content h1,
+.tinymce-content h2,
+.tinymce-content h3,
+.tinymce-content h4,
+.tinymce-content h5,
+.tinymce-content h6 {
+  font-weight: bold;
+  margin-top: 1em;
+  /* Reduced margin */
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+/* Removed specific font-size overrides to allow inheritance or inline styles */
+
+.tinymce-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.tinymce-content blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1em;
+  font-style: italic;
+  margin-bottom: 1em;
+}

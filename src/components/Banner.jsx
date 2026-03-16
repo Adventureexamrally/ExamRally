@@ -1,51 +1,112 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-import one from "../assets/images/1.jpg";
-import two from "../assets/images/2.jpg";
-import three from "../assets/images/3.jpg";
-import banner from "../assets/images/banner.png";
-
+import Api from "../service/Api";
 
 const Banner = () => {
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    Api.get("banner/get/active")
+      .then((response) => {
+        setSlides(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching slides:", error);
+      })
+      .finally(() => {
+        setLoading(false); // Set loading to false after fetch completes
+      });
+  }, []);
+
+  const CustomPrevArrow = (props) => {
+    const { className, style, onClick, currentSlide, slideCount, ...rest } = props;
+    return (
+      <FaChevronLeft
+        {...rest}
+        className={className}
+        style={{ ...style, display: "block", color: "black" }}
+        onClick={onClick}
+      />
+    );
+  };
+
+  const CustomNextArrow = (props) => {
+    const { className, style, onClick, currentSlide, slideCount, ...rest } = props;
+    return (
+      <FaChevronRight
+        {...rest}
+        className={className}
+        style={{ ...style, display: "block", color: "black" }}
+        onClick={onClick}
+      />
+    );
+  };
+
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: slides.length > 1,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: slides.length > 1,
     autoplaySpeed: 3000,
+    prevArrow: <CustomPrevArrow />,
+    nextArrow: <CustomNextArrow />,
   };
-
-  const slides = [
-    { image: banner, title: "Welcome to Our Platform", description: "Join us for amazing opportunities." },
-    { image: banner, title: "Transform Your Career", description: "Explore a variety of courses to boost your career." },
-    { image: banner, title: "Get Started Today", description: "Begin your journey with us and unlock endless potential." },
-  ];
 
   return (
     <div className="bg-gray-100 flex justify-center items-center rounded-md py-1">
       <div className="w-full rounded-md">
-        <Slider {...settings}>
-          {slides.map((slide, index) => (
-            <div key={index} className="relative">
-              <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-md shadow-lg">
-                <img
-                  src={slide.image}
-                  alt={`Slide ${index + 1}`}
-                  className="w-full h-full object-fill z-20"
-                />
+        {loading ? (
+        <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '100vh' }} // Full viewport height
+              >
+                <div
+                  className="spinner-border text-green-500 fw-bold "
+                  role="status"
+                  style={{ width: '3rem', height: '3rem' }}
+                >
+                 
+                </div>
               </div>
-              {/* <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 px-4 text-center text-white rounded-md">
-                <h2 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold">{slide.title}</h2>
-                <p className="text-xs sm:text-sm md:text-base">{slide.description}</p>
-              </div> */}
+        ) : slides.length === 0 ? (
+          <div className="w-full h-[150px] bg-gray-200 flex items-center justify-center">
+            <p>No banners available</p>
+          </div>
+        ) : slides.length === 1 ? (
+          <div className="relative">
+            <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-md shadow-lg">
+              <a href={slides[0].link}>
+                <img
+                  src={slides[0].photo}
+                  alt="Slide 1"
+                  className="w-full h-full"
+                />
+              </a>
             </div>
-          ))}
-        </Slider>
+          </div>
+        ) : (
+          <Slider {...settings}>
+            {slides.map((slide, index) => (
+              <div key={index} className="relative">
+                <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] z-40 overflow-hidden rounded-md shadow-lg">
+                  <a href={slide.link}>
+                    <img
+                      src={slide.photo}
+                      alt={`Slide ${index + 1}`}
+                      className="w-full h-full"
+                    />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </Slider>
+        )}
       </div>
     </div>
   );

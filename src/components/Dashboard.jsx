@@ -1,197 +1,185 @@
-import React from "react";
-import sbi from "../assets/logo/sbi.png";
-import ibps from "../assets/logo/ibps.png";
-import rrb from "../assets/logo/rrb.png"
-import CalculateIcon from "@mui/icons-material/Calculate";
-import PsychologyIcon from "@mui/icons-material/Psychology";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import PublicIcon from "@mui/icons-material/Public";
-import ComputerIcon from "@mui/icons-material/Computer";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-// import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import SpeedIcon from "@mui/icons-material/Speed";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import QuizIcon from "@mui/icons-material/Quiz";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import EventNoteIcon from "@mui/icons-material/EventNote";
-import StarIcon from "@mui/icons-material/Star";
-import DiamondIcon from "@mui/icons-material/Diamond";
-import CelebrationIcon from "@mui/icons-material/Celebration";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import ForumIcon from "@mui/icons-material/Forum";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
-import Banner from "./Banner";
-import { RiRobotFill } from "react-icons/ri";
+import Api from "../service/Api";
+import { FaChevronLeft, FaChevronRight, FaFireAlt } from "react-icons/fa";
+import LiveTest from "./LiveTest/LiveTest";
+import TrendingPackages from "./TrendingPackages";
+import Archivements from "./Archivements";
+import PdfCourseAd from "./PdfCourseAd";
 
 const Dashboard = () => {
-  const exams = [
-    { name: "RRB PO", image: ibps,link:"rrb-po" },
-    { name: "RRB Clerk", image: ibps,link:"rrb-clerk" },
-    { name: "IBPS Clerk", image: ibps,link:"ibps-clerk" },
-    { name: "IBPS PO", image: ibps,link:"ibps-po" },
-    { name: "SBI Clerk", image: sbi,link:"sbi-clerk" },
-    { name: "SBI PO", image: sbi,link:"sbi-po" },
-  ];
-  
+  const [packages, setPackages] = useState([]);
+  const [scrollLinks, setScrollLinks] = useState([]);
+  const scrollContainerRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Fetching Packages (Trending Exams)
+  const fetchPakages = async () => {
+    try {
+      const response = await Api.get("/packages/get/active");
+      setPackages(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Fetching Top Ticker Links
+  const fetchScrollLinks = async () => {
+    try {
+      const response = await Api.get("/links/all");
+      if (response.status === 200) {
+        const allLinks = response.data.reduce((acc, entry) => acc.concat(entry.links), []);
+        setScrollLinks(allLinks);
+      }
+    } catch (error) {
+      console.error("Error fetching scroll links:", error);
+      setScrollLinks([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchPakages();
+    fetchScrollLinks();
+  }, []);
+
+  // Check scroll position to show/hide buttons
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [packages]);
+
+  const handleScroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 400;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
   return (
-    <div className="bg-gray-100 min-h-screen p-2">
-      {/* Trending Links */}
-      <div className="mb-1 overflow-hidden">
-        <div className="whitespace-nowrap animate-scroll text-sm text-blue-600 flex gap-8">
-          <Link to="#" className="hover:underline">Clerk Notification</Link>
-          <Link to="#" className="hover:underline">SBI JA Previous Year Cut-off</Link>
-          <Link to="#" className="hover:underline">Descriptive Writing Mock Test</Link>
-          <Link to="#" className="hover:underline">Current Affairs</Link>
-        </div>
-      </div>
-{/* 
-      <div className="h-[30vh] w-full overflow-hidden rounded mb-4">
-        <Banner />
-      </div> */}
+    <div className="bg-slate-50/50 min-h-screen pb-10">
+      {/* 1. NEWS TICKER (Scrolling Links) */}
+      <div className="bg-white border-b border-emerald-50 py-2 shadow-sm overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-4 flex items-center">
+          {/* Label - Fixed in place */}
+          <div className="flex-shrink-0 bg-green-600 text-white text-[10px] font-black px-3 py-1 rounded-md mr-4 uppercase tracking-[0.2em] flex items-center gap-1.5 z-10 shadow-sm">
+            <FaFireAlt className="animate-pulse" /> Trending
+          </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="col-span-full" >
-      <Banner  />
-      </div>
-        {/* Topic Test */}
-        <div className="bg-white p-4 rounded-2xl shadow-lg">
-          <h3 className="font-bold text-lg mb-3">Topic Test</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
-            <div className="bg-orange-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <CalculateIcon fontSize="large" className="text-orange-600" />
-              <Link to="/quantitativeapti" className="text-sm font-medium text-gray-700">Quantitative Aptitude</Link>
-            </div>
-            <div className="bg-purple-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <PsychologyIcon fontSize="large" className="text-purple-600" />
-              <Link to="/reasoningability" className="text-sm font-medium text-gray-700">Reasoning Ability</Link>
-            </div>
-            <div className="bg-pink-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <MenuBookIcon fontSize="large" className="text-pink-600" />
-              <Link to="/englishlang" className="text-sm font-medium text-gray-700">English Language</Link>
-            </div>
-            <div className="bg-teal-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <PublicIcon fontSize="large" className="text-teal-600" />
-              <Link to="/currentaffairs" className="text-sm font-medium text-gray-700">Current Affairs</Link>
-            </div>
-            <div className="bg-green-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <ComputerIcon fontSize="large" className="text-green-600" />
-              <Link to="/computerawarness" className="text-sm font-medium text-gray-700">Computer Awareness</Link>
-            </div>
-            <div className="bg-red-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <AccountBalanceIcon fontSize="large" className="text-red-600" />
-              <Link to="/bankingawarness" className="text-sm font-medium text-gray-700">Banking Awareness</Link>
-            </div>
-            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <LibraryBooksIcon fontSize="large" className="text-gray-600" />
-              <Link to="/staticgk" className="text-sm font-medium text-gray-700">Static GK</Link>
-            </div>
-            <div className="bg-yellow-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <QuizIcon fontSize="large" className="text-yellow-600" />
-              <Link to="/insuranceawarness" className="text-sm font-medium text-gray-700">Insurance Awareness</Link>
+          {/* Ticker Container */}
+          <div className="relative flex-grow overflow-hidden">
+            <div className="ticker-wrapper flex items-center">
+              {/* We duplicate the list. 
+                   The animation moves from 0 to -50%. 
+                   Since the second half is identical to the first, 
+                   it snaps back to 0 seamlessly.
+                */}
+              <div className="ticker-content flex gap-12 items-center">
+                {[...scrollLinks, ...scrollLinks, ...scrollLinks].map((link, index) => (
+                  <Link
+                    key={index}
+                    to={link.linkUrl}
+                    className="group flex items-center gap-2.5 whitespace-nowrap"
+                  >
+                    {link.new && (
+                      <span className="relative inline-flex items-center px-2 py-[3px] rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite] text-amber-900 text-[9px] font-black tracking-[0.15em] uppercase shadow-sm shadow-amber-200 border border-amber-300 leading-none gap-1">
+                        ✦ NEW
+                      </span>
+                    )}
+                    <span className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors duration-200">
+                      {link.linkName}
+                    </span>
+                    <span className="text-green-200 font-normal">|</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Special Mock Test */}
-        <div className="bg-white p-4 rounded-2xl shadow-lg"   >
-          <h3 className="font-bold text-lg mb-3">Special Mock Test</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
-            <div className="bg-indigo-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <SpeedIcon fontSize="large" className="text-indigo-600" />
-              <Link to="/previouspaper" className="text-sm font-medium text-gray-700">Previous Year Papers</Link>
-            </div>
-            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <HelpOutlineIcon fontSize="large" className="text-gray-600" />
-              <Link to="/hardlevelreasoning" className="text-sm font-medium text-gray-700">Hard Level Reasoning</Link>
-            </div>
-            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <HelpOutlineIcon fontSize="large" className="text-gray-600" />
-              <Link to="/hardlevelquants" className="text-sm font-medium text-gray-700">Hard Level Quants</Link>
-            </div>
-            <div className="bg-yellow-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <EventNoteIcon fontSize="large" className="text-yellow-600" />
-              <Link to="/hardleveng" className="text-sm font-medium text-gray-700">Hard Level English</Link>
-            </div>
-            <div className="bg-red-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <PictureAsPdfIcon fontSize="large" className="text-red-600" />
-              <Link to="/descriptive" className="text-sm font-medium text-gray-700">Descriptive</Link>
-            </div>
-            <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <LibraryBooksIcon fontSize="large" className="text-blue-600" />
-              <Link to="/criticalreason" className="text-sm font-medium text-gray-700">Critical Reasoning</Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Others */}
-        <div className="bg-white p-4 rounded-2xl shadow-lg">
-          <h3 className="font-bold text-lg mb-3">Others</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
-            <div className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <StarIcon fontSize="large" className="text-blue-600" />
-              <Link to="/hinduedutorial" className="text-sm font-medium text-gray-700">Hindu Editorial</Link>
-            </div>
-            <div className="bg-purple-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <DiamondIcon fontSize="large" className="text-purple-600" />
-              <Link to="#" className="text-sm font-medium text-gray-700">Interview Prep</Link>
-            </div>
-            <div className="bg-pink-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <CelebrationIcon fontSize="large" className="text-pink-600" />
-              <Link to="#" className="text-sm font-medium text-gray-700">Success Stories</Link>
-            </div>
-            <div className="bg-pink-100 p-3 flex flex-col  items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <EmojiEventsIcon fontSize="large" className="text-pink-600" />
-              <Link to="#" className="text-sm font-medium text-gray-700">Special Mocks</Link>
-            </div>
-            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <ForumIcon fontSize="large" className="text-gray-600" />
-              <Link to="#" className="text-sm font-medium text-gray-700">GD</Link>
-            </div>
-            <div className="bg-gray-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap">
-              <MailOutlineIcon fontSize="large" className="text-gray-600" />
-              <Link to="#" className="text-sm font-medium text-gray-700">Email & Precis Writing</Link>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Upcoming Exams */}
-      <div className="p-4 rounded-2xl shadow-lg mt-4 bg-white">
-  <div className="flex justify-between items-center mb-3 ">
-    <h3 className="font-bold text-lg">Top Trending Exams </h3>
-    <Link to="#" className="text-blue-600 hover:underline">View More</Link>
-  </div>
-  <div className="grid grid-cols-3 lg:grid-cols-6 sm:grid-cols-3 gap-5">
-  {exams.map((exam, index) => (
-    <div
-      key={index}
-   
-    >
-      {/* Circular Image at the Top Center with Hover Transition */}
-      <div
-        className="bg-blue-100 p-3 flex flex-col items-center rounded-2xl text-center hover:scale-110 hover:shadow-lg transition-transform duration-300 text-wrap"
-      >
-        <img
-          src={exam.image}
-          alt={exam.name}
-          className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2"
-        />
-      
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10 mt-2">
+        {/* <PdfCourseAd /> */}
 
-      {/* Exam Name Below Image */}
-      <Link to={exam.link} className="text-sm font-medium text-gray-700">{exam.name}</Link>
-      <p ></p>
+        <LiveTest />
+
+        {/* 2. TOP TRENDING EXAMS (Carousel) */}
+        <section className="bg-white p-6 sm:p-10 rounded-[2.5rem] border border-green-100 shadow-sm relative">
+          <div className="flex justify-between items-end mb-8 relative z-10">
+            <div>
+              <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
+                Top Trending <span className="">Exams</span>
+              </h3>
+              {/* <p className="text-slate-400 text-sm font-medium mt-1">Select your goal to start practicing</p> */}
+            </div>
+          </div>
+
+          <div className="group relative">
+            {/* Left Navigation Button */}
+            {canScrollLeft && (
+              <button
+                onClick={() => handleScroll('left')}
+                className="absolute -left-5 top-1/2 -translate-y-1/2 p-4 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
+              >
+                <FaChevronLeft size={18} />
+              </button>
+            )}
+
+            {/* Carousel Wrapper */}
+            <div
+              className="flex gap-6 overflow-x-auto scroll-smooth py-4 no-scrollbar"
+              ref={scrollContainerRef}
+              onScroll={checkScroll}
+            >
+              {packages.map((exam, index) => (
+                <div key={index} className="flex-shrink-0 w-[140px] sm:w-[190px]">
+                  <Link to={`/top-trending-exams/${exam.link_name}`}>
+                    <div className="bg-white border border-slate-100 p-6 rounded-3xl text-center transition-all duration-300 hover:border-green-200 hover:shadow-2xl hover:shadow-green-100/50 hover:-translate-y-2 group/card">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 relative flex items-center justify-center">
+                        <div className="absolute inset-0 bg-green-50 rounded-2xl opacity-0 group-hover/card:opacity-100 scale-110 transition-all duration-300"></div>
+                        <img
+                          src={exam.photo}
+                          alt={exam.name}
+                          className="relative z-10 w-full h-full object-contain"
+                        />
+                      </div>
+                      <p className="text-slate-700 font-bold text-sm tracking-tight leading-tight group-hover/card:text-emerald-700">
+                        {exam.name}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Navigation Button */}
+            {canScrollRight && (
+              <button
+                onClick={() => handleScroll('right')}
+                className="absolute -right-5 top-1/2 -translate-y-1/2 p-4 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
+              >
+                <FaChevronRight size={18} />
+              </button>
+            )}
+          </div>
+        </section>
+
+        <TrendingPackages />
+        <Archivements />
       </div>
-    </div>
-  ))}
-</div>
-
-
-</div>
-
 
     </div>
   );

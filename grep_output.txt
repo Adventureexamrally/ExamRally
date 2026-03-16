@@ -1,0 +1,573 @@
+1:import { useContext, useEffect, useRef, useState, useMemo } from "react";
+3:import { ToastContainer, toast } from "react-toastify";
+5:import { useLocation, useNavigate, useParams } from "react-router-dom";
+14:import { formatTime, getSectionCounts } from "../components/Test/testUtils";
+15:import { FaCompress, FaExpand, FaInfoCircle, FaChevronRight, FaChevronLeft } from "react-icons/fa";
+16:import { UserContext } from "../context/UserProvider";
+17:import { Avatar } from "@mui/material";
+18:import { useSelector, useDispatch } from "react-redux";
+19:import {
+40:} from "../slice/testSlice";
+42:const Test = () => {
+46:  const {
+63:  } = testState;
+66:  const setCurrentSectionIndex = (index) => {
+67:    dispatch(updateNavigation({ sectionIndex: index }));
+68:  };
+70:  const setClickedQuestionIndex = (index) => {
+71:    dispatch(updateNavigation({ questionIndex: index }));
+72:  };
+74:  const setExamStartTime = (time) => {
+76:  };
+78:  const setSelectedOptions = (update) => {
+79:    if (typeof update === "function") {
+81:    } else {
+83:    }
+84:  };
+86:  const setVisitedQuestions = (update) => {
+87:    if (typeof update === "function") {
+89:      if (next.length > visitedQuestions.length) {
+91:      }
+92:    } else {
+94:    }
+95:  };
+97:  const setMarkedForReview = (update) => {
+98:    if (typeof update === "function") {
+101:    }
+102:  };
+117:  const { user } = useContext(UserContext);
+126:  useEffect(() => {
+128:    if (sectionName === "english language") {
+130:    } else {
+132:    }
+133:  }, [currentSectionIndex, examData]);
+135:  const { id } = useParams();
+151:  window.addEventListener("keydown", function (e) {
+157:    ) {
+159:    }
+160:  });
+162:  const toggleMenu = () => {
+164:  };
+167:  const toggleMenu2 = () => {
+169:  };
+175:  useEffect(() => {
+177:    if (examData && examData._id !== id) {
+179:    }
+180:  }, [id, examData, dispatch]);
+182:  useEffect(() => {
+184:    if (examData && examData._id === id) {
+189:    }
+191:    if (!isDataFetched) {
+193:      Api.get(`exams/getExam/${id}`)
+194:        .then((res) => {
+195:          if (res.data) {
+200:          }
+201:        })
+202:        .catch((err) => {
+205:        });
+206:    }
+207:  }, [id, examData, isDataFetched, dispatch]);
+211:  useEffect(() => {
+212:    if (user?._id && id) {
+213:      Api.get(`results/${user?._id}/${id}`)
+214:        .then(response => {
+215:          if (response.data) {
+225:            const questionTimesFromDB = {};
+229:            const parseQuestionTime = (val) => {
+232:              if (typeof val === "string" && val.includes(":")) {
+234:                if (parts.length === 2) {
+236:                }
+237:              }
+240:            };
+242:            state.section.forEach((section) => {
+246:              questions.forEach((question) => {
+247:                if (question.q_on_time) {
+249:                }
+251:              });
+252:            });
+256:            if (state.section) {
+257:              state.section.forEach((section) => {
+259:                questions.forEach((question, questionIndex) => {
+263:                  if (question.selectedOption !== undefined && question.selectedOption !== null) {
+265:                  }
+277:                });
+278:              });
+279:            }
+294:          }
+295:        })
+298:    }
+299:  }, [id, user?._id, t_questions]);
+305:  useEffect(() => {
+306:    const handleWheel = (e, ref) => {
+310:      if (!toast.isActive(toastId.current)) {
+313:          {
+321:          }
+323:      }
+324:    };
+329:    if (commonDataElement) {
+333:        { passive: false }
+335:    }
+337:    return () => {
+338:      if (commonDataElement) {
+342:      }
+343:    };
+344:  }, []);
+356:  useEffect(() => {
+357:    if (!visitedQuestions.includes(clickedQuestionIndex)) {
+359:    }
+360:  }, [clickedQuestionIndex]);
+362:  const handleQuestionClick = (index) => {
+363:    dispatch(updateNavigation({ questionIndex: index }));
+364:  };
+369:  const handleOptionChange = async (index) => {
+370:    setSelectedOptions((prev) => {
+384:      if (currentQuestion.answer === index) {
+386:      } else {
+388:      }
+391:      const result = Api.post(`results/${user?._id}/${id}`, {
+396:      });
+400:    });
+422:  };
+426:  useEffect(() => {
+427:    if (!examStartTime) {
+429:    }
+430:  }, [examStartTime, dispatch]);
+432:  useEffect(() => {
+433:    if (questionStartTime) {
+437:      dispatch(updateQuestionTime({
+440:      }));
+443:    }
+447:  useEffect(() => {
+448:    const handleSectionTiming = () => {
+452:      if (prevSectionIndex >= 0) {
+457:        dispatch(updateSectionTimeAction({
+460:        }));
+461:      }
+465:    };
+468:  }, [currentSectionIndex]);
+471:  useEffect(() => {
+472:    return () => {
+478:      dispatch(updateSectionTimeAction({
+481:      }));
+482:    };
+483:  }, [currentSectionIndex]);
+486:  useEffect(() => {
+487:    if (examData) {
+490:    }
+491:  }, [examData]);
+495:  useEffect(() => {
+496:    const fetchData = async () => {
+497:      if (user?._id) {
+498:        try {
+500:          const res = await Api.get(`exams/getExam/${id}`);
+504:          const transformedData = {
+509:            section: res.data.section.map((section) => ({
+517:              s_blueprint: section.s_blueprint.map((blueprint) => ({
+521:              })),
+522:              questions: {
+523:                english: section.questions.english.map((question) => ({
+537:                })),
+538:                hindi: section.questions.hindi.map((question) => ({
+552:                })),
+553:                tamil: section.questions.tamil.map((question) => ({
+567:                })),
+568:              },
+573:            })),
+580:          };
+595:            `/results/${user?._id}/${id}`,
+599:        } catch (error) {
+602:        }
+603:      }
+604:    };
+610:  const handleSubmitTest = () => {
+613:  };
+614:  const handleClearResponse = () => {
+615:    setSelectedOptions((prev) => {
+619:    });
+620:  };
+623:  const handleMarkForReview = () => {
+624:    if (!markedForReview.includes(clickedQuestionIndex)) {
+626:    }
+628:  };
+660:  const handleNextClick = () => {
+669:    ) {
+675:      if (clickedQuestionIndex < startingIndex + totalQuestions - 1) {
+676:        dispatch(updateNavigation({ questionIndex: clickedQuestionIndex + 1 }));
+677:      } else {
+678:        dispatch(updateNavigation({ questionIndex: startingIndex }));
+679:      }
+680:    }
+681:  };
+719:  useEffect(() => {
+721:  }, [datatime]);
+770:  useEffect(() => {
+774:  }, [id, totalQuestions, dispatch]);
+776:  useEffect(() => {
+779:    if (selectedOptions.length > 0) {
+780:      const combinedData = selectedOptions.map((selectedOption, index) => ({
+783:      }));
+784:    }
+785:  }, [selectedOptions, id]);
+788:  const updateSelectedOption = (newSelectedOption, questionIndex) => {
+789:    dispatch(setSelectedOption({ index: questionIndex, option: newSelectedOption }));
+790:  };
+793:  const handleSubmitSection = () => {
+808:    ) {
+811:      dispatch(updateQuestionTime({
+814:      }));
+815:    }
+818:    if (timerRef.current) {
+821:    }
+835:    dispatch(updateSectionTimeAction({
+838:    }));
+846:    if (!currentSection) {
+849:    }
+856:    if (!questions) {
+859:    }
+892:    const sectionSummary = {
+900:    };
+916:    if (showModal) {
+919:      if (currentSectionIndex < examData.section.length - 1) {
+931:        dispatch(updateNavigation({ sectionIndex: nextIdx, questionIndex: nextStartingIndex }));
+932:      } else {
+935:      }
+936:    }
+937:  };
+948:  useEffect(() => {
+950:    if (user?._id) {
+951:      Api.get(`results/${user?._id}/${id}`)
+952:        .then((response) => {
+955:        })
+956:        .catch((error) => {
+958:        });
+959:    }
+960:  }, [id]);
+963:  useEffect(() => {
+971:    if (currentSection?.is_sub_section) {
+974:      poolIdentifier = `group-pool-${groupName}`;
+976:      examData.section.forEach((s, idx) => {
+977:        if (s.is_sub_section && s.group_name === groupName) {
+980:        }
+981:      });
+986:    } else {
+988:      poolIdentifier = `normal-section-${currentSectionIndex}`;
+994:    }
+999:    if (hasPoolChanged || (timeTakenFromDB !== timeTakenForPool) || (timeminus === 0 && totalSectionTime > 0)) {
+1009:    }
+1010:  }, [examData, currentSectionIndex, resultData]);
+1012:  const updateSectionTime = () => {
+1015:    const {
+1021:    } = examDataSubmission;
+1027:    if (currentSec?.is_sub_section) {
+1033:    } else {
+1035:    }
+1042:    examData?.section?.forEach((sec, idx) => {
+1043:      if (sec.is_sub_section) {
+1049:      }
+1052:      if (isActiveSection) {
+1054:      } else {
+1056:      }
+1057:    });
+1061:    const updatedSections = formattedSections.map((section, idx) => {
+1064:      if (isCumulativePool) {
+1072:        if (idx === firstGroupIdx) {
+1073:          return { ...section, timeTaken: actualTimeTaken };
+1074:        }
+1076:        if (sec?.is_sub_section && sec?.group_name === groupName) {
+1077:          return { ...section, timeTaken: 0 };
+1078:        }
+1080:      }
+1082:      if (idx === currentSectionIndex) {
+1083:        return { ...section, timeTaken: actualTimeTaken };
+1084:      }
+1086:    });
+1088:    if (user?._id) {
+1089:      Api.post(`results/${user._id}/${id}`, {
+1100:      })
+1101:        .then((res) => {
+1103:        })
+1104:        .catch((err) => {
+1106:        });
+1107:    }
+1108:  };
+1110:  useEffect(() => {
+1112:  }, [
+1124:  useEffect(() => {
+1126:    Api.get(`results/${user._id}/${id}`)
+1127:      .then((response) => {
+1129:        if (response.data && response.data.pausedDuration != null) {
+1131:        }
+1132:      })
+1133:      .catch((error) => {
+1135:        if (error?.response?.status === 404) {
+1137:        } else {
+1139:        }
+1140:      });
+1141:  }, [user?._id, id]);
+1147:  useEffect(() => {
+1150:    if (isPaused) {
+1153:    }
+1156:    if (pauseStartRef.current) {
+1160:    }
+1164:    sectionTimerRef.current = setInterval(() => {
+1167:    }, 1000);
+1172:  useEffect(() => {
+1173:    if (timeminus <= 0 && !isSubmitted && examData) {
+1176:    }
+1177:  }, [timeminus, isSubmitted, examData]);
+1179:  const handleTimerEnd = async () => {
+1183:  };
+1185:  const submitExam = () => {
+1193:    dispatch(updateSectionTimeAction({
+1196:    }));
+1197:    dispatch(updateQuestionTime({
+1200:    }));
+1206:    ) {
+1209:    }
+1220:    if (currentSection?.is_sub_section && currentSection?.group_name) {
+1224:    } else {
+1226:    }
+1231:    examData.section.forEach((sec, idx) => {
+1232:      if (sec.is_sub_section) {
+1237:      }
+1239:      if (idx === currentSectionIndex || (currentSection?.is_sub_section && currentSection?.group_name === sec.group_name)) {
+1241:      } else {
+1243:      }
+1244:    });
+1275:      { length: totalQuestions },
+1282:    const sectionSummary = {
+1287:    };
+1296:    const answersData = selectedOptions.map((selectedOption, index) => {
+1304:      examData.section.forEach((section, sIndex) => {
+1306:        if (index >= count && index < count + questions.length) {
+1310:        }
+1312:      });
+1319:      const optionsData = question?.options?.map((option, optionIndex) => ({
+1324:      }));
+1344:      return {
+1356:      };
+1357:    });
+1366:      .map((section, sectionIndex) => {
+1392:          (question, questionIndex) => {
+1403:            return {
+1415:            };
+1416:          }
+1442:        return {
+1454:          s_blueprint: section.s_blueprint.map((bp) => ({
+1458:          })),
+1459:          questions: {
+1460:            english: section.questions.english.map((question, index) => ({
+1472:            })),
+1473:            hindi: section.questions.hindi.map((question, index) => ({
+1485:            })),
+1486:            tamil: section.questions.tamil.map((question, index) => ({
+1498:            })),
+1499:          },
+1511:          timeTaken: (() => {
+1515:            if (typeof time1 === 'number' && typeof time2 === 'number') {
+1517:            }
+1520:          })()
+1522:        };
+1523:      })
+1527:      (acc, section) => ({
+1532:      }),
+1533:      {
+1538:      }
+1541:    setExamDataSubmission({
+1548:      totalcheck: {
+1553:      },
+1555:    });
+1556:  };
+1558:  const handlePauseResume = () => {
+1559:    if (pauseCount < 1) {
+1567:      if (questionStartTime && clickedQuestionIndex !== null) {
+1569:        dispatch(updateQuestionTime({
+1572:        }));
+1575:      }
+1585:      dispatch(updateSectionTimeAction({
+1588:      }));
+1592:      const currentState = {
+1598:      };
+1599:      localStorage.setItem(`examState_${id}`, JSON.stringify(currentState));
+1601:      Swal.fire({
+1614:        customClass: {
+1617:        },
+1618:      }).then(async (result) => {
+1619:        if (result.isConfirmed) {
+1624:        } else {
+1632:        }
+1633:      });
+1634:    }
+1635:  };
+1653:  const handleSectionCompletion = async (isTimerEnd = false) => {
+1660:    if (isTimerEnd && currentSection?.is_sub_section) {
+1664:        .map((s, i) => ({ s, i }))
+1665:        .filter(({ s }) => s.is_sub_section && s.group_name === groupName);
+1668:      groupMembers.forEach(({ i }) => updatedSubmitted.add(i));
+1672:      const lastGroupMemberIdx = Math.max(...groupMembers.map(({ i }) => i));
+1675:      if (nextIndex < examData?.section?.length) {
+1680:        dispatch(updateNavigation({
+1683:        }));
+1685:      } else {
+1689:        navigate(`/result/${id}/${user?._id}`);
+1691:      }
+1692:    }
+1698:    if (currentSection?.is_sub_section) {
+1701:        .map((s, i) => ({ s, i }))
+1702:        .filter(({ s }) => s.is_sub_section && s.group_name === groupName);
+1704:      const nextGroupMember = groupMembers.find(({ i }) => !updatedSubmitted.has(i));
+1706:      if (nextGroupMember) {
+1713:        dispatch(updateNavigation({
+1716:        }));
+1718:      }
+1720:    }
+1723:    if (currentSectionIndex < examData?.section?.length - 1) {
+1729:      dispatch(updateNavigation({
+1732:      }));
+1733:    } else {
+1737:      navigate(`/result/${id}/${user?._id}`);
+1738:    }
+1739:  };
+1742:  const handlePreviousClick = () => {
+1749:    ) {
+1750:      if (clickedQuestionIndex > startingIndex) {
+1751:        dispatch(updateNavigation({ questionIndex: clickedQuestionIndex - 1 }));
+1753:      }
+1754:    }
+1755:  };
+1767:  useEffect(() => {
+1769:    if (isRunning && !isPaused) {
+1770:      interval = setInterval(() => {
+1772:      }, 1000);
+1773:    } else if (!isRunning) {
+1775:    }
+1778:  }, [isRunning, isPaused]);
+1780:  const toggleTimer = () => {
+1781:    if (isRunning && !isPaused) {
+1783:    } else {
+1786:    }
+1787:  };
+1792:  const toggleFullScreen = () => {
+1793:    if (!document.fullscreenElement) {
+1796:      if (docEl.requestFullscreen) {
+1798:      } else if (docEl.mozRequestFullScreen) {
+1800:      } else if (docEl.webkitRequestFullscreen) {
+1802:      } else if (docEl.msRequestFullscreen) {
+1804:      }
+1805:    } else {
+1806:      if (document.exitFullscreen) {
+1808:      } else if (document.mozCancelFullScreen) {
+1810:      } else if (document.webkitExitFullscreen) {
+1812:      } else if (document.msExitFullscreen) {
+1814:      }
+1815:    }
+1816:  };
+1819:  useEffect(() => {
+1820:    const handleFullscreenChange = () => {
+1822:    };
+1829:    return () => {
+1834:    };
+1835:  }, []);
+1838:  useEffect(() => {
+1840:  }, []);
+1848:  useEffect(() => {
+1849:    const calculateCounts = () => {
+1858:      ]?.forEach((_, index) => {
+1865:        if (isMarked && isAnswered) {
+1867:        } else if (isMarked && !isAnswered) {
+1869:        } else if (isAnswered) {
+1871:        } else if (isVisited) {
+1873:        } else {
+1875:        }
+1876:      });
+1883:    };
+1886:  }, [
+1898:  const popupmodal = () => {
+1901:    console.log(`⏳ Resuming question ${clickedQuestionIndex} from ${existingTime}s`);
+1902:  };
+1904:  const finishTestAndOpenResult = async () => {
+1905:    try {
+1909:      const resultUrl = `${window.location.origin}/result/${id}/${user?._id}`;
+1919:    } catch (error) {
+1922:    }
+1923:  };
+1927:  useEffect(() => {
+1938:    timerRef.current = setInterval(() => {
+1939:      dispatch(tickQuestionTime({ index: clickedQuestionIndex }));
+1940:    }, 1000);
+1946:  }, [clickedQuestionIndex]);
+1952:    <div className="mock-font" ref={commonDataRef}>
+1955:          logo={logo}
+1956:          show_name={show_name}
+1957:          timeminus={timeminus}
+1958:          formatTime={formatTime}
+1959:          isFullscreen={isFullscreen}
+1960:          toggleFullScreen={toggleFullScreen}
+1961:          toggleMenu={toggleMenu}
+1965:          showModal={showModal}
+1966:          sectionSummaryData={sectionSummaryData}
+1967:          popupmodal={popupmodal}
+1968:          handleSectionCompletion={handleSectionCompletion}
+1969:          currentSectionIndex={currentSectionIndex}
+1970:          examData={examData}
+1978:          examData={examData}
+1979:          currentSectionIndex={currentSectionIndex}
+1980:          selectedLanguage={selectedLanguage}
+1981:          selectedOptions={selectedOptions}
+1982:          visitedQuestions={visitedQuestions}
+1983:          markedForReview={markedForReview}
+1984:          submittedSections={submittedSections}
+1985:          displayLanguage={displayLanguage}
+1986:          setDisplayLanguage={setDisplayLanguage}
+1987:          setCurrentSectionIndex={setCurrentSectionIndex}
+1988:          setClickedQuestionIndex={setClickedQuestionIndex}
+1989:          toast={toast}
+1994:        <div className={closeSideBar ? "md:w-full" : "md:w-4/5"}>
+1996:            examData={examData}
+1997:            currentSectionIndex={currentSectionIndex}
+1998:            clickedQuestionIndex={clickedQuestionIndex}
+1999:            startingIndex={startingIndex}
+2000:            selectedLanguage={selectedLanguage}
+2001:            displayLanguage={displayLanguage}
+2002:            isFullscreen={isFullscreen}
+2003:            closeSideBar={closeSideBar}
+2004:            toggleMenu2={toggleMenu2}
+2005:            selectedOptions={selectedOptions}
+2006:            handleOptionChange={handleOptionChange}
+2007:            isSubmitted={isSubmitted}
+2008:            questionTime={questionTime}
+2009:            formatTime={formatTime}
+2010:            t_questions={t_questions}
+2015:          isMobileMenuOpen={isMobileMenuOpen}
+2016:          closeSideBar={closeSideBar}
+2017:          isFullscreen={isFullscreen}
+2018:          toggleMenu={toggleMenu}
+2019:          user={user}
+2020:          timeminus={timeminus}
+2021:          formatTime={formatTime}
+2022:          handlePauseResume={handlePauseResume}
+2023:          isPaused={isPaused}
+2024:          answeredCount={answeredCount}
+2025:          notAnsweredCount={notAnsweredCount}
+2026:          notVisitedCount={notVisitedCount}
+2027:          markedForReviewCount={markedForReviewCount}
+2028:          answeredAndMarkedCount={answeredAndMarkedCount}
+2029:          examData={examData}
+2030:          currentSectionIndex={currentSectionIndex}
+2031:          selectedLanguage={selectedLanguage}
+2032:          startingIndex={startingIndex}
+2033:          selectedOptions={selectedOptions}
+2034:          markedForReview={markedForReview}
+2035:          visitedQuestions={visitedQuestions}
+2036:          setClickedQuestionIndex={setClickedQuestionIndex}
+2041:        handlePreviousClick={handlePreviousClick}
+2042:        clickedQuestionIndex={clickedQuestionIndex}
+2043:        startingIndex={startingIndex}
+2044:        handleMarkForReview={handleMarkForReview}
+2045:        handleClearResponse={handleClearResponse}
+2046:        examData={examData}
+2047:        currentSectionIndex={currentSectionIndex}
+2048:        selectedLanguage={selectedLanguage}
+2049:        handleNextClick={handleNextClick}
+2050:        handleSubmitSection={handleSubmitSection}
+2054:};

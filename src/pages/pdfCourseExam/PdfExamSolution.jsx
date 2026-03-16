@@ -1,0 +1,1326 @@
+import { useContext, useEffect, useState } from "react";
+import "react-toastify/dist/ReactToastify.css";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import logo from '../../assets/logo/bg-logo.png';
+import { FaChevronRight, FaInfoCircle, FaCompress, FaExpand, } from "react-icons/fa";
+import Api from "../../service/Api";
+import { UserContext } from "../../context/UserProvider";
+import { Avatar } from "@mui/material";
+
+const PdfExamSolution = () => {
+    const [examData, setExamData] = useState(null);
+    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+    const [clickedQuestionIndex, setClickedQuestionIndex] = useState(0);
+    const [selectedOptions, setSelectedOptions] = useState([]);
+    const [visitedQuestions, setVisitedQuestions] = useState([]);
+    const [markedForReview, setMarkedForReview] = useState([]);
+    const [ansmarkforrev, setAnsmarkforrev] = useState([]);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const location = useLocation();
+    const selectedLanguage = location.state?.language || "English";
+
+    // Fetch exam data
+    // const [selectedLanguage, setselectedLanguage] = useState(currentLanguage);
+    const [displayLanguage, setDisplayLanguage] = useState(null);
+
+    useEffect(() => {
+        const sectionName = examData?.section?.[currentSectionIndex]?.name?.toLowerCase().trim();
+        if (sectionName === "english language") {
+            setDisplayLanguage("English");
+        } else {
+            setDisplayLanguage(displayLanguage); // fallback to selectedLanguage
+        }
+    }, [currentSectionIndex, examData]);
+
+    const [isToggled, setIsToggled] = useState(false);
+    const [isDataFetched, setIsDataFetched] = useState(false);
+
+    const [check, setCheck] = useState(null)
+    const [show_name, setShow_name] = useState("")
+    const [exam_name, setExam_name] = useState("")
+    const [test_type, setTest_type] = useState("")
+    const [test_name, setTest_name] = useState("")
+    const [description, setDescription] = useState("")
+    const [t_questions, sett_questions] = useState("")
+    const [showReportForm, setShowReportForm] = useState(false);
+    const { id } = useParams();
+    const navigate = useNavigate();
+    // exams/getExam/67c5900a09a3bf8c7f605d71
+    const { user } = useContext(UserContext);
+    const startingIndex = examData?.section
+        ?.slice(0, currentSectionIndex)
+        .reduce(
+            (acc, section) =>
+                acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length,
+            0
+        ) || 0;
+
+    // Reset clickedQuestionIndex when section changes
+    useEffect(() => {
+        setClickedQuestionIndex(startingIndex);
+    }, [currentSectionIndex, startingIndex]);
+
+    const fetchMergedExamData = async (userId, examId) => {
+        try {
+            const [examRes, resultRes] = await Promise.all([
+                Api.get(`pdf-exams/getExam/${examId}`),
+                Api.get(`PDFresults/${userId}/${examId}`),
+            ]);
+
+            const exam = examRes.data;
+            const result = resultRes.data;
+
+            // Update state variables
+            setShow_name(exam.show_name);
+            setExam_name(exam.exam_name);
+            setTest_type(exam.test_type);
+            setTest_name(exam.test_name);
+            setDescription(exam.description);
+            sett_questions(exam.t_questions);
+
+            // Create mapping of result sections by name
+            const resultSectionsMap = new Map();
+            (result?.section || []).forEach(sec => {
+                if (sec.name) {
+                    resultSectionsMap.set(sec.name, sec);
+                }
+            });
+
+            // Merge sections by matching name
+            const mergedSections = (exam?.section || []).map(examSec => {
+                // Find matching result section by name
+                const resultSec = resultSectionsMap.get(examSec.name) || {};
+
+                // Helper function to merge questions by index for a specific language
+                const mergeQuestionsByLang = (lang) => {
+                    return (examSec?.questions?.[lang] || []).map((q, qIndex) => {
+                        const resultQ = (resultSec?.questions?.[lang] || [])[qIndex] || {};
+                        return {
+                            ...q,
+                            selectedOption: resultQ.selectedOption ?? null,
+                            isVisited: resultQ.isVisited ?? 0,
+                            NotVisited: resultQ.NotVisited ?? 0,
+                            q_on_time: resultQ.q_on_time ?? null,
+                        };
+                    });
+                };
+
+                return {
+                    ...examSec,
+                    s_blueprint: resultSec.s_blueprint || examSec.s_blueprint || [],
+                    questions: {
+                        english: mergeQuestionsByLang('english'),
+                        hindi: mergeQuestionsByLang('hindi'),
+                        tamil: mergeQuestionsByLang('tamil'),
+                    },
+                    s_score: resultSec.s_score ?? 0,
+                    correct: resultSec.correct ?? 0,
+                    incorrect: resultSec.incorrect ?? 0,
+                    Attempted: resultSec.Attempted ?? 0,
+                    Not_Attempted: resultSec.Not_Attempted ?? 0,
+                    s_accuracy: resultSec.s_accuracy ?? 0,
+                    timeTaken: resultSec.timeTaken ?? 0,
+                    s_order: examSec.s_order,  // Keep original section order
+                };
+            });
+
+            // Create final merged exam data
+            const examData = {
+                bilingual_status: exam.bilingual_status,
+                english_status: exam.english_status,
+                hindi_status: exam.hindi_status,
+                tamil_status: exam.tamil_status,
+                show_name: exam.show_name || exam.exam_name || "",
+                userId: result.userId,
+                ExamId: result.ExamId,
+                section: mergedSections,
+                descriptive: result?.descriptive || [],
+                o_accuracy: result?.o_accuracy ?? 0,
+                o_score: result?.o_score ?? 0,
+                Rank: result?.Rank ?? null,
+                Percentile: result?.Percentile ?? null,
+                takenAt: result?.takenAt ?? null,
+                submittedAt: result?.submittedAt ?? null,
+                status: result?.status || "not started",
+                timeTakenInSeconds: result?.timeTakenInSeconds ?? 0,
+                createdAt: result?.createdAt,
+                updatedAt: result?.updatedAt,
+            };
+
+            return examData;
+        } catch (error) {
+            console.error("Error merging exam and result:", error);
+            throw error;
+        }
+    };
+    useEffect(() => {
+        if (!user?._id && !id) return;
+
+        const loadExam = async () => {
+            const data = await fetchMergedExamData(user?._id, id);
+            console.log("examdata", data);
+
+            setExamData(data);
+        };
+
+        loadExam();
+    }, [user?._id, id]);
+
+    // Mark a question as visited when clicked
+    useEffect(() => {
+        if (!visitedQuestions.includes(clickedQuestionIndex)) {
+            setVisitedQuestions((prev) => [...prev, clickedQuestionIndex]);
+        }
+    }, [clickedQuestionIndex]);
+
+    const handleQuestionClick = (index) => {
+        setClickedQuestionIndex(index);
+    };
+
+    // Function to handle toggle change
+    const handleToggleChange = () => {
+        console.error("Hello");
+
+        // Toggle the state
+        setIsToggled(!isToggled);
+
+        // Reset to the first question (starting from the first section and question)
+        // if (examData && examData.section && examData.section.length > 0) {
+        // Set the current section to the first section
+        setCurrentSectionIndex(0);
+
+        // Calculate the starting question index (first question of the first section)
+        const startingIndex = 0; // First question of the first section
+        setClickedQuestionIndex(startingIndex);
+
+        // Optionally, reset other states if needed
+        setCheck(null);    // Reset any selected question
+        setIsClicked(false); // Reset clicked status for the question
+
+        // Reset all tracking states
+        setVisitedQuestions([0]); // Clear visited questions
+        setMarkedForReview([]); // Clear marked for review
+        setAnsmarkforrev([]); // Clear answered and marked for review
+        setQuestionTimes({});
+        setSelectedOptions([]); // Clear question times
+        // }
+
+        // You can add any additional logic here (e.g., start the timer, etc.)
+    };
+
+
+    const [resultData, setResultData] = useState({
+        correct: [],
+        incorrect: [],
+        skipped: [],
+        Not_Attempted: [],
+        Attempted: [],
+        s_score: [],
+        unseen: []
+    });
+
+    // Change the initial state to store all sections' data
+    const [resultsBySection, setResultsBySection] = useState([]);
+
+    // Update the useEffect that fetches results
+    // useEffect(() => {
+    //     if (!user?._id) return;
+
+    //     Api.get(`results/${user?._id}/${id}`)
+    //         .then((res) => {
+    //             if (res.data) {
+    //                 setExamsData(res.data);
+    //                 // Store results for all sections
+    //                 setResultsBySection(res.data.section.map(section => ({
+    //                     correct: section.correct,
+    //                     incorrect: section.incorrect,
+    //                     skipped: section.skipped,
+    //                     Attempted: section.Attempted,
+    //                     Not_Attempted: section.Not_Attempted,
+    //                     s_score: section.s_score,
+    //                     unseen: section.NotVisited
+    //                 })));
+
+    //                 // Also set current section's data
+    //                 const currentSectionData = res.data.section[currentSectionIndex];
+    //                 if (currentSectionData) {
+    //                     setResultData({
+    //                         correct: currentSectionData.correct,
+    //                         incorrect: currentSectionData.incorrect,
+    //                         skipped: currentSectionData.skipped,
+    //                         Attempted: currentSectionData.Attempted,
+    //                         Not_Attempted: currentSectionData.Not_Attempted,
+    //                         s_score: currentSectionData.s_score,
+    //                         unseen: currentSectionData.NotVisited
+    //                     });
+    //                 }
+    //             }
+    //         })
+    //         .catch((err) => console.error("Error fetching data:", err));
+    // }, [id, user]);
+
+
+    // Update this when section changes
+    useEffect(() => {
+        if (resultsBySection[currentSectionIndex]) {
+            setResultData(resultsBySection[currentSectionIndex]);
+        }
+    }, [currentSectionIndex, resultsBySection]);
+
+
+
+
+
+
+
+
+
+
+
+    const [questionStartTime, setQuestionStartTime] = useState(new Date());
+    const [questionTimes, setQuestionTimes] = useState({}); // Object to track each question's time
+    const [isClicked, setIsClicked] = useState(false); // State to track if the radio button was clicked
+
+
+
+    // Update question time when user switches questions
+
+
+    const handleNextClick = () => {
+        // Get the current section's total question count based on selected language
+        const currentSection = examData?.section[currentSectionIndex];
+        const questions = currentSection?.questions?.[selectedLanguage?.toLowerCase()] || [];
+
+        // Check if there's a next question in the current section
+        if (!examData || !currentSection || questions.length === 0) {
+            console.log("No questions available in the current section.");
+            return;
+        }
+
+        // Check if we've completed all questions in the current section
+        if (clickedQuestionIndex < startingIndex + questions.length - 1) {
+            console.error("ullae if)")
+            // Move to the next question in the current section
+            setClickedQuestionIndex(clickedQuestionIndex + 1);
+        } else {
+            // If we've completed the last question in the current section, move to the next section
+            if (currentSectionIndex < examData.section.length - 1) {
+                setCurrentSectionIndex(currentSectionIndex + 1); // Move to the next section
+                setClickedQuestionIndex(0);
+                // Calculate the starting question index for the next section
+                const newStartingIndex = examData?.section
+                    ?.slice(0, currentSectionIndex + 1) // All previous sections
+                    .reduce(
+                        (acc, section) =>
+                            acc + section.questions?.[selectedLanguage?.toLowerCase()]?.length, // Sum of questions per section
+                        0
+                    );
+
+                // Set the clicked question index to the first question of the next section
+                setClickedQuestionIndex(newStartingIndex);// Reset the question index for the new section
+            } else {
+                console.error("Exam is complete!"); // Handle case if this is the last section
+                navigate(-1); // Navigate to the result page
+            }
+        }
+
+        // Reset the state for question selection and clicked status
+        setCheck(null);
+        setIsClicked(false);
+    };
+
+
+
+
+    const [examStartTime, setExamStartTime] = useState(null);
+    const [totalTime, setTotalTime] = useState("");
+
+    useEffect(() => {
+        // Set exam start time when the component mounts
+        if (!examStartTime) {
+            setExamStartTime(new Date());
+        }
+    }, []);
+
+    const [questionTime, setQuestionTime] = useState(0);
+    const [questionTimerActive, setQuestionTimerActive] = useState(false);
+
+    let questionTimerInterval;
+
+    useEffect(() => {
+        // Reset time when switching questions
+        setQuestionTime(0);
+        setQuestionTimerActive(true);
+
+        questionTimerInterval = setInterval(() => {
+            setQuestionTime((prevTime) => prevTime + 1);
+        }, 1000);
+
+        return () => clearInterval(questionTimerInterval);
+    }, [clickedQuestionIndex]);
+
+    const datatime = examData?.duration ?? 0;
+    const [timeLeft, setTimeLeft] = useState(datatime * 60);
+
+
+    // Using useEffect to trigger submitExam when needed
+    const [timeminus, settimeminus] = useState(0);
+    useEffect(() => {
+        const sectionTimeInSeconds =
+            examData?.section[currentSectionIndex]?.t_time * 60; // Convert minutes to seconds
+        settimeminus(sectionTimeInSeconds); // Reset time when the section changes
+    }, [examData, currentSectionIndex]);
+
+
+
+    const [sectionSummary, setSectionSummary] = useState(null);
+
+
+
+    // Calculate starting index for the current section
+    const quantsSection = examData?.section?.[currentSectionIndex];
+    const isLastQuestion =
+        clickedQuestionIndex ===
+        quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
+
+    const handlePreviousClick = () => {
+        if (clickedQuestionIndex > startingIndex) {
+            setClickedQuestionIndex((prevIndex) => prevIndex - 1);
+        }
+    };
+
+    const [questionStatuses, setQuestionStatuses] = useState({});
+
+    // Update question status when an option is selected
+    useEffect(() => {
+        if (check !== null) {
+            const currentQuestion = examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex];
+            if (currentQuestion) {
+                const isCorrect = check === currentQuestion.answer;
+                setQuestionStatuses(prev => ({
+                    ...prev,
+                    [clickedQuestionIndex]: {
+                        attempted: true,
+                        correct: isCorrect
+                    }
+                }));
+            }
+        }
+    }, [check, clickedQuestionIndex, currentSectionIndex, examData, selectedLanguage]);
+    const [closeSideBar, setCloseSideBar] = useState(false)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const toggleMenu = () => {
+        setIsMobileMenuOpen(prevState => !prevState);
+    };
+
+    const toggleMenu2 = () => {
+        setCloseSideBar(!closeSideBar);
+    };
+
+    const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+        if (examData?.section?.[currentSectionIndex]?.questions) {
+            setReady(true);
+        }
+    }, [examData, currentSectionIndex]);
+
+
+    const reasons = [
+        "Incorrect Question",
+        "Incorrect Answer",
+        "Incorrect Solution",
+        "Incorrect Options",
+        "Incomplete Question",
+        "Incomplete Solution",
+        "Translation Error",
+        "others",
+    ];
+
+    const [selectedReasons, setSelectedReasons] = useState([]);
+    const [comment, setComment] = useState("");
+
+    const handleCheckboxChange = (reason) => {
+        if (selectedReasons.includes(reason)) {
+            setSelectedReasons(selectedReasons.filter((r) => r !== reason));
+        } else {
+            setSelectedReasons([...selectedReasons, reason]);
+        }
+    };
+
+    const handleSubmit = async () => {
+        const payload = {
+            userId: user?._id,
+            examId: id,
+            userName: user?.firstName,
+            emailId: user?.email,
+            examName: exam_name,
+            testType: test_type,
+            testName: test_name,
+            Description: description,
+            sectionId: examData?.section[currentSectionIndex]?._id,
+            sectionName: examData?.section[currentSectionIndex]?.name,
+            questionId: examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?._id,
+            questionIndex: clickedQuestionIndex,
+            reasons: selectedReasons,
+            comment: selectedReasons.includes("others") ? comment : "",
+        };
+
+        try {
+            await Api.post("reports/report-question", payload);
+            alert("Report submitted!");
+            setSelectedReasons([]);
+            setComment("");
+            console.log("dd", payload);
+
+        } catch (error) {
+            console.error(error);
+            alert("Submission failed.");
+        }
+    };
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            const docEl = document.documentElement;
+
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen();
+            } else if (docEl.mozRequestFullScreen) {
+                docEl.mozRequestFullScreen();
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            } else if (docEl.msRequestFullscreen) {
+                docEl.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    };
+
+    // Listen for fullscreen changes
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+        document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+        };
+    }, []);
+
+    // 🔸 Attempt to auto-enter fullscreen on mount
+    useEffect(() => {
+        toggleFullScreen(); // This will only work if browser allows
+    }, []);
+
+    return (
+        <div className="p-1 mock-font ">
+            <div>
+
+                <div className="bg-[#3476bb] text-white w-full flex justify-between items-center px-4 py-2 shadow-sm">
+                    {/* Left Section: Logo & Show Name */}
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={logo}
+                            alt="logo"
+                            className="h-10 w-auto bg-white rounded p-0.5"
+                        />
+                        <h1 className="font-bold text-base md:text-xl truncate max-w-[150px] md:max-w-none">
+                            {show_name}
+                        </h1>
+                    </div>
+
+                    {/* Right Section: Time & Fullscreen Controls */}
+                    <div className="flex items-center gap-3 md:gap-4">
+
+                        {/* Refined Time Display */}
+                        {/* <div className="flex items-center gap-2 bg-gray-100 text-slate-800 px-3 py-1.5 rounded-md shadow-inner">
+      <span className="text-xs md:text-sm font-semibold uppercase tracking-wide text-slate-500 hidden sm:inline">
+        Time Left:
+      </span>
+      <span className="text-sm md:text-base font-bold font-mono">
+        {formatTime(timeminus)}
+      </span>
+    </div> */}
+
+                        {/* Fullscreen Toggle Button */}
+                        <button
+                            onClick={toggleFullScreen}
+                            className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full cursor-pointer text-white flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
+                            aria-label="Toggle Fullscreen"
+                            title="Toggle Fullscreen"
+                        >
+                            {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div>
+                <div className="d-flex justify-content-start align-items-center flex-wrap bg-gray-100 gap-2 p-2">
+                    {(() => {
+                        const formattedSections = [];
+                        let currentGroupName = null;
+                        let combinedSection = null;
+
+                        (examData?.section || []).forEach((section, index) => {
+                            if (section.is_sub_section && section.group_name) {
+                                if (section.group_name !== currentGroupName) {
+                                    if (combinedSection) formattedSections.push(combinedSection);
+                                    currentGroupName = section.group_name;
+                                    combinedSection = {
+                                        ...section,
+                                        name: section.group_name,
+                                        isGroup: true,
+                                        originalSections: [{ ...section, originalIndex: index }],
+                                        t_question: Number(section.t_question) || 0,
+                                        t_time: Number(section.t_time) || 0,
+                                        t_mark: Number(section.t_mark) || 0,
+                                        originalIndex: index
+                                    };
+                                } else {
+                                    combinedSection.originalSections.push({ ...section, originalIndex: index });
+                                    combinedSection.t_question += Number(section.t_question) || 0;
+                                    combinedSection.t_time += Number(section.t_time) || 0;
+                                    combinedSection.t_mark += Number(section.t_mark) || 0;
+                                }
+                            } else {
+                                if (combinedSection) {
+                                    formattedSections.push(combinedSection);
+                                    combinedSection = null;
+                                    currentGroupName = null;
+                                }
+                                formattedSections.push({ ...section, isGroup: false, originalIndex: index });
+                            }
+                        });
+                        if (combinedSection) formattedSections.push(combinedSection);
+
+                        return formattedSections.map((group, groupIndex) => {
+                            // Calculate aggregate stats for the group tooltip
+                            let groupCorrect = 0, groupIncorrect = 0, groupUnseen = 0, groupSkipped = 0;
+                            const isActiveGroup = group.isGroup
+                                ? group.originalSections.some(s => s.originalIndex === currentSectionIndex)
+                                : group.originalIndex === currentSectionIndex;
+
+                            if (group.isGroup) {
+                                group.originalSections.forEach(s => {
+                                    const sectionResults = resultsBySection[s.originalIndex] || {};
+                                    groupCorrect += sectionResults.correct || 0;
+                                    groupIncorrect += sectionResults.incorrect || 0;
+                                    groupUnseen += sectionResults.unseen || 0;
+                                    groupSkipped += sectionResults.skipped || 0;
+                                });
+                            } else {
+                                const sectionResults = resultsBySection[group.originalIndex] || {};
+                                groupCorrect = sectionResults.correct || 0;
+                                groupIncorrect = sectionResults.incorrect || 0;
+                                groupUnseen = sectionResults.unseen || 0;
+                                groupSkipped = sectionResults.skipped || 0;
+                            }
+
+                            return (
+                                <div key={groupIndex} className="d-inline-flex flex-column align-items-start border-r-2 border-gray-300 pr-2">
+                                    <h1
+                                        className={`h6 p-2 text-blue-400 d-inline-flex align-items-center cursor-pointer hover:bg-blue-50 rounded transition-colors
+                                            ${isActiveGroup ? ' font-medium bg-blue-100' : ''}`}
+                                        onClick={() => setCurrentSectionIndex(group.isGroup ? group.originalSections[0].originalIndex : group.originalIndex)}
+                                    >
+                                        <span className={isActiveGroup ? "border-b-2 border-blue-500 pb-1" : ""}>
+                                            {group.name}
+                                        </span>
+                                        <div className="relative group ml-2 d-inline-block">
+                                            <FaInfoCircle className="cursor-pointer text-blue-400" />
+                                            <div className="absolute z-50 hidden group-hover:block bg-white text-dark border rounded p-2 shadow-md mt-1 
+                                                min-w-[220px] w-fit left-1/2 -translate-x-1/2">
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smanswerImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupCorrect}
+                                                    </div>
+                                                    <p>Correct</p>
+                                                </div>
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smnotansImg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupIncorrect}
+                                                    </div>
+                                                    <p>Wrong</p>
+                                                </div>
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smnotVisitImg mx-2 text-black fw-bold flex align-items-center justify-content-center">
+                                                        {groupUnseen}
+                                                    </div>
+                                                    <p>Unseen</p>
+                                                </div>
+                                                <div className="mt-2 flex align-items-center">
+                                                    <div className="smskipimg mx-2 text-white fw-bold flex align-items-center justify-content-center">
+                                                        {groupSkipped}
+                                                    </div>
+                                                    <p>Skipped</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h1>
+
+                                    {/* Render Sub-sections if this is an active group */}
+                                    {isActiveGroup && group.isGroup && group.originalSections.length > 1 && (
+                                        <div className="d-flex w-100 pl-2 gap-2 mt-2">
+                                            {group.originalSections.map((subSection) => (
+                                                <div
+                                                    key={subSection.originalIndex}
+                                                    className={`text-sm p-1 cursor-pointer rounded transition-colors ${currentSectionIndex === subSection.originalIndex ? 'bg-blue-200 text-blue-800 font-bold' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                                    onClick={() => setCurrentSectionIndex(subSection.originalIndex)}
+                                                >
+                                                    {subSection.name}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        });
+                    })()}
+                </div>
+
+                <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h1 className="modal-title fs-5" id="exampleModalLabel">Review Section</h1>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body">
+                                <form>
+                                    <div className="mb-3">
+                                        <label for="userInput" className="form-label">Please descripe it below!!</label>
+                                        <input type="text" className="form-control" id="userInput" placeholder="Enter Review!!" />
+                                    </div>
+                                </form>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" className="btn bg-green-400 text-white hover:bg-green-500">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+            {/* Mobile Hamburger Menu */}
+            < button
+                onClick={toggleMenu}
+                className="md:hidden text-black p-2"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                >
+
+                    {/* // Hamburger icon when the menu is closed */}
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 6h16M4 12h16M4 18h16"
+                    />
+
+                </svg>
+            </button>
+            <div className="flex">
+                {/* Question Panel */}
+                <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
+                    {!isSubmitted ? (
+                        <>
+                            <div className="d-flex  justify-between bg-gray-100 border-1 p-2 border-gray-300 font-extralight">
+                                <h3>
+                                    Question No: {clickedQuestionIndex + 1}/
+                                    {t_questions}
+                                </h3>
+
+
+                                <div className="flex justify-center items-center ">
+                                    {examData &&
+                                        examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
+                                            <div className="flex items-center mx-2">
+                                                <select
+                                                    value={displayLanguage || selectedLanguage}
+                                                    onChange={(e) => setDisplayLanguage(e.target.value)}
+                                                    className="border rounded p-1"
+                                                >
+                                                    {examData?.bilingual_status ? (
+                                                        <>
+                                                            {examData?.english_status && <option value="English">English</option>}
+                                                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {examData?.english_status && <option value="English">English</option>}
+                                                            {examData?.hindi_status && <option value="Hindi">Hindi</option>}
+                                                            {examData?.tamil_status && <option value="Tamil">Tamil</option>}
+                                                        </>
+                                                    )}
+                                                </select>
+                                            </div>
+                                        )}
+                                    <h3>
+                                        Question Time:
+                                        {examData?.section[currentSectionIndex]?.questions?.[
+                                            selectedLanguage?.toLowerCase()
+                                        ]?.[clickedQuestionIndex - startingIndex]?.q_on_time}
+                                    </h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p>Re-Attempt   &nbsp;&nbsp;</p>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        {/* Hidden checkbox that will control the slider */}
+                                        <input
+                                            type="checkbox"
+                                            checked={isToggled}
+                                            onChange={handleToggleChange}
+                                            className="sr-only"
+                                        />
+                                        {/* Slider container */}
+                                        <div className={`w-14 h-7 rounded-full transition-all duration-300 ease-in-out ${isToggled ? "bg-green-500" : " bg-gray-200"}`}>
+                                            {/* Slider knob */}
+                                            <div
+                                                className={`m-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out ${isToggled ? "translate-x-7 bg-green-600" : "bg-gray-400"
+                                                    }`}
+                                            ></div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            {examData?.section[currentSectionIndex] ? (
+                                <div className="flex flex-col md:flex-row p-0" >
+                                    {/* Left side for Common Data */}
+                                    {examData.section[currentSectionIndex]?.questions?.[
+                                        selectedLanguage?.toLowerCase()
+                                    ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
+                                            <div
+                                                className="md:w-[80%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300"
+                                                style={{
+                                                    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                                    overflowY: 'auto'
+                                                }}
+                                            >
+                                                <div
+                                                    className="text-wrap"
+                                                    style={{
+                                                        whiteSpace: "normal",
+                                                        wordWrap: "break-word",
+                                                    }}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html:
+                                                            examData.section[currentSectionIndex]
+                                                                ?.questions?.[
+                                                                (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                            ]?.[clickedQuestionIndex - startingIndex]
+                                                                ?.common_data || "No common data available",
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+
+                                    {/* Right side for Question */}
+                                    <div
+                                        className="w-full p-3 mb-24 md:mb-0 flex flex-col md:flex-row justify-between"
+                                        style={{
+                                            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                            overflowY: 'auto'
+                                        }}
+                                    >
+                                        {/* Content with dynamic height */}
+
+
+                                        <div>
+
+                                            <div
+                                                className=" text-wrap "
+                                                style={{
+                                                    whiteSpace: "normal",
+                                                    wordWrap: "break-word",
+                                                }}
+                                                dangerouslySetInnerHTML={{
+                                                    __html:
+                                                        examData.section[currentSectionIndex]?.questions?.[
+                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                        ]?.[clickedQuestionIndex - startingIndex]?.question || "No question available",
+                                                }}
+                                            />
+
+                                            {
+                                                examData?.section[currentSectionIndex]?.questions?.[
+                                                    selectedLanguage?.toLowerCase()
+                                                ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
+                                                    const question = examData.section[currentSectionIndex]?.questions?.[
+                                                        (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                    ]?.[clickedQuestionIndex - startingIndex];
+
+                                                    const selectedOption = question?.selectedOption;
+                                                    const answer = question?.answer;
+                                                    const isSelected = selectedOption === index;
+                                                    const isCorrect = answer === index;
+
+                                                    // Determine styling based on view mode
+                                                    let optionStyle = {
+                                                        color: "black", // Default text color
+                                                        borderRadius: "0.5rem",
+                                                        margin: "0.5rem",
+                                                        padding: "0.5rem",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "0.5rem"
+                                                    };
+
+                                                    if (!isToggled) {
+                                                        // RESULTS VIEW MODE - show correct/incorrect answers
+                                                        if (isCorrect) {
+                                                            // Correct answer (green background)
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#4CAF50", // Green
+                                                                color: "white"
+                                                            };
+                                                        } else if (isSelected && !isCorrect) {
+                                                            // User's incorrect selection (red background)
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#F44336", // Red
+                                                                color: "white"
+                                                            };
+                                                        }
+                                                    } else {
+                                                        // RE-ATTEMPT MODE - use your existing logic
+                                                        if (check === index && !isCorrect) {
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#F44336", // Red
+                                                                color: "white"
+                                                            };
+                                                        }
+                                                        if (check && isCorrect) {
+                                                            optionStyle = {
+                                                                ...optionStyle,
+                                                                backgroundColor: "#4CAF50", // Green
+                                                                color: "white"
+                                                            };
+                                                        }
+                                                    }
+
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            style={optionStyle}
+                                                            className="rounded-lg m-2 p-1"
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                id={`option-${index}`}
+                                                                name="exam-option"
+                                                                value={index}
+                                                                checked={isToggled ? check === index : isSelected}
+                                                                onChange={(e) => {
+                                                                    if (isToggled) {
+                                                                        setCheck(Number(e.target.value));
+                                                                        setIsClicked(true);
+                                                                        setSelectedOptions(prev => ({
+                                                                            ...prev,
+                                                                            [clickedQuestionIndex]: Number(e.target.value)
+                                                                        }));
+                                                                    }
+                                                                }}
+                                                                disabled={!isToggled || isClicked}
+                                                                style={{
+                                                                    accentColor: "#3B82F6", // Blue color for radio button
+                                                                    width: "1.2rem",
+                                                                    height: "1.2rem",
+                                                                    cursor: (!isToggled || isClicked) ? "not-allowed" : "pointer"
+                                                                }}
+                                                            /> &nbsp;&nbsp;
+                                                            <label
+                                                                htmlFor={`option-${index}`}
+                                                                dangerouslySetInnerHTML={{ __html: option || "No option available" }}
+                                                                style={{ cursor: "pointer" }}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })
+                                            }
+                                            {check != null && examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
+                                                <>
+                                                    <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
+                                                    <div
+                                                        className="text-wrap"
+                                                        style={{
+                                                            whiteSpace: "normal",
+                                                            wordWrap: "break-word",
+                                                        }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html:
+                                                                examData.section[currentSectionIndex]?.questions[
+                                                                    (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                                ]?.[clickedQuestionIndex - startingIndex]?.explanation,
+                                                        }}
+                                                    />
+                                                </>
+                                            ) : check != null ? (
+                                                <p>No explanation available</p>
+                                            ) : null}
+
+                                            {/* Explanation Section Below Options */}
+                                            <div>
+                                                {!isToggled && (
+                                                    <>
+                                                        <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
+                                                        {examData?.section?.[currentSectionIndex]?.questions?.[
+                                                            selectedLanguage?.toLowerCase()
+                                                        ]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
+                                                            <div
+                                                                className="text-wrap mb-2"
+                                                                style={{
+                                                                    whiteSpace: "normal",
+                                                                    wordWrap: "break-word",
+                                                                }}
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html:
+                                                                        examData.section[currentSectionIndex]?.questions[
+                                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                                        ]?.[clickedQuestionIndex - startingIndex]?.explanation,
+                                                                }}
+                                                            />
+
+                                                        ) : (
+                                                            <p>No explanation available</p>
+                                                        )}
+
+                                                        <div className="text-center pb-10">
+                                                            <button
+                                                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                                                                onClick={() => setShowReportForm(true)}
+                                                            >
+                                                                Report
+                                                            </button>
+                                                        </div>
+                                                        {showReportForm && (
+                                                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                                                <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                                                                    <div className="flex justify-between items-center mb-4">
+                                                                        <h2 className="text-xl font-semibold text-center flex-1">Question Report</h2>
+                                                                        <button
+                                                                            onClick={() => setShowReportForm(false)}
+                                                                            className="text-gray-500 hover:text-gray-700"
+                                                                        >
+                                                                            ✕
+                                                                        </button>
+                                                                    </div>
+                                                                    <p className="mb-2">Choose the options</p>
+                                                                    <div className="space-y-2">
+                                                                        {reasons.map((reason) => (
+                                                                            <div key={reason}>
+                                                                                <label className="flex items-center">
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        className="mr-2"
+                                                                                        checked={selectedReasons.includes(reason)}
+                                                                                        onChange={() => handleCheckboxChange(reason)}
+                                                                                    />
+                                                                                    {reason}
+                                                                                </label>
+                                                                                {reason === "others" && selectedReasons.includes("others") && (
+                                                                                    <textarea
+                                                                                        className="mt-2 w-full border border-gray-300 rounded px-2 py-1"
+                                                                                        placeholder="Enter your comment"
+                                                                                        value={comment}
+                                                                                        onChange={(e) => setComment(e.target.value)}
+                                                                                    />
+                                                                                )}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="flex justify-center mt-6 gap-4">
+                                                                        <button
+                                                                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                                                            onClick={() => {
+                                                                                handleSubmit();
+                                                                                setShowReportForm(false);
+                                                                            }}
+                                                                        >
+                                                                            Report Question
+                                                                        </button>
+                                                                        <button
+                                                                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                                                            onClick={() => setShowReportForm(false)}
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+
+
+                                        <div className="md:flex hidden items-center">
+                                            <div
+                                                className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
+                                                onClick={toggleMenu2}
+                                            >
+                                                <FaChevronRight
+                                                    className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div
+                                    className="d-flex justify-content-center align-items-center"
+                                    style={{ height: '100vh' }} // Full viewport height
+                                >
+                                    <div
+                                        className="spinner-border text-primary"
+                                        role="status"
+                                        style={{ width: '3rem', height: '3rem' }}
+                                    >
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="text-center">
+                            <h1 className="display-6 text-success">Test Completed!</h1>
+
+                        </div>
+                    )}
+                </div>
+
+                {/* Sidebar */}
+
+
+                <div
+                    className={` pb-7 h-[80vh] sm:h-[82vh] md:h-[85vh] lg:h-[85vh] xl:h-[85vh] bg-light transform transition-transform duration-300 border
+        ${isMobileMenuOpen ? 'translate-x-0  w-3/4 ' : 'translate-x-full '}
+        ${closeSideBar ? 'md:translate-x-full md:w-0 border-0' : 'md:translate-x-0 md:w-1/4'}
+        fixed top-14 right-0 z-40 md:static shadow-sm md:block `}
+                    style={{
+                        height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                        overflowY: 'auto'
+                    }}
+                >
+                    {isMobileMenuOpen && (
+                        <button onClick={toggleMenu} className="md:hidden text-black p-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                className="w-6 h-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    )}
+                    <div className="container mt-3">
+                        <h1>Section Summary</h1>
+                        <hr className="m-2" />
+                        <div className="w-full flex items-center justify-center space-x-4 p-2 bg-[#3476bb]">
+                            {/* Profile Image and Link */}
+                            <div>
+                                <Avatar
+                                    alt={user?.firstName}
+                                    src={user?.profilePicture}
+                                    sx={{ width: 30, height: 30 }}
+                                />
+                            </div>
+
+                            {/* Profile Information */}
+                            <div>
+                                <h1 className=" text-white text-wrap break-words">
+                                    {user?.firstName + user?.lastName}
+                                </h1>
+                            </div>
+                        </div>
+                        <div className="d-flex justify-content-between p-1">
+                            <h1>Mark</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.s_score}</h1>
+                        </div>
+                        <div className="d-flex justify-content-between p-1">
+                            <h1>Attempted</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.Attempted}</h1>
+                        </div>
+                        <div className="d-flex justify-content-between p-1">
+                            <h1>Correct</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.correct}</h1>
+                        </div>
+                        <div className="d-flex justify-content-between p-1">
+                            <h1>InCorrect</h1>
+                            <h1>{examData?.section[currentSectionIndex]?.incorrect}</h1>
+                        </div>
+
+
+
+
+                        <div className="d-flex flex-wrap gap-2 px-1 py-2 text-center justify-center">
+                            {examData?.section[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.map((question, index) => {
+                                // Calculate the actual question number including previous sections
+                                const actualQuestionNumber = startingIndex + index + 1;
+                                const currentQuestion = examData.section[currentSectionIndex].questions[selectedLanguage?.toLowerCase()][index];
+                                const answer = currentQuestion?.answer;
+
+
+
+                                let className = "";
+
+
+
+                                if (!isToggled) {
+                                    // Default view - show correct/incorrect/skipped status
+
+                                    if (answer === currentQuestion.selectedOption) {
+                                        className = "answerImg"; // Correct answer                  
+                                    } else if (currentQuestion?.isVisited == 1 && currentQuestion?.selectedOption == null) {
+                                        className = "skipImg";
+                                    }
+                                    else if (answer !== currentQuestion.selectedOption && currentQuestion?.NotVisited == 0) {
+                                        className = "notansImg"; // Wrong answer
+                                    }
+
+
+                                    else {
+                                        className = "notVisitImg"; // Not visited
+                                    }
+
+                                } else {
+                                    // Re-attempt mode
+                                    if (selectedOptions[startingIndex + index] !== undefined) {
+                                        className = "answerImg";
+                                        if (markedForReview.includes(startingIndex + index)) {
+                                            className += " mdansmarkedImg";
+                                        }
+                                    } else if (visitedQuestions.includes(startingIndex + index)) {
+                                        className = "notansImg";
+                                    } else {
+                                        className = "notVisitImg";
+                                    }
+                                }
+
+                                // if (resultData?.section.isVisited - resultData?.section.Attempted){
+                                //     className = "skipImg"; // Skipped question - visited but no answer selected
+                                // }
+                                return (
+                                    <div key={index}>
+                                        <span
+                                            onClick={() => {
+                                                setClickedQuestionIndex(startingIndex + index);
+                                                // handleNextClick()
+
+                                                if (!visitedQuestions.includes(startingIndex + index)) {
+                                                    setVisitedQuestions(prev => [...prev, startingIndex + index]);
+                                                }
+
+                                                setCheck(null);
+                                                setIsClicked(false);
+
+                                            }}
+                                            className={`fw-bold flex align-items-center justify-content-center ${className}`}
+                                        >
+                                            {actualQuestionNumber}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {/* 
+                        <div className="mt-3 bg-gray-100">
+                            <div className="container mt-3">
+                                <div className="row align-items-center">
+                                    <div className="col-6">
+                                        <div className="smanswerImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.correct}</div>
+                                        <p>Correct</p>
+                                    </div>
+                                    <div className="col-6">
+                                        <div className="smnotansImg  text-white fw-bold flex align-items-center justify-content-center">{resultData?.incorrect}</div>
+                                        <p>Wrong</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="container mt-3">
+                                <div className="row align-items-center">
+                                    <div className="col-6">
+                                        <div className="smnotVisitImg  text-black fw-bold flex align-items-center justify-content-center">{resultData?.unseen}</div>
+                                        <p>Unseen</p>
+                                    </div>
+                                    <div className="col-6">
+                                        <div className="smskipimg  text-white fw-bold flex align-items-center justify-content-center">{resultData.skipped}</div>
+                                        <p>Skipped</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> */}
+                    </div>
+                </div>
+            </div>
+
+
+            {/* Footer Buttons */}
+            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
+                <div className="d-flex justify-content-around w-[85%]">
+                    {/* Previous Button */}
+                    <button
+                        className="border-4 px-1 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                        onClick={handlePreviousClick} // Ensure this function is defined to handle the logic for going to the previous question
+                        disabled={clickedQuestionIndex === startingIndex} // Disable if it's the first question
+                    >
+                        Previous Ques
+                    </button>
+                    &nbsp; &nbsp;
+                    {/* Next Button */}
+
+                    <button
+                        onClick={handleNextClick}
+                        className="border-4 px-5 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                    >
+                        Next
+                    </button>
+
+                </div>
+            </div>
+        </div >
+    );
+};
+
+export default PdfExamSolution;

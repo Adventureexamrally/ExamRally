@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import exam from "../assets/images/Exams-bro.svg";
+import { useState, useEffect } from "react";
 import {
   AcademicCapIcon,
   ClipboardDocumentCheckIcon,
@@ -8,6 +7,9 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
+import Api from "../service/Api";
+import { Link } from "react-router-dom";
+import YoutubeVideo from "./Youtube/YoutubeVideo";
 
 const features = [
   {
@@ -48,19 +50,10 @@ const features = [
   },
 ];
 
-const youtubeVideos = [
-  { link: "https://www.youtube.com/watch?v=oCNw9WTGAfA" },
-  { link: "https://www.youtube.com/watch?v=04oQstVfAIg" },
-  { link: "https://www.youtube.com/watch?v=IjQH2BXKubc" },
-  { link: "https://www.youtube.com/watch?v=Co5bY9JQc1o" },
-  { link: "https://www.youtube.com/watch?v=cqmRUzETcoU" },
-  { link: "https://www.youtube.com/watch?v=rmkBnnL3Lpw" },
-  { link: "https://www.youtube.com/watch?v=OSN5VRD84EE" },
-
-
-];
-
 export default function Features() {
+
+  
+
   return (
     <>
       <div className="p-6 mx-auto bg-gray-50 shadow-lg rounded-lg border text-center border-gray-300 bg-gradient-to-tr from-green-100 to-white">
@@ -85,34 +78,12 @@ export default function Features() {
           </p>
         </div>
       </div>
+          
+    <YoutubeVideo />
+               
 
-      {/* YouTube Video Section */}
-      <div className="mt-10 p-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Our Videos</h2>
-          <a
-            href="https://www.youtube.com/@examrally_banking"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition"
-          >
-            View All
-          </a>
-        </div>
+    
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          {youtubeVideos.map((video, index) => (
-            <iframe
-              key={index}
-              className="w-full rounded-lg shadow-lg"
-              height="200"
-              src={video.link.replace("watch?v=", "embed/")}
-              title={`YouTube Video ${index + 1}`}
-              allowFullScreen
-            />
-          ))}
-        </div>
-      </div>
     </>
   );
 }
