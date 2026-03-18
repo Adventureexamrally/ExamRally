@@ -13,7 +13,7 @@ import { UserProvider } from "./context/UserProvider.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 // const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
-const clerkKey = import.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
+const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
 
 if (!clerkKey) {
   throw new Error("Missing Clerk Publishable Key");
