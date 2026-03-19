@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-// import App from "./App.jsx";
+import App from "./App.jsx";
 import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { store, persistor } from "./store/store.js";
@@ -12,7 +12,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { UserProvider } from "./context/UserProvider.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-// const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
 const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
 
 if (!clerkKey) {
@@ -40,7 +39,7 @@ const Root = () => {
         <PersistGate loading={null} persistor={persistor}>
           <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
             <UserProvider>
-              {/* <App /> */}
+               <App /> 
             </UserProvider>
           </ClerkProvider>
         </PersistGate>
