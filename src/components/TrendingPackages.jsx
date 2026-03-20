@@ -61,11 +61,11 @@ const TrendingPackages = () => {
   }, [user, data, utcNow]);
 
   return (
-    <div className="my-10 p-8 rounded-[2rem] border border-green-100 bg-white shadow-sm relative overflow-hidden">
+    <div className="my-10 p-3 rounded-[2rem] border border-green-100 bg-white shadow-sm relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60"></div>
 
-      <div className="relative z-10 flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+      <div className="relative z-10 flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <div>
           <h1 className="text-3xl lg:text-3xl font-bold text-slate-800 tracking-tight">
             Trending <span className="">Packages</span>
@@ -73,26 +73,26 @@ const TrendingPackages = () => {
           {/* <p className="text-slate-400 text-sm font-medium mt-1">Our most popular 365-day banking prep bundles</p> */}
         </div>
         <Link to='/All-Packages' className="group flex items-center gap-2 bg-green-50 text-green-700 px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:bg-green-600 hover:text-white">
-          View All Library
+          View All Packages
           <FaBolt className="text-[10px] group-hover:animate-pulse" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {packagesWithEnrollment.slice(0, 4).map((pkg, index) => (
-          <div key={index} className="group relative bg-white border border-slate-100 p-6 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-100 hover:-translate-y-2 flex flex-col h-full">
+          <div key={index} className="group relative bg-white border border-slate-100 p-3 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-100 hover:-translate-y-2 flex flex-col h-full">
             
             {/* Package Title */}
-            <div className="mb-6">
+            <div className="mb-2">
               <h2 className="text-xl font-black text-slate-800 leading-tight min-h-[3rem] line-clamp-2">
                 {pkg.name}
               </h2>
-              <div className="w-12 h-1 bg-green-500 rounded-full mt-2"></div>
+              <div className="w-12 h-1 bg-green-500 rounded-full mt-1"></div>
             </div>
 
             {/* Scrollable Features Section */}
-            <div className="flex-grow mb-6 pr-2 overflow-y-auto max-h-[180px] custom-scrollbar">
-              <div className="space-y-3">
+            <div className="flex-grow mb-1 pr-2 overflow-y-auto max-h-[180px] custom-scrollbar">
+              <div className="space-y-2">
                 {pkg.feature.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
                     <FaCheckCircle className="text-green-500 text-sm mt-1 shrink-0" />
@@ -103,8 +103,8 @@ const TrendingPackages = () => {
             </div>
 
             {/* Pricing & CTA Section */}
-            <div className="mt-auto pt-6 border-t border-slate-50">
-              <div className="flex justify-between items-end mb-4">
+            <div className="mt-auto pt-2 border-t border-slate-50">
+              <div className="flex justify-between items-end mb-2">
                 <div className="flex flex-col">
                   <span className="text-slate-300 line-through text-xs font-bold">Rs. {pkg.price}</span>
                   <span className="text-2xl font-black text-slate-800">Rs.{pkg.discountPrice}</span>
@@ -127,7 +127,7 @@ const TrendingPackages = () => {
               </button>
 
               {/* Status Indicator */}
-              <div className="mt-4 text-center">
+              <div className="mt-1 text-center">
                 {pkg.enrolled && !pkg.expired ? (
                   <div className="flex items-center justify-center gap-1.5 text-red-500 animate-pulse">
                     <FaClock className="text-xs" />

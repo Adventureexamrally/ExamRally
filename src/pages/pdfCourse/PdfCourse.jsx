@@ -9,6 +9,7 @@ import { UserContext } from '../../context/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import { fetchUtcNow } from '../../service/timeApi';
 import { generateImageEnabledPDF } from '../../utils/pdfGenerator';
+import { FaFilePdf, FaCalendar } from 'react-icons/fa';
 
 const PdfCourse = () => {
 
@@ -447,7 +448,7 @@ const PdfCourse = () => {
                                 {/* Calendar Panel */}
                                 <div className="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-green-100">
                                     <div className="text-xl md:text-2xl font-black text-center mb-6 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl text-white shadow-md">
-                                        🎁 Each Month's First Day is Free!
+                                        <FaFilePdf className="inline-block mr-2" /> Each Month's First Day is Free!
                                     </div>
 
                                     <div className="overflow-x-auto">
@@ -506,7 +507,7 @@ const PdfCourse = () => {
                                     {selectedDate && (
                                         <div className="mt-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
                                             <p className="text-center text-green-800 font-bold text-lg">
-                                                📅 Selected: {`${year} ${months[month]} ${selectedDate}`}
+                                                <FaCalendar className="inline-block mr-2" /> Selected: {`${year} ${months[month]} ${selectedDate}`}
                                             </p>
                                         </div>
                                     )}
@@ -524,7 +525,7 @@ const PdfCourse = () => {
                             <div className="flex justify-end mb-8">
                                 <div className="relative w-full max-w-md">
                                     <label className="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">
-                                        📚 Filter by Exam
+                                        <FaFilePdf className="inline-block " /> Filter by Exam
                                     </label>
                                     <div className="relative">
                                         <select
@@ -555,7 +556,7 @@ const PdfCourse = () => {
                             <div>
                                 {filteredPdfs.length === 0 ? (
                                     <div className="text-center py-20 col-span-full">
-                                        <div className="text-6xl mb-4">📭</div>
+                                        <div className="text-6xl mb-4"><FaFilePdf /></div>
                                         <p className="text-slate-400 text-xl font-bold">No PDFs found for this selection</p>
                                         <p className="text-slate-300 text-sm mt-2">Try selecting a different month or exam</p>
                                     </div>
@@ -566,8 +567,8 @@ const PdfCourse = () => {
 
                                         return (
                                             <div key={dateKey} className="mb-10">
-                                                <h3 className="text-2xl font-black text-slate-800 mb-6 pb-3 border-b-2 border-green-100 flex items-center gap-3">
-                                                    <span className="text-green-600">📅</span>
+                                                <h3 className=" font-semibold text-lg text-slate-800 mb-6 pb-3 border-b-2 border-green-100 flex items-center gap-3">
+                                                    <span className="text-green-600"><FaCalendar /></span>
                                                     {formatPrettyDate(dateStr)}
                                                 </h3>
                                                 <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
@@ -594,7 +595,7 @@ const PdfCourse = () => {
                                                                 </div>
 
                                                                 {/* Subject Header */}
-                                                                <h2 className="text-sm font-bold mb-3 text-center py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg">
+                                                                <h2 className="text-sm font-bold mb-3 text-center py-2 text-black border-0 border-black shadow-md hover:shadow-lg hover:border-green-300 transition-all duration-300">
                                                                     {pdf.subject === "Quants" ? "Quantitative Aptitude" : pdf.subject === "Reasoning" ? "Reasoning Ability" : pdf.subject === "English" ? "English Language" : pdf.subject}
                                                                 </h2>
 
@@ -758,18 +759,31 @@ const PdfCourse = () => {
                                                                                 <button
                                                                                     disabled={generatingPdf[examId]}
                                                                                     onClick={() => handleViewPdf(pdf)}
-                                                                                    className={`flex-1 text-center text-white bg-blue-600 hover:bg-blue-700 py-2 px-3 rounded-md text-sm font-medium transition-colors ${generatingPdf[examId] ? "opacity-50 cursor-not-allowed" : ""
+                                                                                    className={`flex-1 flex items-center justify-center gap-2 text-black border-0 border-black shadow-sm hover:shadow-md py-2 px-3 rounded-md text-sm font-medium transition-colors ${generatingPdf[examId] ? "opacity-50 cursor-not-allowed" : ""
                                                                                         }`}
                                                                                 >
-                                                                                    {generatingPdf[examId] ? "Generating..." : "View PDF"}
+                                                                                    {generatingPdf[examId] ? (
+                                                                                        <>
+                                                                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                                            </svg>
+                                                                                            <span>Generating...</span>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <FaFilePdf className='text-red-500' />
+                                                                                            <span >View PDF</span>
+                                                                                        </>
+                                                                                    )}
                                                                                 </button>
 
                                                                                 <button
-                                                                                    className={`flex-1 text-center text-white py-2 px-3 rounded-md text-sm font-medium transition-colors ${pdfResults?.[examId]?.status === "completed"
-                                                                                        ? "bg-green-600 hover:bg-green-700"
+                                                                                    className={`flex-1 text-center py-2 px-3 text-blue-700 border-1  border-blue-500 shadow-sm hover:shadow-md rounded-md text-sm font-medium transition-colors ${pdfResults?.[examId]?.status === "completed"
+                                                                                        ? "bg-white hover:bg-white/80"
                                                                                         : (pdfResults?.[examId]?.status === "paused" || pdfResults?.[examId]?.status === "started")
-                                                                                            ? "bg-yellow-600 hover:bg-yellow-700"
-                                                                                            : "bg-green-600 hover:bg-green-700"
+                                                                                            ? "text-red-600 border-1 border-red-500 hover:text-red-700"
+                                                                                            : "text-green-700 border-1 border-green-500 hover:text-green-700"
                                                                                         }`}
                                                                                     onClick={() => {
                                                                                         const results = pdfResults?.[examId];

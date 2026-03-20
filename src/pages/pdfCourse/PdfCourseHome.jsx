@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useMemo, useCallback, memo } from 'react';
-import { FaDesktop, FaArrowRight, FaCheck } from 'react-icons/fa';
+import { FaDesktop,FaFilePdf, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Api from '../../service/Api';
 import { useUser } from '@clerk/clerk-react';
@@ -14,7 +14,7 @@ const CourseLink = memo(({ to, title }) => (
     className="group flex flex-col items-center p-8 cursor-pointer bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-sm border border-slate-200 hover:border-green-300"
   >
     <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-6 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-md">
-      <FaDesktop className="text-5xl" />
+      <FaFilePdf className="text-5xl" />
     </div>
     <h1 className="text-xl font-black text-slate-800 mb-2 text-center leading-tight">
       {title}
@@ -219,9 +219,9 @@ const PdfCourseHome = () => {
           <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-3">
             Choose Your <span className="text-green-600 italic font-serif">Plan</span>
           </h2>
-          <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
+          {/* <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
             Select the subscription that fits your preparation needs
-          </p>
+          </p> */}
         </div>
 
         <div id="pdf-plan" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">

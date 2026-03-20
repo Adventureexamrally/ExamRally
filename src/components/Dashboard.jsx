@@ -117,8 +117,8 @@ const Dashboard = () => {
         <LiveTest />
 
         {/* 2. TOP TRENDING EXAMS (Carousel) */}
-        <section className="bg-white p-6 sm:p-10 rounded-[2.5rem] border border-green-100 shadow-sm relative">
-          <div className="flex justify-between items-end mb-8 relative z-10">
+        <section className="bg-white p-3 sm:p-4 rounded-[2.5rem] border border-green-100 shadow-sm relative">
+          <div className="flex justify-between items-end mb-4 relative z-10">
             <div>
               <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
                 Top Trending <span className="">Exams</span>
@@ -140,7 +140,7 @@ const Dashboard = () => {
 
             {/* Carousel Wrapper */}
             <div
-              className="flex gap-6 overflow-x-auto scroll-smooth py-4 no-scrollbar"
+              className="flex gap-6 overflow-x-auto scroll-smooth py-2 no-scrollbar"
               ref={scrollContainerRef}
               onScroll={checkScroll}
             >
