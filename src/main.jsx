@@ -38,9 +38,9 @@ const Root = () => {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <ClerkProvider publishableKey={clerkKey} frontendApi="clerk.examrally.in">
-            <UserProvider>
-               <App /> 
-            </UserProvider>
+              <UserProvider>
+                <App />
+              </UserProvider>
           </ClerkProvider>
         </PersistGate>
       </Provider>

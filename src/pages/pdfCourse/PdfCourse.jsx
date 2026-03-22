@@ -10,6 +10,7 @@ import { useUser } from '@clerk/clerk-react';
 import { fetchUtcNow } from '../../service/timeApi';
 import { generateImageEnabledPDF } from '../../utils/pdfGenerator';
 import { FaFilePdf, FaCalendar } from 'react-icons/fa';
+import './button.css';
 
 const PdfCourse = () => {
 
@@ -759,7 +760,7 @@ const PdfCourse = () => {
                                                                                 <button
                                                                                     disabled={generatingPdf[examId]}
                                                                                     onClick={() => handleViewPdf(pdf)}
-                                                                                    className={`flex-1 flex items-center justify-center gap-2 text-black border-0 border-black shadow-sm hover:shadow-md py-2 px-3 rounded-md text-sm font-medium transition-colors ${generatingPdf[examId] ? "opacity-50 cursor-not-allowed" : ""
+                                                                                    className={`pdf-button flex-1 flex items-center justify-center gap-2 text-black border-0 border-black shadow-sm hover:shadow-md py-2 px-3 rounded-md text-sm font-medium transition-all duration-300 ${generatingPdf[examId] ? "opacity-50 cursor-not-allowed" : ""
                                                                                         }`}
                                                                                 >
                                                                                     {generatingPdf[examId] ? (
@@ -772,18 +773,18 @@ const PdfCourse = () => {
                                                                                         </>
                                                                                     ) : (
                                                                                         <>
-                                                                                            <FaFilePdf className='text-red-500' />
-                                                                                            <span >View PDF</span>
+                                                                                            <FaFilePdf className='text-red-500 transition-colors duration-300' />
+                                                                                            <span className="transition-colors duration-300">View PDF</span>
                                                                                         </>
                                                                                     )}
                                                                                 </button>
 
                                                                                 <button
-                                                                                    className={`flex-1 text-center py-2 px-3 text-blue-700 border-1  border-blue-500 shadow-sm hover:shadow-md rounded-md text-sm font-medium transition-colors ${pdfResults?.[examId]?.status === "completed"
-                                                                                        ? "bg-white hover:bg-white/80"
+                                                                                    className={`flex-1 text-center py-2 px-3  shadow-sm hover:shadow-md rounded-md text-sm font-medium transition-colors ${pdfResults?.[examId]?.status === "completed"
+                                                                                        ? " hover:text-white  text-blue-700 border-1  border-blue-500 hover:bg-blue-500"
                                                                                         : (pdfResults?.[examId]?.status === "paused" || pdfResults?.[examId]?.status === "started")
-                                                                                            ? "text-red-600 border-1 border-red-500 hover:text-red-700"
-                                                                                            : "text-green-700 border-1 border-green-500 hover:text-green-700"
+                                                                                            ? "text-red-600 border-1 border-red-500 hover:text-white hover:bg-red-500"
+                                                                                            : "text-green-700 border-1 border-green-500 hover:text-white hover:bg-green-600"
                                                                                         }`}
                                                                                     onClick={() => {
                                                                                         const results = pdfResults?.[examId];

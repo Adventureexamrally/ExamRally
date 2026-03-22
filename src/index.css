@@ -264,3 +264,80 @@ table tr:hover {
   font-style: italic;
   margin-bottom: 1em;
 }
+
+/* Custom Line Height Dropdown UI */
+.ql-snow .ql-picker.ql-lineHeight {
+  width: 90px;
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label::before {
+  content: 'Spacing';
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value="1.0"]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item[data-value="1.0"]::before {
+  content: '1.0';
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value="1.2"]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item[data-value="1.2"]::before {
+  content: '1.2';
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value="1.5"]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item[data-value="1.5"]::before {
+  content: '1.5';
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value="2.0"]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item[data-value="2.0"]::before {
+  content: '2.0';
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value="2.5"]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item[data-value="2.5"]::before {
+  content: '2.5';
+}
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value="3.0"]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item[data-value="3.0"]::before {
+  content: '3.0';
+}
+
+/* Custom Fonts Dropdown UI & Width */
+.ql-snow .ql-picker.ql-font {
+  width: 140px;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label:not([data-value])::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item:not([data-value])::before {
+  content: 'Standard Font';
+  font-family: Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Helvetica"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Helvetica"]::before {
+  content: 'Helvetica';
+  font-family: 'Helvetica', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Arial"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Arial"]::before {
+  content: 'Arial';
+  font-family: 'Arial', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Times New Roman"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Times New Roman"]::before {
+  content: 'Times New Roman';
+  font-family: 'Times New Roman', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Courier New"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Courier New"]::before {
+  content: 'Courier New';
+  font-family: 'Courier New', monospace;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Verdana"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Verdana"]::before {
+  content: 'Verdana';
+  font-family: 'Verdana', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Georgia"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Georgia"]::before {
+  content: 'Georgia';
+  font-family: 'Georgia', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Trebuchet MS"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Trebuchet MS"]::before {
+  content: 'Trebuchet MS';
+  font-family: 'Trebuchet MS', sans-serif;
+}
