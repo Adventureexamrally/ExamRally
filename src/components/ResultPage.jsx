@@ -385,7 +385,7 @@ const ResultPage = () => {
                         {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
-                        {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+                        {sect.s_accuracy != null && !isNaN(Number(sect.s_accuracy)) ? `${Number(sect.s_accuracy).toFixed(2)}%` : (sect.Attempted > 0 ? `${((sect.correct / sect.Attempted) * 100).toFixed(2)}%` : '0.00%')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>
@@ -433,7 +433,7 @@ const ResultPage = () => {
                           {Math.floor(sect.timeTaken / 60)}m {sect.timeTaken % 60}s
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">
-                          {typeof sect.s_accuracy === 'number' ? `${sect.s_accuracy.toFixed(2)}%` : 'N/A'}
+                          {sect.s_accuracy != null && !isNaN(Number(sect.s_accuracy)) ? `${Number(sect.s_accuracy).toFixed(2)}%` : (sect.Attempted > 0 ? `${((sect.correct / sect.Attempted) * 100).toFixed(2)}%` : '0.00%')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.rank}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{sect.percentile}%</td>

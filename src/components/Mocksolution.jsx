@@ -251,19 +251,8 @@ const Mocksolution = () => {
 
     // Function to handle toggle change
     const handleToggleChange = () => {
-        console.error("Hello");
-
         // Toggle the state
         setIsToggled(!isToggled);
-
-        // Reset to the first question (starting from the first section and question)
-        // if (examData && examData.section && examData.section.length > 0) {
-        // Set the current section to the first section
-        setCurrentSectionIndex(0);
-
-        // Calculate the starting question index (first question of the first section)
-        const startingIndex = clickedQuestionIndex; // First question of the first section
-        setClickedQuestionIndex(startingIndex);
 
         // Optionally, reset other states if needed
         setCheck(null);    // Reset any selected question
@@ -274,10 +263,7 @@ const Mocksolution = () => {
         setMarkedForReview([]); // Clear marked for review
         setAnsmarkforrev([]); // Clear answered and marked for review
         setQuestionTimes({});
-        setSelectedOptions([]); // Clear question times
-        // }
-
-        // You can add any additional logic here (e.g., start the timer, etc.)
+        setSelectedOptions([]); // Clear selected options
     };
 
 
