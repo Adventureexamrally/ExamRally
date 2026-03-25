@@ -17,6 +17,7 @@ const PdfCourse = () => {
     const [ad, setAD] = useState([])
     const [seo, setSeo] = useState([])
     const [alldata, setAlldata] = useState([]);
+    const [isFetchingData, setIsFetchingData] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [resultData, setResultData] = useState(null);
     const [AllExamsName, setAllExamsName] = useState([]);
@@ -63,28 +64,48 @@ const PdfCourse = () => {
     const pdfResults = useSelector((state) => state.user.pdfResults);
 
     useEffect(() => {
-        run(); // Step 1: only fetch and set alldata here
+        runMeta(); // Fetch exams list, SEO, ads (once)
     }, [level]);
 
-    const run = async () => {
+    // Re-fetch PDF courses whenever year/month/exam changes (backend-driven)
+    useEffect(() => {
+        if (year === null || month === null) return;
+        fetchCourses();
+    }, [year, month, selectedExam, level]);
+
+    const runMeta = async () => {
         try {
-            const [coursesRes, examsRes, seoRes, adRes] = await Promise.all([
-                Api.get(`pdf-Course/courses`),
+            const [examsRes, seoRes, adRes] = await Promise.all([
                 Api.get("/pdf-Course/Exams").catch(() => ({ data: [] })),
                 Api.get(`/get-Specific-page/pdf-course`).catch(() => ({ data: [] })),
                 Api.get(`/blog-Ad/getbypage/pdf-course`).catch(() => ({ data: [] }))
             ]);
-
-            if (coursesRes?.data) {
-                const filteredData = coursesRes.data.filter(item => item.exam_level?.toLowerCase() === level.toLowerCase());
-                setAlldata(filteredData);
-            }
-
             setAllExamsName(examsRes?.data || []);
             setSeo(seoRes?.data || []);
             setAD(adRes?.data || []);
         } catch (error) {
-            console.error("Error fetching page data:", error);
+            console.error("Error fetching meta data:", error);
+        }
+    };
+
+    const fetchCourses = async () => {
+        try {
+            setIsFetchingData(true);
+            const params = new URLSearchParams();
+            if (year) params.append('year', year);
+            if (month !== null && month !== undefined) params.append('month', month);
+            if (selectedExam) params.append('examName', selectedExam);
+            const coursesRes = await Api.get(`pdf-Course/courses/filter?${params.toString()}`);
+            if (coursesRes?.data) {
+                const filtered = coursesRes.data.filter(item =>
+                    item.exam_level?.toLowerCase() === level.toLowerCase()
+                );
+                setAlldata(filtered);
+            }
+        } catch (error) {
+            console.error("Error fetching courses:", error);
+        } finally {
+            setIsFetchingData(false);
         }
     };
 
@@ -161,6 +182,13 @@ const PdfCourse = () => {
         'July', 'August', 'September', 'October', 'November', 'December'
     ], []);
 
+    // FREE day = day 1, unless the 1st is a Sunday (no releases on Sunday) → day 2
+    const freeDay = useMemo(() => {
+        if (year === null || month === null) return 1;
+        const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Sunday
+        return firstDayOfWeek === 0 ? 2 : 1;
+    }, [year, month]);
+
     // Memoized date formatter
     const formatDateToYMD = useCallback((dateString) => {
         const date = new Date(dateString);
@@ -171,23 +199,10 @@ const PdfCourse = () => {
         };
     }, []);
 
-    // Memoized filtered PDFs
+    // filteredPdfs: alldata is already filtered by backend, just sort
     const filteredPdfs = useMemo(() => {
-        return alldata.filter((pdf) => {
-            if (!pdf.examName || !pdf.date) return false;
-
-            const { year: pdfYear, month: pdfMonth } = formatDateToYMD(pdf.date);
-            const matchesYear = pdfYear === year;
-            const matchesMonth = pdfMonth === month;
-            const matchesExam = selectedExam && pdf.examName.toLowerCase() === selectedExam.toLowerCase();
-
-            if (selectedExam) {
-                return matchesExam && matchesYear;
-            }
-
-            return matchesYear && matchesMonth;
-        }).sort((a, b) => new Date(a.date) - new Date(b.date));
-    }, [alldata, year, month, selectedExam, formatDateToYMD]);
+        return [...alldata].sort((a, b) => new Date(a.date) - new Date(b.date));
+    }, [alldata]);
 
 
     useEffect(() => {
@@ -472,7 +487,7 @@ const PdfCourse = () => {
                                                     {week.map((day, dIdx) => {
                                                         const isToday = utcNow && day === utcNow.getDate() && month === utcNow.getMonth() && year === utcNow.getFullYear();
                                                         const isSelected = day === selectedDate;
-                                                        const isFreeDay = day === 1 || isfree;
+                                                        const isFreeDay = day === freeDay || isfree;
                                                         if (!day) return <div key={dIdx} className="h-8" />;
                                                         return (
                                                             <button
@@ -545,13 +560,21 @@ const PdfCourse = () => {
 
                                     {/* PDF list */}
                                     <div>
-                                {filteredPdfs.length === 0 ? (
-                                    <div className="text-center py-20 col-span-full">
-                                        <div className="text-6xl mb-4"><FaFilePdf /></div>
-                                        <p className="text-slate-400 text-xl font-bold">No PDFs found for this selection</p>
-                                        <p className="text-slate-300 text-sm mt-2">Try selecting a different month or exam</p>
-                                    </div>
-                                ) : (
+                                        {isFetchingData ? (
+                                            <div className="flex items-center justify-center py-20 gap-3">
+                                                <svg className="animate-spin h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                                </svg>
+                                                <span className="text-slate-500 font-semibold text-sm">Loading exams…</span>
+                                            </div>
+                                        ) : filteredPdfs.length === 0 ? (
+                                            <div className="text-center flex flex-col items-center justify-center  py-20 col-span-full">
+                                                <div className="text-6xl mb-4"><FaFilePdf /></div>
+                                                <p className="text-slate-400 text-xl font-bold">No PDFs found for this selection</p>
+                                                <p className="text-slate-300 text-sm mt-2">Try selecting a different year, month or exam</p>
+                                            </div>
+                                        ) : (
                                     Object.entries(groupedPdfs).map(([dateKey, pdfs]) => {
                                         const [y, m, d] = dateKey.split('-');
                                         const dateStr = new Date(y, m, d).toISOString();
@@ -562,7 +585,7 @@ const PdfCourse = () => {
                                                     <span className="text-green-600"><FaCalendar /></span>
                                                     {formatPrettyDate(dateStr)}
                                                 </h3>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4">
                                                     {pdfs.map((pdf, index) => {
                                                         const { year: pdfYear, month: pdfMonth, day: pdfDay } = formatDateToYMD(pdf.date);
                                                         const key = formatKey(pdfYear, pdfMonth, pdfDay);
