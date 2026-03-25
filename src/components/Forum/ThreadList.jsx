@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { UserContext } from '../../context/UserProvider';
 import Api from '../../service/Api';
+import GlobalLoader from '../GlobalLoader';
 
 const ThreadList = () => {
     const { id } = useParams();
@@ -167,12 +168,7 @@ const ThreadList = () => {
         return true;
     });
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#F0F2F5] gap-4">
-            <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400 font-semibold">Loading threads…</p>
-        </div>
-    );
+    if (loading) return <GlobalLoader message="Loading Threads…" sub="Fetching the latest discussions" />;
 
     return (
         <div className="min-h-screen bg-[#F0F2F5] font-inter">

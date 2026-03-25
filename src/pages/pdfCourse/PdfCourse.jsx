@@ -397,164 +397,154 @@ const PdfCourse = () => {
 
                         <div className="max-w-6xl mx-auto">
                             {/* Modern Header */}
-                            <div className="text-center mb-8">
-                                <h2 className="text-4xl md:text-5xl font-black text-slate-800 mb-3 leading-tight">
-                                    365 Days Rally <span className="text-green-600 italic font-serif">PDF Course</span>
+                            <div className="text-center mb-4">
+                                <h2 className="text-3xl md:text-3xl font-bold text-slate-800 mb-3 leading-tight">
+                                    365 Days Rally <span className="">PDF Course</span>
                                 </h2>
                                 <p className="text-slate-500 text-lg font-medium">
                                     {level.charAt(0).toUpperCase() + level.slice(1)} Level Challenge
                                 </p>
                             </div>
 
-                            {/* Year Selector */}
-                            <div className="flex items-center justify-center mb-8 p-6 bg-white rounded-2xl shadow-sm border border-green-100">
-                                <label htmlFor="year" className="text-lg font-bold text-slate-700 mr-4">
-                                    Select Year:
-                                </label>
-                                <input
-                                    type="number"
-                                    id="year"
-                                    name="year"
-                                    min="2000"
-                                    max="2100"
-                                    className="border-2 border-green-200 px-6 py-3 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center w-32 font-bold text-slate-800 shadow-sm"
-                                    placeholder='YYYY'
-                                    value={year}
-                                    onChange={handleYearChange}
-                                />
-                            </div>
+                            {/* ── Full-Width Stacked Layout: Calendar Top | PDFs Below ── */}
+                            <div className="flex flex-col gap-6">
 
-                            <div className="flex flex-col lg:flex-row gap-6">
-                                {/* Month Selection Panel */}
-                                <div className="w-full lg:w-1/4 bg-white p-6 rounded-2xl shadow-sm border border-green-100">
-                                    <h3 className="text-xl font-black mb-6 text-center text-slate-800 pb-3 border-b-2 border-green-100">
-                                        Select Month
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {months.map((monthName, index) => (
-                                            <button
-                                                key={index}
-                                                className={`month-btn p-3 text-center rounded-xl transition-all font-medium ${month === index
-                                                    ? 'bg-green-600 text-white shadow-lg shadow-green-200'
-                                                    : 'bg-slate-50 hover:bg-green-50 text-slate-700 hover:text-green-700'
+                                {/* TOP: Full-Width Calendar */}
+                                <div className="w-full">
+                                    {/* Year + Month selector — centered */}
+                                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-black text-slate-600 whitespace-nowrap">Select Year</span>
+                                            <div className="flex items-center gap-1.5 bg-white border-2 border-green-200 rounded-xl px-3 py-1.5 shadow-sm">
+                                                <button
+                                                    onClick={() => setYear(y => y - 1)}
+                                                    className="w-6 h-6 flex items-center justify-center rounded-lg bg-green-50 hover:bg-green-600 hover:text-white text-green-700 font-black transition-all"
+                                                >‹</button>
+                                                <span className="font-black text-slate-800 text-sm w-12 text-center">{year}</span>
+                                                <button
+                                                    onClick={() => setYear(y => y + 1)}
+                                                    className="w-6 h-6 flex items-center justify-center rounded-lg bg-green-50 hover:bg-green-600 hover:text-white text-green-700 font-black transition-all"
+                                                >›</button>
+                                            </div>
+                                        </div>
+                                        {/* Month pills — full width row */}
+                                        <div className="flex flex-wrap gap-1.5 justify-center">
+                                            {months.map((monthName, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => handleMonthClick(index)}
+                                                    className={`month-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                                        month === index
+                                                            ? 'bg-green-600 text-white shadow-md shadow-green-200'
+                                                            : 'bg-white text-slate-600 hover:bg-green-50 hover:text-green-700 border border-slate-100'
                                                     }`}
-                                                onClick={() => handleMonthClick(index)}
-                                            >
-                                                {monthName}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Calendar Panel */}
-                                <div className="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-green-100">
-                                    <div className="text-xl md:text-2xl font-black text-center mb-6 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl text-white shadow-md">
-                                        <FaFilePdf className="inline-block mr-2" /> Each Month's First Day is Free!
-                                    </div>
-
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full table-fixed text-center border-collapse">
-                                            <thead>
-                                                <tr className="bg-slate-800">
-                                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                                                        <th
-                                                            key={index}
-                                                            className="p-4 border border-slate-700 font-bold text-sm md:text-base text-white"
-                                                        >
-                                                            {day}
-                                                        </th>
-                                                    ))}
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white">
-                                                {weeks.map((week, weekIndex) => (
-                                                    <tr key={weekIndex}>
-                                                        {week.map((day, dayIndex) => (
-                                                            day == 1 || isfree ? (
-                                                                <td
-                                                                    key={dayIndex}
-                                                                    className={`p-3 md:p-4 border border-slate-100 calendar-day cursor-pointer ${day === selectedDate
-                                                                        ? 'selected-day bg-green-600 text-white rounded-xl scale-105 shadow-lg'
-                                                                        : 'animate-blink bg-green-100 text-green-800 font-bold rounded-lg hover:scale-105'
-                                                                        }`}
-                                                                    onClick={() => day && handleDateClick(day)}
-                                                                >
-                                                                    <div className="flex flex-col items-center justify-center h-full">
-                                                                        <span className="text-sm md:text-base font-black">{day}</span>
-                                                                        <span className="text-xs font-bold mt-1">FREE</span>
-                                                                    </div>
-                                                                </td>
-                                                            ) : (
-                                                                <td
-                                                                    key={dayIndex}
-                                                                    className={`p-3 md:p-4 border border-slate-100 calendar-day ${!day ? 'empty-day' : ''} ${day === selectedDate
-                                                                        ? 'selected-day bg-green-600 text-white rounded-xl scale-105 shadow-lg font-bold'
-                                                                        : day
-                                                                            ? 'hover:bg-green-50 cursor-pointer text-slate-700 font-medium hover:scale-105 transition-transform'
-                                                                            : 'bg-slate-50'
-                                                                        }`}
-                                                                    onClick={() => day && handleDateClick(day)}
-                                                                >
-                                                                    {day || ''}
-                                                                </td>
-                                                            )
-                                                        ))}
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    {selectedDate && (
-                                        <div className="mt-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
-                                            <p className="text-center text-green-800 font-bold text-lg">
-                                                <FaCalendar className="inline-block mr-2" /> Selected: {`${year} ${months[month]} ${selectedDate}`}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-
-
-
-                        <div className="p-4">
-
-                            <div className="flex justify-end mb-8">
-                                <div className="relative w-full max-w-md">
-                                    <label className="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">
-                                        <FaFilePdf className="inline-block " /> Filter by Exam
-                                    </label>
-                                    <div className="relative">
-                                        <select
-                                            name="examName"
-                                            value={selectedExam}
-                                            onChange={(e) => setSelectedExam(e.target.value)}
-                                            className="appearance-none w-full pl-4 pr-10 py-3 text-base font-medium border-2 border-green-100 rounded-xl bg-white shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-                                        >
-                                            <option value="">All Exams</option>
-                                            {AllExamsName?.map((Exname) => (
-                                                <option key={Exname._id} value={Exname.Exam}>
-                                                    {Exname.Exam}
-                                                </option>
+                                                >
+                                                    {monthName.slice(0, 3)}
+                                                </button>
                                             ))}
-                                        </select>
-                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-green-600">
-                                            <svg
-                                                className="w-5 h-5 fill-current"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                            >
-                                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                            </svg>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div>
+
+                                    {/* Calendar card — centered, max-width */}
+                                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden">
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-500">
+                                            <div className="flex items-center gap-2 text-white">
+                                                <FaCalendar className="text-sm" />
+                                                <span className="font-black text-sm">{months[month]} {year}</span>
+                                            </div>
+                                            <span className="text-green-100 text-[9px] font-bold uppercase tracking-wide">
+                                                <FaFilePdf className="inline mr-0.5" /> 1st FREE
+                                            </span>
+                                        </div>
+
+                                        {/* Weekday headers */}
+                                        <div className="grid grid-cols-7 bg-slate-800">
+                                            {['S','M','T','W','T','F','S'].map((d, i) => (
+                                                <div key={i} className="py-1.5 text-center text-[9px] font-black text-white">{d}</div>
+                                            ))}
+                                        </div>
+
+                                        {/* Calendar grid */}
+                                        <div className="p-1.5">
+                                            {weeks.map((week, wIdx) => (
+                                                <div key={wIdx} className="grid grid-cols-7 gap-0.5 mb-0.5">
+                                                    {week.map((day, dIdx) => {
+                                                        const isToday = utcNow && day === utcNow.getDate() && month === utcNow.getMonth() && year === utcNow.getFullYear();
+                                                        const isSelected = day === selectedDate;
+                                                        const isFreeDay = day === 1 || isfree;
+                                                        if (!day) return <div key={dIdx} className="h-8" />;
+                                                        return (
+                                                            <button
+                                                                key={dIdx}
+                                                                onClick={() => handleDateClick(day)}
+                                                                className={`relative h-8 w-full flex flex-col items-center justify-center rounded-lg text-[11px] font-bold transition-all calendar-day
+                                                                    ${isSelected ? 'bg-green-600 text-white shadow-md scale-105'
+                                                                      : isFreeDay ? 'animate-blink bg-green-100 text-green-800 hover:scale-105'
+                                                                      : 'text-slate-700 hover:bg-green-50 hover:text-green-700'
+                                                                    }`}
+                                                            >
+                                                                <span className="leading-none">{day}</span>
+                                                                {isFreeDay && !isSelected && (
+                                                                    <span className="text-[6px] font-black leading-none text-green-700">FREE</span>
+                                                                )}
+                                                                {isToday && !isSelected && (
+                                                                    <span className="absolute inset-0 rounded-lg ring-2 ring-offset-1 ring-green-500 pointer-events-none" />
+                                                                )}
+                                                                {isToday && isSelected && (
+                                                                    <span className="absolute inset-0 rounded-lg ring-2 ring-offset-1 ring-white pointer-events-none" />
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Selected date chip */}
+                                        {selectedDate && (
+                                            <div className="mx-3 mb-3 px-3 py-2 bg-green-50 rounded-xl border border-green-200 flex items-center justify-between">
+                                                <span className="text-green-800 font-bold text-xs">
+                                                    <FaCalendar className="inline mr-1.5 text-green-600" />
+                                                    {months[month]} {selectedDate}
+                                                </span>
+                                                <button onClick={() => setSelectedDate(null)} className="text-[10px] text-green-600 font-black hover:text-green-800">✕</button>
+                                            </div>
+                                        )}
+                                    </div> {/* end calendar card */}
+                                </div> {/* end TOP calendar */}
+
+                                {/* BOTTOM: PDF Content — full width */}
+                                <div className="w-full">
+                                    {/* Filter by Exam */}
+                                    <div className="mb-3">
+                                        <label className="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">
+                                            <FaFilePdf className="inline-block mr-1" /> Filter by Exam
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                name="examName"
+                                                value={selectedExam}
+                                                onChange={(e) => setSelectedExam(e.target.value)}
+                                                className="appearance-none w-full pl-4 pr-10 py-3 text-base font-medium border-2 border-green-100 rounded-xl bg-white shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+                                            >
+                                                <option value="">All Exams</option>
+                                                {AllExamsName?.map((Exname) => (
+                                                    <option key={Exname._id} value={Exname.Exam}>
+                                                        {Exname.Exam}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-green-600">
+                                                <svg className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* PDF list */}
+                                    <div>
                                 {filteredPdfs.length === 0 ? (
                                     <div className="text-center py-20 col-span-full">
                                         <div className="text-6xl mb-4"><FaFilePdf /></div>
@@ -572,238 +562,142 @@ const PdfCourse = () => {
                                                     <span className="text-green-600"><FaCalendar /></span>
                                                     {formatPrettyDate(dateStr)}
                                                 </h3>
-                                                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                                                     {pdfs.map((pdf, index) => {
                                                         const { year: pdfYear, month: pdfMonth, day: pdfDay } = formatDateToYMD(pdf.date);
                                                         const key = formatKey(pdfYear, pdfMonth, pdfDay);
-
-                                                        return (
-                                                            <div
+                                                        return (<div
                                                                 key={index}
                                                                 ref={(el) => (pdfRefs.current[key] = el)}
-                                                                className={`border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-lg hover:border-green-300 transition-all duration-300 bg-white ${selectedDate === pdfDay ? 'ring-2 ring-green-500 border-green-400' : ''
-                                                                    }`}
+                                                                className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-green-200 ${selectedDate === pdfDay ? 'ring-2 ring-green-500' : ''}`}
                                                             >
-                                                                {/* Exam Name at Top */}
-                                                                {/* Exam Name Chip */}
-                                                                <div className="flex justify-end mb-2">
-                                                                    <div className="inline-flex items-center gap-1 bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-300 rounded-full px-3 py-1">
-                                                                        <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                                                                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">
+                                                                {/* Top accent bar */}
+                                                                <div className="h-1 w-full bg-gradient-to-r from-green-400 to-emerald-500" />
+
+                                                                <div className="p-4">
+                                                                    {/* Exam name chip */}
+                                                                    <div className="flex justify-between items-start mb-3">
+                                                                        <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                                                                            <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
                                                                             {pdf.examName}
                                                                         </span>
                                                                     </div>
-                                                                </div>
 
-                                                                {/* Subject Header */}
-                                                                <h2 className="text-sm font-bold mb-3 text-center py-2 text-black border-0 border-black shadow-md hover:shadow-lg hover:border-green-300 transition-all duration-300">
-                                                                    {pdf.subject === "Quants" ? "Quantitative Aptitude" : pdf.subject === "Reasoning" ? "Reasoning Ability" : pdf.subject === "English" ? "English Language" : pdf.subject}
-                                                                </h2>
+                                                                    {/* Subject */}
+                                                                    <h2 className="text-sm font-black text-slate-800 mb-3 leading-tight">
+                                                                        {pdf.subject === "Quants" ? "Quantitative Aptitude"
+                                                                            : pdf.subject === "Reasoning" ? "Reasoning Ability"
+                                                                            : pdf.subject === "English" ? "English Language"
+                                                                            : pdf.subject}
+                                                                    </h2>
 
-                                                                {/* Exam Details */}
-                                                                <div className="flex justify-around text-xs text-slate-600 mb-3 bg-slate-50 rounded-lg py-2">
-                                                                    <div className="text-center flex flex-col items-center gap-1">
-                                                                        <FaClipboardList className="text-green-600 text-xs" />
-                                                                        <div className="font-bold text-sm text-slate-600">{pdf.questions}Q</div>
+                                                                    {/* Stats row */}
+                                                                    <div className="flex items-center gap-2 mb-3">
+                                                                        <span className="flex items-center gap-1 bg-green-50 text-green-700 rounded-lg px-2 py-1 text-xs font-bold flex-1 justify-center">
+                                                                            <FaClipboardList className="text-[10px]" />{pdf.questions}Q
+                                                                        </span>
+                                                                        <span className="flex items-center gap-1 bg-blue-50 text-blue-700 rounded-lg px-2 py-1 text-xs font-bold flex-1 justify-center">
+                                                                            <FaClock className="text-[10px]" />{pdf.time}M
+                                                                        </span>
+                                                                        <span className="flex items-center gap-1 bg-amber-50 text-amber-700 rounded-lg px-2 py-1 text-xs font-bold flex-1 justify-center">
+                                                                            <FaAward className="text-[10px]" />{pdf.marks}
+                                                                        </span>
                                                                     </div>
-                                                                    <div className="text-center flex flex-col items-center gap-1">
-                                                                        <FaClock className="text-blue-600 text-xs" />
-                                                                        <div className="font-bold text-sm text-slate-600">{pdf.time}Min</div>
-                                                                    </div>
-                                                                    <div className="text-center flex flex-col items-center gap-1">
-                                                                        <FaAward className="text-amber-600 text-xs" />
-                                                                        <div className="font-bold text-sm text-slate-600">{pdf.marks}Mrk</div>
-                                                                    </div>
-                                                                </div>
 
-                                                                {/* Schedule */}
-                                                                {openScheduleId !== pdf._id && (
-                                                                    <div className="text-center mb-3">
+                                                                    {/* Assessment Topics */}
+                                                                    {openScheduleId !== pdf._id && (
                                                                         <button
                                                                             onClick={() => toggleSchedule(pdf._id)}
-                                                                            className="w-full px-3 py-2 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-600 hover:text-white transition-all border border-green-200"
+                                                                            className="w-full px-3 py-1.5 bg-green-50 text-green-700 rounded-xl text-xs font-bold hover:bg-green-600 hover:text-white transition-all border border-green-100 mb-3 flex items-center justify-center gap-1.5"
                                                                         >
-                                                                            Assessment Topics
+                                                                            <FaClipboardList className="text-[10px]" /> Assessment Topics
                                                                         </button>
-                                                                    </div>
-                                                                )}
-
-                                                                {openScheduleId === pdf._id && (
-                                                                    <div className="text-xs text-slate-700 mb-3">
-                                                                        <div className="bg-green-50 p-3 rounded-lg shadow-inner border border-green-200">
-                                                                            <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
-                                                                        </div>
-                                                                        <button
-                                                                            onClick={() => toggleSchedule(pdf._id)}
-                                                                            className="w-full mt-2 px-3 py-1.5 text-green-700 font-bold hover:underline text-xs"
-                                                                        >
-                                                                            Hide
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                                {/* Language Selector - Show only if content is available */}
-                                                                {(() => {
-                                                                    const examId = pdf.exams[0]?._id;
-                                                                    const exam = pdf.exams[0];
-
-                                                                    // Only show language selector if exam is accessible
-                                                                    if (exam?.result_type === "paid" && !hasActiveSubscription()) return null;
-                                                                    if (!hasActiveSubscription() && exam?.live_date && new Date(exam.live_date) > utcNow) return null;
-                                                                    if (hasActiveSubscription() && exam?.live_date && new Date(exam.live_date) > utcNow) return null;
-
-                                                                    // Check which languages are available
-                                                                    const hasEnglish = exam?.english_status;
-                                                                    const hasTamil = exam?.tamil_status;
-                                                                    const hasHindi = exam?.hindi_status;
-
-                                                                    // Count available languages
-                                                                    const availableLanguages = [hasEnglish, hasTamil, hasHindi].filter(Boolean).length;
-
-                                                                    // Only show selector if more than one language is available
-                                                                    if (availableLanguages <= 1) return null;
-
-                                                                    const currentLang = selectedLanguage[examId] || 'english';
-
-                                                                    return (
-                                                                        <div className="mb-3 pb-3 border-b border-gray-200">
-                                                                            <p className="text-xs text-gray-600 mb-2 text-center font-medium">PDF Language:</p>
-                                                                            <div className="flex gap-2 justify-center">
-                                                                                {hasEnglish && (
-                                                                                    <button
-                                                                                        onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'english' }))}
-                                                                                        className={`text-xs px-3 py-1 rounded-full transition-all ${currentLang === 'english'
-                                                                                            ? 'bg-blue-600 text-white'
-                                                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                                                            }`}
-                                                                                    >
-                                                                                        English
-                                                                                    </button>
-                                                                                )}
-                                                                                {hasTamil && (
-                                                                                    <button
-                                                                                        onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'tamil' }))}
-                                                                                        className={`text-xs px-3 py-1 rounded-full transition-all ${currentLang === 'tamil'
-                                                                                            ? 'bg-blue-600 text-white'
-                                                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                                                            }`}
-                                                                                    >
-                                                                                        தமிழ்
-                                                                                    </button>
-                                                                                )}
-                                                                                {hasHindi && (
-                                                                                    <button
-                                                                                        onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'hindi' }))}
-                                                                                        className={`text-xs px-3 py-1 rounded-full transition-all ${currentLang === 'hindi'
-                                                                                            ? 'bg-blue-600 text-white'
-                                                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                                                            }`}
-                                                                                    >
-                                                                                        हिंदी
-                                                                                    </button>
-                                                                                )}
+                                                                    )}
+                                                                    {openScheduleId === pdf._id && (
+                                                                        <div className="mb-3">
+                                                                            <div className="text-xs text-slate-700 bg-green-50 p-2.5 rounded-xl border border-green-100 mb-1.5">
+                                                                                <p dangerouslySetInnerHTML={{ __html: pdf.schedule }} />
                                                                             </div>
+                                                                            <button onClick={() => toggleSchedule(pdf._id)} className="w-full text-xs text-green-700 font-bold hover:underline">Hide ↑</button>
                                                                         </div>
-                                                                    );
-                                                                })()}
+                                                                    )}
 
-                                                                {/* Action Buttons */}
-                                                                <div className="flex justify-between space-x-2">
+                                                                    {/* Language selector */}
+                                                                    {(() => {
+                                                                        const examId = pdf.exams[0]?._id;
+                                                                        const exam = pdf.exams[0];
+                                                                        if (exam?.result_type === "paid" && !hasActiveSubscription()) return null;
+                                                                        if (!hasActiveSubscription() && exam?.live_date && new Date(exam.live_date) > utcNow) return null;
+                                                                        if (hasActiveSubscription() && exam?.live_date && new Date(exam.live_date) > utcNow) return null;
+                                                                        const hasEnglish = exam?.english_status;
+                                                                        const hasTamil = exam?.tamil_status;
+                                                                        const hasHindi = exam?.hindi_status;
+                                                                        const availableLanguages = [hasEnglish, hasTamil, hasHindi].filter(Boolean).length;
+                                                                        if (availableLanguages <= 1) return null;
+                                                                        const currentLang = selectedLanguage[examId] || 'english';
+                                                                        return (
+                                                                            <div className="flex gap-1.5 justify-center mb-3">
+                                                                                {hasEnglish && <button onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'english' }))} className={`text-[10px] px-2.5 py-1 rounded-full font-bold transition-all ${currentLang === 'english' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>EN</button>}
+                                                                                {hasTamil && <button onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'tamil' }))} className={`text-[10px] px-2.5 py-1 rounded-full font-bold transition-all ${currentLang === 'tamil' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>தமிழ்</button>}
+                                                                                {hasHindi && <button onClick={() => setSelectedLanguage(prev => ({ ...prev, [examId]: 'hindi' }))} className={`text-[10px] px-2.5 py-1 rounded-full font-bold transition-all ${currentLang === 'hindi' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>हिंदी</button>}
+                                                                            </div>
+                                                                        );
+                                                                    })()}
+
+                                                                    {/* Action Buttons — always side by side */}
                                                                     {(() => {
                                                                         const examId = pdf.exams[0]?._id;
                                                                         const id = pdf.exams[0]?._id;
 
-                                                                        // Show Loading State while fetching user details
                                                                         if (isFetchingUser) {
-                                                                            return (
-                                                                                <div className="flex-1 flex items-center justify-center font-semibold gap-1 text-slate-500 bg-slate-100 px-4 py-2 rounded animate-pulse">
-                                                                                    Checking Access...
-                                                                                </div>
-                                                                            );
+                                                                            return <div className="w-full py-2 text-center text-xs text-slate-400 animate-pulse font-medium">Checking Access…</div>;
                                                                         }
-
-                                                                        // 🔒 LOCKED: If content is paid & user has no subscription
                                                                         if (pdf.exams[0]?.result_type === "paid" && !hasActiveSubscription()) {
                                                                             return (
-                                                                                <div
-                                                                                    onClick={() => navigate('/pdf-course#pdf-plan')}
-                                                                                    className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded cursor-pointer hover:bg-red-50 transition-colors"
-                                                                                >
-                                                                                    <IoMdLock /> Locked
+                                                                                <div onClick={() => navigate('/pdf-course#pdf-plan')} className="w-full flex items-center justify-center gap-1.5 text-red-500 border border-red-300 rounded-xl py-2 text-xs font-bold cursor-pointer hover:bg-red-50 transition-colors">
+                                                                                    <IoMdLock /> Locked — Subscribe
                                                                                 </div>
                                                                             );
                                                                         }
-
-                                                                        // 🔒 LOCKED: Even if content is free, if live date is in the future, show "Locked"
                                                                         if (!hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
                                                                             return (
-                                                                                <div
-                                                                                    onClick={() => navigate('/pdf-course#pdf-plan')}
-                                                                                    className="flex-1 flex items-center justify-center font-semibold gap-1 text-red-500 border-1 border-red-500 px-4 py-2 rounded cursor-pointer hover:bg-red-50 transition-colors"
-                                                                                >
+                                                                                <div onClick={() => navigate('/pdf-course#pdf-plan')} className="w-full flex items-center justify-center gap-1.5 text-red-500 border border-red-300 rounded-xl py-2 text-xs font-bold cursor-pointer hover:bg-red-50 transition-colors">
                                                                                     <IoMdLock /> Locked
                                                                                 </div>
                                                                             );
                                                                         }
-
-                                                                        // ⏳ COMING SOON: Only if subscribed AND live date is in future
                                                                         if (hasActiveSubscription() && pdf.exams[0]?.live_date && new Date(pdf.exams[0].live_date) > utcNow) {
-                                                                            return (
-                                                                                <div className="flex-1 text-red-500 font-semibold py-2 px-4 border-1 border-red-500 rounded text-center">
-                                                                                    Coming Soon
-                                                                                </div>
-                                                                            );
+                                                                            return <div className="w-full py-2 text-center text-xs font-bold text-orange-500 border border-orange-200 rounded-xl bg-orange-50 flex items-center justify-center gap-1.5"><FaClock className="text-orange-400" /> Coming Soon</div>;
                                                                         }
 
-                                                                        // ✅ AVAILABLE: Show both View PDF and action button
+                                                                        const status = pdfResults?.[examId]?.status;
                                                                         return (
-                                                                            <>
+                                                                            <div className="flex gap-2">
                                                                                 <button
                                                                                     disabled={generatingPdf[examId]}
                                                                                     onClick={() => handleViewPdf(pdf)}
-                                                                                    className={`pdf-button flex-1 flex items-center justify-center gap-2 text-black border-0 border-black shadow-sm hover:shadow-md py-2 px-3 rounded-md text-sm font-medium transition-all duration-300 ${generatingPdf[examId] ? "opacity-50 cursor-not-allowed" : ""
-                                                                                        }`}
+                                                                                    className={`flex-1 flex items-center justify-center gap-1 bg-red-50 text-red-600 border border-red-200 hover:bg-red-500 hover:text-white rounded-xl py-2 text-xs font-bold transition-all ${generatingPdf[examId] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                                                 >
-                                                                                    {generatingPdf[examId] ? (
-                                                                                        <>
-                                                                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                                                            </svg>
-                                                                                            <span>Generating...</span>
-                                                                                        </>
-                                                                                    ) : (
-                                                                                        <>
-                                                                                            <FaFilePdf className='text-red-500 transition-colors duration-300' />
-                                                                                            <span className="transition-colors duration-300">View PDF</span>
-                                                                                        </>
-                                                                                    )}
+                                                                                    {generatingPdf[examId]
+                                                                                        ? <><svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> PDF</>
+                                                                                        : <><FaFilePdf className="text-[10px]" /> PDF</>
+                                                                                    }
                                                                                 </button>
-
                                                                                 <button
-                                                                                    className={`flex-1 text-center py-2 px-3  shadow-sm hover:shadow-md rounded-md text-sm font-medium transition-colors ${pdfResults?.[examId]?.status === "completed"
-                                                                                        ? " hover:text-white  text-blue-700 border-1  border-blue-500 hover:bg-blue-500"
-                                                                                        : (pdfResults?.[examId]?.status === "paused" || pdfResults?.[examId]?.status === "started")
-                                                                                            ? "text-red-600 border-1 border-red-500 hover:text-white hover:bg-red-500"
-                                                                                            : "text-green-700 border-1 border-green-500 hover:text-white hover:bg-green-600"
-                                                                                        }`}
                                                                                     onClick={() => {
-                                                                                        const results = pdfResults?.[examId];
-                                                                                        if (results?.status === "completed") {
-                                                                                            openNewWindow(`/pdf/result/${id}/${user._id}`);
-                                                                                        } else if (results?.status === "paused" || results?.status === "started") {
-                                                                                            openNewWindow(`/pdf/mocktest/${id}/${user._id}`);
-                                                                                        } else {
-                                                                                            openNewWindow(`/pdf/instruction/${id}/${user._id}`);
-                                                                                        }
+                                                                                        if (status === "completed") openNewWindow(`/pdf/result/${id}/${user._id}`);
+                                                                                        else if (status === "paused" || status === "started") openNewWindow(`/pdf/mocktest/${id}/${user._id}`);
+                                                                                        else openNewWindow(`/pdf/instruction/${id}/${user._id}`);
                                                                                     }}
+                                                                                    className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
+                                                                                        status === "completed" ? 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-500 hover:text-white'
+                                                                                        : (status === "paused" || status === "started") ? 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-500 hover:text-white'
+                                                                                        : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white'
+                                                                                    }`}
                                                                                 >
-                                                                                    {pdfResults?.[examId]?.status === "completed"
-                                                                                        ? "View Result"
-                                                                                        : (pdfResults?.[examId]?.status === "paused" || pdfResults?.[examId]?.status === "started")
-                                                                                            ? "Resume"
-                                                                                            : "Take Test"}
+                                                                                    {status === "completed" ? "Result" : (status === "paused" || status === "started") ? "Resume" : "Take Test"}
                                                                                 </button>
-                                                                            </>
+                                                                            </div>
                                                                         );
                                                                     })()}
                                                                 </div>
@@ -815,11 +709,12 @@ const PdfCourse = () => {
                                         );
                                     })
                                 )}
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+                            </div> {/* end PDF list */}
+                                </div> {/* end BOTTOM section */}
+                            </div> {/* end flex-col stacked */}
+                        </div> {/* end max-w-6xl */}
+                    </div> {/* end p-8 */}
+                </div> {/* end main card */}
                 {ad.length > 0 &&
                     <div className="w-1/5 hidden md:block">
                         <div>

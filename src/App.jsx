@@ -75,7 +75,7 @@ const HomeLiveSolution = lazy(() => import("./components/LiveMockTest/HomeLiveSo
 const HomeLiveResultPage = lazy(() => import("./components/LiveMockTest/HomeLiveResult2"));
 const Subvideocourse = lazy(() => import("./pages/Subvideocourse"))
 const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
-const ForumMain = lazy(() => import("./components/Forum/ForumMain"));
+const ForumRedirect = lazy(() => import("./components/Forum/ForumRedirect"));
 const ThreadList = lazy(() => import("./components/Forum/ThreadList"));
 const ThreadView = lazy(() => import("./components/Forum/ThreadView"));
 // Constants
@@ -354,7 +354,7 @@ function MainApp() {
     { path: "/videoplayer/:courseId/:topicName", element: <VideoPlayerPage /> },
     { path: "/All-Packages", element: <Packages /> },
     { path: "/homelivetest", element: <HomeLivetest /> },
-    { path: "/forum", element: <ForumMain /> },
+    { path: "/forum", element: <ForumRedirect /> },
     { path: "/forum/category/:id", element: <ThreadList /> },
     { path: "/forum/thread/:id", element: <ThreadView /> },
     { path: "*", element: <NotFound /> },

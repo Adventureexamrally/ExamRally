@@ -11,6 +11,7 @@ import { UserContext } from '../../context/UserProvider';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchThreadDetails, createPost, likeThread, likePost, deletePost, selectCurrentThread, selectPosts, selectThreadStatus, clearCurrentThread, fetchForumStats, selectForumStats, updateThread, deleteThread, updatePost } from '../../slice/forumSlice';
 import Api from '../../service/Api';
+import GlobalLoader from '../GlobalLoader';
 
 const REPORT_REASONS = [
     'Spam or self-promotion',
@@ -192,12 +193,7 @@ const ThreadView = () => {
         }
     };
 
-    if (threadStatus === 'loading' || threadStatus === 'idle') return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#F0F2F5] gap-4">
-            <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400 font-semibold">Loading discussion…</p>
-        </div>
-    );
+    if (threadStatus === 'loading' || threadStatus === 'idle') return <GlobalLoader message="Loading Discussion…" sub="Getting all the replies ready" />;
 
     if (!thread || threadStatus === 'failed') return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#F0F2F5] gap-4">
