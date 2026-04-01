@@ -17,6 +17,7 @@ import { Avatar } from "@mui/material";
 import User from "./User";
 import Api from "../service/Api";
 import CustomUserMenu from "./CustomUserButton";
+import googlePlay from "../assets/logo/google-play.png";
 
 const NavBar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -309,7 +310,7 @@ const NavBar = () => {
             className="hidden lg:flex items-center"
           >
             <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
+              src={googlePlay}
               alt="Get it on Google Play"
               className="h-8 w-auto hover:brightness-110 transition-all active:scale-95"
             />

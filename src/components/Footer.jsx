@@ -19,6 +19,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import Api from "../service/Api";
 import { Telegram, YouTube } from "@mui/icons-material";
 import { UserContext } from "../context/UserProvider";
+import googlePlay from "../assets/logo/google-play.png";
 function Footer() {
   const { utcNow } = useContext(UserContext);
   const [contactInfo, setContactInfo] = useState({
@@ -151,7 +152,7 @@ function Footer() {
                   <button className=" text-white rounded hover:transform hover:scale-105 transition duration-300 flex items-center gap-3">
                   
                     <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
+                      src={googlePlay}
                       alt="Get it on Google Play"
                       className="h-10 w-auto"
                     />
