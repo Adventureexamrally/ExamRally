@@ -127,12 +127,20 @@ const Free_pdf = () => {
   return (
     <>
       <Helmet>
-        <title>{seo[0]?.seoData?.title}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
+        <title>{seo[0]?.seoData?.title || "Free PDF Notes for Bank Exams – Download Now | ExamRally"}</title>
+        <meta name="description" content={seo[0]?.seoData?.description || "Download free PDF notes for SBI PO, IBPS PO, Clerk & government exams. Expertly curated study material to score high."} />
+        <meta name="keywords" content={seo[0]?.seoData?.keywords || "free PDF notes, bank exam PDF, SBI PO notes, IBPS study material"} />
+        <link rel="canonical" href={seo[0]?.seoData?.canonical || "https://examrally.in/free-pdf"} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content={seo[0]?.seoData?.canonical || "https://examrally.in/free-pdf"} />
+        <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Free PDF – ExamRally"} />
+        <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Free PDF notes for bank exams."} />
+        <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Free PDF"} />
+        <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Free PDF notes for bank exams."} />
+        <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
       
       <h2 className="text-2xl m-2 font-bold text-center text-green-600">FREE PDF</h2>

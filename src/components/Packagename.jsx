@@ -575,19 +575,20 @@ const Packagename = () => {
       ) : (
         <div className="container mt-2">
           <Helmet>
-            {/* { seo.length > 0 && seo.map((seo)=>(
-                        <> */}
-            <title>{seo[0]?.seoData?.title}</title>
-            <meta name="description" content={seo[0]?.seoData?.description} />
-            <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-            <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-            <meta
-              property="og:description"
-              content={seo[0]?.seoData?.ogDescription}
-            />
-            <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-            {/* </>
-                    ))} */}
+            <title>{seo[0]?.seoData?.title || `${data?.description?.replace(/<[^>]+>/g,'') || 'Mock Test Series'} – ExamRally`}</title>
+            <meta name="description" content={seo[0]?.seoData?.description || "Practice Prelims, Mains & PYQ mock tests for bank and government exams on ExamRally."} />
+            <meta name="keywords" content={seo[0]?.seoData?.keywords || "mock test series, bank exam, SBI PO, IBPS PO, ExamRally"} />
+            <link rel="canonical" href={seo[0]?.seoData?.canonical || `https://examrally.in/top-trending-exams/${id}`} />
+            <meta property="og:type" content="website" />
+            <meta property="og:site_name" content="ExamRally" />
+            <meta property="og:url" content={seo[0]?.seoData?.canonical || `https://examrally.in/top-trending-exams/${id}`} />
+            <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Mock Test – ExamRally"} />
+            <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Prelims, Mains & PYQ mock tests on ExamRally."} />
+            <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Mock Test"} />
+            <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Prelims, Mains & PYQ mock tests on ExamRally."} />
+            <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
           </Helmet>
           <div className="flex flex-col md:flex-row">
             <div className="container w-full md:w-4/5">

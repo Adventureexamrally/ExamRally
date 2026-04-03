@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { Helmet } from 'react-helmet';
 import { FaDesktop,FaFilePdf, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Api from '../../service/Api';
@@ -189,6 +190,22 @@ const PdfCourseHome = () => {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <Helmet>
+        <title>{data?.title?.replace(/<[^>]+>/g, '') || '365 Days PDF Course for Bank Exams – ExamRally'}</title>
+        <meta name="description" content="Access daily PDF mock tests for Prelims & Mains bank exams. Covering SBI PO, IBPS PO, Clerk, RBI with comprehensive study material updated regularly." />
+        <meta name="keywords" content="PDF course, bank exam PDF, 365 days course, SBI PO PDF, IBPS PDF course, daily mock test PDF" />
+        <link rel="canonical" href="https://examrally.in/pdf-course" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content="https://examrally.in/pdf-course" />
+        <meta property="og:title" content="365 Days PDF Course for Bank Exams – ExamRally" />
+        <meta property="og:description" content="Daily PDF mock tests for Prelims & Mains bank exams on ExamRally." />
+        <meta property="og:image" content="https://examrally.in/web-app-manifest-512x512.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="365 Days PDF Course – ExamRally" />
+        <meta name="twitter:description" content="Daily PDF mock tests for Prelims & Mains bank exams on ExamRally." />
+        <meta name="twitter:image" content="https://examrally.in/web-app-manifest-512x512.png" />
+      </Helmet>
       {/* Header Section */}
       <div className="text-center">
         <h1

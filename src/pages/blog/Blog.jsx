@@ -134,12 +134,22 @@ const Blog = () => {
   return (
     <>
       <Helmet>
-        <title>{seo[0]?.seoData?.title}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
+        <title>{seo[0]?.seoData?.title || "ExamRally Blog – Bank Exam Tips, Notifications & Study Material"}</title>
+        <meta name="description" content={seo[0]?.seoData?.description || "Read expert articles on bank exams, SBI PO, IBPS PO, government jobs, current affairs and exam preparation tips on ExamRally Blog."} />
+        <meta name="keywords" content={seo[0]?.seoData?.keywords || "bank exam blog, SBI PO notification, IBPS PO 2025, government exam tips, exam preparation articles"} />
+        <link rel="canonical" href="https://examrally.in/blog" />
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content="https://examrally.in/blog" />
+        <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "ExamRally Blog"} />
+        <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Expert articles on bank exams and government jobs."} />
+        <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || "ExamRally Blog"} />
+        <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || "Expert articles on bank exams."} />
+        <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
 
       <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen">

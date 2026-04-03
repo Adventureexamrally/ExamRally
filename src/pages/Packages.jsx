@@ -4,6 +4,7 @@ import Api from '../service/Api';
 import { useUser } from '@clerk/clerk-react';
 import { UserContext } from '../context/UserProvider';
 import PackageCoupon from './PackageCoupon';
+import { Helmet } from 'react-helmet';
 
 
 const Packages = () => {
@@ -89,7 +90,24 @@ const Packages = () => {
   }, [user, data, utcNow]);
 
   return (
-    <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
+    <>
+      <Helmet>
+        <title>All Exam Packages – Bank Exam Bundles &amp; Combo Offers | ExamRally</title>
+        <meta name="description" content="Browse all ExamRally exam packages. Get combo bundles for SBI PO, IBPS PO, Clerk, RBI &amp; government exams at discounted prices. Best value bank exam preparation packages." />
+        <meta name="keywords" content="exam packages, bank exam bundle, SBI IBPS combo, government exam package, ExamRally packages" />
+        <link rel="canonical" href="https://examrally.in/All-Packages" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content="https://examrally.in/All-Packages" />
+        <meta property="og:title" content="All Exam Packages – ExamRally" />
+        <meta property="og:description" content="Combo bundles for SBI PO, IBPS PO, Clerk, RBI &amp; government exams at discounted prices." />
+        <meta property="og:image" content="https://examrally.in/web-app-manifest-512x512.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="All Exam Packages – ExamRally" />
+        <meta name="twitter:description" content="Combo bundles for bank exams at discounted prices." />
+        <meta name="twitter:image" content="https://examrally.in/web-app-manifest-512x512.png" />
+      </Helmet>
+      <div className="my-7 p-6 rounded-2xl shadow-xl bg-white">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold text-green-800">Trending Packages</h1>
       </div>
@@ -159,6 +177,7 @@ const Packages = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

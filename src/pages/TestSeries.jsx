@@ -80,17 +80,20 @@ function TestSeries() {
   return (
     <>
       <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
-        <title>{seo[0]?.seoData?.title}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                ))} */}
-
+        <title>{seo[0]?.seoData?.title || "Best Online Test Series for Bank Exams – ExamRally"}</title>
+        <meta name="description" content={seo[0]?.seoData?.description || "India's most accurate online test series for SBI PO, IBPS PO, Clerk & government exams. Full-length and topic-wise mock tests."} />
+        <meta name="keywords" content={seo[0]?.seoData?.keywords || "online test series, bank exam mock test, SBI PO, IBPS PO, subscriptions"} />
+        <link rel="canonical" href={seo[0]?.seoData?.canonical || "https://examrally.in/subscriptions"} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content={seo[0]?.seoData?.canonical || "https://examrally.in/subscriptions"} />
+        <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "ExamRally Test Series"} />
+        <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "India's most accurate bank exam test series."} />
+        <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "ExamRally Test Series"} />
+        <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "India's most accurate bank exam test series."} />
+        <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
       <div className="flex">
         <div className={`container mt-4 w-full ${ad.length> 0 ? "md:w-4/5" : "md:full "}`}>

@@ -352,17 +352,20 @@ const PdfCourse = () => {
     return (
         <>
             <Helmet>
-                {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
-                <title>{seo[0]?.seoData?.title}</title>
-                <meta name="description" content={seo[0]?.seoData?.description} />
-                <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-                <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-                <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-                <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-                {/* </>
-                ))} */}
-
+                <title>{seo[0]?.seoData?.title || `365 Days Rally PDF Course ${level} – ExamRally`}</title>
+                <meta name="description" content={seo[0]?.seoData?.description || `Access daily PDF mock tests for ${level} level bank exams. Covering SBI, IBPS & RBI with Prelims and Mains pattern questions.`} />
+                <meta name="keywords" content={seo[0]?.seoData?.keywords || "PDF course, bank exam PDF, daily mock test, SBI prelims, IBPS mains"} />
+                <link rel="canonical" href={seo[0]?.seoData?.canonical || `https://examrally.in/pdf-course/${level}`} />
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="ExamRally" />
+                <meta property="og:url" content={seo[0]?.seoData?.canonical || `https://examrally.in/pdf-course/${level}`} />
+                <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "PDF Course – ExamRally"} />
+                <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Daily PDF mock tests for bank exams."} />
+                <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "PDF Course"} />
+                <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Daily PDF mock tests for bank exams."} />
+                <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
             </Helmet>
             <div className="flex overflow-hidden">
                 <div className={` m-2 w-full bg-gradient-to-br from-green-50 to-gray-50 rounded-xl shadow-lg ${ad.length > 0 ? "md:w-4/5" : "md:full "}`}>

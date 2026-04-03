@@ -38,17 +38,20 @@ const Rallysuper_Pro = () => {
   return (
     <>
       <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                    <> */}
-        <title>{seo[0]?.seoData?.title}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        {/* </>
-                ))} */}
-
+        <title>{seo[0]?.seoData?.title || "Rally Super Pro – Ultimate Bank Exam Package | ExamRally"}</title>
+        <meta name="description" content={seo[0]?.seoData?.description || "Get ExamRally Rally Super Pro for unlimited mock tests, PDF courses, video courses and complete exam preparation for SBI, IBPS & RBI."} />
+        <meta name="keywords" content={seo[0]?.seoData?.keywords || "rally super pro, bank exam package, unlimited mock tests, SBI IBPS combo"} />
+        <link rel="canonical" href={seo[0]?.seoData?.canonical || "https://examrally.in/rally-super-pro"} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content={seo[0]?.seoData?.canonical || "https://examrally.in/rally-super-pro"} />
+        <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Rally Super Pro"} />
+        <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Ultimate bank exam preparation package."} />
+        <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Rally Super Pro"} />
+        <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Ultimate bank exam preparation package."} />
+        <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
       <div className="flex">
 

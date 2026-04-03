@@ -79,12 +79,20 @@ const VideoCourse = () => {
   return (
     <>
       <Helmet>
-        <title>{seo[0]?.seoData?.title || "Video courses"}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta property="og:description" content={seo[0]?.seoData?.ogDescription} />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
+        <title>{seo[0]?.seoData?.title || "Video Courses for Bank Exams – ExamRally"}</title>
+        <meta name="description" content={seo[0]?.seoData?.description || "Watch expert video courses for SBI PO, IBPS PO, Clerk & RBI exam preparation. Learn from top faculty anytime, anywhere."} />
+        <meta name="keywords" content={seo[0]?.seoData?.keywords || "video course, bank exam video, SBI PO video, IBPS online course"} />
+        <link rel="canonical" href={seo[0]?.seoData?.canonical || "https://examrally.in/video-course"} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content={seo[0]?.seoData?.canonical || "https://examrally.in/video-course"} />
+        <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Video Courses"} />
+        <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Expert video courses for bank exams."} />
+        <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "Video Courses"} />
+        <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Expert video courses for bank exams."} />
+        <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
       <section className="py-2">
         <h2 className="text-3xl m-2 font-extrabold text-center text-green-600">Video Courses</h2>

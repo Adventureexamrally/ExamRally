@@ -44,19 +44,22 @@ const Subblog = () => {
   return (
     <>
       <Helmet>
-        {/* { seo.length > 0 && seo.map((seo)=>(
-                            <> */}
-        <title>{seo[0]?.seoData?.title}</title>
-        <meta name="description" content={seo[0]?.seoData?.description} />
-        <meta name="keywords" content={seo[0]?.seoData?.keywords} />
-        <meta property="og:title" content={seo[0]?.seoData?.ogTitle} />
-        <meta
-          property="og:description"
-          content={seo[0]?.seoData?.ogDescription}
-        />
-        <meta property="og:url" content={seo[0]?.seoData?.ogImageUrl} />
-        <link rel="canonical" href={seo[0]?.seoData?.canonical || "https://examrally.in/"}></link>
-      
+        <title>{seo[0]?.seoData?.title || blogDetails?.[0]?.title?.replace(/<[^>]+>/g, '') || "ExamRally Blog"}</title>
+        <meta name="description" content={seo[0]?.seoData?.description || "Read this article on ExamRally – expert tips for bank and government exam preparation."} />
+        <meta name="keywords" content={seo[0]?.seoData?.keywords || "bank exam, exam tips, ExamRally"} />
+        <link rel="canonical" href={seo[0]?.seoData?.canonical || `https://examrally.in/blogdetails/${link}`} />
+        {/* Open Graph */}
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="ExamRally" />
+        <meta property="og:url" content={seo[0]?.seoData?.canonical || `https://examrally.in/blogdetails/${link}`} />
+        <meta property="og:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "ExamRally Blog"} />
+        <meta property="og:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Expert exam preparation articles."} />
+        <meta property="og:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo[0]?.seoData?.ogTitle || seo[0]?.seoData?.title || "ExamRally Blog"} />
+        <meta name="twitter:description" content={seo[0]?.seoData?.ogDescription || seo[0]?.seoData?.description || "Expert exam preparation articles."} />
+        <meta name="twitter:image" content={seo[0]?.seoData?.ogImageUrl || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
 
       <div className="container flex">
