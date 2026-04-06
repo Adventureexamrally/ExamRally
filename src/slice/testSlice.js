@@ -59,6 +59,10 @@ const testSlice = createSlice({
                 state.markedForReview.push(index);
             }
         },
+        removeMarkForReview: (state, action) => {
+            const index = action.payload;
+            state.markedForReview = state.markedForReview.filter(i => i !== index);
+        },
         setTimeminus: (state, action) => {
             state.timeminus = action.payload;
         },
@@ -122,6 +126,7 @@ export const {
     setIsPaused,
     setExamStartTime,
     tickQuestionTime,
+    removeMarkForReview,
     resetTestState,
 } = testSlice.actions;
 

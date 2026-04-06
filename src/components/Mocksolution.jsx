@@ -439,7 +439,8 @@ const Mocksolution = () => {
     const quantsSection = examData?.section?.[currentSectionIndex];
     const isLastQuestion =
         clickedQuestionIndex ===
-        quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
+        startingIndex + (quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0) - 1;
+    const isLastSection = currentSectionIndex === (examData?.section?.length - 1);
 
     const handlePreviousClick = () => {
         if (clickedQuestionIndex > startingIndex) {
@@ -1381,7 +1382,7 @@ const Mocksolution = () => {
                         onClick={handleNextClick}
                         className="border-4 px-5 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
                     >
-                        Next
+                        {isLastQuestion && isLastSection ? "Back to Result" : "Next Ques"}
                     </button>
 
                 </div>

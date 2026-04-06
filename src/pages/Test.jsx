@@ -36,6 +36,7 @@ import {
   setIsPaused,
   setExamStartTime as setExamStartTimeAction,
   tickQuestionTime,
+  removeMarkForReview,
   resetTestState
 } from "../slice/testSlice";
 import { setResults } from "../slice/userSlice";
@@ -466,14 +467,18 @@ const Test = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
     }
-    handleNextClick();
+    handleNextClick(true);
   };
 
   const [showModal, setShowModal] = useState(false);
 
   // (Removed legacy handleNextClick)
-  const handleNextClick = () => {
+  const handleNextClick = (skipReviewClear = false) => {
     updateSectionTime();
+
+    if (skipReviewClear !== true) {
+      dispatch(removeMarkForReview(clickedQuestionIndex));
+    }
 
     if (
       examData &&

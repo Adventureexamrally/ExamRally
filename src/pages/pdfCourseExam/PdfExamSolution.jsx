@@ -756,13 +756,10 @@ const PdfExamSolution = () => {
                 <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
                     {!isSubmitted ? (
                         <>
-                            <div className="flex flex-wrap items-center justify-between bg-[#f1f3f6] border-1 p-2 border-gray-300 gap-4">
+                            <div className="flex flex-wrap items-center justify-between bg-[#f1f3f6] border-1 p-1 border-gray-300 gap-4">
                                 {/* Question No Card */}
-                                <div className="bg-white border rounded-lg px-4 py-2 shadow-sm min-w-[120px]">
-                                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">QUESTION NO.</div>
-                                    <div className="text-lg font-extrabold text-slate-800">
-                                        {clickedQuestionIndex + 1} / {t_questions}
-                                    </div>
+                                <div className="bg-white border flex items-center rounded-lg px-4 py-1 shadow-sm min-w-[120px]">
+                                    <div className="">Question No: {clickedQuestionIndex + 1} / {t_questions}</div>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-6">
@@ -792,7 +789,7 @@ const PdfExamSolution = () => {
                                         )}
 
                                     {/* Time Spent */}
-                                    <div className="flex flex-col items-end">
+                                    <div className="flex flex-col justify-center items-center">
                                         <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">TIME SPENT</div>
                                         <div className="text-lg font-bold text-[#3476bb] font-mono leading-none">
                                             {examData?.section[currentSectionIndex]?.questions?.[
@@ -803,7 +800,7 @@ const PdfExamSolution = () => {
 
                                     {/* Re-attempt Toggle */}
                                     <div className="bg-white/60 border border-slate-200 rounded-full px-4 py-1.5 flex items-center gap-3 shadow-inner">
-                                        <span className="text-xs font-bold text-slate-600 tracking-wide uppercase">RE-ATTEMPT</span>
+                                        <span className="text-xs font-bold text-slate-600 tracking-wide">Re-Attempt</span>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
                                                 type="checkbox"
@@ -828,7 +825,7 @@ const PdfExamSolution = () => {
                                         selectedLanguage?.toLowerCase()
                                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                             <div
-                                                className="md:w-[50%] p-4 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-200 bg-slate-50/30"
+                                                className="md:w-[90%] p-4 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-200 bg-slate-50/30"
                                                 style={{
                                                     height: 'calc(100vh - 150px)',
                                                     overflowY: 'auto'
@@ -1135,14 +1132,14 @@ const PdfExamSolution = () => {
 
 
                                         <div className="md:flex hidden items-center">
-                                            {/* <div
-                                                className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
+                                            <div
+                                                className={`fixed top-1/2 ${closeSideBar ? 'right-0' : 'right-1/4'} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
                                                 onClick={toggleMenu2}
                                             >
                                                 <FaChevronRight
                                                     className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
                                                 />
-                                            </div> */}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1344,29 +1341,30 @@ const PdfExamSolution = () => {
 
             {/* Footer Buttons */}
             <div className="fixed bottom-0 w-full bg-white px-6 py-1 border-t border-slate-200 z-[60] shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="max-w-7xl mx-auto flex items-center justify-evenly">
                     {/* Previous Button */}
                     <button
-                        className="flex items-center gap-2 px-3 py-1 text-sm font-bold text-slate-400 uppercase  tracking-widest hover:text-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-3 py-1 text-sm font-bold text-slate-400 tracking-widest hover:text-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         onClick={handlePreviousClick}
                         disabled={clickedQuestionIndex === startingIndex}
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                         </svg>
-                        PREVIOUS
+                        Previous
                     </button>
 
                     {/* Next Button */}
                     <button
                         onClick={handleNextClick}
-                        className="flex items-center gap-3 px-3 py-2.5 bg-[#3476bb] text-white text-sm font-black uppercase tracking-widest rounded-lg hover:bg-[#2a5e95] transition-all active:scale-95 shadow-lg shadow-blue-100 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
+                        className="flex items-center gap-3 px-3 py-2.5 bg-[#3476bb] text-white text-sm font-black tracking-widest rounded-lg hover:bg-[#2a5e95] transition-all active:scale-95 shadow-lg shadow-blue-100 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        {isLastQuestion && isLastSection ? "BACK TO RESULT" : "NEXT QUESTION"}
+                        {isLastQuestion && isLastSection ? "Back to Result" : "Next Question"}
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7-7 7M3 12h18" />
                         </svg>
                     </button>
+                    
                 </div>
             </div>
         </div>

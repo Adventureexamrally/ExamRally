@@ -497,7 +497,7 @@ const MockLiveTest = () => {
     if (!markedForReview.includes(clickedQuestionIndex)) {
       setMarkedForReview((prev) => [...prev, clickedQuestionIndex]);
     }
-    handleNextClick();
+    handleNextClick(true);
   };
 
   const [showModal, setShowModal] = useState(false);
@@ -531,8 +531,13 @@ const MockLiveTest = () => {
   //     }
   //   }
   // };
-  const handleNextClick = () => {
+  const handleNextClick = (skipReviewClear = false) => {
     updateSectionTime();
+
+    // Clear Mark for Review status on Save & Next, unless explicitly skipped
+    if (skipReviewClear !== true) {
+      setMarkedForReview((prev) => prev.filter((item) => item !== clickedQuestionIndex));
+    }
 
     if (
       examData &&
