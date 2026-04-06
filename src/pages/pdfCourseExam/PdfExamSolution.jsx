@@ -381,7 +381,8 @@ const PdfExamSolution = () => {
     const quantsSection = examData?.section?.[currentSectionIndex];
     const isLastQuestion =
         clickedQuestionIndex ===
-        quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length - 1;
+        startingIndex + (quantsSection?.questions?.[selectedLanguage?.toLowerCase()]?.length || 0) - 1;
+    const isLastSection = currentSectionIndex === (examData?.section?.length || 0) - 1;
 
     const handlePreviousClick = () => {
         if (clickedQuestionIndex > startingIndex) {
@@ -755,21 +756,24 @@ const PdfExamSolution = () => {
                 <div className={` ${closeSideBar ? 'md:w-full' : 'md:w-4/5'}`}>
                     {!isSubmitted ? (
                         <>
-                            <div className="d-flex  justify-between bg-gray-100 border-1 p-2 border-gray-300 font-extralight">
-                                <h3>
-                                    Question No: {clickedQuestionIndex + 1}/
-                                    {t_questions}
-                                </h3>
+                            <div className="flex flex-wrap items-center justify-between bg-[#f1f3f6] border-1 p-2 border-gray-300 gap-4">
+                                {/* Question No Card */}
+                                <div className="bg-white border rounded-lg px-4 py-2 shadow-sm min-w-[120px]">
+                                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">QUESTION NO.</div>
+                                    <div className="text-lg font-extrabold text-slate-800">
+                                        {clickedQuestionIndex + 1} / {t_questions}
+                                    </div>
+                                </div>
 
-
-                                <div className="flex justify-center items-center ">
+                                <div className="flex flex-wrap items-center gap-6">
+                                    {/* Language Select */}
                                     {examData &&
                                         examData.section?.[currentSectionIndex]?.name?.toLowerCase().trim() !== "english language" && (
-                                            <div className="flex items-center mx-2">
+                                            <div className="flex items-center">
                                                 <select
                                                     value={displayLanguage || selectedLanguage}
                                                     onChange={(e) => setDisplayLanguage(e.target.value)}
-                                                    className="border rounded p-1"
+                                                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer shadow-sm min-w-[110px]"
                                                 >
                                                     {examData?.bilingual_status ? (
                                                         <>
@@ -786,50 +790,57 @@ const PdfExamSolution = () => {
                                                 </select>
                                             </div>
                                         )}
-                                    <h3>
-                                        Question Time:
-                                        {examData?.section[currentSectionIndex]?.questions?.[
-                                            selectedLanguage?.toLowerCase()
-                                        ]?.[clickedQuestionIndex - startingIndex]?.q_on_time}
-                                    </h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p>Re-Attempt   &nbsp;&nbsp;</p>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        {/* Hidden checkbox that will control the slider */}
-                                        <input
-                                            type="checkbox"
-                                            checked={isToggled}
-                                            onChange={handleToggleChange}
-                                            className="sr-only"
-                                        />
-                                        {/* Slider container */}
-                                        <div className={`w-14 h-7 rounded-full transition-all duration-300 ease-in-out ${isToggled ? "bg-green-500" : " bg-gray-200"}`}>
-                                            {/* Slider knob */}
-                                            <div
-                                                className={`m-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out ${isToggled ? "translate-x-7 bg-green-600" : "bg-gray-400"
-                                                    }`}
-                                            ></div>
+
+                                    {/* Time Spent */}
+                                    <div className="flex flex-col items-end">
+                                        <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">TIME SPENT</div>
+                                        <div className="text-lg font-bold text-[#3476bb] font-mono leading-none">
+                                            {examData?.section[currentSectionIndex]?.questions?.[
+                                                selectedLanguage?.toLowerCase()
+                                            ]?.[clickedQuestionIndex - startingIndex]?.q_on_time}
                                         </div>
-                                    </label>
+                                    </div>
+
+                                    {/* Re-attempt Toggle */}
+                                    <div className="bg-white/60 border border-slate-200 rounded-full px-4 py-1.5 flex items-center gap-3 shadow-inner">
+                                        <span className="text-xs font-bold text-slate-600 tracking-wide uppercase">RE-ATTEMPT</span>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={isToggled}
+                                                onChange={handleToggleChange}
+                                                className="sr-only"
+                                            />
+                                            <div className={`w-11 h-6 rounded-full transition-all duration-300 ease-in-out ${isToggled ? "bg-[#3476bb]" : "bg-slate-300"}`}>
+                                                <div
+                                                    className={`m-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300 ease-in-out ${isToggled ? "translate-x-5" : ""}`}
+                                                ></div>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
+
                             {examData?.section[currentSectionIndex] ? (
-                                <div className="flex flex-col md:flex-row p-0" >
+                                <div className="flex flex-col md:flex-row pb-5" >
                                     {/* Left side for Common Data */}
                                     {examData.section[currentSectionIndex]?.questions?.[
                                         selectedLanguage?.toLowerCase()
                                     ]?.[clickedQuestionIndex - startingIndex]?.common_data && (
                                             <div
-                                                className="md:w-[80%] p-3 pb-3 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-300"
+                                                className="md:w-[50%] p-4 sm:h-[70vh] md:h-[75vh] lg:h-[73vh] xl:h-[75vh] 2xl:h-[80vh] md:border-r border-gray-200 bg-slate-50/30"
                                                 style={{
-                                                    height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                                    height: 'calc(100vh - 150px)',
                                                     overflowY: 'auto'
                                                 }}
                                             >
+                                                
                                                 <div
-                                                    className="text-wrap"
+                                                    className=" text-wrap"
                                                     style={{
                                                         whiteSpace: "normal",
                                                         wordWrap: "break-word",
+                                                        // fontSize: "1.05rem"
                                                     }}
                                                     dangerouslySetInnerHTML={{
                                                         __html:
@@ -845,19 +856,16 @@ const PdfExamSolution = () => {
 
                                     {/* Right side for Question */}
                                     <div
-                                        className="w-full p-3 mb-24 md:mb-0 flex flex-col md:flex-row justify-between"
+                                        className="w-full p-4 md:p-6 mb-24 md:mb-0 bg-white"
                                         style={{
-                                            height: 'calc(100vh - 150px)', // Adjust 150px to your header/footer height
+                                            height: 'calc(100vh - 150px)',
                                             overflowY: 'auto'
                                         }}
                                     >
-                                        {/* Content with dynamic height */}
-
-
-                                        <div>
-
+                                        <div className="max-w-4xl mx-auto w-full">
+                                            {/* Question Display */}
                                             <div
-                                                className=" text-wrap "
+                                                className="max-w-none text-slate-900 mb-8 leading-relaxed"
                                                 style={{
                                                     whiteSpace: "normal",
                                                     wordWrap: "break-word",
@@ -870,8 +878,9 @@ const PdfExamSolution = () => {
                                                 }}
                                             />
 
-                                            {
-                                                examData?.section[currentSectionIndex]?.questions?.[
+                                            {/* Options Grid */}
+                                            <div className="space-y-4 mb-8">
+                                                {examData?.section[currentSectionIndex]?.questions?.[
                                                     selectedLanguage?.toLowerCase()
                                                 ]?.[clickedQuestionIndex - startingIndex]?.options?.map((option, index) => {
                                                     const question = examData.section[currentSectionIndex]?.questions?.[
@@ -883,219 +892,257 @@ const PdfExamSolution = () => {
                                                     const isSelected = selectedOption === index;
                                                     const isCorrect = answer === index;
 
-                                                    // Determine styling based on view mode
-                                                    let optionStyle = {
-                                                        color: "black", // Default text color
-                                                        borderRadius: "0.5rem",
-                                                        margin: "0.5rem",
-                                                        padding: "0.5rem",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "0.5rem"
-                                                    };
+                                                    // Determine visual state
+                                                    let stateClass = "border-slate-200 hover:border-blue-400 hover:bg-blue-50/30";
+                                                    let icon = null;
 
                                                     if (!isToggled) {
-                                                        // RESULTS VIEW MODE - show correct/incorrect answers
+                                                        // Results Mode
                                                         if (isCorrect) {
-                                                            // Correct answer (green background)
-                                                            optionStyle = {
-                                                                ...optionStyle,
-                                                                backgroundColor: "#4CAF50", // Green
-                                                                color: "white"
-                                                            };
+                                                            stateClass = "border-green-500 bg-green-50/50 ring-1 ring-green-500 ring-offset-0";
+                                                            icon = (
+                                                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                                                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                </div>
+                                                            );
                                                         } else if (isSelected && !isCorrect) {
-                                                            // User's incorrect selection (red background)
-                                                            optionStyle = {
-                                                                ...optionStyle,
-                                                                backgroundColor: "#F44336", // Red
-                                                                color: "white"
-                                                            };
+                                                            stateClass = "border-red-500 bg-red-50/50 ring-1 ring-red-500 ring-offset-0";
+                                                            icon = (
+                                                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                                                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </div>
+                                                            );
                                                         }
                                                     } else {
-                                                        // RE-ATTEMPT MODE - use your existing logic
-                                                        if (check === index && !isCorrect) {
-                                                            optionStyle = {
-                                                                ...optionStyle,
-                                                                backgroundColor: "#F44336", // Red
-                                                                color: "white"
-                                                            };
-                                                        }
-                                                        if (check && isCorrect) {
-                                                            optionStyle = {
-                                                                ...optionStyle,
-                                                                backgroundColor: "#4CAF50", // Green
-                                                                color: "white"
-                                                            };
+                                                        // Re-attempt mode
+                                                        if (check === index) {
+                                                            if (isCorrect) {
+                                                                stateClass = "border-green-500 bg-green-50/50 ring-1 ring-green-500 ring-offset-0";
+                                                                icon = (
+                                                                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                                        </svg>
+                                                                    </div>
+                                                                );
+                                                            } else {
+                                                                stateClass = "border-red-500 bg-red-50/50 ring-1 ring-red-500 ring-offset-0";
+                                                                icon = (
+                                                                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                                                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        } else if (check !== null && isCorrect) {
+                                                            stateClass = "border-green-500 bg-green-50/30";
+                                                            icon = (
+                                                                <div className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center opacity-70">
+                                                                    <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                </div>
+                                                            );
                                                         }
                                                     }
 
                                                     return (
                                                         <div
                                                             key={index}
-                                                            style={optionStyle}
-                                                            className="rounded-lg m-2 p-1"
+                                                            className={`
+                                                                relative flex items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group
+                                                                ${stateClass}
+                                                                ${(!isToggled || isClicked) ? 'cursor-default' : ''}
+                                                            `}
+                                                            onClick={() => {
+                                                                if (isToggled && !isClicked) {
+                                                                    setCheck(index);
+                                                                    setIsClicked(true);
+                                                                    setSelectedOptions(prev => ({
+                                                                        ...prev,
+                                                                        [clickedQuestionIndex]: index
+                                                                    }));
+                                                                }
+                                                            }}
                                                         >
-                                                            <input
-                                                                type="radio"
-                                                                id={`option-${index}`}
-                                                                name="exam-option"
-                                                                value={index}
-                                                                checked={isToggled ? check === index : isSelected}
-                                                                onChange={(e) => {
-                                                                    if (isToggled) {
-                                                                        setCheck(Number(e.target.value));
-                                                                        setIsClicked(true);
-                                                                        setSelectedOptions(prev => ({
-                                                                            ...prev,
-                                                                            [clickedQuestionIndex]: Number(e.target.value)
-                                                                        }));
-                                                                    }
-                                                                }}
-                                                                disabled={!isToggled || isClicked}
-                                                                style={{
-                                                                    accentColor: "#3B82F6", // Blue color for radio button
-                                                                    width: "1.2rem",
-                                                                    height: "1.2rem",
-                                                                    cursor: (!isToggled || isClicked) ? "not-allowed" : "pointer"
-                                                                }}
-                                                            /> &nbsp;&nbsp;
-                                                            <label
-                                                                htmlFor={`option-${index}`}
-                                                                dangerouslySetInnerHTML={{ __html: option || "No option available" }}
-                                                                style={{ cursor: "pointer" }}
-                                                            />
+                                                            <div className="flex items-start gap-4 w-full">
+                                                                {/* Option Marker/Radio replacement */}
+                                                                <div className={`
+                                                                    flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold
+                                                                    ${isSelected || (check === index) 
+                                                                        ? 'bg-blue-600 border-blue-600 text-white' 
+                                                                        : 'border-slate-300 text-slate-500 group-hover:border-blue-400 group-hover:text-blue-600'}
+                                                                    ${isCorrect && !isToggled ? 'bg-green-600 border-green-600 text-white' : ''}
+                                                                    ${isSelected && !isCorrect && !isToggled ? 'bg-red-600 border-red-600 text-white' : ''}
+                                                                `}>
+                                                                    {String.fromCharCode(65 + index)}
+                                                                </div>
+
+                                                                {/* Option Content */}
+                                                                <div 
+                                                                    className="flex-grow text-slate-700"
+                                                                    dangerouslySetInnerHTML={{ __html: option || "No option available" }} 
+                                                                />
+
+                                                                {/* Result Icon */}
+                                                                {icon}
+                                                            </div>
                                                         </div>
                                                     );
-                                                })
-                                            }
-                                            {check != null && examData?.section?.[currentSectionIndex]?.questions?.[selectedLanguage?.toLowerCase()]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
-                                                <>
-                                                    <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
-                                                    <div
-                                                        className="text-wrap"
-                                                        style={{
-                                                            whiteSpace: "normal",
-                                                            wordWrap: "break-word",
-                                                        }}
-                                                        dangerouslySetInnerHTML={{
-                                                            __html:
-                                                                examData.section[currentSectionIndex]?.questions[
-                                                                    (displayLanguage || selectedLanguage)?.toLowerCase()
-                                                                ]?.[clickedQuestionIndex - startingIndex]?.explanation,
-                                                        }}
-                                                    />
-                                                </>
-                                            ) : check != null ? (
-                                                <p>No explanation available</p>
-                                            ) : null}
+                                                })}
+                                            </div>
+                                            {/* Modernized Explanation Section */}
+                                            {(check != null || !isToggled) && (
+                                                <div className="mt-8 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+                                                    <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                                                        <div className="bg-slate-100 px-6 py-3 border-b border-slate-200 flex items-center gap-2">
+                                                            <div className="w-2 h-6 bg-blue-600 rounded-full"></div>
+                                                            <h5 className="text-lg font-bold text-slate-800 uppercase tracking-tight">Solution & Explanation</h5>
+                                                        </div>
+                                                        <div className="p-6">
+                                                            {examData?.section?.[currentSectionIndex]?.questions?.[
+                                                                (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                            ]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
+                                                                <div
+                                                                    className="prose prose-slate max-w-none text-slate-700 leading-relaxed"
+                                                                    style={{
+                                                                        whiteSpace: "normal",
+                                                                        wordWrap: "break-word",
+                                                                    }}
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html:
+                                                                            examData.section[currentSectionIndex]?.questions[
+                                                                                (displayLanguage || selectedLanguage)?.toLowerCase()
+                                                                            ]?.[clickedQuestionIndex - startingIndex]?.explanation,
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="flex items-center gap-3 text-slate-500 italic py-4">
+                                                                    <FaInfoCircle className="w-5 h-5 opacity-50" />
+                                                                    <p>Detailed explanation for this question is currently being updated.</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
 
-                                            {/* Explanation Section Below Options */}
-                                            <div>
-                                                {!isToggled && (
-                                                    <>
-                                                        <h5 className="text-3xl font-semibold mt-4 mb-4">Explanation:</h5>
-                                                        {examData?.section?.[currentSectionIndex]?.questions?.[
-                                                            selectedLanguage?.toLowerCase()
-                                                        ]?.[clickedQuestionIndex - startingIndex]?.explanation ? (
-                                                            <div
-                                                                className="text-wrap mb-2"
-                                                                style={{
-                                                                    whiteSpace: "normal",
-                                                                    wordWrap: "break-word",
-                                                                }}
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html:
-                                                                        examData.section[currentSectionIndex]?.questions[
-                                                                            (displayLanguage || selectedLanguage)?.toLowerCase()
-                                                                        ]?.[clickedQuestionIndex - startingIndex]?.explanation,
-                                                                }}
-                                                            />
-
-                                                        ) : (
-                                                            <p>No explanation available</p>
-                                                        )}
-
-                                                        <div className="text-center pb-10">
+                                                    {/* Modernized Report Section */}
+                                                    {!isToggled && (
+                                                        <div className="mt-8 flex flex-col items-center gap-4 pb-20">
+                                                            <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+                                                            <p className="text-sm text-slate-500">Found an issue with this question?</p>
                                                             <button
-                                                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                                                                className="group flex items-center gap-2 bg-white text-red-600 border-2 border-red-100 px-6 py-2.5 rounded-full font-semibold hover:bg-red-50 hover:border-red-200 transition-all active:scale-95 shadow-sm"
                                                                 onClick={() => setShowReportForm(true)}
                                                             >
-                                                                Report
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                </svg>
+                                                                Report Issue
                                                             </button>
                                                         </div>
-                                                        {showReportForm && (
-                                                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                                                <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-                                                                    <div className="flex justify-between items-center mb-4">
-                                                                        <h2 className="text-xl font-semibold text-center flex-1">Question Report</h2>
-                                                                        <button
-                                                                            onClick={() => setShowReportForm(false)}
-                                                                            className="text-gray-500 hover:text-gray-700"
-                                                                        >
-                                                                            ✕
-                                                                        </button>
-                                                                    </div>
-                                                                    <p className="mb-2">Choose the options</p>
-                                                                    <div className="space-y-2">
-                                                                        {reasons.map((reason) => (
-                                                                            <div key={reason}>
-                                                                                <label className="flex items-center">
-                                                                                    <input
-                                                                                        type="checkbox"
-                                                                                        className="mr-2"
-                                                                                        checked={selectedReasons.includes(reason)}
-                                                                                        onChange={() => handleCheckboxChange(reason)}
-                                                                                    />
-                                                                                    {reason}
-                                                                                </label>
-                                                                                {reason === "others" && selectedReasons.includes("others") && (
-                                                                                    <textarea
-                                                                                        className="mt-2 w-full border border-gray-300 rounded px-2 py-1"
-                                                                                        placeholder="Enter your comment"
-                                                                                        value={comment}
-                                                                                        onChange={(e) => setComment(e.target.value)}
-                                                                                    />
-                                                                                )}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                    <div className="flex justify-center mt-6 gap-4">
-                                                                        <button
-                                                                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                                                                            onClick={() => {
-                                                                                handleSubmit();
-                                                                                setShowReportForm(false);
-                                                                            }}
-                                                                        >
-                                                                            Report Question
-                                                                        </button>
-                                                                        <button
-                                                                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                                                            onClick={() => setShowReportForm(false)}
-                                                                        >
-                                                                            Cancel
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Modernized Report Modal */}
+                                            {showReportForm && (
+                                                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                                                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300">
+                                                        <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+                                                            <div>
+                                                                <h2 className="text-xl font-bold text-slate-800">Report Question</h2>
+                                                                <p className="text-sm text-slate-500 mt-0.5">Help us maintain quality content</p>
                                                             </div>
-                                                        )}
+                                                            <button
+                                                                onClick={() => setShowReportForm(false)}
+                                                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-400 transition-colors"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <div className="p-8">
+                                                            <p className="text-sm font-semibold text-slate-700 mb-4 uppercase tracking-wider">Reason for reporting</p>
+                                                            <div className="grid grid-cols-1 gap-3">
+                                                                {reasons.map((reason) => (
+                                                                    <label 
+                                                                        key={reason}
+                                                                        className={`
+                                                                            flex items-center p-3 rounded-xl border-2 transition-all cursor-pointer
+                                                                            ${selectedReasons.includes(reason) 
+                                                                                ? 'border-blue-500 bg-blue-50/50 text-blue-700' 
+                                                                                : 'border-slate-100 hover:border-slate-200 text-slate-600'}
+                                                                        `}
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            className="hidden"
+                                                                            checked={selectedReasons.includes(reason)}
+                                                                            onChange={() => handleCheckboxChange(reason)}
+                                                                        />
+                                                                        <div className={`w-5 h-5 rounded-md border-2 mr-3 flex items-center justify-center transition-all ${selectedReasons.includes(reason) ? 'bg-blue-600 border-blue-600' : 'border-slate-300'}`}>
+                                                                            {selectedReasons.includes(reason) && (
+                                                                                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                                                </svg>
+                                                                            )}
+                                                                        </div>
+                                                                        <span className="font-medium capitalize">{reason}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
 
+                                                            {selectedReasons.includes("others") && (
+                                                                <div className="mt-4 animate-in slide-in-from-top-2">
+                                                                    <textarea
+                                                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-slate-700 focus:border-blue-500 focus:outline-none transition-colors"
+                                                                        placeholder="Please provide more details..."
+                                                                        rows="3"
+                                                                        value={comment}
+                                                                        onChange={(e) => setComment(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            )}
 
-                                                    </>
-                                                )}
-                                            </div>
+                                                            <div className="grid grid-cols-2 gap-4 mt-8">
+                                                                <button
+                                                                    className="px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                                                                    onClick={() => setShowReportForm(false)}
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                                <button
+                                                                    className="px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                                                                    disabled={selectedReasons.length === 0}
+                                                                    onClick={() => {
+                                                                        handleSubmit();
+                                                                        setShowReportForm(false);
+                                                                    }}
+                                                                >
+                                                                    Submit Report
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
 
                                         <div className="md:flex hidden items-center">
-                                            <div
+                                            {/* <div
                                                 className={`fixed top-1/2 ${closeSideBar ? 'right-0' : ''} bg-gray-600 h-14 w-5 md:mr-2 rounded-s-md flex justify-center items-center cursor-pointer`}
                                                 onClick={toggleMenu2}
                                             >
                                                 <FaChevronRight
                                                     className={`w-2 h-5 text-white transition-transform duration-300 ${closeSideBar ? 'absalute left-0 rotate-180' : ''}`}
                                                 />
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
                                 </div>
@@ -1117,7 +1164,6 @@ const PdfExamSolution = () => {
                     ) : (
                         <div className="text-center">
                             <h1 className="display-6 text-success">Test Completed!</h1>
-
                         </div>
                     )}
                 </div>
@@ -1297,29 +1343,33 @@ const PdfExamSolution = () => {
 
 
             {/* Footer Buttons */}
-            <div className="fixed-bottom w-full bg-gray-100 p-2 border-t border-gray-200 z-50 ">
-                <div className="d-flex justify-content-around w-[85%]">
+            <div className="fixed bottom-0 w-full bg-white px-6 py-1 border-t border-slate-200 z-[60] shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
                     {/* Previous Button */}
                     <button
-                        className="border-4 px-1 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
-                        onClick={handlePreviousClick} // Ensure this function is defined to handle the logic for going to the previous question
-                        disabled={clickedQuestionIndex === startingIndex} // Disable if it's the first question
+                        className="flex items-center gap-2 px-3 py-1 text-sm font-bold text-slate-400 uppercase  tracking-widest hover:text-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        onClick={handlePreviousClick}
+                        disabled={clickedQuestionIndex === startingIndex}
                     >
-                        Previous Ques
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        PREVIOUS
                     </button>
-                    &nbsp; &nbsp;
-                    {/* Next Button */}
 
+                    {/* Next Button */}
                     <button
                         onClick={handleNextClick}
-                        className="border-4 px-5 border-blue-400 text-blue-400 hover:bg-blue-400 fw-bold p-1 rounded hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200"
+                        className="flex items-center gap-3 px-3 py-2.5 bg-[#3476bb] text-white text-sm font-black uppercase tracking-widest rounded-lg hover:bg-[#2a5e95] transition-all active:scale-95 shadow-lg shadow-blue-100 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        Next
+                        {isLastQuestion && isLastSection ? "BACK TO RESULT" : "NEXT QUESTION"}
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7-7 7M3 12h18" />
+                        </svg>
                     </button>
-
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

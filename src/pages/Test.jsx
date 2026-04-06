@@ -997,6 +997,8 @@ const Test = () => {
         .then((res) => {
           console.log(`Auto-save successful (status: ${statusToSend}):`, res.data);
           
+          setResultData(res.data);
+          
           dispatch(setResults({
             [id]: {
               status: statusToSend,
