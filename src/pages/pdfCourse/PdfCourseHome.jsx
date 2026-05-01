@@ -17,7 +17,7 @@ const CourseLink = memo(({ to, title }) => (
     <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-6 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-md">
       <FaFilePdf className="text-5xl" />
     </div>
-    <h1 className="text-xl font-black text-slate-800 mb-2 text-center leading-tight">
+    <h1 className="text-xl font-bold text-slate-800 mb-2 text-center leading-tight">
       {title}
     </h1>
     <div className="flex items-center text-green-600 mt-3 font-bold">
@@ -233,8 +233,8 @@ const PdfCourseHome = () => {
       {/* Pricing Section */}
       <div className="mb-12">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-3">
-            Choose Your <span className="text-green-600 italic font-serif">Plan</span>
+          <h2 className="text-3xl md:text-4xl font-semibold text-slate-800 mb-3">
+            Choose Your <span className="">Plan</span>
           </h2>
           {/* <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
             Select the subscription that fits your preparation needs
@@ -249,7 +249,7 @@ const PdfCourseHome = () => {
             >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-black text-slate-800">
+                  <h3 className="text-xl font-bold text-slate-800">
                     {plan.months}-Month Plan
                   </h3>
                   {plan.offerName && (
@@ -261,7 +261,7 @@ const PdfCourseHome = () => {
 
                 <div className="mb-4">
                   <div className="flex items-end gap-2 mb-2">
-                    <span className="text-4xl font-black text-green-600">
+                    <span className="text-4xl font-bold text-green-600">
                       ₹{plan.discountedPrice}
                     </span>
                     <span className="line-through text-slate-400 text-base mb-1">
