@@ -322,9 +322,9 @@ const PdfCourse = () => {
             (Array.isArray(sub.courseName)
                 ? sub.courseName.some(name => name?.toLowerCase().includes('pdf course'))
                 : sub.courseName?.toLowerCase().includes('pdf course')
-            )
+            ) && isActive(sub.expiryDate)
         );
-        if (activePdfSubscription && isActive(activePdfSubscription.expiryDate)) return true;
+        if (activePdfSubscription) return true;
 
         // 2. Check Enrolled Courses (Name Match - Backup)
         const activeEnrolledCourseByName = user?.enrolledCourses?.find(course =>
@@ -332,18 +332,19 @@ const PdfCourse = () => {
             (Array.isArray(course.courseName)
                 ? course.courseName.some(name => name?.toLowerCase().includes('pdf course'))
                 : course.courseName?.toLowerCase().includes('pdf course')
-            )
+            ) && isActive(course.expiryDate)
         );
-        if (activeEnrolledCourseByName && isActive(activeEnrolledCourseByName.expiryDate)) return true;
+        if (activeEnrolledCourseByName) return true;
 
         // 3. Check Enrolled Courses (ID Match - For Combo Packages & Direct Buys)
         if (pdfProducts.length > 0) {
             const productIds = pdfProducts.map(item => item._id);
             const activeEnrolledCourseByID = user?.enrolledCourses?.find(course =>
                 course.status === 'Active' &&
-                course.courseId?.some(id => productIds.includes(id))
+                course.courseId?.some(id => productIds.includes(id)) &&
+                isActive(course.expiryDate)
             );
-            if (activeEnrolledCourseByID && isActive(activeEnrolledCourseByID.expiryDate)) return true;
+            if (activeEnrolledCourseByID) return true;
         }
 
         return false;

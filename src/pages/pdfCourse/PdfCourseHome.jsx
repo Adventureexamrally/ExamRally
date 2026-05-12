@@ -44,8 +44,10 @@ FeatureItem.displayName = 'FeatureItem';
 
 // Helper functions
 const calculateDaysLeft = (expiryDate, currentDate) => {
+  if (!expiryDate) return null;
   const expiry = new Date(expiryDate);
-  const timeDiff = expiry - currentDate;
+  const current = currentDate ? new Date(currentDate) : new Date();
+  const timeDiff = expiry.getTime() - current.getTime();
   return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 };
 
@@ -104,41 +106,38 @@ const PdfCourseHome = () => {
     const userSubscriptions = user?.subscriptions || [];
     const userEnrollments = user?.enrolledCourses || [];
 
-    // Helper to check expiry
-    const isActive = (expiryDate) => new Date(expiryDate) > utcNow;
+    const getLatestAccess = () => {
+      let latest = null;
+      const check = (item) => {
+        if (!item || !item.expiryDate) return;
+        if (!latest || new Date(item.expiryDate) > new Date(latest.expiryDate)) {
+          latest = item;
+        }
+      };
 
-    // 1. Check Subscriptions (Standard PDF Subscription)
-    const activePdfSubscription = userSubscriptions.find(sub =>
-      sub.status === 'Active' &&
-      (sub.courseName?.includes('PDF Course') || sub.courseName?.includes('Pdf Course'))
-    );
+      userSubscriptions.forEach(sub => {
+        if (sub.courseName?.includes('PDF Course') || sub.courseName?.includes('Pdf Course')) {
+          check(sub);
+        }
+      });
 
-    // 2. Check Enrolled Courses (ID Match - For Combo Packages & Direct Buys)
-    // We check if the current Product ID (data._id) is in the enrollment's courseId array
-    const activeEnrolledCourseByID = userEnrollments.find(course =>
-      course.status === 'Active' &&
-      course.courseId?.some(id => id === data?._id)
-    );
+      userEnrollments.forEach(course => {
+        const matchId = course.courseId?.some(id => id === data?._id);
+        const matchName = Array.isArray(course.courseName)
+          ? course.courseName.some(name => name?.toLowerCase().includes('pdf course'))
+          : course.courseName?.toLowerCase().includes('pdf course');
+        if (matchId || matchName) {
+          check(course);
+        }
+      });
 
-    // 3. Check Enrolled Courses (Name Match - Backup)
-    const activeEnrolledCourseByName = userEnrollments.find(course =>
-      course.status === 'Active' &&
-      (Array.isArray(course.courseName)
-        ? course.courseName.some(name => name?.toLowerCase().includes('pdf course'))
-        : course.courseName?.toLowerCase().includes('pdf course')
-      )
-    );
+      return latest;
+    };
 
-    // Determine if ANY active access exists
-    const validAccess =
-      (activePdfSubscription && isActive(activePdfSubscription.expiryDate) ? activePdfSubscription : null) ||
-      (activeEnrolledCourseByID && isActive(activeEnrolledCourseByID.expiryDate) ? activeEnrolledCourseByID : null) ||
-      (activeEnrolledCourseByName && isActive(activeEnrolledCourseByName.expiryDate) ? activeEnrolledCourseByName : null);
+    const latestAccess = getLatestAccess();
 
-
-    // If user has an active PDF subscription/access, all plans show as purchased
-    if (validAccess) {
-      const expiryDate = validAccess.expiryDate;
+    if (latestAccess) {
+      const expiryDate = latestAccess.expiryDate;
       const daysLeft = expiryDate ? calculateDaysLeft(expiryDate, utcNow) : null;
       const isExpired = daysLeft !== null && daysLeft <= 0;
 
@@ -146,7 +145,7 @@ const PdfCourseHome = () => {
         ...plan,
         isPurchased: !isExpired,
         daysLeft: !isExpired ? daysLeft : null,
-        expiryDate: !isExpired ? expiryDate : null,
+        expiryDate: expiryDate, // Always pass expiryDate so we can show 'Valid till' even if expired, though UI may not show it when isPurchased=false
         isExpired: isExpired
       }));
     }
