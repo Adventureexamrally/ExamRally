@@ -52,28 +52,40 @@ const Examimglist = () => {
           </div>
         ))}
 
-        {Data.map((exam, index) => (
-          <div key={index} className="col-6 col-sm-4 col-md-3 col-lg-2 mb-3 shadow-lg text-center">
-            <Link
-              to={`/top-trending-exams/${exam.link_name}`}
-              className="d-flex flex-column align-items-center justify-content-center  p-3 rounded text-decoration-none"
-              style={{
-                height: "120px",
-                transition: "0.3s",
-                textAlign: "center",
-              }}
-            >
-              <img
-                src={exam.photo}
-                alt={exam.name}
-                className="img-fluid"
-                style={{ width: "80px", height: "80px" }}
-              />
-              <span className="d-block mt-2 font-weight-bold text-gray-800">{exam.name}</span>
-            </Link>
-          </div>
-        ))}
       </div>
+
+      {["Banking & Insurance", "Railways", "SSC"].map((sector) => {
+        const examsInSector = Data.filter((exam) => exam.sector === sector);
+        if (examsInSector.length === 0) return null;
+        return (
+          <div key={sector} className="mt-5">
+            <h3 className="mb-3 font-bold text-xl text-slate-800 border-b border-green-100 pb-2">{sector}</h3>
+            <div className="row">
+              {examsInSector.map((exam, index) => (
+                <div key={index} className="col-6 col-sm-4 col-md-3 col-lg-2 mb-3 shadow-lg text-center">
+                  <Link
+                    to={`/top-trending-exams/${exam.link_name}`}
+                    className="d-flex flex-column align-items-center justify-content-center p-3 rounded text-decoration-none bg-white hover:shadow-xl transition-all"
+                    style={{
+                      height: "120px",
+                      transition: "0.3s",
+                      textAlign: "center",
+                    }}
+                  >
+                    <img
+                      src={exam.photo}
+                      alt={exam.name}
+                      className="img-fluid"
+                      style={{ width: "80px", height: "80px" }}
+                    />
+                    <span className="d-block mt-2 font-weight-bold text-gray-800 text-sm">{exam.name}</span>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
    
 

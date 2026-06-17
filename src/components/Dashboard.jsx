@@ -7,12 +7,92 @@ import TrendingPackages from "./TrendingPackages";
 import Archivements from "./Archivements";
 import PdfCourseAd from "./PdfCourseAd";
 
-const Dashboard = () => {
-  const [packages, setPackages] = useState([]);
-  const [scrollLinks, setScrollLinks] = useState([]);
+const SectorCarousel = ({ sectorName, exams }) => {
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [exams]);
+
+  const handleScroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 400;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  if (exams.length === 0) return null;
+
+  return (
+    <div className="mb-2 border border-slate-200 rounded-xl shadow-md p-4">
+      <h4 className="text-xl font-bold text-slate-700 mb-3 ml-2 border-l-4 border-green-500 pl-3">
+        {sectorName}
+      </h4>
+      <div className="group relative">
+        {canScrollLeft && (
+          <button
+            onClick={() => handleScroll('left')}
+            className="absolute -left-5 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
+          >
+            <FaChevronLeft size={16} />
+          </button>
+        )}
+        <div
+          className="flex gap-6 overflow-x-auto scroll-smooth py-2 no-scrollbar"
+          ref={scrollContainerRef}
+          onScroll={checkScroll}
+        >
+          {exams.map((exam, index) => (
+            <div key={index} className="flex-shrink-0 w-[140px] sm:w-[190px]">
+              <Link to={`/top-trending-exams/${exam.link_name}`}>
+                <div className="bg-white border border-slate-100 p-6 rounded-3xl text-center transition-all duration-300 hover:border-green-200 hover:shadow-2xl hover:shadow-green-100/50 hover:-translate-y-2 group/card">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 relative flex items-center justify-center">
+                    <div className="absolute inset-0 bg-green-50 rounded-2xl opacity-0 group-hover/card:opacity-100 scale-110 transition-all duration-300"></div>
+                    <img
+                      src={exam.photo}
+                      alt={exam.name}
+                      className="relative z-10 w-full h-full object-contain"
+                    />
+                  </div>
+                  <p className="text-slate-700 font-bold text-sm tracking-tight leading-tight group-hover/card:text-emerald-700">
+                    {exam.name}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+        {canScrollRight && (
+          <button
+            onClick={() => handleScroll('right')}
+            className="absolute -right-5 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
+          >
+            <FaChevronRight size={16} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Dashboard = () => {
+  const [packages, setPackages] = useState([]);
+  const [scrollLinks, setScrollLinks] = useState([]);
 
   // Fetching Packages (Trending Exams)
   const fetchPakages = async () => {
@@ -42,31 +122,6 @@ const Dashboard = () => {
     fetchPakages();
     fetchScrollLinks();
   }, []);
-
-  // Check scroll position to show/hide buttons
-  const checkScroll = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
-
-  useEffect(() => {
-    checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [packages]);
-
-  const handleScroll = (direction) => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 400;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: "smooth"
-      });
-    }
-  };
 
   return (
     <div className="bg-slate-50/50 min-h-screen pb-10">
@@ -117,64 +172,20 @@ const Dashboard = () => {
         <LiveTest />
 
         {/* 2. TOP TRENDING EXAMS (Carousel) */}
-        <section className="bg-white p-3 sm:p-4 rounded-[2.5rem] border border-green-100 shadow-sm relative">
-          <div className="flex justify-between items-end mb-4 relative z-10">
-            <div>
-              <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
-                Top Trending <span className="">Exams</span>
-              </h3>
-              {/* <p className="text-slate-400 text-sm font-medium mt-1">Select your goal to start practicing</p> */}
-            </div>
+        <section className="bg-white p-6 sm:p-8 rounded-[2.5rem] border border-green-100 shadow-sm relative">
+          <div className="mb-6">
+            <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
+              Top Trending <span className="">Exams</span>
+            </h3>
           </div>
 
-          <div className="group relative">
-            {/* Left Navigation Button */}
-            {canScrollLeft && (
-              <button
-                onClick={() => handleScroll('left')}
-                className="absolute -left-5 top-1/2 -translate-y-1/2 p-4 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
-              >
-                <FaChevronLeft size={18} />
-              </button>
-            )}
-
-            {/* Carousel Wrapper */}
-            <div
-              className="flex gap-6 overflow-x-auto scroll-smooth py-2 no-scrollbar"
-              ref={scrollContainerRef}
-              onScroll={checkScroll}
-            >
-              {packages.map((exam, index) => (
-                <div key={index} className="flex-shrink-0 w-[140px] sm:w-[190px]">
-                  <Link to={`/top-trending-exams/${exam.link_name}`}>
-                    <div className="bg-white border border-slate-100 p-6 rounded-3xl text-center transition-all duration-300 hover:border-green-200 hover:shadow-2xl hover:shadow-green-100/50 hover:-translate-y-2 group/card">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 relative flex items-center justify-center">
-                        <div className="absolute inset-0 bg-green-50 rounded-2xl opacity-0 group-hover/card:opacity-100 scale-110 transition-all duration-300"></div>
-                        <img
-                          src={exam.photo}
-                          alt={exam.name}
-                          className="relative z-10 w-full h-full object-contain"
-                        />
-                      </div>
-                      <p className="text-slate-700 font-bold text-sm tracking-tight leading-tight group-hover/card:text-emerald-700">
-                        {exam.name}
-                      </p>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </div>
-
-            {/* Right Navigation Button */}
-            {canScrollRight && (
-              <button
-                onClick={() => handleScroll('right')}
-                className="absolute -right-5 top-1/2 -translate-y-1/2 p-4 rounded-full bg-white shadow-xl text-green-600 z-20 border border-green-50 hover:bg-green-500 hover:text-white transition-all duration-300"
-              >
-                <FaChevronRight size={18} />
-              </button>
-            )}
-          </div>
+          {["Banking & Insurance", "Railways", "SSC"].map((sector) => (
+            <SectorCarousel 
+              key={sector} 
+              sectorName={sector} 
+              exams={packages.filter(pkg => pkg.sector === sector)} 
+            />
+          ))}
         </section>
 
         <TrendingPackages />
