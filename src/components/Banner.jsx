@@ -12,7 +12,7 @@ const Banner = () => {
   useEffect(() => {
     Api.get("banner/get/active")
       .then((response) => {
-        setSlides(response.data);
+        setSlides(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error("Error fetching slides:", error);

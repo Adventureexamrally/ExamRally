@@ -420,9 +420,25 @@ const PdfCourse = () => {
                                 <h2 className="text-3xl md:text-3xl font-bold text-slate-800 mb-3 leading-tight">
                                     365 Days Rally <span className="">PDF Course</span>
                                 </h2>
-                                <p className="text-slate-500 text-lg font-medium">
-                                    {level.charAt(0).toUpperCase() + level.slice(1)} Level Challenge
+                                <p className="text-slate-500 text-lg font-medium mb-4">
+                                    {level ? level.charAt(0).toUpperCase() + level.slice(1) : ''} Level Challenge
                                 </p>
+
+                                {/* Level Switch Toggle */}
+                                <div className="flex justify-center items-center gap-1 bg-slate-100 p-1.5 rounded-full w-max mx-auto border border-slate-200 shadow-sm">
+                                    <button 
+                                        onClick={() => navigate('/pdf-course/prelims')} 
+                                        className={`px-8 py-2 rounded-full font-bold text-sm transition-all duration-300 ${level?.toLowerCase() === 'prelims' ? 'bg-green-600 text-white shadow-md' : 'text-slate-600 hover:text-green-700 hover:bg-slate-200'}`}
+                                    >
+                                        Prelims
+                                    </button>
+                                    <button 
+                                        onClick={() => navigate('/pdf-course/mains')} 
+                                        className={`px-8 py-2 rounded-full font-bold text-sm transition-all duration-300 ${level?.toLowerCase() === 'mains' ? 'bg-green-600 text-white shadow-md' : 'text-slate-600 hover:text-green-700 hover:bg-slate-200'}`}
+                                    >
+                                        Mains
+                                    </button>
+                                </div>
                             </div>
 
                             {/* ── Full-Width Stacked Layout: Calendar Top | PDFs Below ── */}

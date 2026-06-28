@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { Helmet } from 'react-helmet';
-import { FaDesktop,FaFilePdf, FaArrowRight, FaCheck } from 'react-icons/fa';
+import { FaDesktop,FaFilePdf, FaArrowRight, FaCheck, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import Api from '../../service/Api';
 import { useUser } from '@clerk/clerk-react';
@@ -292,21 +292,38 @@ const PdfCourseHome = () => {
                     >
                       ✓ Purchased
                     </button>
-                    <p className="text-sm text-green-600 mt-3 font-bold flex items-center justify-center gap-1">
-                      <i className="bi bi-clock-history"></i> {plan.daysLeft} Days Left
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">
-                      Valid till: {formatExpiryDate(plan.expiryDate)}
-                    </p>
+                    {/* Status Indicator */}
+                    <div className="mt-2 text-center">
+                      <div className="flex items-center justify-center gap-1.5 text-red-500 animate-pulse">
+                        <FaClock className="text-xs" />
+                        <span className="text-xs font-bold uppercase tracking-widest">{plan.daysLeft} Days Left</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1 font-medium">
+                        Valid till: {formatExpiryDate(plan.expiryDate)}
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => handlePlanClick(plan)}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
-                  >
-                    {plan.isExpired ? 'Renew Now' : 'Buy Now'}
-                    <FaArrowRight className="ml-2" />
-                  </button>
+                  <div className="text-center">
+                    <button
+                      onClick={() => handlePlanClick(plan)}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+                    >
+                      {plan.isExpired ? 'Renew Now' : 'Buy Now'}
+                      <FaArrowRight className="ml-2" />
+                    </button>
+                    {/* Status Indicator */}
+                    <div className="mt-2 text-center">
+                      {plan.isExpired ? (
+                        <div className="flex items-center justify-center gap-1.5 text-orange-500">
+                          <FaExclamationTriangle className="text-xs" />
+                          <span className="text-xs font-bold uppercase tracking-widest">Expired - Renew</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Limited Access</span>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

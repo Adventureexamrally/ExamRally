@@ -132,7 +132,8 @@ const NavBar = () => {
   useEffect(() => {
     Api.get('exams/live-test')
       .then(response => {
-        const filteredTests = response.data.liveTest.filter(test => test.livetest === true);
+        const liveTestData = Array.isArray(response.data?.liveTest) ? response.data.liveTest : [];
+        const filteredTests = liveTestData.filter(test => test.livetest === true);
         setLiveTests(filteredTests);
       })
       .catch(error => {

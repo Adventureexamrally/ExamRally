@@ -7,7 +7,7 @@ import { ImCheckmark2 } from "react-icons/im";
 import { MdOutlineAccessTime } from "react-icons/md";
 import { BsQuestionSquare } from "react-icons/bs";
 import { IoMdLock } from "react-icons/io";
-import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+import { FaChevronUp, FaChevronDown, FaClock } from "react-icons/fa";
 import { Helmet } from "react-helmet";
 
 import { BsSpeedometer2 } from "react-icons/bs";
@@ -927,15 +927,16 @@ const Packagename = () => {
                       </button>
 
                       {expiredate ? (
-                        <p className="text-md text-red-500 mt-2 font blink">
-                          <i className="bi bi-clock-history"></i> {expiredate} -
-                          Days Left
-                        </p>
+                        <div className="mt-2 text-center">
+                          <div className="flex items-center justify-center gap-1.5 text-red-500 animate-pulse">
+                            <FaClock className="text-xs" />
+                            <span className="text-xs font-bold uppercase tracking-widest">{expiredate} Days Left</span>
+                          </div>
+                        </div>
                       ) : (
-                        <p className="text-md text-gray-500 mt-2 font">
-                          <i className="bi bi-clock-history"></i> Limited Time
-                          offer
-                        </p>
+                        <div className="mt-2 text-center">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Limited Time Offer</span>
+                        </div>
                       )}
                     </div>
                   </div>
