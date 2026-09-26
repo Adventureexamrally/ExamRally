@@ -6,6 +6,11 @@
   font-family: 'Inter', sans-serif;
 }
 
+:root {
+  --primary-color: #007bff; /* Fallback Examrally Primary Color */
+  --secondary-color: #6c757d; /* Fallback Examrally Secondary Color */
+}
+
 
 /* Custom styles for slick arrows */
 .slick-prev,
