@@ -17,7 +17,6 @@ import ScrollToTopButton from "./ScrollToTopButton";
 import LoadingSpinner from "./components/LoadingSpinner";
 import MaintenancePopup from "./components/MaintenancePopup";
 import MaintenanceBanner from "./components/MaintenanceBanner";
-import MaintenancePopupCreator from "./components/MaintenancePopupCreator";
 import Api from "./service/Api";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -181,7 +180,6 @@ function MainApp() {
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [isDailyModalLoading, setIsDailyModalLoading] = useState(true);
   const [showUserModal, setShowUserModal] = useState(false);
-  const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
 
   // Check if current route is a mock test route
   const isMockTestRoute = useMemo(() =>
@@ -380,9 +378,7 @@ function MainApp() {
       <GoogleOneTap />
 
       {/* Maintenance Top Announcement Bar */}
-      {!isMockTestRoute && (
-        <MaintenanceBanner onOpenPopup={() => setShowMaintenancePopup(true)} />
-      )}
+      {!isMockTestRoute && <MaintenanceBanner />}
 
       {/* Header and Navbar */}
       {!isMockTestRoute && (
