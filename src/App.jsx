@@ -378,7 +378,7 @@ function MainApp() {
       <GoogleOneTap />
 
       {/* Maintenance Top Announcement Bar */}
-      {!isMockTestRoute && <MaintenanceBanner />}
+      {/* {!isMockTestRoute && <MaintenanceBanner />} */}
 
       {/* Header and Navbar */}
       {!isMockTestRoute && (
