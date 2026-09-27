@@ -389,7 +389,7 @@ function MainApp() {
       )}
 
       {/* Scheduled Maintenance Popup Modal for Tomorrow Evening (Non-closable) */}
-      {!isMockTestRoute && <MaintenancePopup />}
+      {/* {!isMockTestRoute && <MaintenancePopup />} */}
 
       {/* Daily Offer Modal */}
       {showDailyModal && dailyModalData && (
