@@ -234,7 +234,7 @@ export default function Features() {
           </div>
 
           {/* Bottom Banner - Compact */}
-          <div className="mt-8 sm:mt-10 flex justify-center">
+          {/* <div className="mt-8 sm:mt-10 flex justify-center">
             <div
               className="wc-bottom-banner inline-flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-5 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-sky-50 via-cyan-50 to-blue-50 border border-blue-100 shadow-xs"
               style={{ opacity: 1 }}
@@ -258,7 +258,7 @@ export default function Features() {
                 <span>Succeed Faster.</span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
