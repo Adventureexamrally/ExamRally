@@ -192,7 +192,7 @@ export default function Features() {
           </div>
 
           {/* 6 Feature Cards Grid - Fixed Horizontal Alignment */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
             {featureCards.map((card) => (
               <div
                 key={card.num}
