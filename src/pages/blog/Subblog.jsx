@@ -457,7 +457,24 @@ const Subblog = () => {
   );
 
   const cleanTitle = blog.title?.replace(/<[^>]+>/g, "") || "";
-  const seoMeta = seo[0]?.seoData || {};
+  const blogSeo = blog.seoData || {};
+  const globalSeo = seo[0]?.seoData || {};
+  const seoMeta = {
+    title: blogSeo.title || globalSeo.title,
+    description: blogSeo.description || globalSeo.description,
+    keywords: blogSeo.keywords || globalSeo.keywords,
+    canonical: blogSeo.canonical || globalSeo.canonical,
+    robots: blogSeo.robots || globalSeo.robots || "index, follow",
+    ogType: blogSeo.ogType || globalSeo.ogType || "article",
+    ogSiteName: blogSeo.ogSiteName || globalSeo.ogSiteName || "ExamRally",
+    ogTitle: blogSeo.ogTitle || globalSeo.ogTitle,
+    ogDescription: blogSeo.ogDescription || globalSeo.ogDescription,
+    ogImageUrl: blogSeo.ogImageUrl || globalSeo.ogImageUrl,
+    twitterCard: blogSeo.twitterCard || globalSeo.twitterCard || "summary_large_image",
+    twitterTitle: blogSeo.twitterTitle || globalSeo.twitterTitle,
+    twitterDescription: blogSeo.twitterDescription || globalSeo.twitterDescription,
+    twitterImage: blogSeo.twitterImage || globalSeo.twitterImage,
+  };
   const formattedDate = new Date(blog.updatedAt).toLocaleDateString("en-US", {
     day: "numeric", month: "long", year: "numeric",
   });
@@ -474,16 +491,17 @@ const Subblog = () => {
         <meta name="description" content={seoMeta.description || blog.shortDescription?.replace(/<[^>]+>/g, "")} />
         <meta name="keywords" content={seoMeta.keywords || "bank exam, exam tips, ExamRally"} />
         <link rel="canonical" href={seoMeta.canonical || `https://examrally.in/blogdetails/${link}`} />
-        <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="ExamRally" />
+        <meta name="robots" content={seoMeta.robots} />
+        <meta property="og:type" content={seoMeta.ogType} />
+        <meta property="og:site_name" content={seoMeta.ogSiteName} />
         <meta property="og:url" content={seoMeta.canonical || `https://examrally.in/blogdetails/${link}`} />
         <meta property="og:title" content={seoMeta.ogTitle || seoMeta.title || cleanTitle} />
-        <meta property="og:description" content={seoMeta.ogDescription || seoMeta.description || ""} />
+        <meta property="og:description" content={seoMeta.ogDescription || seoMeta.description || blog.shortDescription?.replace(/<[^>]+>/g, "") || ""} />
         <meta property="og:image" content={seoMeta.ogImageUrl || blog.photo || "https://examrally.in/web-app-manifest-512x512.png"} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={seoMeta.ogTitle || cleanTitle} />
-        <meta name="twitter:description" content={seoMeta.ogDescription || ""} />
-        <meta name="twitter:image" content={seoMeta.ogImageUrl || blog.photo || "https://examrally.in/web-app-manifest-512x512.png"} />
+        <meta name="twitter:card" content={seoMeta.twitterCard} />
+        <meta name="twitter:title" content={seoMeta.twitterTitle || seoMeta.ogTitle || cleanTitle} />
+        <meta name="twitter:description" content={seoMeta.twitterDescription || seoMeta.ogDescription || blog.shortDescription?.replace(/<[^>]+>/g, "") || ""} />
+        <meta name="twitter:image" content={seoMeta.twitterImage || seoMeta.ogImageUrl || blog.photo || "https://examrally.in/web-app-manifest-512x512.png"} />
       </Helmet>
 
       <div className="bg-gray-50 min-h-screen">
@@ -1030,10 +1048,10 @@ const Subblog = () => {
                   );
                 })()}
 
-                {/* Dynamic Package Ad Widget (ExamRally Website Theme) - Only show if data is available */}
+                {/* Dynamic Package Ad Widget (ExamRally Website Theme) - Only show if enabled and data is available */}
                 {(() => {
                   const pkg = blog.packageAd;
-                  if (!pkg || !pkg.title || pkg.title.trim() === "") return null;
+                  if (!pkg || pkg.enabled === false || !pkg.title || pkg.title.trim() === "") return null;
 
                   const theme = THEME_CONFIGS[pkg.theme] || THEME_CONFIGS.emerald;
                   const title = pkg.title;
@@ -1079,10 +1097,10 @@ const Subblog = () => {
                   );
                 })()}
 
-                {/* Dynamic Course Ad Widget (ExamRally Website Theme) - Only show if data is available */}
+                {/* Dynamic Course Ad Widget (ExamRally Website Theme) - Only show if enabled and data is available */}
                 {(() => {
                   const crs = blog.courseAd;
-                  if (!crs || !crs.title || crs.title.trim() === "") return null;
+                  if (!crs || crs.enabled === false || !crs.title || crs.title.trim() === "") return null;
 
                   const theme = THEME_CONFIGS[crs.theme] || THEME_CONFIGS.emerald;
                   const title = crs.title;
@@ -1152,8 +1170,8 @@ const Subblog = () => {
                   </div>
                 )}
 
-                {/* Quick Links - Only show if data is available */}
-                {quickLinks.length > 0 && (() => {
+                {/* Quick Links - Only show if enabled and data is available */}
+                {blog.quickLinksEnabled !== false && quickLinks.length > 0 && (() => {
                   const qlTheme = THEME_CONFIGS[blog.quickLinksTheme] || THEME_CONFIGS.emerald;
                   return (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -1248,6 +1266,7 @@ const Subblog = () => {
 
                 {/* Desktop ad banners (Custom Blog Ad Images + Page Ads) */}
                 {(() => {
+                  if (blog.adImagesEnabled === false) return null;
                   const directAds = (blog.adImages || []).filter((a) => a.photo && a.photo.trim() !== "");
                   const combinedAds = directAds.length > 0 ? directAds : blogAd;
                   if (!combinedAds || combinedAds.length === 0) return null;
