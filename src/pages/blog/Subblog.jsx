@@ -17,12 +17,13 @@ import {
 import { MdQuiz } from "react-icons/md";
 
 /* ─────────────────────────────────────────
-   6 Curated Theme Color Combinations for Sidebar Widgets
+   7 Curated Theme Color Combinations for Sidebar Widgets (Includes White)
 ───────────────────────────────────────────*/
 const THEME_CONFIGS = {
   emerald: {
     gradient: "from-green-700 to-green-600",
     gradientDark: "from-green-800 to-green-700",
+    headerText: "text-white",
     btn: "bg-green-600 hover:bg-green-700 text-white",
     icon: "text-green-500",
     textAccent: "text-green-700",
@@ -34,6 +35,7 @@ const THEME_CONFIGS = {
   blue: {
     gradient: "from-blue-700 via-indigo-600 to-blue-800",
     gradientDark: "from-blue-800 via-indigo-700 to-blue-900",
+    headerText: "text-white",
     btn: "bg-blue-600 hover:bg-blue-700 text-white",
     icon: "text-blue-500",
     textAccent: "text-blue-700",
@@ -45,6 +47,7 @@ const THEME_CONFIGS = {
   purple: {
     gradient: "from-purple-800 via-purple-700 to-indigo-800",
     gradientDark: "from-purple-900 via-purple-800 to-indigo-900",
+    headerText: "text-white",
     btn: "bg-purple-600 hover:bg-purple-700 text-white",
     icon: "text-purple-500",
     textAccent: "text-purple-700",
@@ -56,6 +59,7 @@ const THEME_CONFIGS = {
   amber: {
     gradient: "from-amber-600 via-orange-600 to-red-600",
     gradientDark: "from-amber-700 via-orange-700 to-red-700",
+    headerText: "text-white",
     btn: "bg-orange-600 hover:bg-orange-700 text-white",
     icon: "text-orange-500",
     textAccent: "text-orange-700",
@@ -67,6 +71,7 @@ const THEME_CONFIGS = {
   rose: {
     gradient: "from-rose-700 via-pink-700 to-rose-800",
     gradientDark: "from-rose-800 via-pink-800 to-rose-900",
+    headerText: "text-white",
     btn: "bg-rose-600 hover:bg-rose-700 text-white",
     icon: "text-rose-500",
     textAccent: "text-rose-700",
@@ -78,6 +83,7 @@ const THEME_CONFIGS = {
   slate: {
     gradient: "from-slate-800 via-gray-800 to-slate-900",
     gradientDark: "from-slate-900 via-gray-900 to-black",
+    headerText: "text-white",
     btn: "bg-slate-800 hover:bg-slate-900 text-white",
     icon: "text-slate-600",
     textAccent: "text-slate-800",
@@ -85,6 +91,18 @@ const THEME_CONFIGS = {
     hoverBg: "hover:bg-slate-100 hover:text-slate-800",
     border: "border-slate-300",
     badge: "bg-slate-100 text-slate-800",
+  },
+  white: {
+    gradient: "from-white to-gray-50 border-b border-gray-200",
+    gradientDark: "from-gray-50 to-gray-100 border-b border-gray-200",
+    headerText: "text-gray-900",
+    btn: "bg-slate-900 hover:bg-slate-800 text-white shadow-sm",
+    icon: "text-slate-700",
+    textAccent: "text-slate-900",
+    priceBox: "bg-gray-50 border-gray-200 text-gray-900",
+    hoverBg: "hover:bg-gray-100 hover:text-gray-900",
+    border: "border-gray-200",
+    badge: "bg-gray-100 text-gray-800 border border-gray-200",
   },
 };
 
@@ -446,14 +464,8 @@ const Subblog = () => {
 
   const quickLinks =
     blog.quickLinks && blog.quickLinks.length > 0
-      ? blog.quickLinks
-      : [
-          { label: "Official Website", href: blog.officialWebsite || "#" },
-          { label: "Apply Online (When Released)", href: "#" },
-          { label: "Download Notification", href: "#" },
-          { label: "Previous Year Papers", href: "#" },
-          { label: `${cleanTitle.split(" ")[0]} Syllabus`, href: "#" },
-        ];
+      ? blog.quickLinks.filter((q) => q.label && q.label.trim() !== "")
+      : [];
 
   return (
     <>
@@ -976,39 +988,36 @@ const Subblog = () => {
                   </ul>
                 </div>
 
-                {/* Practice widget (Directly below "In This Article") */}
+                {/* Practice widget (Directly below "In This Article") - Do not show by default */}
                 {(() => {
-                  const pw = blog.practiceWidget || {};
-                  if (pw.enabled === false) return null;
+                  const pw = blog.practiceWidget;
+                  if (!pw || pw.enabled === false) return null;
+                  if (!pw.title || pw.title.trim() === "") return null;
 
-                  const theme = THEME_CONFIGS[pw.theme] || THEME_CONFIGS.emerald;
-                  const title = pw.title || `Practice ${blog.topic || cleanTitle.split(" ")[0]} with Examrally`;
-                  const features = (pw.features && pw.features.length > 0) ? pw.features : [
-                    "Full-length Mock Tests",
-                    "Topic-wise Tests",
-                    "Previous Year Papers",
-                    "Detailed Solutions",
-                    "All India Ranking",
-                  ];
+                  const title = pw.title;
+                  const features = (pw.features && pw.features.length > 0) ? pw.features : [];
                   const btnText = pw.buttonText || "Start Mock Tests Now";
                   const targetLink = pw.link || "/";
+                  const theme = THEME_CONFIGS[pw.theme] || THEME_CONFIGS.emerald;
 
                   return (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
                       <div className={`px-3.5 py-2.5 bg-gradient-to-r ${theme.gradient}`}>
-                        <h3 className="font-semibold text-xs text-white">
+                        <h3 className={`font-semibold text-xs ${theme.headerText || "text-white"}`}>
                           {title}
                         </h3>
                       </div>
-                      <ul className="px-3.5 py-2.5 space-y-1.5">
-                        {features.map((feat, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-[11.5px] text-gray-600">
-                            <FaCheckCircle className={`${theme.icon} flex-shrink-0 text-xs`} />
-                            <span>{feat}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="px-3.5 pb-3">
+                      {features.length > 0 && (
+                        <ul className="px-3.5 py-2.5 space-y-1.5">
+                          {features.map((feat, idx) => (
+                            <li key={idx} className="flex items-center gap-2 text-[11.5px] text-gray-600">
+                              <FaCheckCircle className={`${theme.icon} flex-shrink-0 text-xs`} />
+                              <span>{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className={`px-3.5 pb-3 ${features.length === 0 ? "pt-3" : ""}`}>
                         <Link
                           to={targetLink.startsWith("http") ? { pathname: targetLink } : targetLink}
                           target={targetLink.startsWith("http") ? "_blank" : "_self"}
@@ -1021,44 +1030,43 @@ const Subblog = () => {
                   );
                 })()}
 
-                {/* Dynamic Package Ad Widget (ExamRally Website Theme) */}
+                {/* Dynamic Package Ad Widget (ExamRally Website Theme) - Only show if data is available */}
                 {(() => {
-                  const pkg = blog.packageAd || {};
+                  const pkg = blog.packageAd;
+                  if (!pkg || !pkg.title || pkg.title.trim() === "") return null;
+
                   const theme = THEME_CONFIGS[pkg.theme] || THEME_CONFIGS.emerald;
-                  const title = pkg.title || `${blog.topic || cleanTitle.split(" ")[0]} 2026 (Pre+Mains) Cracker Package`;
-                  const features = (pkg.features && pkg.features.length > 0) ? pkg.features : [
-                    `20 ${blog.topic || "Exam"} Prelims Mock Tests`,
-                    `10 ${blog.topic || "Exam"} Mains Mock Tests`,
-                    "35 Sectional Tests (15 Prelims + 20 Mains)",
-                    "50+50 Days PDF Course for Pre+Mains",
-                    "Available in Bilingual (Hindi & English)",
-                    "Video Solution for PDF Course",
-                  ];
-                  const origPrice = pkg.originalPrice || "799";
-                  const discPrice = pkg.discountedPrice || "221";
+                  const title = pkg.title;
+                  const features = (pkg.features && pkg.features.length > 0) ? pkg.features : [];
+                  const origPrice = pkg.originalPrice;
+                  const discPrice = pkg.discountedPrice;
                   const targetLink = pkg.link || "/packages";
                   const btnText = pkg.buttonText || "View Package";
 
                   return (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
                       <div className={`bg-gradient-to-r ${theme.gradient} px-4 py-3`}>
-                        <h3 className="font-bold text-sm text-white leading-snug">
+                        <h3 className={`font-bold text-sm leading-snug ${theme.headerText || "text-white"}`}>
                           {title}
                         </h3>
                       </div>
                       <div className="p-4">
-                        <ul className="space-y-2 mb-4 text-xs text-gray-700">
-                          {features.map((feat, idx) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <FaCheckCircle className={`${theme.icon} flex-shrink-0 mt-0.5 text-xs`} />
-                              <span>{feat}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className={`flex items-baseline justify-center gap-2 mb-3 py-2 ${theme.priceBox} rounded-lg border`}>
-                          <span className="text-xs text-gray-400 line-through">₹{origPrice}</span>
-                          <span className={`text-xl font-bold ${theme.textAccent}`}>₹{discPrice}</span>
-                        </div>
+                        {features.length > 0 && (
+                          <ul className="space-y-2 mb-4 text-xs text-gray-700">
+                            {features.map((feat, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <FaCheckCircle className={`${theme.icon} flex-shrink-0 mt-0.5 text-xs`} />
+                                <span>{feat}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {(origPrice || discPrice) && (
+                          <div className={`flex items-baseline justify-center gap-2 mb-3 py-2 ${theme.priceBox} rounded-lg border`}>
+                            {origPrice && <span className="text-xs text-gray-400 line-through">₹{origPrice}</span>}
+                            {discPrice && <span className={`text-xl font-bold ${theme.textAccent}`}>₹{discPrice}</span>}
+                          </div>
+                        )}
                         <Link
                           to={targetLink.startsWith("http") ? { pathname: targetLink } : targetLink}
                           target={targetLink.startsWith("http") ? "_blank" : "_self"}
@@ -1071,40 +1079,35 @@ const Subblog = () => {
                   );
                 })()}
 
-                {/* Dynamic Course Ad Widget (ExamRally Website Theme) */}
+                {/* Dynamic Course Ad Widget (ExamRally Website Theme) - Only show if data is available */}
                 {(() => {
-                  const crs = blog.courseAd || {};
+                  const crs = blog.courseAd;
+                  if (!crs || !crs.title || crs.title.trim() === "") return null;
+
                   const theme = THEME_CONFIGS[crs.theme] || THEME_CONFIGS.emerald;
-                  const title = crs.title || "PDF Course 2026";
-                  const features = (crs.features && crs.features.length > 0) ? crs.features : [
-                    "Exactly Based on Real Exam Pattern",
-                    "Language: English and Hindi",
-                    "Included with All New Pattern Questions",
-                    "Covered All Major Bank (Pre + Mains Exams)",
-                    "Answer key with video solution and Quizzes",
-                    "Including Previous Year Memory based Questions",
-                    "Prepared by Top Expert Faculties",
-                    "Total 1,20,000+ Questions",
-                  ];
+                  const title = crs.title;
+                  const features = (crs.features && crs.features.length > 0) ? crs.features : [];
                   const targetLink = crs.link || "/pdfcourse";
                   const btnText = crs.buttonText || "Explore Course";
 
                   return (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
                       <div className={`bg-gradient-to-r ${theme.gradientDark} px-4 py-3`}>
-                        <h3 className="font-bold text-sm text-white leading-snug">
+                        <h3 className={`font-bold text-sm leading-snug ${theme.headerText || "text-white"}`}>
                           {title}
                         </h3>
                       </div>
                       <div className="p-4">
-                        <ul className="space-y-2 mb-4 text-xs text-gray-700">
-                          {features.map((feat, idx) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <FaCheckCircle className={`${theme.icon} flex-shrink-0 mt-0.5 text-xs`} />
-                              <span>{feat}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        {features.length > 0 && (
+                          <ul className="space-y-2 mb-4 text-xs text-gray-700">
+                            {features.map((feat, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <FaCheckCircle className={`${theme.icon} flex-shrink-0 mt-0.5 text-xs`} />
+                                <span>{feat}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                         <Link
                           to={targetLink.startsWith("http") ? { pathname: targetLink } : targetLink}
                           target={targetLink.startsWith("http") ? "_blank" : "_self"}
@@ -1149,8 +1152,8 @@ const Subblog = () => {
                   </div>
                 )}
 
-                {/* Quick Links */}
-                {(() => {
+                {/* Quick Links - Only show if data is available */}
+                {quickLinks.length > 0 && (() => {
                   const qlTheme = THEME_CONFIGS[blog.quickLinksTheme] || THEME_CONFIGS.emerald;
                   return (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -1179,33 +1182,101 @@ const Subblog = () => {
                   );
                 })()}
 
-                {/* Daily Current Affairs Quiz */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm p-3.5">
-                  <div className="flex items-center gap-2 mb-1">
-                    <MdQuiz className="text-blue-600 text-base" />
-                    <h3 className="font-semibold text-xs text-gray-800">Daily Current Affairs Quiz</h3>
-                  </div>
-                  <p className="text-[11px] text-gray-500 mb-2.5">20 important questions daily for bank exams</p>
-                  <Link
-                    to="/livetest/current-affairs"
-                    className="flex items-center justify-center gap-1.5 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors"
-                  >
-                    Attempt Now <FaArrowRight className="text-[10px]" />
-                  </Link>
-                </div>
+                {/* Daily Current Affairs Quiz (Dynamically Controlled by Admin) */}
+                {(() => {
+                  const ca = blog.currentAffairsWidget || {};
+                  if (ca.enabled === false) return null;
 
-                {/* Desktop ad banners */}
-                {blogAd.length > 0 && (
-                  <div className="space-y-4">
-                    {blogAd.map((item) => (
-                      <div key={item._id} className="hover:scale-[1.02] hover:shadow-lg transition-all duration-300">
-                        <Link to={item.link_name}>
-                          <img src={item.photo} alt="Advertisement" className="rounded-lg w-full object-cover shadow-md" />
-                        </Link>
+                  const theme = THEME_CONFIGS[ca.theme] || THEME_CONFIGS.blue;
+                  const title = ca.title || "Daily Current Affairs Quiz";
+                  const desc = ca.description || "";
+                  const badge = ca.badge;
+                  const features = Array.isArray(ca.features) ? ca.features : [];
+                  const btnText = ca.buttonText || "Attempt Now";
+                  const targetLink = ca.link || "/livetest/current-affairs";
+
+                  // Theme background styling for current affairs card
+                  const cardBgStyle =
+                    ca.theme === "white"
+                      ? "bg-white border-gray-200"
+                      : ca.theme === "emerald"
+                      ? "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
+                      : ca.theme === "purple"
+                      ? "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200"
+                      : ca.theme === "amber"
+                      ? "bg-gradient-to-br from-amber-50 to-orange-50 border-orange-200"
+                      : ca.theme === "rose"
+                      ? "bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200"
+                      : ca.theme === "slate"
+                      ? "bg-gradient-to-br from-slate-100 to-gray-100 border-slate-300"
+                      : "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200";
+
+                  return (
+                    <div className={`rounded-xl border shadow-sm p-3.5 transition-all hover:shadow-md ${cardBgStyle}`}>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-2">
+                          <MdQuiz className={`${theme.icon} text-base flex-shrink-0`} />
+                          <h3 className="font-semibold text-xs text-gray-800">{title}</h3>
+                        </div>
+                        {badge && (
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${theme.badge}`}>
+                            {badge}
+                          </span>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+                      {desc && <p className="text-[11px] text-gray-500 mb-2">{desc}</p>}
+                      {features.length > 0 && (
+                        <ul className="space-y-1 mb-2.5">
+                          {features.map((item, idx) => (
+                            <li key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                              <FaCheckCircle className={`${theme.icon} text-[10px] flex-shrink-0`} />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <Link
+                        to={targetLink.startsWith("http") ? { pathname: targetLink } : targetLink}
+                        target={targetLink.startsWith("http") ? "_blank" : "_self"}
+                        className={`flex items-center justify-center gap-1.5 w-full ${theme.btn} text-xs font-semibold py-2 rounded-lg transition-colors shadow-xs`}
+                      >
+                        {btnText} <FaArrowRight className="text-[10px]" />
+                      </Link>
+                    </div>
+                  );
+                })()}
+
+                {/* Desktop ad banners (Custom Blog Ad Images + Page Ads) */}
+                {(() => {
+                  const directAds = (blog.adImages || []).filter((a) => a.photo && a.photo.trim() !== "");
+                  const combinedAds = directAds.length > 0 ? directAds : blogAd;
+                  if (!combinedAds || combinedAds.length === 0) return null;
+
+                  return (
+                    <div className="space-y-4">
+                      {combinedAds.map((item, idx) => {
+                        const targetUrl = item.link || item.link_name || "#";
+                        const isExt = targetUrl.startsWith("http");
+                        return (
+                          <div
+                            key={item._id || idx}
+                            className="hover:scale-[1.02] hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden shadow-sm border border-gray-200"
+                          >
+                            {isExt ? (
+                              <a href={targetUrl} target="_blank" rel="noopener noreferrer">
+                                <img src={item.photo} alt="Advertisement" className="w-full object-cover rounded-xl" />
+                              </a>
+                            ) : (
+                              <Link to={targetUrl}>
+                                <img src={item.photo} alt="Advertisement" className="w-full object-cover rounded-xl" />
+                              </Link>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             </aside>
           </div>
