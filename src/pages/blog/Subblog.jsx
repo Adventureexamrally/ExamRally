@@ -6,6 +6,7 @@ import {
   FaChevronRight,
   FaChevronDown,
   FaChevronUp,
+  FaCaretDown,
   FaExternalLinkAlt,
   FaCheckCircle,
   FaShare,
@@ -103,6 +104,75 @@ const THEME_CONFIGS = {
     hoverBg: "hover:bg-gray-100 hover:text-gray-900",
     border: "border-gray-200",
     badge: "bg-gray-100 text-gray-800 border border-gray-200",
+  },
+};
+
+/* ─────────────────────────────────────────
+   Curated Themes for Quick Navigation Header Tabs (Supports 4 Design Styles)
+───────────────────────────────────────────*/
+const QUICK_NAV_THEMES = {
+  purple: {
+    classicBg: "bg-[#eef6f9] border-[#d6e9f0]",
+    classicActive: "text-[#800060] font-bold border-b-[3px] border-[#800060]",
+    pillActive: "bg-[#800060] text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-[#800060] font-bold border-b-2 border-[#800060] -mb-[2px]",
+    glassActive: "bg-purple-100/90 text-[#800060] font-bold rounded-xl shadow-2xs border border-purple-200",
+    topBtn: "bg-[#960064] hover:bg-[#7b0058] text-white",
+    dropdownActive: "text-[#800060] bg-purple-50 font-bold",
+  },
+  emerald: {
+    classicBg: "bg-emerald-50/70 border-emerald-200",
+    classicActive: "text-green-700 font-bold border-b-[3px] border-green-600",
+    pillActive: "bg-green-600 text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-green-700 font-bold border-b-2 border-green-600 -mb-[2px]",
+    glassActive: "bg-green-100/90 text-green-800 font-bold rounded-xl shadow-2xs border border-green-200",
+    topBtn: "bg-green-700 hover:bg-green-800 text-white",
+    dropdownActive: "text-green-700 bg-green-50 font-bold",
+  },
+  blue: {
+    classicBg: "bg-blue-50/70 border-blue-200",
+    classicActive: "text-blue-700 font-bold border-b-[3px] border-blue-600",
+    pillActive: "bg-blue-600 text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-blue-700 font-bold border-b-2 border-blue-600 -mb-[2px]",
+    glassActive: "bg-blue-100/90 text-blue-800 font-bold rounded-xl shadow-2xs border border-blue-200",
+    topBtn: "bg-blue-700 hover:bg-blue-800 text-white",
+    dropdownActive: "text-blue-700 bg-blue-50 font-bold",
+  },
+  amber: {
+    classicBg: "bg-amber-50/70 border-amber-200",
+    classicActive: "text-orange-700 font-bold border-b-[3px] border-orange-600",
+    pillActive: "bg-orange-600 text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-orange-700 font-bold border-b-2 border-orange-600 -mb-[2px]",
+    glassActive: "bg-orange-100/90 text-orange-800 font-bold rounded-xl shadow-2xs border border-orange-200",
+    topBtn: "bg-orange-600 hover:bg-orange-700 text-white",
+    dropdownActive: "text-orange-700 bg-orange-50 font-bold",
+  },
+  rose: {
+    classicBg: "bg-rose-50/70 border-rose-200",
+    classicActive: "text-rose-700 font-bold border-b-[3px] border-rose-600",
+    pillActive: "bg-rose-600 text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-rose-700 font-bold border-b-2 border-rose-600 -mb-[2px]",
+    glassActive: "bg-rose-100/90 text-rose-800 font-bold rounded-xl shadow-2xs border border-rose-200",
+    topBtn: "bg-rose-700 hover:bg-rose-800 text-white",
+    dropdownActive: "text-rose-700 bg-rose-50 font-bold",
+  },
+  slate: {
+    classicBg: "bg-slate-100 border-slate-300",
+    classicActive: "text-slate-900 font-bold border-b-[3px] border-slate-900",
+    pillActive: "bg-slate-900 text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-slate-900 font-bold border-b-2 border-slate-900 -mb-[2px]",
+    glassActive: "bg-slate-200/90 text-slate-900 font-bold rounded-xl shadow-2xs border border-slate-300",
+    topBtn: "bg-slate-800 hover:bg-slate-900 text-white",
+    dropdownActive: "text-slate-900 bg-slate-100 font-bold",
+  },
+  white: {
+    classicBg: "bg-white border-gray-300 shadow-2xs",
+    classicActive: "text-gray-900 font-bold border-b-[3px] border-gray-900",
+    pillActive: "bg-slate-900 text-white font-bold rounded-full shadow-xs",
+    minimalActive: "text-gray-900 font-bold border-b-2 border-gray-900 -mb-[2px]",
+    glassActive: "bg-gray-100 text-gray-900 font-bold rounded-xl shadow-2xs border border-gray-300",
+    topBtn: "bg-gray-900 hover:bg-black text-white",
+    dropdownActive: "text-gray-900 bg-gray-100 font-bold",
   },
 };
 
@@ -447,6 +517,98 @@ const Subblog = () => {
 
     return () => clearTimeout(timer);
   }, [blog, tocItems]);
+
+  /* ─────────────────────────────────────────
+     Quick Navigation Bar State & Handlers
+  ───────────────────────────────────────────*/
+  const [activeQuickNav, setActiveQuickNav] = useState("");
+  const [showQuickNavDropdown, setShowQuickNavDropdown] = useState(false);
+  const quickNavDropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        quickNavDropdownRef.current &&
+        !quickNavDropdownRef.current.contains(e.target)
+      ) {
+        setShowQuickNavDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  // Auto-detect and activate matching Quick Nav tab based on blog title or first tab
+  useEffect(() => {
+    if (blog?.quickNav?.items?.length > 0 && !activeQuickNav) {
+      const titleLower = (blog.title || "").toLowerCase();
+      const matched = blog.quickNav.items.find(
+        (item) => item.label && titleLower.includes(item.label.toLowerCase())
+      );
+      if (matched) {
+        setActiveQuickNav(matched.label);
+      } else {
+        setActiveQuickNav(blog.quickNav.items[0]?.label || "");
+      }
+    }
+  }, [blog, activeQuickNav]);
+
+  // Click handler for Quick Nav tabs: smooth scrolls to target anchor, TOC item, or headings
+  const handleQuickNavClick = (item) => {
+    if (!item?.label) return;
+    setActiveQuickNav(item.label);
+    const targetLink = (item.link || "").trim();
+
+    // 1. Direct anchor hash scroll (#id)
+    if (targetLink.startsWith("#") && targetLink.length > 1) {
+      const targetId = targetLink.slice(1);
+      const el = document.getElementById(targetId);
+      if (el) {
+        const navOffset = 75;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+        return;
+      }
+    }
+
+    // 2. Full URL or route navigation
+    if (targetLink && !targetLink.startsWith("#")) {
+      if (targetLink.startsWith("http://") || targetLink.startsWith("https://")) {
+        window.open(targetLink, "_blank", "noopener,noreferrer");
+      } else {
+        navigate(targetLink);
+      }
+      return;
+    }
+
+    // 3. Match against TOC items
+    const cleanLabel = item.label.toLowerCase().trim();
+    const match = tocItems.find(
+      (t) =>
+        t.text.toLowerCase().includes(cleanLabel) ||
+        cleanLabel.includes(t.text.toLowerCase())
+    );
+    if (match) {
+      scrollToHeading(match.id);
+      return;
+    }
+
+    // 4. Match against any heading in page content
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, th, td strong, h1")
+    );
+    const matchedHeading = headings.find((h) =>
+      (h.textContent || "").toLowerCase().includes(cleanLabel)
+    );
+    if (matchedHeading) {
+      const navOffset = 75;
+      const elementPosition = matchedHeading.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+    }
+  };
 
   if (loading) return <SkeletonLoader />;
   if (!blog) return (
@@ -832,14 +994,136 @@ const Subblog = () => {
               )}
 
               {/* Meta row */}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-200">
-                <span className="flex items-center gap-1"><FaClock className="text-gray-400" />{formattedDate}</span>
-                <span className="flex items-center gap-1"><FaUser className="text-gray-400" />{blog.author || "Examrally Team"}</span>
-                <span className="flex items-center gap-1"><FaClock className="text-gray-400" />{blog.readTime || "10 Min Read"}</span>
-                <button onClick={handleShare} className="flex items-center gap-1 text-green-600 hover:text-green-800 transition-colors ml-auto">
-                  <FaShare /> Share
-                </button>
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-200">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="flex items-center gap-1"><FaClock className="text-gray-400" />{formattedDate}</span>
+                  <span className="flex items-center gap-1"><FaUser className="text-gray-400" />{blog.author || "Examrally Team"}</span>
+                  <span className="flex items-center gap-1"><FaClock className="text-gray-400" />{blog.readTime || "10 Min Read"}</span>
+                  <button onClick={handleShare} className="flex items-center gap-1 text-green-600 hover:text-green-800 transition-colors">
+                    <FaShare /> Share
+                  </button>
+                </div>
+
+                {/* Top Action Button (e.g. "Download More PDF's Here") */}
+                {blog.quickNav?.enabled && blog.quickNav?.topButtonText && (
+                  <a
+                    href={blog.quickNav.topButtonLink || "#"}
+                    target={blog.quickNav.topButtonLink?.startsWith("http") ? "_blank" : undefined}
+                    rel={blog.quickNav.topButtonLink?.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm transform hover:-translate-y-0.5 ${
+                      QUICK_NAV_THEMES[blog.quickNav.theme || "purple"]?.topBtn || QUICK_NAV_THEMES.purple.topBtn
+                    }`}
+                  >
+                    <span>{blog.quickNav.topButtonText}</span>
+                    <FaExternalLinkAlt className="text-[9px]" />
+                  </a>
+                )}
               </div>
+
+              {/* Under-Title Quick Navigation Bar (Supports all 4 design styles + 7 themes) */}
+              {blog.quickNav?.enabled && blog.quickNav?.items?.length > 0 && (() => {
+                const navTheme = QUICK_NAV_THEMES[blog.quickNav.theme || "purple"] || QUICK_NAV_THEMES.purple;
+                const design = blog.quickNav.designStyle || "classic_tabs";
+
+                let containerStyle = "";
+                let tabBaseStyle = "";
+                let activeTabStyle = "";
+                let inactiveTabStyle = "";
+
+                if (design === "modern_pills") {
+                  containerStyle = "rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs px-2 py-1.5 mb-6";
+                  tabBaseStyle = "px-4 py-1.5 text-xs sm:text-[13px] rounded-full font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer";
+                  activeTabStyle = navTheme.pillActive;
+                  inactiveTabStyle = "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70";
+                } else if (design === "minimal_line") {
+                  containerStyle = "bg-transparent border-b-2 border-slate-200 rounded-none px-1 py-0 mb-6";
+                  tabBaseStyle = "px-3.5 py-2 text-xs sm:text-[13px] font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-2 -mb-[2px]";
+                  activeTabStyle = navTheme.minimalActive;
+                  inactiveTabStyle = "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300";
+                } else if (design === "glass_gradient") {
+                  containerStyle = "rounded-2xl bg-white/80 border border-slate-200/80 shadow-xs backdrop-blur-md px-3 py-1.5 mb-6";
+                  tabBaseStyle = "px-3.5 py-1.5 text-xs sm:text-[13px] rounded-xl font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border";
+                  activeTabStyle = navTheme.glassActive;
+                  inactiveTabStyle = "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60";
+                } else {
+                  // classic_tabs (exact screenshot match: Guidely sky blue bar with bottom underline)
+                  containerStyle = `rounded-lg border px-3 py-1 mb-6 ${navTheme.classicBg}`;
+                  tabBaseStyle = "px-3 py-1.5 text-xs sm:text-[13px] whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-[3px]";
+                  activeTabStyle = `${navTheme.classicActive}`;
+                  inactiveTabStyle = "border-transparent text-slate-700 hover:text-slate-950 hover:border-slate-300/40 font-medium";
+                }
+
+                return (
+                  <div className={`relative transition-all ${containerStyle}`}>
+                    <div className="flex items-center justify-between gap-1 sm:gap-2">
+                      {/* Horizontal Scrolling Tabs */}
+                      <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar scroll-smooth flex-1 py-0.5">
+                        {blog.quickNav.items.map((item, idx) => {
+                          const isActive = activeQuickNav === item.label;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleQuickNavClick(item)}
+                              className={`${tabBaseStyle} ${isActive ? activeTabStyle : inactiveTabStyle}`}
+                            >
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Dropdown toggle button (arrow ▼) */}
+                      <div className="relative flex-shrink-0" ref={quickNavDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => setShowQuickNavDropdown((prev) => !prev)}
+                          title="View all quick links"
+                          className="px-2 py-1 text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center cursor-pointer"
+                        >
+                          <FaCaretDown
+                            className={`text-xs transition-transform duration-200 ${
+                              showQuickNavDropdown ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {showQuickNavDropdown && (
+                          <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-1.5 z-50">
+                            <div className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                              Quick Navigation
+                            </div>
+                            <div className="max-h-60 overflow-y-auto py-1">
+                              {blog.quickNav.items.map((item, idx) => {
+                                const isActive = activeQuickNav === item.label;
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      handleQuickNavClick(item);
+                                      setShowQuickNavDropdown(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                                      isActive
+                                        ? navTheme.dropdownActive
+                                        : "text-gray-700 hover:bg-gray-50"
+                                    }`}
+                                  >
+                                    <span className="truncate">{item.label}</span>
+                                    {isActive && <span className="text-[10px] font-bold">●</span>}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Latest Update banner */}
               <div
