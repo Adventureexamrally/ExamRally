@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useLocation } from "react-router-dom";
 import logo from "../assets/logo/logo.webp";
 import {
   SignIn,
@@ -20,6 +20,9 @@ import CustomUserMenu from "./CustomUserButton";
 import googlePlay from "../assets/logo/google-play.png";
 
 const NavBar = () => {
+  const location = useLocation();
+  const isBlogPage = location.pathname.startsWith("/blog") || location.pathname.startsWith("/blogdetails");
+
   const { isSignedIn, user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [bannedModalVisible, setBannedModalVisible] = useState(false);
@@ -54,6 +57,11 @@ const NavBar = () => {
   const handleSubMenu = (index) => {
     setActiveSubMenu(activeSubMenu === index ? null : index);
   };
+
+  // Dynamic link style depending on whether page is Blog
+  const linkClass = isBlogPage
+    ? "text-gray-700 hover:text-green-600 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-green-600"
+    : "text-white hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30";
 
   // Capture referral code from URL (?ref=CODE) as soon as possible
   useEffect(() => {
@@ -179,13 +187,13 @@ const NavBar = () => {
         </div>
       )}
 
-      <nav className="bg-green-600 text-white font-semibold shadow-md relative z-30 border-t border-green-500/30">
+      <nav className={`${isBlogPage ? "bg-white text-gray-800 border-b border-gray-200" : "bg-green-600 text-white border-t border-green-500/30"} font-semibold shadow-md relative z-30 transition-colors duration-300`}>
         <div className="max-w-[1440px] mx-auto flex justify-between items-center px-4 sm:px-6 h-12 lg:h-14">
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-4 xl:gap-8 text-sm xl:text-[15px] whitespace-nowrap h-full">
             <Link
               to="/"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Home
             </Link>
@@ -197,7 +205,7 @@ const NavBar = () => {
                 setActiveSubMenu(null);
               }}
             >
-              <button className="flex items-center hover:text-green-100 transition duration-300 text-white h-full px-1 border-b-2 border-transparent group-hover:border-white/30">
+              <button className={`flex items-center ${isBlogPage ? 'text-gray-700 hover:text-green-600' : 'text-white hover:text-green-100'} transition duration-300 h-full px-1 border-b-2 border-transparent group-hover:border-green-600`}>
                 Exams
                 <FaChevronDown className={`ml-2 text-[10px] transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -237,67 +245,67 @@ const NavBar = () => {
 
             <Link
               to="/subscriptions"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Test Series
             </Link>
             <Link
               to="/All-Packages"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Packages
             </Link>
             <Link
               to="/free-pdf"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Free PDF
             </Link>
             <Link
               to="/pdf-course"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               PDF Course
             </Link>
             <Link
               to="/video-course"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Video Course
             </Link>
             <Link
               to="/blog"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Blogs
             </Link>
             <Link
               to="/rally-pro"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Rally Pro
             </Link>
             <Link
               to="/rally-super-pro"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Rally Super Pro
             </Link>
 
             <Link
               to='/homelivetest'
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30 gap-1.5"
+              className={`${linkClass} gap-1.5`}
             >
               Live Test
               {liveTests.length > 0 && (
-                <span className="bg-white text-green-700 text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse">
+                <span className={`${isBlogPage ? "bg-green-600 text-white" : "bg-white text-green-700"} text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse`}>
                   Live
                 </span>
               )}
             </Link>
             <Link
               to="/forum"
-              className="hover:text-green-100 transition duration-300 h-full flex items-center px-1 border-b-2 border-transparent hover:border-white/30"
+              className={linkClass}
             >
               Forum
             </Link>
@@ -318,7 +326,7 @@ const NavBar = () => {
           </Link>
 
           {/* Mobile Hamburger Menu */}
-          <button onClick={toggleMenu} className="md:hidden text-white hover:text-green-100 transition-colors">
+          <button onClick={toggleMenu} className={`md:hidden ${isBlogPage ? "text-gray-800 hover:text-green-600" : "text-white hover:text-green-100"} transition-colors`}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"

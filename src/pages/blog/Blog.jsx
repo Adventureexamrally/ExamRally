@@ -111,14 +111,16 @@ const Blog = () => {
         </div>
       )}
       <div className="p-4 flex-1 flex flex-col">
-        <h3
-          className="text-sm font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300 line-clamp-2 [&_*]:!text-sm [&_*]:!font-bold [&_*]:!m-0 [&_*]:!p-0 [&_*]:!inline"
-          dangerouslySetInnerHTML={{ __html: blog.title }}
-        />
-        <div
-          className="text-gray-600 mb-3 text-sm flex-1 line-clamp-2 overflow-hidden [&_*]:!text-sm [&_*]:!m-0 [&_*]:!p-0 [&_*]:!font-normal [&_*]:!inline"
-          dangerouslySetInnerHTML={{ __html: blog.shortDescription }}
-        />
+        <h3 className="text-sm font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300 line-clamp-2">
+          {blog.title?.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim()}
+        </h3>
+        {blog.shortDescription &&
+          blog.shortDescription.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim().length > 5 &&
+          blog.shortDescription.replace(/<[^>]+>/g, "").trim() !== "ss" && (
+            <p className="text-gray-600 mb-3 text-xs flex-1 line-clamp-2 overflow-hidden">
+              {blog.shortDescription.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim()}
+            </p>
+        )}
         <div className="flex items-center text-xs text-gray-500 mt-auto">
           <FaCalendarAlt className="mr-1" />
           <span>{new Date(blog.updatedAt).toLocaleDateString('en-US', { 

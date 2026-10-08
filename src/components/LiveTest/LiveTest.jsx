@@ -34,7 +34,7 @@ const LiveTest = () => {
       "bg-slate-200 text-slate-800",
       "bg-gray-200 text-gray-800",
     ],
-    "Special Mock Test": [
+    "Mains Special": [
       "bg-orange-100 text-orange-800",
       "bg-teal-100 text-teal-800",
       "bg-pink-100 text-pink-800",
