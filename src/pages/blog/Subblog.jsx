@@ -1046,7 +1046,7 @@ const Subblog = () => {
                   activeTabStyle = navTheme.glassActive;
                   inactiveTabStyle = "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60";
                 } else {
-                  // classic_tabs (exact screenshot match: Guidely sky blue bar with bottom underline)
+                  // classic_tabs (exact screenshot match: blue bar with bottom underline)
                   containerStyle = `rounded-lg border px-3 py-1 mb-6 ${navTheme.classicBg}`;
                   tabBaseStyle = "px-3 py-1.5 text-xs sm:text-[13px] whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-[3px]";
                   activeTabStyle = `${navTheme.classicActive}`;
