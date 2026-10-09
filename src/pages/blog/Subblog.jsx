@@ -14,6 +14,7 @@ import {
   FaUser,
   FaBell,
   FaArrowRight,
+  FaDownload,
 } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
 
@@ -1007,8 +1008,12 @@ const Subblog = () => {
                   </button>
                 </div>
 
-                {/* Top Action Button (e.g. "Download More PDF's Here") */}
-                {blog.quickNav?.enabled === true && blog.quickNav?.topButtonText && (
+                {/* Top Action Button (Controlled by Admin show/hide toggle) */}
+                {blog.quickNav?.enabled === true &&
+                  (blog.quickNav?.topButtonEnabled === true ||
+                    (blog.quickNav?.topButtonEnabled === undefined && Boolean(blog.quickNav?.topButtonText && blog.quickNav?.topButtonText.trim() !== ""))) &&
+                  blog.quickNav?.topButtonText &&
+                  blog.quickNav?.topButtonText.trim() !== "" && (
                   <a
                     href={blog.quickNav.topButtonLink || "#"}
                     target={blog.quickNav.topButtonLink?.startsWith("http") ? "_blank" : undefined}
@@ -1017,8 +1022,8 @@ const Subblog = () => {
                       QUICK_NAV_THEMES[blog.quickNav.theme || "purple"]?.topBtn || QUICK_NAV_THEMES.purple.topBtn
                     }`}
                   >
+                    <FaDownload className="text-[10px]" />
                     <span>{blog.quickNav.topButtonText}</span>
-                    <FaExternalLinkAlt className="text-[9px]" />
                   </a>
                 )}
               </div>
