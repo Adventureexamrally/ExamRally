@@ -664,7 +664,7 @@ const Subblog = () => {
         <meta name="twitter:image" content={seoMeta.twitterImage} />
       </Helmet>
 
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-gray-50 min-h-screen md:ml-10 md:mr-10">
         <div className=" px-2 sm:px-3 lg:px-4 py-3">
 
           {/* Breadcrumb */}
@@ -965,7 +965,7 @@ const Subblog = () => {
           `}</style>
 
           {/* Two-column layout */}
-          <div className="flex flex-col lg:flex-row gap-2">
+          <div className="flex flex-col lg:flex-row gap-2 ">
 
             {/* ── LEFT: Main article ── */}
             <main className="flex-1 min-w-0 overflow-x-hidden">
