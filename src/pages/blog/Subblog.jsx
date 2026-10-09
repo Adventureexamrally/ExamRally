@@ -115,64 +115,64 @@ const QUICK_NAV_THEMES = {
   purple: {
     classicBg: "bg-[#eef6f9] border-[#d6e9f0]",
     classicActive: "text-[#800060] font-bold border-b-[3px] border-[#800060]",
-    pillActive: "bg-[#800060] text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-[#800060] text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-[#800060] font-bold border-b-2 border-[#800060] -mb-[2px]",
-    glassActive: "bg-purple-100/90 text-[#800060] font-bold rounded-xl shadow-2xs border border-purple-200",
-    topBtn: "bg-[#960064] hover:bg-[#7b0058] text-white",
+    glassActive: "bg-purple-100/90 text-[#800060] font-bold rounded-md shadow-2xs border border-purple-200",
+    topBtn: "bg-[#960064] hover:bg-[#7b0058] text-white rounded-md",
     dropdownActive: "text-[#800060] bg-purple-50 font-bold",
   },
   emerald: {
     classicBg: "bg-emerald-50/70 border-emerald-200",
     classicActive: "text-green-700 font-bold border-b-[3px] border-green-600",
-    pillActive: "bg-green-600 text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-green-600 text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-green-700 font-bold border-b-2 border-green-600 -mb-[2px]",
-    glassActive: "bg-green-100/90 text-green-800 font-bold rounded-xl shadow-2xs border border-green-200",
-    topBtn: "bg-green-700 hover:bg-green-800 text-white",
+    glassActive: "bg-green-100/90 text-green-800 font-bold rounded-md shadow-2xs border border-green-200",
+    topBtn: "bg-green-700 hover:bg-green-800 text-white rounded-md",
     dropdownActive: "text-green-700 bg-green-50 font-bold",
   },
   blue: {
     classicBg: "bg-blue-50/70 border-blue-200",
     classicActive: "text-blue-700 font-bold border-b-[3px] border-blue-600",
-    pillActive: "bg-blue-600 text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-blue-600 text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-blue-700 font-bold border-b-2 border-blue-600 -mb-[2px]",
-    glassActive: "bg-blue-100/90 text-blue-800 font-bold rounded-xl shadow-2xs border border-blue-200",
-    topBtn: "bg-blue-700 hover:bg-blue-800 text-white",
+    glassActive: "bg-blue-100/90 text-blue-800 font-bold rounded-md shadow-2xs border border-blue-200",
+    topBtn: "bg-blue-700 hover:bg-blue-800 text-white rounded-md",
     dropdownActive: "text-blue-700 bg-blue-50 font-bold",
   },
   amber: {
     classicBg: "bg-amber-50/70 border-amber-200",
     classicActive: "text-orange-700 font-bold border-b-[3px] border-orange-600",
-    pillActive: "bg-orange-600 text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-orange-600 text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-orange-700 font-bold border-b-2 border-orange-600 -mb-[2px]",
-    glassActive: "bg-orange-100/90 text-orange-800 font-bold rounded-xl shadow-2xs border border-orange-200",
-    topBtn: "bg-orange-600 hover:bg-orange-700 text-white",
+    glassActive: "bg-orange-100/90 text-orange-800 font-bold rounded-md shadow-2xs border border-orange-200",
+    topBtn: "bg-orange-600 hover:bg-orange-700 text-white rounded-md",
     dropdownActive: "text-orange-700 bg-orange-50 font-bold",
   },
   rose: {
     classicBg: "bg-rose-50/70 border-rose-200",
     classicActive: "text-rose-700 font-bold border-b-[3px] border-rose-600",
-    pillActive: "bg-rose-600 text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-rose-600 text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-rose-700 font-bold border-b-2 border-rose-600 -mb-[2px]",
-    glassActive: "bg-rose-100/90 text-rose-800 font-bold rounded-xl shadow-2xs border border-rose-200",
-    topBtn: "bg-rose-700 hover:bg-rose-800 text-white",
+    glassActive: "bg-rose-100/90 text-rose-800 font-bold rounded-md shadow-2xs border border-rose-200",
+    topBtn: "bg-rose-700 hover:bg-rose-800 text-white rounded-md",
     dropdownActive: "text-rose-700 bg-rose-50 font-bold",
   },
   slate: {
     classicBg: "bg-slate-100 border-slate-300",
     classicActive: "text-slate-900 font-bold border-b-[3px] border-slate-900",
-    pillActive: "bg-slate-900 text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-slate-900 text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-slate-900 font-bold border-b-2 border-slate-900 -mb-[2px]",
-    glassActive: "bg-slate-200/90 text-slate-900 font-bold rounded-xl shadow-2xs border border-slate-300",
-    topBtn: "bg-slate-800 hover:bg-slate-900 text-white",
+    glassActive: "bg-slate-200/90 text-slate-900 font-bold rounded-md shadow-2xs border border-slate-300",
+    topBtn: "bg-slate-800 hover:bg-slate-900 text-white rounded-md",
     dropdownActive: "text-slate-900 bg-slate-100 font-bold",
   },
   white: {
     classicBg: "bg-white border-gray-300 shadow-2xs",
     classicActive: "text-gray-900 font-bold border-b-[3px] border-gray-900",
-    pillActive: "bg-slate-900 text-white font-bold rounded-full shadow-xs",
+    pillActive: "bg-slate-900 text-white font-bold rounded-md shadow-xs",
     minimalActive: "text-gray-900 font-bold border-b-2 border-gray-900 -mb-[2px]",
-    glassActive: "bg-gray-100 text-gray-900 font-bold rounded-xl shadow-2xs border border-gray-300",
-    topBtn: "bg-gray-900 hover:bg-black text-white",
+    glassActive: "bg-gray-100 text-gray-900 font-bold rounded-md shadow-2xs border border-gray-300",
+    topBtn: "bg-gray-900 hover:bg-black text-white rounded-md",
     dropdownActive: "text-gray-900 bg-gray-100 font-bold",
   },
 };
@@ -340,8 +340,8 @@ const Subblog = () => {
       .replace(/<p\b[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "")
       // 4. Remove span tags that are empty
       .replace(/<span\b[^>]*>(\s|&nbsp;)*<\/span>/gi, "")
-      // 5. Collapse 3+ consecutive <br> into just 2
-      .replace(/(<br\s*\/?>(\s|&nbsp;)*){3,}/gi, "<br><br>")
+      // 5. Collapse consecutive <br>
+      .replace(/(<br\s*\/?>(\s|&nbsp;)*){2,}/gi, "<br>")
       // 6. Remove empty divs
       .replace(/<div\b[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/div>/gi, "");
   };
@@ -671,10 +671,10 @@ const Subblog = () => {
       </Helmet>
 
       <div className="bg-gray-50 min-h-screen">
-        <div className=" px-3 sm:px-4 lg:px-6 py-4">
+        <div className=" px-2 sm:px-3 lg:px-4 py-3">
 
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-1 text-xs text-gray-500 mb-4 flex-wrap">
+          <nav className="flex items-center gap-1 text-xs text-gray-500 mb-1 flex-wrap">
             <Link to="/" className="hover:text-green-600 transition-colors">Home</Link>
             <FaChevronRight className="text-gray-400 text-[10px]" />
             <Link to="/blog" className="hover:text-green-600 transition-colors">Blog</Link>
@@ -702,76 +702,86 @@ const Subblog = () => {
             .blog-rich-section p:empty { display: none !important; }
 
             /* Hide headings/paras that contain ONLY <br> or &nbsp; */
+            .blog-rich-section h1 br:only-child,
             .blog-rich-section h2 br:only-child,
             .blog-rich-section h3 br:only-child,
             .blog-rich-section p br:only-child { display: none; }
+            .blog-rich-section h1:not(:has(*:not(br))):not(:has(text)),
             .blog-rich-section h2:not(:has(*:not(br))):not(:has(text)),
             .blog-rich-section h3:not(:has(*:not(br))):not(:has(text)) { display: none !important; }
 
-            /* ── Headings – Crisp, reduced boldness, refined typography ── */
+            /* ── Headings – Compact, preserve custom colors, reduced top margin ── */
             .blog-rich-section h1,
             .blog-rich-section h2,
             .blog-rich-section h3,
             .blog-rich-section h4 {
-              scroll-margin-top: 5rem !important;
+              scroll-margin-top: 4.5rem !important;
             }
             .blog-rich-section h1 {
-              font-size: 1.25rem !important;
-              font-weight: 700 !important;
-              color: #111827 !important;
-              margin: 1.25rem 0 0.6rem 0 !important;
-              line-height: 1.35 !important;
+              font-size: 1.25rem;
+              font-weight: 700;
+              margin: 0.75rem 0 0.35rem 0;
+              line-height: 1.35;
             }
             .blog-rich-section h2 {
-              font-size: 1.12rem !important;
-              font-weight: 600 !important;
-              color: #1f2937 !important;
-              border-left: none !important;
-              padding-left: 0 !important;
-              margin: 1.25rem 0 0.5rem 0 !important;
-              line-height: 1.4 !important;
-              display: block !important;
-              text-decoration: none !important;
+              font-size: 1.15rem;
+              font-weight: 700;
+              border-left: none;
+              padding-left: 0;
+              margin: 0.75rem 0 0.3rem 0;
+              line-height: 1.4;
+              display: block;
+              text-decoration: none;
             }
             .blog-rich-section h3 {
-              font-size: 1.02rem !important;
-              font-weight: 600 !important;
-              color: #166534 !important;
-              margin: 1rem 0 0.4rem 0 !important;
-              line-height: 1.4 !important;
+              font-size: 1.05rem;
+              font-weight: 700;
+              margin: 0.65rem 0 0.25rem 0;
+              line-height: 1.4;
             }
             .blog-rich-section h4 {
-              font-size: 0.95rem !important;
-              font-weight: 600 !important;
-              color: #1f2937 !important;
-              margin: 0.9rem 0 0.35rem 0 !important;
+              font-size: 0.96rem;
+              font-weight: 600;
+              margin: 0.5rem 0 0.2rem 0;
             }
             .blog-rich-section h5, .blog-rich-section h6 {
-              font-size: 0.95rem !important;
-              font-weight: 600 !important;
-              color: #374151 !important;
-              margin: 0.75rem 0 0.3rem 0 !important;
+              font-size: 0.92rem;
+              font-weight: 600;
+              margin: 0.4rem 0 0.2rem 0;
             }
 
-            /* Override Bootstrap link/span defaults inside headings */
-            .blog-rich-section h1 a, .blog-rich-section h1 span,
-            .blog-rich-section h2 a, .blog-rich-section h2 span,
-            .blog-rich-section h3 a, .blog-rich-section h3 span {
-              color: inherit !important;
-              text-decoration: none !important;
-              font-size: inherit !important;
-              font-weight: inherit !important;
+            /* Links inside headings */
+            .blog-rich-section h1 a,
+            .blog-rich-section h2 a,
+            .blog-rich-section h3 a {
+              text-decoration: none;
             }
 
-            /* ── Paragraphs & Body Text – Bigger, highly readable fonts ── */
+            /* ── Paragraphs & Body Text – Clean, reduced bottom margin ── */
             .blog-rich-section p {
-              margin-bottom: 0.85rem;
-              font-size: 14.5px !important;
-              color: #374151 !important;
-              line-height: 1.75 !important;
+              margin-bottom: 0.45rem;
+              font-size: 14.5px;
+              color: #374151;
+              line-height: 1.65;
+            }
+            .blog-rich-section p:last-child {
+              margin-bottom: 0;
             }
             .blog-rich-section p * {
-              line-height: inherit !important;
+              line-height: inherit;
+            }
+
+            /* ── Bold Text: PRESERVE & GUARANTEE bold weight across all tags ── */
+            .blog-rich-section strong,
+            .blog-rich-section b,
+            .blog-rich-section [style*="font-weight: bold"],
+            .blog-rich-section [style*="font-weight:bold"],
+            .blog-rich-section [style*="font-weight: 700"],
+            .blog-rich-section [style*="font-weight:700"],
+            .blog-rich-section [style*="font-weight: 800"],
+            .blog-rich-section [style*="font-weight: 600"] {
+              font-weight: 700 !important;
+              color: inherit;
             }
             .blog-rich-section span { font-size: inherit; }
 
@@ -940,23 +950,22 @@ const Subblog = () => {
               word-break: normal !important;
             }
 
-            /* ── Lists & Bullets ── */
-            .blog-rich-section ul { list-style: disc; padding-left: 1.25rem; margin: 0.6rem 0; }
-            .blog-rich-section ol { list-style: decimal; padding-left: 1.25rem; margin: 0.6rem 0; }
-            .blog-rich-section li { margin-bottom: 0.4rem; font-size: 14.5px !important; color: #374151 !important; line-height: 1.7 !important; }
+            /* ── Lists & Bullets – Compact spacing ── */
+            .blog-rich-section ul { list-style: disc; padding-left: 1.25rem; margin: 0.4rem 0; }
+            .blog-rich-section ol { list-style: decimal; padding-left: 1.25rem; margin: 0.4rem 0; }
+            .blog-rich-section li { margin-bottom: 0.2rem; font-size: 14.5px; line-height: 1.6; }
             .blog-rich-section li p { display: inline !important; margin: 0 !important; font-size: inherit !important; }
             .blog-rich-section li:empty { display: none !important; }
             .blog-rich-section li:not(:has(*:not(br))):not(:has(text)) { display: none !important; }
 
-            /* ── Inline ── */
-            .blog-rich-section a { color: #16a34a !important; text-decoration: underline !important; font-weight: 500; }
-            .blog-rich-section a:hover { color: #15803d !important; }
-            .blog-rich-section strong, .blog-rich-section b { font-weight: 700 !important; color: #111827 !important; }
-            .blog-rich-section em, .blog-rich-section i { font-style: italic !important; }
-            .blog-rich-section img { max-width: 100%; height: auto; border-radius: 8px; margin: 0.75rem 0; display: block; }
+            /* ── Inline elements ── */
+            .blog-rich-section a { color: #16a34a; text-decoration: underline; font-weight: 500; }
+            .blog-rich-section a:hover { color: #15803d; }
+            .blog-rich-section em, .blog-rich-section i { font-style: italic; }
+            .blog-rich-section img { max-width: 100%; height: auto; border-radius: 6px; margin: 0.5rem 0; display: block; }
             .blog-rich-section blockquote {
               border-left: 4px solid #16a34a;
-              color: #4b5563; font-style: italic; margin: 1rem 0; background: #f9fafb; padding: 0.75rem 1rem; border-radius: 0 6px 6px 0;
+              color: #4b5563; font-style: italic; margin: 0.6rem 0; background: #f9fafb; padding: 0.5rem 0.75rem; border-radius: 0 4px 4px 0;
             }
 
             /* ── Mobile tweaks ── */
@@ -970,20 +979,20 @@ const Subblog = () => {
           `}</style>
 
           {/* Two-column layout */}
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-2">
 
             {/* ── LEFT: Main article ── */}
             <main className="flex-1 min-w-0 overflow-x-hidden">
 
               {/* Topic badge */}
               {blog.topic && (
-                <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-green-200">
+                <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded mb-1 border border-green-200">
                   {blog.topic}
                 </span>
               )}
 
               {/* H1 Title - clean, reduced boldness & balanced letter size */}
-              <h1 className="text-xl sm:text-2xl lg:text-[26px] font-semibold text-gray-900 leading-snug mb-3 tracking-normal">
+              <h1 className="text-xl sm:text-2xl lg:text-[26px] font-semibold text-gray-900 leading-snug tracking-normal">
                 {decodeHtml(blog.title)}
               </h1>
 
@@ -992,13 +1001,13 @@ const Subblog = () => {
                 decodeHtml(blog.shortDescription).length > 5 &&
                 decodeHtml(blog.shortDescription) !== "ss" && (
                   <div
-                    className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed"
+                    className="text-sm sm:text-base text-gray-600  leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: blog.shortDescription }}
                   />
               )}
 
               {/* Meta row */}
-              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-200">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-gray-500 pb-2.5 border-b border-gray-200">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="flex items-center gap-1"><FaClock className="text-gray-400" />{formattedDate}</span>
                   <span className="flex items-center gap-1"><FaUser className="text-gray-400" />{blog.author || "Examrally Team"}</span>
@@ -1018,7 +1027,7 @@ const Subblog = () => {
                     href={blog.quickNav.topButtonLink || "#"}
                     target={blog.quickNav.topButtonLink?.startsWith("http") ? "_blank" : undefined}
                     rel={blog.quickNav.topButtonLink?.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm transform hover:-translate-y-0.5 ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm transform hover:-translate-y-0.5 ${
                       QUICK_NAV_THEMES[blog.quickNav.theme || "purple"]?.topBtn || QUICK_NAV_THEMES.purple.topBtn
                     }`}
                   >
@@ -1039,24 +1048,24 @@ const Subblog = () => {
                 let inactiveTabStyle = "";
 
                 if (design === "modern_pills") {
-                  containerStyle = "rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs px-2 py-1.5 mb-6";
-                  tabBaseStyle = "px-4 py-1.5 text-xs sm:text-[13px] rounded-full font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer";
+                  containerStyle = "rounded-md bg-slate-100/90 border border-slate-200/90 shadow-2xs px-2 py-1";
+                  tabBaseStyle = "px-3 py-1 text-xs sm:text-[13px] rounded-md font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer";
                   activeTabStyle = navTheme.pillActive;
-                  inactiveTabStyle = "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70";
+                  inactiveTabStyle = "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 rounded-md";
                 } else if (design === "minimal_line") {
-                  containerStyle = "bg-transparent border-b-2 border-slate-200 rounded-none px-1 py-0 mb-6";
-                  tabBaseStyle = "px-3.5 py-2 text-xs sm:text-[13px] font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-2 -mb-[2px]";
+                  containerStyle = "bg-transparent border-b-2 border-slate-200 rounded-none px-1 py-0";
+                  tabBaseStyle = "px-3 py-1.5 text-xs sm:text-[13px] font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-2 -mb-[2px]";
                   activeTabStyle = navTheme.minimalActive;
                   inactiveTabStyle = "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300";
                 } else if (design === "glass_gradient") {
-                  containerStyle = "rounded-2xl bg-white/80 border border-slate-200/80 shadow-xs backdrop-blur-md px-3 py-1.5 mb-6";
-                  tabBaseStyle = "px-3.5 py-1.5 text-xs sm:text-[13px] rounded-xl font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border";
+                  containerStyle = "rounded-md bg-white/80 border border-slate-200/80 shadow-xs backdrop-blur-md px-2.5 py-1";
+                  tabBaseStyle = "px-3 py-1 text-xs sm:text-[13px] rounded-md font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border";
                   activeTabStyle = navTheme.glassActive;
-                  inactiveTabStyle = "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60";
+                  inactiveTabStyle = "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60 rounded-md";
                 } else {
-                  // classic_tabs (exact screenshot match: blue bar with bottom underline)
-                  containerStyle = `rounded-lg border px-3 py-1 mb-6 ${navTheme.classicBg}`;
-                  tabBaseStyle = "px-3 py-1.5 text-xs sm:text-[13px] whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-[3px]";
+                  // classic_tabs (exact screenshot match with minimal curve)
+                  containerStyle = `rounded-md border px-2.5 py-1 ${navTheme.classicBg}`;
+                  tabBaseStyle = "px-3 py-1 text-xs sm:text-[13px] whitespace-nowrap transition-all flex-shrink-0 cursor-pointer border-b-[3px] rounded-t-sm";
                   activeTabStyle = `${navTheme.classicActive}`;
                   inactiveTabStyle = "border-transparent text-slate-700 hover:text-slate-950 hover:border-slate-300/40 font-medium";
                 }
@@ -1136,11 +1145,11 @@ const Subblog = () => {
               {/* Latest Update banner */}
               <div
                 id="section-latest-update"
-                className=" border border-green-200 rounded-lg p-4 mb-6 scroll-mt-24"
+                className=" border border-green-200 rounded-lg p-3 sm:p-3.5 scroll-mt-20"
               >
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div className="flex-1">
-                    <span className="inline-flex items-center gap-1 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full mb-2">
+                <div className="flex items-start justify-between gap-2.5 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    <span className="inline-flex items-center gap-1 bg-green-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-md mb-1.5">
                       <FaBell className="text-[10px]" /> Latest Update
                     </span>
                     <div
@@ -1153,7 +1162,7 @@ const Subblog = () => {
                       href={blog.officialWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap flex-shrink-0"
+                      className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-md transition-colors whitespace-nowrap flex-shrink-0"
                     >
                       Official Website <FaExternalLinkAlt className="text-[10px]" />
                     </a>
@@ -1212,14 +1221,14 @@ const Subblog = () => {
               {processedSubtitles?.map((item, idx) => (
                 <section
                   key={item._id || idx}
-                  className="mb-8 scroll-mt-24 bg-white rounded-xl p-4 sm:p-5 border border-gray-100 shadow-sm"
+                  className="mb-3.5 scroll-mt-20 bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-2xs"
                   id={`section-${idx + 1}`}
                 >
                   {item.subtitle && (
                     <div
                       className="blog-rich-section"
                       dangerouslySetInnerHTML={{
-                        __html: item.subtitle,
+                        __html: cleanHtml(item.subtitle),
                       }}
                     />
                   )}
@@ -1227,7 +1236,7 @@ const Subblog = () => {
                     decodeHtml(item.content) !== "ss" &&
                     decodeHtml(item.content).length > 2 && (
                       <div
-                        className="blog-rich-section mt-4"
+                        className="blog-rich-section mt-2"
                         dangerouslySetInnerHTML={{
                           __html: cleanHtml(item.content),
                         }}
