@@ -327,23 +327,17 @@ const Subblog = () => {
       .trim();
   };
 
-  // Pre-clean rich HTML before injecting into DOM
+  // Pre-clean rich HTML before injecting into DOM (preserves original rich text, colors & heights)
   const cleanHtml = (html) => {
     if (!html) return "";
-    return html
-      // 1. Wrap tables in scroll container for mobile
-      .replace(/<table(\b[^>]*)>/gi, '<div class="table-scroll-wrapper"><table$1>')
-      .replace(/<\/table>/gi, "</table></div>")
-      // 2. Remove headings that are empty or contain only whitespace/&nbsp;/br
-      .replace(/<(h[1-6])\b[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/\1>/gi, "")
-      // 3. Remove paragraphs that are empty or contain only whitespace/&nbsp;/br
-      .replace(/<p\b[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "")
-      // 4. Remove span tags that are empty
-      .replace(/<span\b[^>]*>(\s|&nbsp;)*<\/span>/gi, "")
-      // 5. Collapse consecutive <br>
-      .replace(/(<br\s*\/?>(\s|&nbsp;)*){2,}/gi, "<br>")
-      // 6. Remove empty divs
-      .replace(/<div\b[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/div>/gi, "");
+    let res = html;
+    // Wrap tables in scroll container for mobile if not already wrapped
+    if (!res.includes("table-scroll-wrapper")) {
+      res = res
+        .replace(/<table(\b[^>]*)>/gi, '<div class="table-scroll-wrapper"><table$1>')
+        .replace(/<\/table>/gi, "</table></div>");
+    }
+    return res;
   };
 
   /* ─────────────────────────────────────────────────────────────
@@ -710,7 +704,7 @@ const Subblog = () => {
             .blog-rich-section h2:not(:has(*:not(br))):not(:has(text)),
             .blog-rich-section h3:not(:has(*:not(br))):not(:has(text)) { display: none !important; }
 
-            /* ── Headings – Compact, preserve custom colors, reduced top margin ── */
+            /* ── Headings – Natural fallbacks; never override author inline styles ── */
             .blog-rich-section h1,
             .blog-rich-section h2,
             .blog-rich-section h3,
@@ -718,13 +712,13 @@ const Subblog = () => {
               scroll-margin-top: 4.5rem !important;
             }
             .blog-rich-section h1 {
-              font-size: 1.25rem;
+              font-size: 1.3rem;
               font-weight: 700;
               margin: 0.75rem 0 0.35rem 0;
               line-height: 1.35;
             }
             .blog-rich-section h2 {
-              font-size: 1.15rem;
+              font-size: 1.2rem;
               font-weight: 700;
               border-left: none;
               padding-left: 0;
@@ -734,18 +728,18 @@ const Subblog = () => {
               text-decoration: none;
             }
             .blog-rich-section h3 {
-              font-size: 1.05rem;
+              font-size: 1.1rem;
               font-weight: 700;
               margin: 0.65rem 0 0.25rem 0;
               line-height: 1.4;
             }
             .blog-rich-section h4 {
-              font-size: 0.96rem;
+              font-size: 1rem;
               font-weight: 600;
               margin: 0.5rem 0 0.2rem 0;
             }
             .blog-rich-section h5, .blog-rich-section h6 {
-              font-size: 0.92rem;
+              font-size: 0.95rem;
               font-weight: 600;
               margin: 0.4rem 0 0.2rem 0;
             }
@@ -757,18 +751,12 @@ const Subblog = () => {
               text-decoration: none;
             }
 
-            /* ── Paragraphs & Body Text – Clean, reduced bottom margin ── */
+            /* ── Paragraphs & Body Text – Clean spacing, preserve original heights and colors ── */
             .blog-rich-section p {
               margin-bottom: 0.45rem;
-              font-size: 14.5px;
-              color: #374151;
-              line-height: 1.65;
             }
             .blog-rich-section p:last-child {
               margin-bottom: 0;
-            }
-            .blog-rich-section p * {
-              line-height: inherit;
             }
 
             /* ── Bold Text: PRESERVE & GUARANTEE bold weight across all tags ── */
@@ -781,9 +769,7 @@ const Subblog = () => {
             .blog-rich-section [style*="font-weight: 800"],
             .blog-rich-section [style*="font-weight: 600"] {
               font-weight: 700 !important;
-              color: inherit;
             }
-            .blog-rich-section span { font-size: inherit; }
 
             /* ── Tables – Modern Trending Design Pattern ── */
             .blog-rich-section .table-scroll-wrapper {
@@ -1153,7 +1139,7 @@ const Subblog = () => {
                       <FaBell className="text-[10px]" /> Latest Update
                     </span>
                     <div
-                      className="blog-rich-section text-sm sm:text-base text-gray-700 leading-relaxed mt-1"
+                      className="blog-rich-section mt-1"
                       dangerouslySetInnerHTML={{ __html: cleanHtml(blog.description) }}
                     />
                   </div>
@@ -1228,7 +1214,7 @@ const Subblog = () => {
                     <div
                       className="blog-rich-section"
                       dangerouslySetInnerHTML={{
-                        __html: cleanHtml(item.subtitle),
+                        __html: item.subtitle,
                       }}
                     />
                   )}
