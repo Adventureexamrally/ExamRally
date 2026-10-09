@@ -983,14 +983,14 @@ const Subblog = () => {
               </h1>
 
               {/* Short description - hide if placeholder like "ss" */}
-              {blog.shortDescription &&
+              {/* {blog.shortDescription &&
                 decodeHtml(blog.shortDescription).length > 5 &&
                 decodeHtml(blog.shortDescription) !== "ss" && (
                   <div
                     className="text-sm sm:text-base text-gray-600  leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: blog.shortDescription }}
                   />
-              )}
+              )} */}
 
               {/* Meta row */}
               <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-gray-500 pb-2.5 border-b border-gray-200">
@@ -1003,10 +1003,9 @@ const Subblog = () => {
                   </button>
                 </div>
 
-                {/* Top Action Button (Controlled by Admin show/hide toggle) */}
+                {/* Top Action Button (Strictly controlled by Admin show/hide toggle) */}
                 {blog.quickNav?.enabled === true &&
-                  (blog.quickNav?.topButtonEnabled === true ||
-                    (blog.quickNav?.topButtonEnabled === undefined && Boolean(blog.quickNav?.topButtonText && blog.quickNav?.topButtonText.trim() !== ""))) &&
+                  blog.quickNav?.topButtonEnabled === true &&
                   blog.quickNav?.topButtonText &&
                   blog.quickNav?.topButtonText.trim() !== "" && (
                   <a
