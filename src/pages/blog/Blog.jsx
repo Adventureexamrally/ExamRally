@@ -1326,7 +1326,7 @@ const Blog = () => {
                 {/* Store Badges side-by-side */}
                 <div className="relative z-10 grid gap-2 mb-2.5 ">
                   <a
-                    href="https://play.google.com/store/apps"
+                    href="https://play.google.com/store/apps/details?id=io.examrally.in&pcampaignid=web_share"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl py-2 px-2.5 shadow-xs transition group/gp backdrop-blur-xs"
@@ -1343,7 +1343,7 @@ const Blog = () => {
 
                 {/* Theme Dynamic CTA Button */}
                 <a
-                  href="https://play.google.com/store/apps"
+                  href="https://play.google.com/store/apps/details?id=io.examrally.in&pcampaignid=web_share"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`relative z-10 w-full ${activeRightTheme.button} font-extrabold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all duration-200 group/btn`}
