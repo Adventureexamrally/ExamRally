@@ -1,113 +1,560 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Slider from "react-slick";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaArrowRight,
+  FaBookOpen,
+  FaChartLine,
+  FaLaptop,
+  FaPenNib,
+} from "react-icons/fa";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Api from "../service/Api";
+import {
+  LEFT_BANNER_THEMES,
+  LEFT_BANNER_DESIGNS,
+  RIGHT_BANNER_THEMES,
+  RIGHT_BANNER_DESIGNS,
+} from "../pages/blog/bannerThemes";
 
-const Banner = () => {
+const CustomPrevArrow = (props) => {
+  const { onClick } = props;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Previous slide"
+      className="!absolute !left-3 sm:!left-4 !top-1/2 !-translate-y-1/2 !z-30 !w-8 !h-8 sm:!w-9 sm:!h-9 !rounded-full !bg-white/90 hover:!bg-white !text-gray-800 !shadow-md !flex !items-center !justify-center !transition-all hover:!scale-110 active:!scale-95 !border !border-slate-200/80 !p-0 !min-h-0 !min-w-0"
+    >
+      <FaChevronLeft className="text-xs sm:text-sm text-slate-700 pointer-events-none" />
+    </button>
+  );
+};
+
+const CustomNextArrow = (props) => {
+  const { onClick } = props;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Next slide"
+      className="!absolute !right-3 sm:!right-4 !top-1/2 !-translate-y-1/2 !z-30 !w-8 !h-8 sm:!w-9 sm:!h-9 !rounded-full !bg-white/90 hover:!bg-white !text-gray-800 !shadow-md !flex !items-center !justify-center !transition-all hover:!scale-110 active:!scale-95 !border !border-slate-200/80 !p-0 !min-h-0 !min-w-0"
+    >
+      <FaChevronRight className="text-xs sm:text-sm text-slate-700 pointer-events-none" />
+    </button>
+  );
+};
+
+/**
+ * Universal Banner Component
+ * @param {string} mode - "auto" | "slider" | "blog"
+ * @param {boolean} enabled - Toggle display (if false, returns null)
+ * @param {string} className - Optional container styling
+ */
+const Banner = ({ mode = "auto", enabled = true, className = "" }) => {
   const [slides, setSlides] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [blogBanner, setBlogBanner] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Api.get("banner/get/active")
-      .then((response) => {
-        setSlides(Array.isArray(response.data) ? response.data : []);
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setLoading(true);
+
+    Promise.allSettled([
+      Api.get("banner/get/active"),
+      Api.get("/blog-banner"),
+    ])
+      .then(([slidesRes, blogRes]) => {
+        if (!isMounted) return;
+
+        if (slidesRes.status === "fulfilled" && Array.isArray(slidesRes.value?.data)) {
+          setSlides(slidesRes.value.data);
+        }
+        if (blogRes.status === "fulfilled" && blogRes.value?.data) {
+          setBlogBanner(blogRes.value.data);
+        }
       })
-      .catch((error) => {
-        console.error("Error fetching slides:", error);
+      .catch((err) => {
+        console.error("Banner fetch error:", err);
       })
       .finally(() => {
-        setLoading(false); // Set loading to false after fetch completes
+        if (isMounted) setLoading(false);
       });
-  }, []);
 
-  const CustomPrevArrow = (props) => {
-    const { className, style, onClick, currentSlide, slideCount, ...rest } = props;
+    return () => {
+      isMounted = false;
+    };
+  }, [enabled]);
+
+  // Dynamic Theme Tokens for Blog Mode
+  const activeLeftTheme = useMemo(() => {
     return (
-      <FaChevronLeft
-        {...rest}
-        className={className}
-        style={{ ...style, display: "block", color: "black" }}
-        onClick={onClick}
-      />
+      LEFT_BANNER_THEMES[blogBanner?.leftBanner?.colorTheme] ||
+      LEFT_BANNER_THEMES.emerald
     );
-  };
+  }, [blogBanner?.leftBanner?.colorTheme]);
 
-  const CustomNextArrow = (props) => {
-    const { className, style, onClick, currentSlide, slideCount, ...rest } = props;
+  const activeLeftDesign = useMemo(() => {
     return (
-      <FaChevronRight
-        {...rest}
-        className={className}
-        style={{ ...style, display: "block", color: "black" }}
-        onClick={onClick}
-      />
+      LEFT_BANNER_DESIGNS[blogBanner?.leftBanner?.designStyle] ||
+      LEFT_BANNER_DESIGNS.classic
     );
-  };
+  }, [blogBanner?.leftBanner?.designStyle]);
 
-  const settings = {
-    dots: true,
+  const activeRightTheme = useMemo(() => {
+    return (
+      RIGHT_BANNER_THEMES[blogBanner?.rightBanner?.colorTheme] ||
+      RIGHT_BANNER_THEMES.forest
+    );
+  }, [blogBanner?.rightBanner?.colorTheme]);
+
+  const activeRightDesign = useMemo(() => {
+    return (
+      RIGHT_BANNER_DESIGNS[blogBanner?.rightBanner?.designStyle] ||
+      RIGHT_BANNER_DESIGNS.classic
+    );
+  }, [blogBanner?.rightBanner?.designStyle]);
+
+  // If globally disabled via prop, auto-hide
+  if (!enabled) return null;
+
+  // Compact, responsive loading skeleton (no more 100vh jarring layout)
+  if (loading) {
+    return (
+      <div className={`w-full py-2 ${className}`}>
+        <div className="w-full h-36 sm:h-44 md:h-52 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-pulse rounded-2xl border border-gray-200/80" />
+      </div>
+    );
+  }
+
+  // Determine which banner format to render
+  const isBlogBannerActive =
+    blogBanner &&
+    blogBanner.status !== "INACTIVE" &&
+    (blogBanner.leftBanner?.enabled !== false ||
+      blogBanner.rightBanner?.enabled !== false);
+
+  const shouldRenderBlog =
+    mode === "blog" || (mode === "auto" && isBlogBannerActive && slides.length === 0);
+
+  // ==========================================
+  // 1. DUAL BLOG BANNER MODE
+  // ==========================================
+  if (shouldRenderBlog && isBlogBannerActive) {
+    const isLeftEnabled = blogBanner.leftBanner?.enabled !== false;
+    const isRightEnabled = blogBanner.rightBanner?.enabled !== false;
+
+    if (!isLeftEnabled && !isRightEnabled) return null;
+
+    return (
+      <div className={`w-full ${className}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+          {/* Left Banner: Mock Test Series */}
+          {isLeftEnabled && (
+            <div
+              className={`${
+                !isRightEnabled ? "lg:col-span-12" : "lg:col-span-8 xl:col-span-9"
+              } ${activeLeftTheme.containerBg} ${activeLeftTheme.border} ${
+                activeLeftDesign.wrapperClass
+              } p-3 sm:p-4 relative overflow-hidden flex flex-col justify-between`}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div
+                  className={`${
+                    blogBanner.leftBanner?.showTargetExams !== false
+                      ? "md:col-span-7"
+                      : "md:col-span-12"
+                  } space-y-1.5`}
+                >
+                  <span
+                    className={`inline-block ${activeLeftTheme.badge} text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs`}
+                  >
+                    {blogBanner.leftBanner?.badge || "BANK EXAM"}
+                  </span>
+
+                  <h2 className={`text-lg sm:text-xl font-black ${activeLeftTheme.textColor} tracking-tight`}>
+                    {blogBanner.leftBanner?.title || "MOCK TEST SERIES"}
+                  </h2>
+                  <p className={`text-xs ${activeLeftTheme.subtitleColor} font-medium`}>
+                    {blogBanner.leftBanner?.subtitle || "Practice with Real Exam Level Questions"}
+                  </p>
+
+                  {/* Bullet points */}
+                  <div className="grid grid-cols-2 gap-1.5 my-1.5">
+                    {(blogBanner.leftBanner?.features || []).map((feat, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex items-center gap-1.5 text-[11px] font-semibold ${activeLeftTheme.featuresColor}`}
+                      >
+                        <span
+                          className={`w-3.5 h-3.5 rounded-full ${activeLeftTheme.checkmark} flex items-center justify-center text-[8px] flex-shrink-0 font-bold`}
+                        >
+                          ✓
+                        </span>
+                        <span className="truncate">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Button */}
+                  <div className="pt-1">
+                    <Link
+                      to={blogBanner.leftBanner?.buttonLink || "/subscriptions"}
+                      className={`inline-flex items-center gap-1.5 ${activeLeftTheme.button} font-bold text-xs px-4 py-1.5 rounded-full shadow-xs transition-all`}
+                    >
+                      <span>{blogBanner.leftBanner?.buttonText || "Explore Mock Test Series"}</span>
+                      <FaArrowRight className="text-[9px]" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Target Bank Exams Companion */}
+                {blogBanner.leftBanner?.showTargetExams !== false && (
+                  <div
+                    className={`md:col-span-5 ${activeLeftTheme.examCardBg} border ${activeLeftTheme.examCardBorder} rounded-xl p-2.5 shadow-2xs`}
+                  >
+                    <div className="text-[10px] font-bold uppercase mb-1.5 flex items-center justify-between">
+                      <span className={activeLeftTheme.textColor}>
+                        {blogBanner.leftBanner?.targetExamsTitle || "Target Bank Exams"}
+                      </span>
+                      <span
+                        className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded ${activeLeftTheme.badge}`}
+                      >
+                        {blogBanner.leftBanner?.targetExamsBadge || "Live Tests"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1">
+                      {(blogBanner.leftBanner?.targetExamsList || [
+                        "IBPS PO",
+                        "IBPS Clerk",
+                        "SBI PO",
+                        "SBI Clerk",
+                        "RRB PO",
+                        "RRB Clerk",
+                      ])
+                        .slice(0, 6)
+                        .map((exam, i) => (
+                          <div
+                            key={i}
+                            className="text-center py-1 px-1.5 rounded text-[10px] font-bold bg-slate-50 border border-slate-200/60 text-slate-700 truncate"
+                          >
+                            {exam}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Right Banner: Rally PDF Course */}
+          {isRightEnabled && (
+            <div
+              className={`${
+                !isLeftEnabled ? "lg:col-span-12" : "lg:col-span-4 xl:col-span-3"
+              } ${activeRightTheme.containerBg} ${activeRightTheme.border} ${
+                activeRightDesign.wrapperClass
+              } p-3 sm:p-4 ${activeRightTheme.textColor} relative overflow-hidden flex flex-col justify-between`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span
+                    className={`${activeRightTheme.badge} text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider`}
+                  >
+                    {blogBanner.rightBanner?.badge || "365 DAYS"}
+                  </span>
+                  <div className="bg-red-600 text-white font-black px-1.5 py-0.5 rounded text-[10px]">
+                    ₹{blogBanner.rightBanner?.priceTag || "365"}
+                  </div>
+                </div>
+
+                <h2 className="text-base font-black text-white tracking-wide leading-tight">
+                  {blogBanner.rightBanner?.title || "RALLY PDF COURSE"}
+                </h2>
+                <p className={`${activeRightTheme.featuresColor} text-[11px] font-medium mt-0.5`}>
+                  {blogBanner.rightBanner?.subtitle || "Complete Preparation for Bank Exams"}
+                </p>
+
+                <div className={`space-y-1 text-[10px] ${activeRightTheme.featuresColor} my-2`}>
+                  {(blogBanner.rightBanner?.features || []).slice(0, 4).map((feat, i) => (
+                    <div key={i} className="flex items-center gap-1.5">
+                      <span
+                        className={`w-3 h-3 rounded-full ${activeRightTheme.checkmark} flex items-center justify-center text-[7px] font-black flex-shrink-0`}
+                      >
+                        ✓
+                      </span>
+                      <span className="truncate">{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <Link
+                  to={blogBanner.rightBanner?.buttonLink || "/pdf-course"}
+                  className={`block text-center ${activeRightTheme.button} font-bold text-xs py-1.5 rounded-full shadow-xs transition-all`}
+                >
+                  {blogBanner.rightBanner?.buttonText || "View 365 Days Course"} →
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 2. SLIDER / IMAGE BANNER MODE
+  // ==========================================
+  if (slides.length === 0) {
+    // If no slides are active and blog mode is not active, cleanly auto-hide
+    return null;
+  }
+
+  const sliderSettings = {
+    dots: slides.length > 1,
     infinite: slides.length > 1,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: slides.length > 1,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 3800,
+    pauseOnHover: true,
+    adaptiveHeight: true,
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
+    appendDots: (dots) => (
+      <div className="!bottom-2.5 sm:!bottom-3 !z-20 !flex !justify-center !w-full pointer-events-none">
+        <ul className="flex items-center gap-1.5 m-0 px-2 py-1 bg-black/40 backdrop-blur-xs rounded-full list-none shadow-xs pointer-events-auto">
+          {dots}
+        </ul>
+      </div>
+    ),
+    customPaging: () => (
+      <span className="banner-nav-dot block rounded-full transition-all duration-300" />
+    ),
   };
 
   return (
-    <div className="bg-gray-100 flex justify-center items-center rounded-md py-1">
-      <div className="w-full rounded-md">
-        {loading ? (
-        <div
-                className="d-flex justify-content-center align-items-center"
-                style={{ height: '100vh' }} // Full viewport height
+    <div className={`w-full ${className}`}>
+      {/* Scoped CSS for seamless banner height and arrow/dot aesthetics */}
+      <style>{`
+        .banner-slider .slick-slide {
+          height: auto !important;
+        }
+        .banner-slider .slick-slide > div {
+          height: auto !important;
+          line-height: 0 !important;
+        }
+        .banner-slider .slick-list {
+          transition: height 350ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .banner-slider .slick-dots {
+          bottom: 10px !important;
+          display: flex !important;
+          justify-content: center !important;
+        }
+        .banner-slider .slick-dots li {
+          width: auto !important;
+          height: auto !important;
+          margin: 0 2px !important;
+          padding: 0 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+        }
+        .banner-slider .slick-dots li .banner-nav-dot {
+          width: 6px;
+          height: 6px;
+          background: rgba(255, 255, 255, 0.5);
+        }
+        .banner-slider .slick-dots li.slick-active .banner-nav-dot {
+          width: 18px;
+          background: #ffffff;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .banner-slider .slick-dots li button {
+          padding: 0 !important;
+          width: auto !important;
+          height: auto !important;
+          background: transparent !important;
+          border: 0 !important;
+        }
+        .banner-slider .slick-dots li button:before {
+          display: none !important;
+        }
+        .banner-slider .slick-prev,
+        .banner-slider .slick-next {
+          width: 36px !important;
+          height: 36px !important;
+          padding: 0 !important;
+          border-radius: 9999px !important;
+        }
+        .banner-slider .slick-prev:before,
+        .banner-slider .slick-next:before {
+          display: none !important;
+        }
+      `}</style>
+
+      {(() => {
+        const renderSlideBody = (slide, index) => {
+          const isDynamic =
+            slide.bannerType === "dynamic" ||
+            (!slide.photo && (slide.badge || slide.features?.length > 0));
+
+          if (isDynamic) {
+            const theme = LEFT_BANNER_THEMES[slide.colorTheme] || LEFT_BANNER_THEMES.emerald;
+            const design = LEFT_BANNER_DESIGNS[slide.designStyle] || LEFT_BANNER_DESIGNS.classic;
+            const showTargetExams = slide.showTargetExams !== false;
+
+            return (
+              <div
+                className={`w-full ${theme.containerBg} ${theme.border} ${design.wrapperClass} p-4 sm:p-6 md:p-8 relative overflow-hidden flex flex-col justify-between`}
               >
-                <div
-                  className="spinner-border text-green-500 fw-bold "
-                  role="status"
-                  style={{ width: '3rem', height: '3rem' }}
-                >
-                 
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  <div className={`${showTargetExams ? "md:col-span-7" : "md:col-span-12"} space-y-2`}>
+                    {slide.badge && (
+                      <span
+                        className={`inline-block ${theme.badge} text-[10px] sm:text-[11px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow-2xs`}
+                      >
+                        {slide.badge}
+                      </span>
+                    )}
+
+                    <h2
+                      className={`text-xl sm:text-2xl md:text-3xl font-black ${theme.textColor} tracking-tight leading-tight`}
+                    >
+                      {slide.title || "MOCK TEST SERIES"}
+                    </h2>
+
+                    {slide.subtitle && (
+                      <p className={`text-xs sm:text-sm ${theme.subtitleColor} font-medium`}>
+                        {slide.subtitle}
+                      </p>
+                    )}
+
+                    {/* Features checklist */}
+                    {Array.isArray(slide.features) && slide.features.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2 my-2 sm:my-3">
+                        {slide.features.map((feat, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold ${theme.featuresColor}`}
+                          >
+                            <span
+                              className={`w-3.5 h-3.5 rounded-full ${theme.checkmark} flex items-center justify-center text-[8px] flex-shrink-0 font-bold`}
+                            >
+                              ✓
+                            </span>
+                            <span className="truncate">{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Button */}
+                    <div className="pt-1.5">
+                      <Link
+                        to={slide.buttonLink || slide.link || "/subscriptions"}
+                        className={`inline-flex items-center gap-2 ${theme.button} font-bold text-xs sm:text-sm px-5 py-2 sm:py-2.5 rounded-full shadow-sm hover:scale-[1.02] active:scale-95 transition-all`}
+                      >
+                        <span>{slide.buttonText || "Explore Mock Test Series"}</span>
+                        <FaArrowRight className="text-[10px]" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Target Bank Exams Companion */}
+                  {showTargetExams && (
+                    <div
+                      className={`md:col-span-5 ${theme.examCardBg} border ${theme.examCardBorder} rounded-2xl p-3.5 sm:p-4 shadow-sm`}
+                    >
+                      <div className="text-[10px] sm:text-xs font-bold uppercase mb-2.5 flex items-center justify-between">
+                        <span className={theme.textColor}>
+                          {slide.targetExamsTitle || "Target Bank Exams"}
+                        </span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${theme.badge}`}>
+                          {slide.targetExamsBadge || "Live Tests"}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 gap-1.5">
+                        {(slide.targetExamsList || [
+                          "IBPS PO",
+                          "IBPS Clerk",
+                          "SBI PO",
+                          "SBI Clerk",
+                          "RRB PO",
+                          "RRB Clerk",
+                        ]).map((exam, i) => (
+                          <div
+                            key={i}
+                            className="text-center py-1.5 px-2 rounded-lg text-[10.5px] font-bold bg-slate-50 border border-slate-200/70 text-slate-700 truncate shadow-2xs"
+                          >
+                            {exam}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-        ) : slides.length === 0 ? (
-          <div className="w-full h-[150px] bg-gray-200 flex items-center justify-center">
-            <p>No banners available</p>
-          </div>
-        ) : slides.length === 1 ? (
-          <div className="relative">
-            <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] overflow-hidden rounded-md shadow-lg">
-              <a href={slides[0].link}>
-                <img
-                  src={slides[0].photo}
-                  alt="Slide 1"
-                  className="w-full h-full"
-                />
-              </a>
+            );
+          }
+
+          // Image slide
+          return (
+            <a
+              href={slide.link || "#"}
+              target={slide.link?.startsWith("http") ? "_blank" : "_self"}
+              rel="noopener noreferrer"
+              className="block w-full outline-none focus:outline-none leading-none"
+            >
+              <img
+                src={slide.photo}
+                alt={slide.title || `Slide ${index + 1}`}
+                className="w-full h-auto block select-none pointer-events-none mx-auto"
+                loading={index === 0 ? "eager" : "lazy"}
+                onLoad={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new Event("resize"));
+                  }
+                }}
+              />
+            </a>
+          );
+        };
+
+        if (slides.length === 1) {
+          return (
+            <div className="relative w-full overflow-hidden rounded-2xl shadow-sm border border-slate-200/90 group bg-slate-50">
+              {renderSlideBody(slides[0], 0)}
             </div>
-          </div>
-        ) : (
-          <Slider {...settings}>
-            {slides.map((slide, index) => (
-              <div key={index} className="relative">
-                <div className="w-full h-[150px] sm:h-[180px] md:h-[200px] lg:h-[220px] xl:h-[250px] z-40 overflow-hidden rounded-md shadow-lg">
-                  <a href={slide.link}>
-                    <img
-                      src={slide.photo}
-                      alt={`Slide ${index + 1}`}
-                      className="w-full h-full"
-                    />
-                  </a>
+          );
+        }
+
+        return (
+          <div className="relative w-full overflow-hidden rounded-2xl shadow-sm border border-slate-200/90 bg-slate-50 banner-slider group">
+            <Slider {...sliderSettings}>
+              {slides.map((slide, index) => (
+                <div key={slide._id || index} className="relative outline-none select-none">
+                  {renderSlideBody(slide, index)}
                 </div>
-              </div>
-            ))}
-          </Slider>
-        )}
-      </div>
+              ))}
+            </Slider>
+          </div>
+        );
+      })()}
     </div>
   );
 };

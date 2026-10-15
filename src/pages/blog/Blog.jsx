@@ -57,6 +57,7 @@ import {
   RIGHT_BANNER_THEMES,
   RIGHT_BANNER_DESIGNS,
 } from "./bannerThemes";
+import AppPromoBanner from "../../components/AppPromoBanner";
 
 // Utility to cleanly decode HTML entities
 const decodeHtml = (html) => {
@@ -1268,90 +1269,11 @@ const Blog = () => {
             {/* Right Column: Sidebar (Dedicated Full Right Column for Ads & Promos) */}
             <div className="lg:col-span-4 xl:col-span-3 space-y-5">
 
-              {/* Card 1: Examrally Mobile App (Styled with Banner Theme & Project Design) */}
-              <div className={`${activeRightTheme.containerBg} ${activeRightTheme.border} ${activeRightTheme.textColor} rounded-2xl border p-4.5 sm:p-5 shadow-lg relative overflow-hidden group`}>
-                {/* Subtle ambient lighting orb */}
-                <div className="absolute -top-10 -right-10 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-                <div className="absolute -bottom-10 -left-10 w-28 h-28 bg-black/20 rounded-full blur-xl pointer-events-none" />
-
-                {/* Header with Original Brand Logo and Active Pulsing Indicator */}
-                <div className="relative z-10 flex items-start justify-between gap-3 mb-3.5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-white p-1 shadow-md flex items-center justify-center flex-shrink-0 group-hover:scale-105 group-hover:-rotate-2 transition-transform duration-300 overflow-hidden">
-                      <img src="/web-app-manifest-512x512.png" alt="Examrally App" className="w-full h-full object-contain rounded-lg" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="text-[15px] font-black tracking-tight leading-tight">
-                          Examrally App
-                        </h3>
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                      </div>
-                      <p className="text-[11px] opacity-85 font-medium mt-0.5">
-                        Practice anytime, anywhere
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className={`text-[9.5px] font-black uppercase tracking-wider ${activeRightTheme.badge} px-2 py-0.5 rounded-full shadow-2xs flex-shrink-0`}>
-                    FREE APP
-                  </span>
-                </div>
-
-                {/* Feature Checklist - Clean vertical rows to guarantee NO TEXT TRUNCATION */}
-                <div className="relative z-10 space-y-1.5 my-3.5">
-                  {[
-                    { icon: <FaClipboardList className="text-[10px]" />, label: "Real Exam Pattern Mock Tests" },
-                    { icon: <FaFire className="text-[10px]" />, label: "Daily Speed Quizzes & PYQs" },
-                    { icon: <FaNewspaper className="text-[10px]" />, label: "Daily Current Affairs & Analysis" },
-                    { icon: <FaTrophy className="text-[10px]" />, label: "All India Rank & Performance" },
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors backdrop-blur-xs"
-                    >
-                      <span className={`w-5 h-5 rounded-md ${activeRightTheme.checkmark} flex items-center justify-center text-[10px] flex-shrink-0 shadow-2xs`}>
-                        {item.icon}
-                      </span>
-                      <span className="text-[11.5px] font-semibold text-white leading-tight">
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Store Badges side-by-side */}
-                <div className="relative z-10 grid gap-2 mb-2.5 ">
-                  <a
-                    href="https://play.google.com/store/apps/details?id=io.examrally.in&pcampaignid=web_share"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl py-2 px-2.5 shadow-xs transition group/gp backdrop-blur-xs"
-                  >
-                    <img src={googlePlayImg} alt="Google Play" className=" object-contain w-40  flex-shrink-0 group-hover/gp:scale-110 transition-transform" />
-                    <div className="text-left leading-none min-w-0">
-                      {/* <span className="text-[7.5px] uppercase tracking-wider block opacity-75">GET IT ON</span> */}
-                      {/* <span className="text-[10.5px] font-black">Google Play</span> */}
-                    </div>
-                  </a>
-
-                
-                </div>
-
-                {/* Theme Dynamic CTA Button */}
-                <a
-                  href="https://play.google.com/store/apps/details?id=io.examrally.in&pcampaignid=web_share"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`relative z-10 w-full ${activeRightTheme.button} font-extrabold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all duration-200 group/btn`}
-                >
-                  <span>Install Free App</span>
-                  <FaArrowRight className="text-[10px] group-hover/btn:translate-x-1 transition-transform" />
-                </a>
-              </div>
+              {/* Card 1: Examrally Mobile App (Configurable via Admin & Backend) */}
+              <AppPromoBanner
+                bannerData={heroBanner?.appBanner}
+                fallbackTheme={activeRightTheme}
+              />
 
               {/* Card 2: Popular Topics (Styled with Left Banner Theme & Project Design) */}
               {/* <div className={`${activeLeftTheme.containerBg} ${activeLeftTheme.border} rounded-2xl border p-5 shadow-xs transition-all duration-300`}>
