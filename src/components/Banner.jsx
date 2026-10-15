@@ -355,10 +355,11 @@ const Banner = ({ mode = "auto", enabled = true, className = "" }) => {
         }
         .banner-slider .slick-slide > div {
           height: auto !important;
-          line-height: 0 !important;
+          line-height: normal !important;
         }
         .banner-slider .slick-list {
           transition: height 350ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+          overflow: hidden !important;
         }
         .banner-slider .slick-dots {
           bottom: 10px !important;
@@ -424,11 +425,13 @@ const Banner = ({ mode = "auto", enabled = true, className = "" }) => {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                   <div className={`${showTargetExams ? "md:col-span-7" : "md:col-span-12"} space-y-2`}>
                     {slide.badge && (
-                      <span
-                        className={`inline-block ${theme.badge} text-[10px] sm:text-[11px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow-2xs`}
-                      >
-                        {slide.badge}
-                      </span>
+                      <div className="pt-0.5 pb-1">
+                        <span
+                          className={`inline-block ${theme.badge} text-[10px] sm:text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-2xs leading-tight`}
+                        >
+                          {slide.badge}
+                        </span>
+                      </div>
                     )}
 
                     <h2
@@ -462,6 +465,36 @@ const Banner = ({ mode = "auto", enabled = true, className = "" }) => {
                       </div>
                     )}
 
+                    {/* Pricing Highlight */}
+                    {(slide.showPricing || slide.priceTag) && (
+                      <div className="flex flex-wrap items-center gap-2.5 pt-1.5 pb-0.5">
+                        <div className="inline-flex items-baseline gap-2 px-3 py-1.5 rounded-xl bg-white/95 border border-slate-200/90 shadow-2xs">
+                          {slide.originalPrice && (
+                            <span className="text-xs sm:text-sm line-through text-slate-400 font-bold">
+                              {slide.originalPrice.startsWith("₹") || slide.originalPrice.startsWith("Rs")
+                                ? slide.originalPrice
+                                : `₹${slide.originalPrice}`}
+                            </span>
+                          )}
+                          <span className={`text-xl sm:text-2xl md:text-3xl font-black ${theme.titleHighlight || theme.textColor} tracking-tight`}>
+                            {slide.priceTag.startsWith("₹") || slide.priceTag.startsWith("Rs")
+                              ? slide.priceTag
+                              : `₹${slide.priceTag}`}
+                          </span>
+                          {slide.priceSubtext && (
+                            <span className={`text-[11px] sm:text-xs font-bold ${theme.subtitleColor}`}>
+                              {slide.priceSubtext}
+                            </span>
+                          )}
+                        </div>
+                        {slide.discountText && (
+                          <span className="text-[10px] sm:text-[11px] font-black px-2.5 py-1 rounded-full bg-red-600 text-white uppercase tracking-wider shadow-xs">
+                            {slide.discountText}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     {/* Button */}
                     <div className="pt-1.5">
                       <Link
@@ -474,37 +507,106 @@ const Banner = ({ mode = "auto", enabled = true, className = "" }) => {
                     </div>
                   </div>
 
-                  {/* Target Bank Exams Companion */}
-                  {showTargetExams && (
+                  {/* Companion: Target Bank Exams and/or Price List */}
+                  {(showTargetExams || (slide.showPriceList && slide.priceList?.length > 0)) && (
                     <div
-                      className={`md:col-span-5 ${theme.examCardBg} border ${theme.examCardBorder} rounded-2xl p-3.5 sm:p-4 shadow-sm`}
+                      className={`md:col-span-5 ${theme.examCardBg} border ${theme.examCardBorder} rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3`}
                     >
-                      <div className="text-[10px] sm:text-xs font-bold uppercase mb-2.5 flex items-center justify-between">
-                        <span className={theme.textColor}>
-                          {slide.targetExamsTitle || "Target Bank Exams"}
-                        </span>
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${theme.badge}`}>
-                          {slide.targetExamsBadge || "Live Tests"}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 gap-1.5">
-                        {(slide.targetExamsList || [
-                          "IBPS PO",
-                          "IBPS Clerk",
-                          "SBI PO",
-                          "SBI Clerk",
-                          "RRB PO",
-                          "RRB Clerk",
-                        ]).map((exam, i) => (
-                          <div
-                            key={i}
-                            className="text-center py-1.5 px-2 rounded-lg text-[10.5px] font-bold bg-slate-50 border border-slate-200/70 text-slate-700 truncate shadow-2xs"
-                          >
-                            {exam}
+                      {/* Price List Section */}
+                      {slide.showPriceList && Array.isArray(slide.priceList) && slide.priceList.length > 0 && (
+                        <div>
+                          <div className="text-[10px] sm:text-xs font-bold uppercase mb-2 flex items-center justify-between">
+                            <span className={theme.textColor}>
+                              {slide.priceListTitle || "Special Price Plans"}
+                            </span>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${theme.badge}`}>
+                              {slide.priceListBadge || "Limited Offer"}
+                            </span>
                           </div>
-                        ))}
-                      </div>
+
+                          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+                            {slide.priceList.map((plan, pIdx) => (
+                              <Link
+                                key={pIdx}
+                                to={plan.link || slide.buttonLink || "/subscriptions"}
+                                className="flex items-center justify-between p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group/plan text-slate-800"
+                              >
+                                <div className="flex-1 min-w-0 pr-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-xs truncate text-slate-900">
+                                      {plan.planName || `Plan ${pIdx + 1}`}
+                                    </span>
+                                    {plan.badge && (
+                                      <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200 uppercase">
+                                        {plan.badge}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {plan.validity && (
+                                    <span className="text-[10px] text-slate-500 font-medium block">
+                                      {plan.validity}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <div className="text-right">
+                                    {plan.originalPrice && (
+                                      <span className="text-[10px] line-through text-slate-400 block leading-none font-semibold">
+                                        {plan.originalPrice.startsWith("₹") || plan.originalPrice.startsWith("Rs")
+                                          ? plan.originalPrice
+                                          : `₹${plan.originalPrice}`}
+                                      </span>
+                                    )}
+                                    <span className="text-sm font-black text-emerald-700 leading-tight">
+                                      {plan.price
+                                        ? (plan.price.startsWith("₹") || plan.price.startsWith("Rs") ? plan.price : `₹${plan.price}`)
+                                        : "FREE"}
+                                    </span>
+                                  </div>
+                                  <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover/plan:bg-emerald-600 group-hover/plan:text-white transition-colors text-xs font-bold">
+                                    →
+                                  </span>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Target Bank Exams Section */}
+                      {showTargetExams && (
+                        <div className={slide.showPriceList && slide.priceList?.length > 0 ? "pt-2 border-t border-slate-200/50" : ""}>
+                          <div className="text-[10px] sm:text-xs font-bold uppercase mb-2 flex items-center justify-between">
+                            <span className={theme.textColor}>
+                              {slide.targetExamsTitle || "Target Bank Exams"}
+                            </span>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${theme.badge}`}>
+                              {slide.targetExamsBadge || "Live Tests"}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 gap-1.5">
+                            {(slide.targetExamsList || [
+                              "IBPS PO",
+                              "IBPS Clerk",
+                              "SBI PO",
+                              "SBI Clerk",
+                              "RRB PO",
+                              "RRB Clerk",
+                            ])
+                              .slice(0, slide.showPriceList && slide.priceList?.length > 0 ? 6 : 14)
+                              .map((exam, i) => (
+                                <div
+                                  key={i}
+                                  className="text-center py-1.5 px-2 rounded-lg text-[10.5px] font-bold bg-slate-50 border border-slate-200/70 text-slate-700 truncate shadow-2xs"
+                                >
+                                  {exam}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
